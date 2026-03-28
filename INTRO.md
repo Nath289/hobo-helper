@@ -15,14 +15,25 @@
 
 ## Is Hobo Helper Legal?
 
-Yes. Hobo Helper complies fully with the [HoboWars Game Rules](https://wiki.hobowars.com/index.php?title=Game_Rules).
+The [HoboWars Game Rules](https://wiki.hobowars.com/index.php?title=Game_Rules) define and forbid three categories of programs:
 
-The rules draw a clear distinction between **automation** (which is not allowed) and **page enhancements / refreshers** (which are permitted). Specifically:
+> **Macros/Refreshers**
+>
+> A **macro** is a program that plays part or all of the game for you.  
+> A **refresher** is a program (most often an add-in to your web browser) that reloads a web page at set intervals.  
+> A **script** is a list of commands that are executed by a certain program or scripting engine **without user interaction**.  
+>
+> HoboWars rewards players for their time spent on the game. Use of these programs gives players an unfair advantage and is strictly forbidden on all levels.
 
-- **Macros and bots** that automatically perform game actions on your behalf — such as attacking, stealing, or spending stats without any input from you — are **prohibited**.
-- **Userscripts and browser extensions** that improve the visual presentation of pages, add helpful information overlays, or provide convenient links are **allowed**, provided they do not automate any in-game actions.
+Hobo Helper is designed so that it does **not** fall into any of these categories:
 
-Hobo Helper **does not** click buttons, submit forms, or take any game actions automatically. Every action in the game is still performed manually by you. The script only reads the page and enhances what you see.
+- It does **not** play the game for you — no actions (attacking, stealing, spending stats, etc.) are ever taken on your behalf.
+- It does **not** reload pages at set intervals — it is a purely passive enhancement that runs when *you* navigate.
+- It does **not** execute commands without user interaction — every in-game action is still triggered manually by you.
+
+The script's sole purpose is to surface information more conveniently and add visual improvements to pages you are already visiting. This keeps your gameplay fair and within the rules.
+
+> ⚠️ **Important:** Any future feature that automates game actions or reloads pages automatically would violate the rules above and will **not** be added to Hobo Helper. If you spot behaviour that looks like automation, please [open an issue](../../issues) immediately.
 
 If you are ever unsure whether a specific feature is permitted, please review the official rules at:  
 <https://wiki.hobowars.com/index.php?title=Game_Rules>
