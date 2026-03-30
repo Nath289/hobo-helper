@@ -1,4 +1,4 @@
-        MixerHelper: {
+const MixerHelper = {
             init: function() {
                 const urlParams = new URLSearchParams(window.location.search);
                 if (urlParams.get('cmd') === 'mixer') {
@@ -387,3 +387,4 @@
                 }
             }
         }
+

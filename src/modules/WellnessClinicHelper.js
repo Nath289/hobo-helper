@@ -1,4 +1,4 @@
-        WellnessClinicHelper: {
+const WellnessClinicHelper = {
             init: function() {
                 const url = window.location.href;
 
@@ -119,3 +119,4 @@
                 }
             }
         }
+

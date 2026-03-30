@@ -1,3 +1,4 @@
+const Helpers = {
         getHoboMinutes: function() {
             const clockEl = document.getElementById('clock');
             if (!clockEl) return null;
@@ -52,3 +53,5 @@
             }
             return 0;
         }
+
+};

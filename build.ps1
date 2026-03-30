@@ -1,5 +1,5 @@
-$headerContent = Get-Content -Path "src/header.js" -Raw
-$versionMatch = $headerContent -match '@version\s+([\d.]+)'
+$templateContent = Get-Content -Path "src/template.js" -Raw
+$versionMatch = $templateContent -match '@version\s+([\d.]+)'
 $version = if ($versionMatch) { $matches[1] } else { "unknown" }
 
 $outputFile = "output/hobo-helper-v${version}.user.js"
@@ -10,37 +10,27 @@ if (-not (Test-Path -Path "output")) {
 
 $helpersContent = Get-Content -Path "src/helpers.js" -Raw
 
-$modules = @(
-    "DrinksData",
-    "DrinksHelper",
-    "StatRatioTracker",
-    "WellnessClinicHelper",
-    "BankHelper",
-    "NorthernFenceHelper",
-    "TattooParlorHelper",
-    "MixerHelper",
-    "LiquorStoreHelper"
-)
+$moduleFiles = Get-ChildItem -Path "src/modules/*.js"
 
 $modulesContent = ""
-for ($i = 0; $i -lt $modules.Length; $i++) {
-    $moduleName = $modules[$i]
-    $modulesContent += (Get-Content -Path "src/modules/${moduleName}.js" -Raw).TrimEnd()
-    if ($i -lt ($modules.Length - 1)) {
-        $modulesContent += ",`n`n"
+$moduleExportsContent = ""
+for ($i = 0; $i -lt $moduleFiles.Count; $i++) {
+    $file = $moduleFiles[$i]
+    $moduleName = $file.BaseName
+
+    $modulesContent += (Get-Content -Path $file.FullName -Raw).TrimEnd()
+    $modulesContent += "`n`n"
+
+    if ($i -lt ($moduleFiles.Count - 1)) {
+        $moduleExportsContent += "        ${moduleName},`n"
     } else {
-        $modulesContent += "`n"
+        $moduleExportsContent += "        ${moduleName}`n"
     }
 }
 
-$initContent = Get-Content -Path "src/init.js" -Raw
-
-$templateContent = Get-Content -Path "src/template.js" -Raw
-
-$finalContent = $templateContent.Replace("// {{HEADER}}", $headerContent.TrimEnd())
-$finalContent = $finalContent.Replace("// {{HELPERS}}", $helpersContent.TrimEnd())
+$finalContent = $templateContent.Replace("// {{HELPERS}}", $helpersContent.TrimEnd())
 $finalContent = $finalContent.Replace("// {{MODULES}}", $modulesContent.TrimEnd())
-$finalContent = $finalContent.Replace("// {{INIT}}", $initContent.TrimEnd())
+$finalContent = $finalContent.Replace("// {{MODULE_EXPORTS}}", $moduleExportsContent.TrimEnd())
 
 Set-Content -Path $outputFile -Value $finalContent
 Write-Host "Build complete: $outputFile"

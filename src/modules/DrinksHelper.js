@@ -1,4 +1,4 @@
-        DrinksHelper: {
+const DrinksHelper = {
             init: function() {
                 function getInventory() {
                     const inventory = {};
@@ -85,3 +85,4 @@
                 handleBartenderGuide();
             }
         }
+

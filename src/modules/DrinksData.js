@@ -1,4 +1,4 @@
-        DrinksData: {
+const DrinksData = {
             // Data structure containing all drinks in the game
             drinks: {
                 alcoholic: [
@@ -85,3 +85,4 @@
                 ]
             }
         }
+

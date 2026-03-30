@@ -1,4 +1,4 @@
-        BankHelper: {
+const BankHelper = {
             getBankGoals: function() {
                 try {
                     return JSON.parse(localStorage.getItem('hw_bank_goals') || '{}');
@@ -60,3 +60,4 @@
                 });
             }
         }
+

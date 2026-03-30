@@ -1,4 +1,4 @@
-        TattooParlorHelper: {
+const TattooParlorHelper = {
             init: function() {
                 const urlParams = new URLSearchParams(window.location.search);
                 if (urlParams.get('cmd') === 'tattoo_parlor') {
@@ -39,3 +39,4 @@
                 }
             }
         }
+
