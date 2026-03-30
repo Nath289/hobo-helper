@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      7.6
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -12,13 +12,40 @@
     'use strict';
 
     const Helpers = {
+        getHoboMinutes: function() {
+            const clockEl = document.getElementById('clock');
+            if (!clockEl) return null;
+            const match = clockEl.textContent.trim().toLowerCase().match(/(\d+):(\d+):(\d+)\s*(am|pm)/);
+            if (!match) return null;
+            let hours = parseInt(match[1]);
+            const minutes = parseInt(match[2]);
+            if (match[4] === 'pm' && hours !== 12) hours += 12;
+            if (match[4] === 'am' && hours === 12) hours = 0;
+            return (hours * 60) + minutes;
+        },
         getHoboLevel: function() {
-            const levelEl = document.getElementById('statValueLvl');
-            if (levelEl) {
-                const levelStr = levelEl.textContent.trim().replace(/,/g, '');
-                return parseInt(levelStr, 10) || 0;
+            const levelSpan = document.getElementById('statValueLvl');
+            if (levelSpan) {
+                return parseInt(levelSpan.textContent.replace(/,/g, ''), 10);
             }
-            return 0;
+            return 0; // Default if not found
+        },
+        getHoboName: function() {
+            const nameElement = document.querySelector('.pname span a');
+            if (nameElement) {
+                return nameElement.textContent.trim();
+            }
+            return 'Unknown'; 
+        },
+        getHoboId: function() {
+            const nameElement = document.querySelector('.pname span a');
+            if (nameElement && nameElement.href) {
+                const match = nameElement.href.match(/[?&]ID=(\d+)/i);
+                if (match) {
+                    return match[1];
+                }
+            }
+            return 'Unknown';
         },
         getCWPrice: function() {
             const level = this.getHoboLevel();
@@ -233,18 +260,6 @@
                 let config = JSON.parse(localStorage.getItem(STORAGE_KEY)) || DEFAULT_DATA;
                 let inMemoryLastUpdated = config.lastUpdated;
 
-                function getHoboMinutes() {
-                    const clockEl = document.getElementById('clock');
-                    if (!clockEl) return null;
-                    const match = clockEl.textContent.trim().toLowerCase().match(/(\d+):(\d+):(\d+)\s*(am|pm)/);
-                    if (!match) return null;
-                    let hours = parseInt(match[1]);
-                    const minutes = parseInt(match[2]);
-                    if (match[4] === 'pm' && hours !== 12) hours += 12;
-                    if (match[4] === 'am' && hours === 12) hours = 0;
-                    return (hours * 60) + minutes;
-                }
-
                 function updateTracker() {
                     if (window.location.href.includes('cmd=uni')) return;
 
@@ -277,7 +292,9 @@
 
                     if (scraped.speed && scraped.today !== null) {
                         const currentTotal = scraped.speed + scraped.power + scraped.strength;
-                        const minsElapsed = getHoboMinutes();
+                        const minsElapsed = Helpers.getHoboMinutes();
+                        
+                        let estDays = "---";
 
                         if (minsElapsed !== null) {
                             const rate = scraped.today / Math.max(1, minsElapsed);
@@ -420,7 +437,7 @@
             }
         },
 
-        WellnessHelper: {
+        WellnessClinicHelper: {
             init: function() {
                 const url = window.location.href;
 
@@ -464,8 +481,7 @@
                     let runningFutureCost = 0;
                     let tableRows = "";
 
-                    let savedGoals = {};
-                    try { savedGoals = JSON.parse(localStorage.getItem('hw_bank_goals') || '{}'); } catch(e) {}
+                    let savedGoals = Modules.BankHelper.getBankGoals();
                     const savedGoal = savedGoals['Wellness'];
 
                     clinicData.forEach((row, index) => {
@@ -524,21 +540,12 @@
                             const isAlreadyBlue = (this.style.backgroundColor === 'lightblue');
                             document.querySelectorAll('.hw-wellness-finish-cell').forEach(c => { c.style.backgroundColor = 'transparent'; c.style.fontWeight = 'normal'; });
 
-                            let goals = {};
-                            try { goals = JSON.parse(localStorage.getItem('hw_bank_goals') || '{}'); } catch(e) {}
-
                             if (!isAlreadyBlue) {
                                 this.style.backgroundColor = 'lightblue';
                                 this.style.fontWeight = 'bold';
-                                goals['Wellness'] = parseInt(val);
+                                Modules.BankHelper.addBankGoal('Wellness', parseInt(val));
                             } else {
-                                delete goals['Wellness'];
-                            }
-
-                            if (Object.keys(goals).length === 0) {
-                                localStorage.removeItem('hw_bank_goals');
-                            } else {
-                                localStorage.setItem('hw_bank_goals', JSON.stringify(goals));
+                                Modules.BankHelper.addBankGoal('Wellness', 0);
                             }
                         });
                     });
@@ -553,15 +560,32 @@
         },
 
         BankHelper: {
+            getBankGoals: function() {
+                try {
+                    return JSON.parse(localStorage.getItem('hw_bank_goals') || '{}');
+                } catch(e) {
+                    return {};
+                }
+            },
+            addBankGoal: function(actionName, cost) {
+                const goals = this.getBankGoals();
+                if (cost === 0 || cost === null) {
+                    delete goals[actionName];
+                } else {
+                    goals[actionName] = cost;
+                }
+                if (Object.keys(goals).length === 0) {
+                    localStorage.removeItem('hw_bank_goals');
+                } else {
+                    localStorage.setItem('hw_bank_goals', JSON.stringify(goals));
+                }
+            },
             init: function() {
                 const url = window.location.href;
                 if (!url.includes('cmd=bank')) return;
 
-                const goalsStr = localStorage.getItem('hw_bank_goals');
-                if (!goalsStr) return;
-
-                let goals = {};
-                try { goals = JSON.parse(goalsStr); } catch(e) {}
+                const goals = this.getBankGoals();
+                if (Object.keys(goals).length === 0) return;
 
                 const withdrawInput = document.getElementById('w_money');
                 const withdrawForm = document.querySelector('form[name="with"]');
@@ -585,14 +609,7 @@
                         let currentVal = parseInt(withdrawInput.value.replace(/,/g, '')) || 0;
                         withdrawInput.value = (currentVal + goalVal).toString();
 
-                        let currentGoals = {};
-                        try { currentGoals = JSON.parse(localStorage.getItem('hw_bank_goals') || '{}'); } catch(e) {}
-                        delete currentGoals[goalName];
-                        if (Object.keys(currentGoals).length === 0) {
-                            localStorage.removeItem('hw_bank_goals');
-                        } else {
-                            localStorage.setItem('hw_bank_goals', JSON.stringify(currentGoals));
-                        }
+                        Modules.BankHelper.addBankGoal(goalName, 0);
 
                         this.value = "Added!";
                         this.disabled = true;
@@ -634,10 +651,7 @@
                                         btn.style.cursor = 'pointer';
 
                                         btn.onclick = function() {
-                                            let goals = {};
-                                            try { goals = JSON.parse(localStorage.getItem('hw_bank_goals') || '{}'); } catch(e) {}
-                                            goals[`Pikies (${name})`] = totalCost;
-                                            localStorage.setItem('hw_bank_goals', JSON.stringify(goals));
+                                            Modules.BankHelper.addBankGoal(`Pikies (${name})`, totalCost);
 
                                             this.textContent = 'Added!';
                                             this.disabled = true;
@@ -649,6 +663,23 @@
                             }
                         }
                     });
+                }
+                
+                if (urlParams.get('cmd') === 'hill3' && urlParams.get('do') === 'hof') {
+                    const playerId = Helpers.getHoboId();
+                    const table = document.querySelector('.content-area table');
+                    if (table && playerId !== 'Unknown') {
+                        const rows = table.querySelectorAll('tr');
+                        rows.forEach(row => {
+                            const cells = row.querySelectorAll('td');
+                            if (cells.length >= 3) {
+                                const hoboLink = cells[0].querySelector('a');
+                                if (hoboLink && hoboLink.href.includes(`ID=${playerId}`)) {
+                                    row.style.fontWeight = 'bold';
+                                }
+                            }
+                        });
+                    }
                 }
             }
         },
@@ -675,10 +706,7 @@
 
                                     btn.onclick = function(e) {
                                         e.preventDefault();
-                                        let goals = {};
-                                        try { goals = JSON.parse(localStorage.getItem('hw_bank_goals') || '{}'); } catch(err) {}
-                                        goals[actionName] = cost;
-                                        localStorage.setItem('hw_bank_goals', JSON.stringify(goals));
+                                        Modules.BankHelper.addBankGoal(actionName, cost);
 
                                         this.textContent = 'Added!';
                                         this.disabled = true;
@@ -987,16 +1015,30 @@
                                         let itemCostStr = '';
 
                                         if (baseDrink && baseDrink.cost) {
+                                            let hasDiscount = false;
+                                            
                                             if (baseDrink.cost.type === 'cw_multiplier') {
                                                 const costVal = baseDrink.cost.value * neededAmount;
                                                 const cwPrice = Helpers.getCWPrice();
-                                                const dollarCost = Math.round(costVal * cwPrice);
+                                                let dollarCost = Math.round(costVal * cwPrice);
+                                                
+                                                if (baseDrink.location === 'Liquor Store') {
+                                                    dollarCost = Math.round(dollarCost * 0.9);
+                                                    hasDiscount = true;
+                                                }
+
                                                 totalFixed += dollarCost;
-                                                itemCostStr = `$${dollarCost.toLocaleString()}`;
+                                                itemCostStr = `$${dollarCost.toLocaleString()}${hasDiscount ? '*' : ''}`;
                                             } else if (baseDrink.cost.type === 'fixed' && typeof baseDrink.cost.value === 'number') {
-                                                const costVal = baseDrink.cost.value * neededAmount;
+                                                let costVal = baseDrink.cost.value * neededAmount;
+                                                
+                                                if (baseDrink.location === 'Liquor Store') {
+                                                    costVal = Math.round(costVal * 0.9);
+                                                    hasDiscount = true;
+                                                }
+
                                                 totalFixed += costVal;
-                                                itemCostStr = `$${costVal.toLocaleString()}`;
+                                                itemCostStr = `$${costVal.toLocaleString()}${hasDiscount ? '*' : ''}`;
                                             } else if (baseDrink.cost.type === 'fixed' && typeof baseDrink.cost.value === 'string') {
                                                 itemCostStr = `${neededAmount}x ${baseDrink.cost.value}`;
                                             }
@@ -1016,7 +1058,8 @@
                                     let listHtml = `<table style="border-collapse: collapse; font-size: 13px; min-width: 200px;">${missingTableRows.join('')}</table>`;
                                     
                                     if (totalFixed > 0) {
-                                        listHtml += `<div style="margin-top: 5px; font-weight: bold; color: #333; border-top: 1px dashed #ccc; padding-top: 3px;">Estimated Cost: <span style="color:red;">$${totalFixed.toLocaleString()}</span> <button id="add-drinks-bank-goal" style="margin-left: 5px; cursor: pointer; font-size: 10px;">Bank</button></div>`;
+                                        listHtml += `<div style="margin-top: 5px; font-weight: bold; color: #333; border-top: 1px dashed #ccc; padding-top: 3px;">Estimated Cost: <span style="color:red;">$${totalFixed.toLocaleString()}</span> <button id="add-drinks-bank-goal" style="margin-left: 5px; cursor: pointer; font-size: 10px;">+ Bank</button></div>`;
+                                        listHtml += `<div style="margin-top: 2px; font-size: 10px; color: #888;">* 10% Bartender's Guide discount applied</div>`;
                                     }
 
                                     shoppingListContent.innerHTML = listHtml;
@@ -1026,7 +1069,7 @@
                                     if (bankBtn) {
                                         bankBtn.addEventListener('click', function(e) {
                                             e.preventDefault();
-                                            BankHelper.addBankGoal('Drink Ingredients', totalFixed);
+                                            Modules.BankHelper.addBankGoal('Drink Ingredients', totalFixed);
                                             
                                             let saveObj = {};
                                             ingredientsNeeded.forEach(ingName => {
@@ -1048,7 +1091,12 @@
                                             });
 
                                             localStorage.setItem('hobowarsDrinkShoppingList', JSON.stringify(saveObj));
-                                            
+                                            if (window.lastClickedRecipe && window.lastClickedRecipe.name) {
+                                                localStorage.setItem('hobowarsDrinkShoppingList_TargetDrink', window.lastClickedRecipe.name);
+                                            } else {
+                                                localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
+                                            }
+
                                             this.textContent = 'Added!';
                                             this.disabled = true;
                                         });
@@ -1062,6 +1110,110 @@
                             makeManyInput.addEventListener('input', () => {
                                 if (typeof window.updateShoppingList === 'function') window.updateShoppingList();
                             });
+                        }
+                    }
+                }
+            }
+        },
+
+        LiquorStoreHelper: {
+            init: function() {
+                if (window.location.href.includes('cmd=liquor_store')) {
+                    try {
+                        const contentArea = document.querySelector('.content-area') || document.body;
+                        const spans = contentArea.querySelectorAll('span');
+                        let purchasedItem = null;
+                        let purchasedAmount = 0;
+                        
+                        for (let i = 0; i < spans.length; i++) {
+                            const span = spans[i];
+                            if (span.textContent.includes('You get') && span.querySelector('img')) {
+                                const img = span.querySelector('img');
+                                const itemName = img.title || img.alt;
+                                
+                                let amount = 1;
+                                const amountMatch = span.textContent.match(/\(\s*(\d+)\s*\)/);
+                                if (amountMatch) {
+                                    amount = parseInt(amountMatch[1], 10);
+                                }
+                                
+                                if (itemName) {
+                                    purchasedItem = itemName.replace(/&amp;/g, '&').trim();
+                                    purchasedAmount = amount;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (purchasedItem && purchasedAmount > 0) {
+                            const shoppingListStr = localStorage.getItem('hobowarsDrinkShoppingList');
+                            if (shoppingListStr) {
+                                let shoppingList = JSON.parse(shoppingListStr);
+                                if (shoppingList[purchasedItem]) {
+                                    shoppingList[purchasedItem] -= purchasedAmount;
+                                    if (shoppingList[purchasedItem] <= 0) {
+                                        delete shoppingList[purchasedItem];
+                                    }
+                                    if (Object.keys(shoppingList).length === 0) {
+                                        localStorage.removeItem('hobowarsDrinkShoppingList');
+                                        localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
+                                    } else {
+                                        localStorage.setItem('hobowarsDrinkShoppingList', JSON.stringify(shoppingList));
+                                    }
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Error handling purchase check', e);
+                    }
+
+                    const shoppingListStr = localStorage.getItem('hobowarsDrinkShoppingList');
+                    if (shoppingListStr) {
+                        try {
+                            const shoppingList = JSON.parse(shoppingListStr);
+                            const items = Object.keys(shoppingList);
+                            if (items.length > 0) {
+                                const targetDrink = localStorage.getItem('hobowarsDrinkShoppingList_TargetDrink');
+                                const titleText = targetDrink ? `🛍️ Mixer Shopping List - ${targetDrink}` : `🛍️ Mixer Shopping List`;
+
+                                let contentHtml = `
+                                    <div style="font-weight: bold; margin-bottom: 8px; font-size: 14px; display: flex; justify-content: space-between; align-items: center;">
+                                        <span>${titleText}</span>
+                                        <button id="clear-shopping-list" style="cursor: pointer; font-size: 11px; padding: 2px 6px;">Clear List</button>
+                                    </div>
+                                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                                        <tbody>`;
+                                items.forEach(item => {
+                                    contentHtml += `
+                                        <tr style="border-bottom: 1px dotted #ccc;">
+                                            <td style="padding: 4px 0;"><strong>${item}</strong></td>
+                                            <td style="padding: 4px 0; text-align: right; color: #d9534f; font-weight: bold;">${shoppingList[item]} required</td>
+                                        </tr>`;
+                                });
+                                contentHtml += `</tbody></table>`;
+
+                                const listContainer = document.createElement('div');
+                                listContainer.style.cssText = 'margin: 10px auto 15px auto; border: 1px solid #ccc; padding: 10px; background-color: #f9f9f9; width: 80%; display: block;';
+                                listContainer.innerHTML = contentHtml;
+                                
+                                const contentArea = document.querySelector('.content-area') || document.body;
+                                const firstTable = contentArea.querySelector('table.shop-list') || contentArea.querySelector('table[width="100%"]');
+                                
+                                if (firstTable) {
+                                    firstTable.parentNode.insertBefore(listContainer, firstTable);
+                                } else {
+                                    contentArea.appendChild(listContainer);
+                                }
+
+                                document.getElementById('clear-shopping-list').addEventListener('click', function(e) {
+                                    e.preventDefault();
+                                    localStorage.removeItem('hobowarsDrinkShoppingList');
+                                    localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
+                                    listContainer.style.display = 'none';
+                                });
+                            }
+                        } catch (e) {
+                            console.error('Error parsing shopping list', e);
                         }
                     }
                 }
