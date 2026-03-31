@@ -5,7 +5,7 @@ Welcome to the `hobo-helper` project! Since this project uses a custom build pro
 ## Project Structure
 - `src/` - The main source code directory.
   - `src/template.js` - The master template file containing the userscript header, initialization logic, and interpolation markers (`// {{HELPERS}}`, etc.).
-  - `src/helpers.js` - General helper functions.
+  - `src/utils.js` - General helper functions.
   - `src/modules/` - Contains individual module logic (e.g., `BankHelper.js`, `MixerHelper.js`).
 
 ## Adding a New Module / Helper

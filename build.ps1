@@ -1,6 +1,5 @@
+$version = "7.34"
 $templateContent = Get-Content -Path "src/template.js" -Raw
-$versionMatch = $templateContent -match '@version\s+([\d.]+)'
-$version = if ($versionMatch) { $matches[1] } else { "unknown" }
 
 $outputFile = "output/hobo-helper-v${version}.user.js"
 
@@ -8,7 +7,7 @@ if (-not (Test-Path -Path "output")) {
     New-Item -ItemType Directory -Path "output" | Out-Null
 }
 
-$helpersContent = Get-Content -Path "src/helpers.js" -Raw
+$helpersContent = Get-Content -Path "src/utils.js" -Raw
 
 $moduleFiles = Get-ChildItem -Path "src/modules/*.js"
 
@@ -31,6 +30,7 @@ for ($i = 0; $i -lt $moduleFiles.Count; $i++) {
 $finalContent = $templateContent.Replace("// {{HELPERS}}", $helpersContent.TrimEnd())
 $finalContent = $finalContent.Replace("// {{MODULES}}", $modulesContent.TrimEnd())
 $finalContent = $finalContent.Replace("// {{MODULE_EXPORTS}}", $moduleExportsContent.TrimEnd())
+$finalContent = $finalContent.Replace("{{VERSION}}", $version)
 
 Set-Content -Path $outputFile -Value $finalContent
 Write-Host "Build complete: $outputFile"

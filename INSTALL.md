@@ -22,7 +22,7 @@ Once installed, you will see the Tampermonkey icon (a dark square with two overl
 ## Step 2 – Install the Hobo Helper Script
 
 1. Navigate to the latest compiled Hobo Helper script file in this repository:  
-   **[`output/hobo-helper-v7.32.user.js`](output/hobo-helper-v7.32.user.js)** (or the latest version in the `output` directory).
+   **[`output/hobo-helper-v7.34.user.js`](output/hobo-helper-v7.34.user.js)** (or the latest version in the `output` directory).
 
 2. Click the **Raw** button to open the raw script file.
 
