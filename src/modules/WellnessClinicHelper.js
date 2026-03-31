@@ -32,7 +32,7 @@ const WellnessClinicHelper = {
                     const text = contentArea.innerText;
                     const costMatch = text.match(/\$?([0-9]{1,3}(,[0-9]{3})+|[0-9]{4,})/);
                     let detectedCost = 0;
-                    if (costMatch) detectedCost = parseInt(costMatch[0].replace(/[$,]/g, ''));
+                    if (costMatch) detectedCost = Helpers.parseNumber(costMatch[0]);
 
                     const hasPaid = url.includes('do=pay');
                     let currentIndex = clinicData.findIndex(row => row.fee === detectedCost);
@@ -119,4 +119,3 @@ const WellnessClinicHelper = {
                 }
             }
         }
-

@@ -11,6 +11,8 @@
 - **Visual improvements** – cleaner layout tweaks and highlighting to make important information easier to read.
 - **Notifications & reminders** – on-page alerts when timers (such as fight cooldowns or daily resets) are about to expire.
 
+> For a complete list of all active modules and what they do, please see our [Features Documentation](FEATURES.md).
+
 > More features will be added over time. Suggestions and contributions are welcome!
 
 ## Is Hobo Helper Legal?

@@ -330,19 +330,17 @@ const MixerHelper = {
                                     let listHtml = `<table style="border-collapse: collapse; font-size: 13px; min-width: 200px;">${missingTableRows.join('')}</table>`;
                                     
                                     if (totalFixed > 0) {
-                                        listHtml += `<div style="margin-top: 5px; font-weight: bold; color: #333; border-top: 1px dashed #ccc; padding-top: 3px;">Estimated Cost: <span style="color:red;">$${totalFixed.toLocaleString()}</span> <button id="add-drinks-bank-goal" style="margin-left: 5px; cursor: pointer; font-size: 10px;">+ Bank</button></div>`;
+                                        listHtml += `<div style="margin-top: 5px; font-weight: bold; color: #333; border-top: 1px dashed #ccc; padding-top: 3px;">Estimated Cost: <span style="color:red;">$${totalFixed.toLocaleString()}</span> <span id="bank-btn-container"></span></div>`;
                                         listHtml += `<div style="margin-top: 2px; font-size: 10px; color: #888;">* 10% Bartender's Guide discount applied</div>`;
                                     }
 
                                     shoppingListContent.innerHTML = listHtml;
                                     shoppingListContainer.style.display = 'block';
 
-                                    const bankBtn = document.getElementById('add-drinks-bank-goal');
-                                    if (bankBtn) {
-                                        bankBtn.addEventListener('click', function(e) {
-                                            e.preventDefault();
-                                            Modules.BankHelper.addBankGoal('Drink Ingredients', totalFixed);
-                                            
+                                    const bankBtnContainer = document.getElementById('bank-btn-container');
+                                    if (bankBtnContainer) {
+                                        const bankBtn = Helpers.createBankButton('Drink Ingredients', totalFixed);
+                                        bankBtn.addEventListener('click', function() {
                                             let saveObj = {};
                                             ingredientsNeeded.forEach(ingName => {
                                                 const id = inventoryMap[ingName];
@@ -368,10 +366,8 @@ const MixerHelper = {
                                             } else {
                                                 localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
                                             }
-
-                                            this.textContent = 'Added!';
-                                            this.disabled = true;
                                         });
+                                        bankBtnContainer.appendChild(bankBtn);
                                     }
                                 } else {
                                     shoppingListContent.innerHTML = '';
@@ -387,4 +383,3 @@ const MixerHelper = {
                 }
             }
         }
-

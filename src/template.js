@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.20
+// @version      7.25
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -16,10 +16,16 @@
 // {{MODULE_EXPORTS}}
     };
 
+    const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+    const globalEnabled = savedSettings['global_enabled'] !== false;
+
     // Initialize all modules
-    Object.values(Modules).forEach(module => {
-        if (typeof module.init === 'function') {
-            module.init();
+    Object.keys(Modules).forEach(moduleName => {
+        if (typeof Modules[moduleName].init === 'function') {
+            const moduleEnabled = savedSettings[moduleName] !== false;
+            if (moduleName === 'SettingsHelper' || (globalEnabled && moduleEnabled)) {
+                Modules[moduleName].init();
+            }
         }
     });
 })();

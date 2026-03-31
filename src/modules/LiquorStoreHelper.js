@@ -16,7 +16,7 @@ const LiquorStoreHelper = {
                                 let amount = 1;
                                 const amountMatch = span.textContent.match(/\(\s*(\d+)\s*\)/);
                                 if (amountMatch) {
-                                    amount = parseInt(amountMatch[1], 10);
+                                    amount = Helpers.parseNumber(amountMatch[1]);
                                 }
                                 
                                 if (itemName) {
@@ -101,4 +101,3 @@ const LiquorStoreHelper = {
                 }
             }
         }
-

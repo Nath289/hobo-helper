@@ -23,24 +23,13 @@ const NorthernFenceHelper = {
                         if (costText.startsWith('$')) {
                             const costMatch = costText.match(/\$?([0-9,]+)/);
                             if (costMatch) {
-                                const cost = parseInt(costMatch[1].replace(/,/g, ''), 10);
+                                const cost = Helpers.parseNumber(costMatch[1]);
                                 if (!isNaN(cost)) {
                                     const totalCost = cost * 2; // Can race twice
                                     const name = cells[0].textContent.trim();
 
                                     const actionCell = cells[5];
-                                    const btn = document.createElement('button');
-                                    btn.textContent = '+ Bank';
-                                    btn.style.marginLeft = '8px';
-                                    btn.style.fontSize = '10px';
-                                    btn.style.cursor = 'pointer';
-
-                                    btn.onclick = function() {
-                                        Modules.BankHelper.addBankGoal(`Pikies (${name})`, totalCost);
-
-                                        this.textContent = 'Added!';
-                                        this.disabled = true;
-                                    };
+                                    const btn = Helpers.createBankButton(`Pikies (${name})`, totalCost);
 
                                     actionCell.appendChild(btn);
                                 }

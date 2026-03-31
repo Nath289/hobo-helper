@@ -8,23 +8,11 @@ const TattooParlorHelper = {
                         if (text.includes('Retouch') || text.includes('Remove')) {
                             const costMatch = text.match(/\$?([0-9,]+)/);
                             if (costMatch) {
-                                const cost = parseInt(costMatch[1].replace(/,/g, ''), 10);
+                                const cost = Helpers.parseNumber(costMatch[1]);
                                 if (!isNaN(cost) && cost > 0) {
                                     const actionName = text.includes('Retouch') ? 'Tattoo Retouch' : 'Tattoo Remove';
 
-                                    const btn = document.createElement('button');
-                                    btn.textContent = '+ Bank';
-                                    btn.style.marginLeft = '8px';
-                                    btn.style.fontSize = '10px';
-                                    btn.style.cursor = 'pointer';
-
-                                    btn.onclick = function(e) {
-                                        e.preventDefault();
-                                        Modules.BankHelper.addBankGoal(actionName, cost);
-
-                                        this.textContent = 'Added!';
-                                        this.disabled = true;
-                                    };
+                                    const btn = Helpers.createBankButton(actionName, cost);
 
                                     // Move button outside the link's parent if it's wrapped in square brackets
                                     if (link.nextSibling && link.nextSibling.nodeType === Node.TEXT_NODE && link.nextSibling.textContent.includes(']')) {
@@ -39,4 +27,3 @@ const TattooParlorHelper = {
                 }
             }
         }
-

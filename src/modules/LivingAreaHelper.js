@@ -1,8 +1,16 @@
 const LivingAreaHelper = {
     init: function() {
-        this.initStatRatioTracker();
-        this.initAlwaysShowSpecialItem();
-        this.initWinPercentageCalc();
+        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        
+        if (savedSettings['LivingAreaHelper_StatRatioTracker'] !== false) {
+            this.initStatRatioTracker();
+        }
+        if (savedSettings['LivingAreaHelper_AlwaysShowSpecialItem'] !== false) {
+            this.initAlwaysShowSpecialItem();
+        }
+        if (savedSettings['LivingAreaHelper_WinPercentageCalc'] !== false) {
+            this.initWinPercentageCalc();
+        }
     },
 
     initAlwaysShowSpecialItem: function() {
@@ -49,8 +57,8 @@ const LivingAreaHelper = {
                 const lines = Array.from(statsBlock.querySelectorAll('.line'));
                 const target = lines.find(l => l.textContent.includes(label));
                 if (!target) return null;
-                const valMatch = target.textContent.replace(/,/g, '').match(/[\d.]+/g);
-                return valMatch ? parseFloat(valMatch[0]) : null;
+                const valMatch = target.textContent.match(/[\d,.]+/g);
+                return valMatch ? Helpers.parseNumber(valMatch[0]) : null;
             };
 
             const scraped = {
@@ -195,10 +203,10 @@ const LivingAreaHelper = {
                     }
                 } catch(e) {}
 
-                config.targetTotal = parseFloat(document.getElementById('r_goal').value.replace(/,/g, '')) || 0;
-                config.speed = parseFloat(document.getElementById('r_spd').value) || 0;
-                config.power = parseFloat(document.getElementById('r_pwr').value) || 0;
-                config.strength = parseFloat(document.getElementById('r_str').value) || 0;
+                config.targetTotal = Helpers.parseNumber(document.getElementById('r_goal').value);
+                config.speed = Helpers.parseNumber(document.getElementById('r_spd').value);
+                config.power = Helpers.parseNumber(document.getElementById('r_pwr').value);
+                config.strength = Helpers.parseNumber(document.getElementById('r_str').value);
                 config.lastUpdated = Date.now();
                 inMemoryLastUpdated = config.lastUpdated;
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
@@ -225,7 +233,7 @@ const LivingAreaHelper = {
             const matches = text.match(/\d+(,\d+)*/g);
             if (!matches || matches.length < 2) return;
 
-            const stats = matches.map(s => parseInt(s.replace(/,/g, '')));
+            const stats = matches.map(s => Helpers.parseNumber(s));
 
             const wins = stats[0];
             const losses = stats[1];
