@@ -1,4 +1,4 @@
-const Helpers = {
+const Utils = {
         getHoboMinutes: function() {
             const clockEl = document.getElementById('clock');
             if (!clockEl) return null;
@@ -71,6 +71,12 @@ const Helpers = {
                 this.disabled = true;
             };
             return btn;
+        },
+        isCurrentPage: function(query) {
+            return window.location.search.includes(query);
+        },
+        getSettings: function() {
+            return JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
         }
 
 };

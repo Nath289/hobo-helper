@@ -23,13 +23,13 @@ const NorthernFenceHelper = {
                         if (costText.startsWith('$')) {
                             const costMatch = costText.match(/\$?([0-9,]+)/);
                             if (costMatch) {
-                                const cost = Helpers.parseNumber(costMatch[1]);
+                                const cost = Utils.parseNumber(costMatch[1]);
                                 if (!isNaN(cost)) {
                                     const totalCost = cost * 2; // Can race twice
                                     const name = cells[0].textContent.trim();
 
                                     const actionCell = cells[5];
-                                    const btn = Helpers.createBankButton(`Pikies (${name})`, totalCost);
+                                    const btn = Utils.createBankButton(`Pikies (${name})`, totalCost);
 
                                     actionCell.appendChild(btn);
                                 }
@@ -40,7 +40,7 @@ const NorthernFenceHelper = {
             },
             
             initHallOfFameHelper: function() {
-                const playerId = Helpers.getHoboId();
+                const playerId = Utils.getHoboId();
                 const table = document.querySelector('.content-area table');
                 let foundPlayer = false;
 

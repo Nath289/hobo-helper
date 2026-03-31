@@ -29,5 +29,8 @@ A tool designed to make stat training smoother at the University. It can help tr
 ### 8. Wellness Clinic Helper (`WellnessClinicHelper.js`)
 Enhances the Wellness Clinic by displaying real-time data on your health, hospitalizations, or relevant cooldown timers directly into the UI.
 
+### 9. Message Board Helper (`MessageBoardHelper.js`)
+Provides functionality and quality-of-life improvements specifically on the Message Board gathering pages (`cmd=gathering`). Automatically adds an "Edit: Paid" button to the post editor that appends the current hobo name and a paid message statement. Automatically added structural support for future enhancements.
+
 ---
 *Note: We are constantly updating and tweaking these modules. If you encounter any bugs, please report them!*

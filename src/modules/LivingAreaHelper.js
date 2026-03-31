@@ -58,7 +58,7 @@ const LivingAreaHelper = {
                 const target = lines.find(l => l.textContent.includes(label));
                 if (!target) return null;
                 const valMatch = target.textContent.match(/[\d,.]+/g);
-                return valMatch ? Helpers.parseNumber(valMatch[0]) : null;
+                return valMatch ? Utils.parseNumber(valMatch[0]) : null;
             };
 
             const scraped = {
@@ -71,7 +71,7 @@ const LivingAreaHelper = {
 
             if (scraped.speed && scraped.today !== null) {
                 const currentTotal = scraped.speed + scraped.power + scraped.strength;
-                const minsElapsed = Helpers.getHoboMinutes();
+                const minsElapsed = Utils.getHoboMinutes();
 
 
                 if (minsElapsed !== null) {
@@ -203,10 +203,10 @@ const LivingAreaHelper = {
                     }
                 } catch(e) {}
 
-                config.targetTotal = Helpers.parseNumber(document.getElementById('r_goal').value);
-                config.speed = Helpers.parseNumber(document.getElementById('r_spd').value);
-                config.power = Helpers.parseNumber(document.getElementById('r_pwr').value);
-                config.strength = Helpers.parseNumber(document.getElementById('r_str').value);
+                config.targetTotal = Utils.parseNumber(document.getElementById('r_goal').value);
+                config.speed = Utils.parseNumber(document.getElementById('r_spd').value);
+                config.power = Utils.parseNumber(document.getElementById('r_pwr').value);
+                config.strength = Utils.parseNumber(document.getElementById('r_str').value);
                 config.lastUpdated = Date.now();
                 inMemoryLastUpdated = config.lastUpdated;
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
@@ -233,7 +233,7 @@ const LivingAreaHelper = {
             const matches = text.match(/\d+(,\d+)*/g);
             if (!matches || matches.length < 2) return;
 
-            const stats = matches.map(s => Helpers.parseNumber(s));
+            const stats = matches.map(s => Utils.parseNumber(s));
 
             const wins = stats[0];
             const losses = stats[1];

@@ -291,7 +291,7 @@ const MixerHelper = {
                                             
                                             if (baseDrink.cost.type === 'cw_multiplier') {
                                                 const costVal = baseDrink.cost.value * neededAmount;
-                                                const cwPrice = Helpers.getCWPrice();
+                                                const cwPrice = Utils.getCWPrice();
                                                 let dollarCost = Math.round(costVal * cwPrice);
                                                 
                                                 if (baseDrink.location === 'Liquor Store') {
@@ -339,7 +339,7 @@ const MixerHelper = {
 
                                     const bankBtnContainer = document.getElementById('bank-btn-container');
                                     if (bankBtnContainer) {
-                                        const bankBtn = Helpers.createBankButton('Drink Ingredients', totalFixed);
+                                        const bankBtn = Utils.createBankButton('Drink Ingredients', totalFixed);
                                         bankBtn.addEventListener('click', function() {
                                             let saveObj = {};
                                             ingredientsNeeded.forEach(ingName => {

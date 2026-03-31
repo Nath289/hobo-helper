@@ -20,7 +20,7 @@ const UniversityHelper = {
         const gainMatch = text.match(/You gained ([\d.,]+) (speed|power|strength)/i);
 
         if (gainMatch) {
-            let amount = Helpers.parseNumber(gainMatch[1]);
+            let amount = Utils.parseNumber(gainMatch[1]);
             const stat = gainMatch[2].toLowerCase();
             
             const statsConfigStr = localStorage.getItem('hoboStatRatio');

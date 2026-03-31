@@ -34,3 +34,7 @@ $finalContent = $finalContent.Replace("// {{MODULE_EXPORTS}}", $moduleExportsCon
 
 Set-Content -Path $outputFile -Value $finalContent
 Write-Host "Build complete: $outputFile"
+
+$latestFile = "output/hobo-helper-latest.user.js"
+Copy-Item -Path $outputFile -Destination $latestFile -Force
+Write-Host "Copied to: $latestFile"

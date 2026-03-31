@@ -8,11 +8,11 @@ const TattooParlorHelper = {
                         if (text.includes('Retouch') || text.includes('Remove')) {
                             const costMatch = text.match(/\$?([0-9,]+)/);
                             if (costMatch) {
-                                const cost = Helpers.parseNumber(costMatch[1]);
+                                const cost = Utils.parseNumber(costMatch[1]);
                                 if (!isNaN(cost) && cost > 0) {
                                     const actionName = text.includes('Retouch') ? 'Tattoo Retouch' : 'Tattoo Remove';
 
-                                    const btn = Helpers.createBankButton(actionName, cost);
+                                    const btn = Utils.createBankButton(actionName, cost);
 
                                     // Move button outside the link's parent if it's wrapped in square brackets
                                     if (link.nextSibling && link.nextSibling.nodeType === Node.TEXT_NODE && link.nextSibling.textContent.includes(']')) {
