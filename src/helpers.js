@@ -13,7 +13,7 @@ const Helpers = {
         getHoboLevel: function() {
             const levelSpan = document.getElementById('statValueLvl');
             if (levelSpan) {
-                return parseInt(levelSpan.textContent.replace(/,/g, ''), 10);
+                return this.parseNumber(levelSpan.textContent);
             }
             return 0; // Default if not found
         },
@@ -42,16 +42,35 @@ const Helpers = {
         getCashBalance: function() {
             const cashEl = document.querySelector('.no-mobile.displayMoney');
             if (cashEl) {
-                return parseInt(cashEl.textContent.trim().replace(/[$,]/g, ''), 10) || 0;
+                return this.parseNumber(cashEl.textContent);
             }
             return 0;
         },
         getBankBalance: function() {
             const bankEl = document.querySelector('.no-mobile.displayBank');
             if (bankEl) {
-                return parseInt(bankEl.textContent.trim().replace(/[$,]/g, ''), 10) || 0;
+                return this.parseNumber(bankEl.textContent);
             }
             return 0;
+        },
+        parseNumber: function(str) {
+            if (!str) return 0;
+            return parseFloat(str.replace(/[$,]/g, '')) || 0;
+        },
+        createBankButton: function(goalName, amount) {
+            const btn = document.createElement('button');
+            btn.textContent = '+ Bank';
+            btn.style.marginLeft = '8px';
+            btn.style.fontSize = '10px';
+            btn.style.cursor = 'pointer';
+
+            btn.onclick = function(e) {
+                if (e) e.preventDefault();
+                Modules.BankHelper.addBankGoal(goalName, amount);
+                this.textContent = 'Added!';
+                this.disabled = true;
+            };
+            return btn;
         }
 
 };
