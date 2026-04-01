@@ -70,9 +70,7 @@ const LivingAreaHelper = {
             };
 
             if (scraped.speed && scraped.today !== null) {
-                const currentTotal = scraped.speed + scraped.power + scraped.strength;
                 const minsElapsed = Utils.getHoboMinutes();
-
 
                 if (minsElapsed !== null) {
                     const rate = scraped.today / Math.max(1, minsElapsed);
@@ -135,14 +133,14 @@ const LivingAreaHelper = {
             if (!panel) {
                 panel = document.createElement('div');
                 panel.id = 'stat_ratio_panel';
-                panel.style.cssText = 'margin:12px 0; padding:12px; background:#f4f4f4; border:1px solid #ddd; border-left:4px solid #eec111; font-family: Arial; width: 100%; box-sizing: border-box;';
+                panel.style.cssText = 'margin:5px 0; padding:12px; background:#f4f4f4; outline: 1px solid #CCCCCC;border:2px solid #E8E8E8; font-family: Arial; width: 100%; box-sizing: border-box;';
                 anchor.appendChild(panel);
             }
 
             panel.innerHTML = `
                 <div style="font-size:13px; margin-bottom:5px;"><b>Effective Goal:</b> ${Math.round(target).toLocaleString()} <span id="cog_toggle" style="float:right; cursor:pointer; opacity:0.5;">⚙️</span></div>
-                <div style="font-size:11px; color:#666; margin-bottom:8px; border-bottom:1px solid #ddd; padding-bottom:5px;">Est: ~${config.estDays} days (@ ${Math.round(config.dailyGain)}/day)</div>
-                <div id="settings_area" style="display:${config.showSettings ? 'block' : 'none'};">
+                <div style="font-size:11px; color:#666;">Est: ~${config.estDays} days (@ ${Math.round(config.dailyGain)}/day)</div>
+                <div id="settings_area" style="margin-top:8px; padding-top:5px; border-top:1px solid #ddd; display:${config.showSettings ? 'block' : 'none'};">
                     <div style="font-size:11px; font-weight:bold; color:#0066cc;">Target Total (0 for Auto)</div>
                     <input type="text" id="r_goal" value="${config.targetTotal}" style="width:100%; margin-bottom:8px; box-sizing: border-box;">
                     <div style="font-size:11px; font-weight:bold;">Ratio (Spd : Pwr : Str)</div>
