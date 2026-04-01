@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.34
+// @version      7.35
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -1262,8 +1262,7 @@ const NorthernFenceHelper = {
 
 const SettingsHelper = {
     init: function() {
-        const url = window.location.href;
-        if (!url.includes('cmd=preferences')) return;
+        if (!window.location.search.endsWith('cmd=preferences')) return;
 
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;

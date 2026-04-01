@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.24
+// @version      7.31
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -83,6 +83,12 @@ const Helpers = {
                 this.disabled = true;
             };
             return btn;
+        },
+        isCurrentPage: function(query) {
+            return window.location.search.includes(query);
+        },
+        getSettings: function() {
+            return JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
         }
 
 };
@@ -694,6 +700,79 @@ const LivingAreaHelper = {
     }
 }
 
+const MessageBoardHelper = {
+    init: function() {
+        if (!Helpers.isCurrentPage('cmd=gathering')) return;
+
+        this.initMessageBoardFeatures();
+    },
+
+    initMessageBoardFeatures: function() {
+        // Basic setup for message board features based on settings
+        const settings = Helpers.getSettings();
+        if (settings?.MessageBoardHelper?.enabled === false) return;
+
+        this.enhanceMessageEditor();
+    },
+
+    enhanceMessageEditor: function() {
+        const messageArea = document.querySelector('textarea[name="t_message"]');
+        if (!messageArea) return;
+
+        // Auto-focus the message area
+        messageArea.focus();
+
+        // Ctrl + Enter to submit
+        messageArea.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                const submitBtn = document.querySelector('input[type="submit"][name="button"]') ||
+                                  document.querySelector('input[type="submit"][value*="Post"]');
+                if (submitBtn) {
+                    e.preventDefault();
+                    submitBtn.click();
+                }
+            }
+        });
+
+        this.addPaidMessageButton(messageArea);
+    },
+
+    addPaidMessageButton: function(messageArea) {
+        const editButton = document.querySelector('input[type="submit"][value*="Edit Post"]');
+        if (!editButton) return;
+
+        const parentDiv = editButton.parentElement;
+        if (!parentDiv) return;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = 'Add Paid Message';
+        // Match existing button CSS
+        btn.style.webkitFontSmoothing = 'antialiased';
+        btn.style.color = '#636363';
+        btn.style.background = '#ddd';
+        btn.style.fontWeight = 'bold';
+        btn.style.textDecoration = 'none';
+        btn.style.padding = '5px 16px';
+        btn.style.borderRadius = '3px';
+        btn.style.border = '0';
+        btn.style.cursor = 'pointer';
+        btn.style.margin = '3px 2px';
+        btn.style.webkitAppearance = 'none';
+        btn.style.display = 'inline-block';
+        
+        btn.addEventListener('click', () => {
+            const hoboName = Helpers.getHoboName();
+            const appendText = `\n\n[i]${hoboName} Edit: Paid[/i]`;
+
+            messageArea.value += appendText;
+            messageArea.focus();
+        });
+
+        parentDiv.appendChild(btn);
+    }
+};
+
 const MixerHelper = {
             init: function() {
                 const urlParams = new URLSearchParams(window.location.search);
@@ -1223,18 +1302,23 @@ const SettingsHelper = {
             label.innerHTML = ` ${labelText}`;
             if (isGlobal) label.style.fontWeight = 'bold';
 
+            const toast = document.createElement('span');
+            toast.innerText = ' (Saved! Reload to apply)';
+            toast.style.color = 'green';
+            toast.style.fontSize = '12px';
+            toast.style.display = 'none';
+            label.appendChild(toast);
+
+            let toastTimeout;
             checkbox.addEventListener('change', (e) => {
                 const settings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
                 settings[key] = e.target.checked;
                 localStorage.setItem('hw_helper_settings', JSON.stringify(settings));
                 
                 // Show saved toast or reload prompt
-                const toast = document.createElement('span');
-                toast.innerText = ' (Saved! Reload to apply)';
-                toast.style.color = 'green';
-                toast.style.fontSize = '12px';
-                label.appendChild(toast);
-                setTimeout(() => toast.remove(), 2000);
+                toast.style.display = 'inline';
+                clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 2000);
             });
 
             container.appendChild(checkbox);
@@ -1522,6 +1606,7 @@ const WellnessClinicHelper = {
         DrinksHelper,
         LiquorStoreHelper,
         LivingAreaHelper,
+        MessageBoardHelper,
         MixerHelper,
         NorthernFenceHelper,
         SettingsHelper,

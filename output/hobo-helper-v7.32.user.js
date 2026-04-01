@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.21
+// @version      7.32
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -10,7 +10,7 @@
 
 (function() {
     'use strict';
-const Helpers = {
+const Utils = {
         getHoboMinutes: function() {
             const clockEl = document.getElementById('clock');
             if (!clockEl) return null;
@@ -83,6 +83,12 @@ const Helpers = {
                 this.disabled = true;
             };
             return btn;
+        },
+        isCurrentPage: function(query) {
+            return window.location.search.includes(query);
+        },
+        getSettings: function() {
+            return JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
         }
 
 };
@@ -343,7 +349,7 @@ const LiquorStoreHelper = {
                                 let amount = 1;
                                 const amountMatch = span.textContent.match(/\(\s*(\d+)\s*\)/);
                                 if (amountMatch) {
-                                    amount = Helpers.parseNumber(amountMatch[1]);
+                                    amount = Utils.parseNumber(amountMatch[1]);
                                 }
                                 
                                 if (itemName) {
@@ -431,9 +437,17 @@ const LiquorStoreHelper = {
 
 const LivingAreaHelper = {
     init: function() {
-        this.initStatRatioTracker();
-        this.initAlwaysShowSpecialItem();
-        this.initWinPercentageCalc();
+        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        
+        if (savedSettings['LivingAreaHelper_StatRatioTracker'] !== false) {
+            this.initStatRatioTracker();
+        }
+        if (savedSettings['LivingAreaHelper_AlwaysShowSpecialItem'] !== false) {
+            this.initAlwaysShowSpecialItem();
+        }
+        if (savedSettings['LivingAreaHelper_WinPercentageCalc'] !== false) {
+            this.initWinPercentageCalc();
+        }
     },
 
     initAlwaysShowSpecialItem: function() {
@@ -481,7 +495,7 @@ const LivingAreaHelper = {
                 const target = lines.find(l => l.textContent.includes(label));
                 if (!target) return null;
                 const valMatch = target.textContent.match(/[\d,.]+/g);
-                return valMatch ? Helpers.parseNumber(valMatch[0]) : null;
+                return valMatch ? Utils.parseNumber(valMatch[0]) : null;
             };
 
             const scraped = {
@@ -494,7 +508,7 @@ const LivingAreaHelper = {
 
             if (scraped.speed && scraped.today !== null) {
                 const currentTotal = scraped.speed + scraped.power + scraped.strength;
-                const minsElapsed = Helpers.getHoboMinutes();
+                const minsElapsed = Utils.getHoboMinutes();
 
 
                 if (minsElapsed !== null) {
@@ -626,10 +640,10 @@ const LivingAreaHelper = {
                     }
                 } catch(e) {}
 
-                config.targetTotal = Helpers.parseNumber(document.getElementById('r_goal').value);
-                config.speed = Helpers.parseNumber(document.getElementById('r_spd').value);
-                config.power = Helpers.parseNumber(document.getElementById('r_pwr').value);
-                config.strength = Helpers.parseNumber(document.getElementById('r_str').value);
+                config.targetTotal = Utils.parseNumber(document.getElementById('r_goal').value);
+                config.speed = Utils.parseNumber(document.getElementById('r_spd').value);
+                config.power = Utils.parseNumber(document.getElementById('r_pwr').value);
+                config.strength = Utils.parseNumber(document.getElementById('r_str').value);
                 config.lastUpdated = Date.now();
                 inMemoryLastUpdated = config.lastUpdated;
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
@@ -656,7 +670,7 @@ const LivingAreaHelper = {
             const matches = text.match(/\d+(,\d+)*/g);
             if (!matches || matches.length < 2) return;
 
-            const stats = matches.map(s => Helpers.parseNumber(s));
+            const stats = matches.map(s => Utils.parseNumber(s));
 
             const wins = stats[0];
             const losses = stats[1];
@@ -685,6 +699,79 @@ const LivingAreaHelper = {
         }
     }
 }
+
+const MessageBoardHelper = {
+    init: function() {
+        if (!Utils.isCurrentPage('cmd=gathering')) return;
+
+        this.initMessageBoardFeatures();
+    },
+
+    initMessageBoardFeatures: function() {
+        // Basic setup for message board features based on settings
+        const settings = Utils.getSettings();
+        if (settings?.MessageBoardHelper?.enabled === false) return;
+
+        this.enhanceMessageEditor();
+    },
+
+    enhanceMessageEditor: function() {
+        const messageArea = document.querySelector('textarea[name="t_message"]');
+        if (!messageArea) return;
+
+        // Auto-focus the message area
+        messageArea.focus();
+
+        // Ctrl + Enter to submit
+        messageArea.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                const submitBtn = document.querySelector('input[type="submit"][name="button"]') ||
+                                  document.querySelector('input[type="submit"][value*="Post"]');
+                if (submitBtn) {
+                    e.preventDefault();
+                    submitBtn.click();
+                }
+            }
+        });
+
+        this.addPaidMessageButton(messageArea);
+    },
+
+    addPaidMessageButton: function(messageArea) {
+        const editButton = document.querySelector('input[type="submit"][value*="Edit Post"]');
+        if (!editButton) return;
+
+        const parentDiv = editButton.parentElement;
+        if (!parentDiv) return;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = 'Add Paid Message';
+        // Match existing button CSS
+        btn.style.webkitFontSmoothing = 'antialiased';
+        btn.style.color = '#636363';
+        btn.style.background = '#ddd';
+        btn.style.fontWeight = 'bold';
+        btn.style.textDecoration = 'none';
+        btn.style.padding = '5px 16px';
+        btn.style.borderRadius = '3px';
+        btn.style.border = '0';
+        btn.style.cursor = 'pointer';
+        btn.style.margin = '3px 2px';
+        btn.style.webkitAppearance = 'none';
+        btn.style.display = 'inline-block';
+        
+        btn.addEventListener('click', () => {
+            const hoboName = Utils.getHoboName();
+            const appendText = `\n\n[i]${hoboName} Edit: Paid[/i]`;
+
+            messageArea.value += appendText;
+            messageArea.focus();
+        });
+
+        parentDiv.appendChild(btn);
+    }
+};
 
 const MixerHelper = {
             init: function() {
@@ -979,7 +1066,7 @@ const MixerHelper = {
                                             
                                             if (baseDrink.cost.type === 'cw_multiplier') {
                                                 const costVal = baseDrink.cost.value * neededAmount;
-                                                const cwPrice = Helpers.getCWPrice();
+                                                const cwPrice = Utils.getCWPrice();
                                                 let dollarCost = Math.round(costVal * cwPrice);
                                                 
                                                 if (baseDrink.location === 'Liquor Store') {
@@ -1027,7 +1114,7 @@ const MixerHelper = {
 
                                     const bankBtnContainer = document.getElementById('bank-btn-container');
                                     if (bankBtnContainer) {
-                                        const bankBtn = Helpers.createBankButton('Drink Ingredients', totalFixed);
+                                        const bankBtn = Utils.createBankButton('Drink Ingredients', totalFixed);
                                         bankBtn.addEventListener('click', function() {
                                             let saveObj = {};
                                             ingredientsNeeded.forEach(ingName => {
@@ -1097,13 +1184,13 @@ const NorthernFenceHelper = {
                         if (costText.startsWith('$')) {
                             const costMatch = costText.match(/\$?([0-9,]+)/);
                             if (costMatch) {
-                                const cost = Helpers.parseNumber(costMatch[1]);
+                                const cost = Utils.parseNumber(costMatch[1]);
                                 if (!isNaN(cost)) {
                                     const totalCost = cost * 2; // Can race twice
                                     const name = cells[0].textContent.trim();
 
                                     const actionCell = cells[5];
-                                    const btn = Helpers.createBankButton(`Pikies (${name})`, totalCost);
+                                    const btn = Utils.createBankButton(`Pikies (${name})`, totalCost);
 
                                     actionCell.appendChild(btn);
                                 }
@@ -1114,7 +1201,7 @@ const NorthernFenceHelper = {
             },
             
             initHallOfFameHelper: function() {
-                const playerId = Helpers.getHoboId();
+                const playerId = Utils.getHoboId();
                 const table = document.querySelector('.content-area table');
                 let foundPlayer = false;
 
@@ -1173,6 +1260,108 @@ const NorthernFenceHelper = {
             }
         }
 
+const SettingsHelper = {
+    init: function() {
+        const url = window.location.href;
+        if (!url.includes('cmd=preferences')) return;
+
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        console.log('Settings Helper loaded for preferences page');
+        
+        // Add divider and title
+        const hr = document.createElement('hr');
+        hr.width = "300";
+        contentArea.appendChild(document.createElement('br'));
+        contentArea.appendChild(hr);
+        contentArea.appendChild(document.createElement('br'));
+
+        const titleDiv = document.createElement('div');
+        titleDiv.align = "center";
+        titleDiv.innerHTML = "<b><font size=\"3\">Hobo Helper Settings</font></b>";
+        contentArea.appendChild(titleDiv);
+        contentArea.appendChild(document.createElement('br'));
+
+        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        
+        // Helper function for toggles
+        const createToggle = (key, labelText, isGlobal = false) => {
+            const container = document.createElement('div');
+            container.style.marginBottom = '5px';
+            container.style.paddingLeft = isGlobal ? '0' : '20px';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = `hw_helper_${key}`;
+            // default to true if undefined
+            checkbox.checked = savedSettings[key] !== false;
+            
+            const label = document.createElement('label');
+            label.htmlFor = `hw_helper_${key}`;
+            label.innerHTML = ` ${labelText}`;
+            if (isGlobal) label.style.fontWeight = 'bold';
+
+            const toast = document.createElement('span');
+            toast.innerText = ' (Saved! Reload to apply)';
+            toast.style.color = 'green';
+            toast.style.fontSize = '12px';
+            toast.style.display = 'none';
+            label.appendChild(toast);
+
+            let toastTimeout;
+            checkbox.addEventListener('change', (e) => {
+                const settings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+                settings[key] = e.target.checked;
+                localStorage.setItem('hw_helper_settings', JSON.stringify(settings));
+                
+                // Show saved toast or reload prompt
+                toast.style.display = 'inline';
+                clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 2000);
+            });
+
+            container.appendChild(checkbox);
+            container.appendChild(label);
+            return container;
+        };
+
+        // Add global toggle
+        contentArea.appendChild(createToggle('global_enabled', 'Enable Hobo Helper (Global)', true));
+        
+        contentArea.appendChild(document.createElement('br'));
+        const modsLabel = document.createElement('b');
+        modsLabel.innerText = "Active Modules:";
+        contentArea.appendChild(modsLabel);
+        contentArea.appendChild(document.createElement('br'));
+
+        const subFeatures = {
+            'LivingAreaHelper': [
+                { key: 'LivingAreaHelper_StatRatioTracker', label: 'Stat Ratio Tracker' },
+                { key: 'LivingAreaHelper_AlwaysShowSpecialItem', label: 'Always Show Special Item' },
+                { key: 'LivingAreaHelper_WinPercentageCalc', label: 'Win Percentage Calc' }
+            ]
+        };
+
+        if (typeof Modules !== 'undefined') {
+            Object.keys(Modules).forEach(modName => {
+                if (modName === 'SettingsHelper') return; 
+                contentArea.appendChild(createToggle(modName, `Enable ${modName}`));
+
+                // Render sub-features if this module has them defined
+                if (subFeatures[modName]) {
+                    const subContainer = document.createElement('div');
+                    subContainer.style.paddingLeft = '40px';
+                    subFeatures[modName].forEach(feature => {
+                        subContainer.appendChild(createToggle(feature.key, feature.label));
+                    });
+                    contentArea.appendChild(subContainer);
+                }
+            });
+        }
+    }
+}
+
 const TattooParlorHelper = {
             init: function() {
                 const urlParams = new URLSearchParams(window.location.search);
@@ -1183,11 +1372,11 @@ const TattooParlorHelper = {
                         if (text.includes('Retouch') || text.includes('Remove')) {
                             const costMatch = text.match(/\$?([0-9,]+)/);
                             if (costMatch) {
-                                const cost = Helpers.parseNumber(costMatch[1]);
+                                const cost = Utils.parseNumber(costMatch[1]);
                                 if (!isNaN(cost) && cost > 0) {
                                     const actionName = text.includes('Retouch') ? 'Tattoo Retouch' : 'Tattoo Remove';
 
-                                    const btn = Helpers.createBankButton(actionName, cost);
+                                    const btn = Utils.createBankButton(actionName, cost);
 
                                     // Move button outside the link's parent if it's wrapped in square brackets
                                     if (link.nextSibling && link.nextSibling.nodeType === Node.TEXT_NODE && link.nextSibling.textContent.includes(']')) {
@@ -1225,7 +1414,7 @@ const UniversityHelper = {
         const gainMatch = text.match(/You gained ([\d.,]+) (speed|power|strength)/i);
 
         if (gainMatch) {
-            let amount = Helpers.parseNumber(gainMatch[1]);
+            let amount = Utils.parseNumber(gainMatch[1]);
             const stat = gainMatch[2].toLowerCase();
             
             const statsConfigStr = localStorage.getItem('hoboStatRatio');
@@ -1324,7 +1513,7 @@ const WellnessClinicHelper = {
                     const text = contentArea.innerText;
                     const costMatch = text.match(/\$?([0-9]{1,3}(,[0-9]{3})+|[0-9]{4,})/);
                     let detectedCost = 0;
-                    if (costMatch) detectedCost = Helpers.parseNumber(costMatch[0]);
+                    if (costMatch) detectedCost = Utils.parseNumber(costMatch[0]);
 
                     const hasPaid = url.includes('do=pay');
                     let currentIndex = clinicData.findIndex(row => row.fee === detectedCost);
@@ -1417,17 +1606,25 @@ const WellnessClinicHelper = {
         DrinksHelper,
         LiquorStoreHelper,
         LivingAreaHelper,
+        MessageBoardHelper,
         MixerHelper,
         NorthernFenceHelper,
+        SettingsHelper,
         TattooParlorHelper,
         UniversityHelper,
         WellnessClinicHelper
     };
 
+    const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+    const globalEnabled = savedSettings['global_enabled'] !== false;
+
     // Initialize all modules
-    Object.values(Modules).forEach(module => {
-        if (typeof module.init === 'function') {
-            module.init();
+    Object.keys(Modules).forEach(moduleName => {
+        if (typeof Modules[moduleName].init === 'function') {
+            const moduleEnabled = savedSettings[moduleName] !== false;
+            if (moduleName === 'SettingsHelper' || (globalEnabled && moduleEnabled)) {
+                Modules[moduleName].init();
+            }
         }
     });
 })();

@@ -16,7 +16,7 @@ Welcome to the `hobo-helper` project! Since this project uses a custom build pro
 The build script automatically detects and includes all JavaScript files in the `src/modules/` directory.
 
 ## Updating the Version
-**CRITICAL:** Every time you make *any functional change* or fix to the codebase, you must bump the `@version` number inside `src/template.js` so that Tampermonkey knows an update is available. Usually, simply incrementing the minor version is sufficient (e.g., from `7.6` to `7.7`).
+**CRITICAL:** Every time you make *any functional change* or fix to the codebase, you must bump the `$version` variable at the top of `build.ps1` so that Tampermonkey knows an update is available. Usually, simply incrementing the minor version is sufficient (e.g., from `7.6` to `7.7`).
 **Update Instructions:** Whenever you increment the version and build a new version, you must also update the version number and file links inside `INSTALL.md` to point to the newly compiled version (e.g. `output/hobo-helper-v[NEW_VERSION].user.js`).
 
 ## Building the Script

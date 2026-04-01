@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.23
+// @version      7.30
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -83,6 +83,12 @@ const Helpers = {
                 this.disabled = true;
             };
             return btn;
+        },
+        isCurrentPage: function(query) {
+            return window.location.search.includes(query);
+        },
+        getSettings: function() {
+            return JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
         }
 
 };
@@ -431,9 +437,17 @@ const LiquorStoreHelper = {
 
 const LivingAreaHelper = {
     init: function() {
-        this.initStatRatioTracker();
-        this.initAlwaysShowSpecialItem();
-        this.initWinPercentageCalc();
+        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        
+        if (savedSettings['LivingAreaHelper_StatRatioTracker'] !== false) {
+            this.initStatRatioTracker();
+        }
+        if (savedSettings['LivingAreaHelper_AlwaysShowSpecialItem'] !== false) {
+            this.initAlwaysShowSpecialItem();
+        }
+        if (savedSettings['LivingAreaHelper_WinPercentageCalc'] !== false) {
+            this.initWinPercentageCalc();
+        }
     },
 
     initAlwaysShowSpecialItem: function() {
@@ -685,6 +699,79 @@ const LivingAreaHelper = {
         }
     }
 }
+
+const MessageBoardHelper = {
+    init: function() {
+        if (!Helpers.isCurrentPage('cmd=gathering')) return;
+
+        this.initMessageBoardFeatures();
+    },
+
+    initMessageBoardFeatures: function() {
+        // Basic setup for message board features based on settings
+        const settings = Helpers.getSettings();
+        if (settings?.MessageBoardHelper?.enabled === false) return;
+
+        this.enhanceMessageEditor();
+    },
+
+    enhanceMessageEditor: function() {
+        const messageArea = document.querySelector('textarea[name="t_message"]');
+        if (!messageArea) return;
+
+        // Auto-focus the message area
+        messageArea.focus();
+
+        // Ctrl + Enter to submit
+        messageArea.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                const submitBtn = document.querySelector('input[type="submit"][name="button"]') ||
+                                  document.querySelector('input[type="submit"][value*="Post"]');
+                if (submitBtn) {
+                    e.preventDefault();
+                    submitBtn.click();
+                }
+            }
+        });
+
+        this.addPaidMessageButton(messageArea);
+    },
+
+    addPaidMessageButton: function(messageArea) {
+        const editButton = document.querySelector('input[type="submit"][value*="Edit Post"]');
+        if (!editButton) return;
+
+        const parentDiv = editButton.parentElement;
+        if (!parentDiv) return;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = 'Add Paid Message';
+        // Match existing button CSS
+        btn.style.webkitFontSmoothing = 'antialiased';
+        btn.style.color = '#636363';
+        btn.style.background = '#ddd';
+        btn.style.fontWeight = 'bold';
+        btn.style.textDecoration = 'none';
+        btn.style.padding = '5px 16px';
+        btn.style.borderRadius = '3px';
+        btn.style.border = '0';
+        btn.style.cursor = 'pointer';
+        btn.style.margin = '3px 2px';
+        btn.style.webkitAppearance = 'none';
+        btn.style.display = 'inline-block';
+        
+        btn.addEventListener('click', () => {
+            const hoboName = Helpers.getHoboName();
+            const appendText = `\n\n${hoboName} Edit: Paid`;
+
+            messageArea.value += appendText;
+            messageArea.focus();
+        });
+
+        parentDiv.appendChild(btn);
+    }
+};
 
 const MixerHelper = {
             init: function() {
@@ -1215,18 +1302,23 @@ const SettingsHelper = {
             label.innerHTML = ` ${labelText}`;
             if (isGlobal) label.style.fontWeight = 'bold';
 
+            const toast = document.createElement('span');
+            toast.innerText = ' (Saved! Reload to apply)';
+            toast.style.color = 'green';
+            toast.style.fontSize = '12px';
+            toast.style.display = 'none';
+            label.appendChild(toast);
+
+            let toastTimeout;
             checkbox.addEventListener('change', (e) => {
                 const settings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
                 settings[key] = e.target.checked;
                 localStorage.setItem('hw_helper_settings', JSON.stringify(settings));
                 
                 // Show saved toast or reload prompt
-                const toast = document.createElement('span');
-                toast.innerText = ' (Saved! Reload to apply)';
-                toast.style.color = 'green';
-                toast.style.fontSize = '12px';
-                label.appendChild(toast);
-                setTimeout(() => toast.remove(), 2000);
+                toast.style.display = 'inline';
+                clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 2000);
             });
 
             container.appendChild(checkbox);
@@ -1243,14 +1335,28 @@ const SettingsHelper = {
         contentArea.appendChild(modsLabel);
         contentArea.appendChild(document.createElement('br'));
 
-        // Since we don't have direct access to all module names easily as an array in init 
-        // without Modules object context inside this scope, we can rely on window.Modules if exposed,
-        // or hardcode the known modules.
-        // Wait, the template loops over `Object.keys(Modules)`. Inside SettingsHelper, `Modules` is accessible!
+        const subFeatures = {
+            'LivingAreaHelper': [
+                { key: 'LivingAreaHelper_StatRatioTracker', label: 'Stat Ratio Tracker' },
+                { key: 'LivingAreaHelper_AlwaysShowSpecialItem', label: 'Always Show Special Item' },
+                { key: 'LivingAreaHelper_WinPercentageCalc', label: 'Win Percentage Calc' }
+            ]
+        };
+
         if (typeof Modules !== 'undefined') {
             Object.keys(Modules).forEach(modName => {
-                if (modName === 'SettingsHelper') return; // Cannot disable settings helper from here
+                if (modName === 'SettingsHelper') return; 
                 contentArea.appendChild(createToggle(modName, `Enable ${modName}`));
+
+                // Render sub-features if this module has them defined
+                if (subFeatures[modName]) {
+                    const subContainer = document.createElement('div');
+                    subContainer.style.paddingLeft = '40px';
+                    subFeatures[modName].forEach(feature => {
+                        subContainer.appendChild(createToggle(feature.key, feature.label));
+                    });
+                    contentArea.appendChild(subContainer);
+                }
             });
         }
     }
@@ -1500,6 +1606,7 @@ const WellnessClinicHelper = {
         DrinksHelper,
         LiquorStoreHelper,
         LivingAreaHelper,
+        MessageBoardHelper,
         MixerHelper,
         NorthernFenceHelper,
         SettingsHelper,

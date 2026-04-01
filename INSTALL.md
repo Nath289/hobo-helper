@@ -22,9 +22,9 @@ Once installed, you will see the Tampermonkey icon (a dark square with two overl
 ## Step 2 – Install the Hobo Helper Script
 
 1. Navigate to the latest compiled Hobo Helper script file in this repository:  
-   **[`output/hobo-helper-v7.34.user.js`](output/hobo-helper-v7.34.user.js)** (or the latest version in the `output` directory).
+   **[`output/hobo-helper-latest.user.js`](output/hobo-helper-latest.user.js)** (or the latest version in the `output` directory).
 
-2. Click the **Raw** button to open the raw script file.
+2. Click the **Raw** button to open the raw script file (or this URL: [hobo-helper-latest.user.js](https://github.com/Nath289/hobo-helper/raw/refs/heads/main/output/hobo-helper-latest.user.js))
 
 3. Tampermonkey should automatically detect the userscript and open an installation prompt.
 
@@ -34,7 +34,7 @@ Once installed, you will see the Tampermonkey icon (a dark square with two overl
    > 1. Click the Tampermonkey icon in your toolbar.
    > 2. Select **Dashboard**.
    > 3. Click the **+** (new script) tab.
-   > 4. Paste the entire contents of the latest `output/hobo-helper-v*.user.js` file into the editor.
+   > 4. Paste the entire contents of the latest `output/hobo-helper-latest.user.js` file into the editor.
    > 5. Press **Ctrl + S** (or **Cmd + S** on Mac) to save.
 
 ---
@@ -50,7 +50,17 @@ Once installed, you will see the Tampermonkey icon (a dark square with two overl
 
 ## Updating the Script
 
-When a new version of Hobo Helper is released, Tampermonkey can update it automatically (if the script includes an `@updateURL` header) or you can repeat **Step 2** to install the latest version manually.
+By default, Tampermonkey will check for updates periodically. However, you can configure it to always pull the latest version automatically from the main repository.
+
+**To set up Auto-Updates:**
+1. Open the Tampermonkey **Dashboard**.
+2. Click on **Hobo Helper** to edit the script.
+3. Click on the **Settings** tab.
+4. In the **Includes/Excludes** or **Update URL** section, ensure the **Update URL** and **Download URL** are set to:
+   ```
+   https://github.com/Nath289/hobo-helper/raw/refs/heads/main/output/hobo-helper-latest.user.js
+   ```
+5. Tampermonkey will now automatically keep Hobo Helper updated to the latest version. Alternatively, you can always manually install the latest version from this link.
 
 ---
 

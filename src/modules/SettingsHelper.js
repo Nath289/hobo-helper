@@ -1,7 +1,6 @@
 const SettingsHelper = {
     init: function() {
-        const url = window.location.href;
-        if (!url.includes('cmd=preferences')) return;
+        if (!window.location.search.endsWith('cmd=preferences')) return;
 
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
