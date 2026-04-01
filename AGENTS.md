@@ -18,6 +18,7 @@ The build script automatically detects and includes all JavaScript files in the 
 ## Updating the Version
 **CRITICAL:** Every time you make *any functional change* or fix to the codebase, you must bump the `$version` variable at the top of `build.ps1` so that Tampermonkey knows an update is available. Usually, simply incrementing the minor version is sufficient (e.g., from `7.6` to `7.7`).
 **Update Instructions:** Whenever you increment the version and build a new version, you must also update the version number and file links inside `INSTALL.md` to point to the newly compiled version (e.g. `output/hobo-helper-v[NEW_VERSION].user.js`).
+**Changelog:** You must also add an entry to `CHANGELOG.md` under the newly bumped version, logging what was added, changed, or fixed. Format the version headers like `## [7.43] - YYYY-MM-DD`.
 
 ## Building the Script
 Instead of using Webpack, Rollup, or NPM, this project uses a custom PowerShell script to stitch the raw `.js` files together into a single Tampermonkey script.

@@ -1,4 +1,4 @@
-$version = "7.42"
+$version = "7.49"
 $templateContent = Get-Content -Path "src/template.js" -Raw
 
 $outputFile = "output/hobo-helper-v${version}.user.js"
@@ -38,3 +38,13 @@ Write-Host "Build complete: $outputFile"
 $latestFile = "output/hobo-helper-latest.user.js"
 Copy-Item -Path $outputFile -Destination $latestFile -Force
 Write-Host "Copied to: $latestFile"
+
+# Cleanup old builds: keep only the 5 most recently created versioned files
+$versionedFiles = Get-ChildItem -Path "output/hobo-helper-v*.user.js" | Sort-Object LastWriteTime -Descending
+if ($versionedFiles.Count -gt 5) {
+    $filesToDelete = $versionedFiles | Select-Object -Skip 5
+    foreach ($f in $filesToDelete) {
+        Remove-Item -Path $f.FullName -Force
+        Write-Host "Removed old build: $($f.Name)"
+    }
+}

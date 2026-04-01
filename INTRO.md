@@ -13,9 +13,15 @@
 
 > For a complete list of all active modules and what they do, please see our [Features Documentation](FEATURES.md).
 
+> To see what's changed recently, check out our [Changelog](CHANGELOG.md).
+
 > More features will be added over time. Suggestions and contributions are welcome!
 
 ## Is Hobo Helper Legal?
+
+Andy has confirmed that the Hobo Helper is Legal to use in its current form and for its current purpose, given that it doesn't breach the Hobowars Game Rules. 
+
+To that end, any feature requests or pull requests that transform the Tool to something outside its agreed purpose and function, will need to be denied.
 
 The [HoboWars Game Rules](https://wiki.hobowars.com/index.php?title=Game_Rules) define and forbid three categories of programs:
 

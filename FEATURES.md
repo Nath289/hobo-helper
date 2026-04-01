@@ -36,5 +36,9 @@ Provides functionality and quality-of-life improvements specifically on the Mess
 ### 10. Kurtz Camp Helper (`KurtzCampHelper.js`)
 Assists at Kurtz's Camp by keeping a running tally of Fire and Empty Bottles collected while lighting sticks. Retains this count across sessions using local storage, and includes a toggle to reset the counts at any time. Features dynamic display that only exhibits the empty bottle tally if any have been collected.
 
+### 11. Bernards Mansion Helper (`BernardsMansionHelper.js`)
+Provides tools and helpers when exploring Bernard's Mansion (`cmd=bernards`). 
+- **Basement Map**: Displays a map when venturing into Bernard's Basement (`cmd=bernards&room=basement`).
+
 ---
 *Note: We are constantly updating and tweaking these modules. If you encounter any bugs, please report them!*

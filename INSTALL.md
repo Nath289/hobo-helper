@@ -22,9 +22,9 @@ Once installed, you will see the Tampermonkey icon (a dark square with two overl
 ## Step 2 – Install the Hobo Helper Script
 
 1. Navigate to the latest compiled Hobo Helper script file in this repository:  
-   **[`output/hobo-helper-v7.42.user.js`](output/hobo-helper-v7.42.user.js)** (or the latest version in the `output` directory).
+   **[`output/hobo-helper-v7.49.user.js`](output/hobo-helper-v7.49.user.js)** (or the latest version in the `output` directory).
 
-2. Click the **Raw** button to open the raw script file (or this URL: [hobo-helper-v7.42.user.js](https://github.com/Nath289/hobo-helper/raw/refs/heads/main/output/hobo-helper-v7.42.user.js))
+2. Click the **Raw** button to open the raw script file (or this URL: [hobo-helper-v7.49.user.js](https://github.com/Nath289/hobo-helper/raw/refs/heads/main/output/hobo-helper-v7.49.user.js))
 
 3. Tampermonkey should automatically detect the userscript and open an installation prompt.
 
@@ -34,7 +34,7 @@ Once installed, you will see the Tampermonkey icon (a dark square with two overl
    > 1. Click the Tampermonkey icon in your toolbar.
    > 2. Select **Dashboard**.
    > 3. Click the **+** (new script) tab.
-   > 4. Paste the entire contents of the latest `output/hobo-helper-v7.42.user.js` file into the editor.
+   > 4. Paste the entire contents of the latest `output/hobo-helper-v7.49.user.js` file into the editor.
    > 5. Press **Ctrl + S** (or **Cmd + S** on Mac) to save.
 
 ---

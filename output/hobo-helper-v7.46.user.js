@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.39
+// @version      7.46
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -154,6 +154,134 @@ const BankHelper = {
                 });
             }
         }
+
+const BernardsMansionHelper = {
+    init: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('cmd') !== 'bernards') return;
+
+        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        
+        if (savedSettings['BernardsMansionHelper_BasementMap'] !== false) {
+            this.initBasementMap();
+        }
+    },
+
+    initBasementMap: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('room') !== 'basement') return;
+
+        const navForm = document.getElementById('nav_form');
+        if (!navForm) return;
+
+        // Traverse up to find the main layout table of the directional pad
+        const directionTable = navForm.closest('table');
+        if (!directionTable) return;
+
+        // Try to get current coordinates
+        let currentX = 0;
+        let currentY = 0;
+        const fontTags = directionTable.querySelectorAll('font');
+        fontTags.forEach(f => {
+            if (f.textContent.includes('X Y')) {
+                const match = f.textContent.match(/(\d+)\s*,\s*(\d+)/);
+                if (match) {
+                    currentX = parseInt(match[1], 10);
+                    currentY = parseInt(match[2], 10);
+                }
+            }
+        });
+
+        // Create map container
+        const mapHTML = `
+        <table cellspacing="0" cellpadding="0" bgcolor="#FFFFFF" style="border-style: ridge; border-color: black; border-width: 5px;" align="center">
+            <tbody>
+                ${Array.from({ length: 20 }, (_, r) => {
+                    const y = 20 - r; // 20 to 1 (top to bottom)
+                    return `<tr>
+                        ${Array.from({ length: 20 }, (_, c) => {
+                            const x = c + 1; // 1 to 20 (left to right)
+                            return `<td class="bernards-map-cell" data-x="${x}" data-y="${y}" width="6" height="6" title="${x}, ${y}" bgcolor="#FFFFFF"></td>`;
+                        }).join('')}
+                    </tr>`;
+                }).join('')}
+            </tbody>
+        </table>
+        `;
+
+        const mapContainer = document.createElement('div');
+        mapContainer.id = 'bernards_map_container';
+        mapContainer.style.cssText = 'display: inline-block; vertical-align: top; margin-left: 20px; text-align: center;';
+        mapContainer.innerHTML = mapHTML;
+
+        // Save explored cells in local storage
+        const exploredKey = 'bernards_basement_explored';
+        let explored = JSON.parse(localStorage.getItem(exploredKey) || '[]');
+        
+        // Add current pos to explored
+        const currentCoord = `${currentX},${currentY}`;
+        if (!explored.includes(currentCoord)) {
+            explored.push(currentCoord);
+            localStorage.setItem(exploredKey, JSON.stringify(explored));
+        }
+
+        // Color cells
+        const cells = mapContainer.querySelectorAll('.bernards-map-cell');
+        cells.forEach(cell => {
+            const cx = parseInt(cell.getAttribute('data-x'), 10);
+            const cy = parseInt(cell.getAttribute('data-y'), 10);
+
+            if (cx === currentX && cy === currentY) {
+                cell.setAttribute('bgcolor', '#880000'); // Current position
+                cell.title = "You!";
+            } else if (explored.includes(`${cx},${cy}`)) {
+                cell.setAttribute('bgcolor', '#000000'); // Explored path
+            }
+        });
+
+        // Add reset map button
+        const resetBtn = document.createElement('button');
+        resetBtn.innerText = 'Reset Map';
+        resetBtn.style.cssText = 'margin-top: 10px; font-size: 11px; cursor: pointer;';
+        resetBtn.onclick = (e) => {
+            e.preventDefault();
+            if (confirm('Clear explored basement map data?')) {
+                localStorage.removeItem(exploredKey);
+                window.location.reload();
+            }
+        };
+        mapContainer.appendChild(document.createElement('br'));
+        mapContainer.appendChild(resetBtn);
+
+        // Wrap the original table and our map in a basic parent structure
+        const parentTd = directionTable.parentNode;
+        const layoutTable = document.createElement('table');
+        layoutTable.width = "100%";
+        const layoutTbody = document.createElement('tbody');
+        const layoutTr = document.createElement('tr');
+        layoutTr.valign = "top";
+        
+        const leftTd = document.createElement('td');
+        leftTd.width = "70%";
+        
+        const rightTd = document.createElement('td');
+        rightTd.width = "30%";
+        rightTd.align = "right";
+
+        // Insert new layout table where old direction table was
+        parentTd.insertBefore(layoutTable, directionTable);
+        layoutTable.appendChild(layoutTbody);
+        layoutTbody.appendChild(layoutTr);
+        layoutTr.appendChild(leftTd);
+        layoutTr.appendChild(rightTd);
+
+        // Move direction table to left td
+        leftTd.appendChild(directionTable);
+        
+        // Put our map container into right td
+        rightTd.appendChild(mapContainer);
+    }
+};
 
 const DrinksData = {
             // Data structure containing all drinks in the game
@@ -536,8 +664,9 @@ const LivingAreaHelper = {
         const gearInfo = document.getElementById('gearInfo');
         if (!gearInfo) return;
         
-        const targetIcon = gearInfo.querySelector('img[title="Hobo Grail"], img[title="Kings Kiddie Cup"], img[title="Golden Trolly"]');
-        if (targetIcon) {
+        const icons = gearInfo.querySelectorAll('img[title="Hobo Grail"], img[title="Kings Kiddie Cup"], img[title="Golden Trolly"]');
+        if (icons.length > 0) {
+            const targetIcon = icons[icons.length - 1]; // Append after the last found cup/trolly
             let appendTarget = targetIcon;
             if (targetIcon.parentElement.tagName === 'A') {
                 appendTarget = targetIcon.parentElement;
@@ -545,7 +674,7 @@ const LivingAreaHelper = {
             
             const srObj = new URLSearchParams(window.location.search).get('sr');
             const srParam = srObj ? `sr=${srObj}&` : '';
-            const mixerLinkHtml = `<a href="game.php?${srParam}cmd=mixer"><img src="/images/items/gifs/Mixer.gif" title="Mixer" alt="Mixer" border="0" align="absmiddle" width="25" height="25"> Mixer</a>`;
+            const mixerLinkHtml = `<a href="game.php?${srParam}cmd=mixer"><img src="/images/items/gifs/Mixer.gif" title="Mixer" alt="Mixer" border="0" height="38"></a>`;
             
             appendTarget.insertAdjacentHTML('afterend', mixerLinkHtml);
         }
@@ -1425,7 +1554,11 @@ const SettingsHelper = {
             'LivingAreaHelper': [
                 { key: 'LivingAreaHelper_StatRatioTracker', label: 'Stat Ratio Tracker' },
                 { key: 'LivingAreaHelper_AlwaysShowSpecialItem', label: 'Always Show Special Item' },
+                { key: 'LivingAreaHelper_MixerLink', label: 'Mixer Link' },
                 { key: 'LivingAreaHelper_WinPercentageCalc', label: 'Win Percentage Calc' }
+            ],
+            'BernardsMansionHelper': [
+                { key: 'BernardsMansionHelper_BasementMap', label: 'Basement Map' }
             ]
         };
 
@@ -1688,6 +1821,7 @@ const WellnessClinicHelper = {
         }
     const Modules = {
         BankHelper,
+        BernardsMansionHelper,
         DrinksData,
         DrinksHelper,
         KurtzCampHelper,
