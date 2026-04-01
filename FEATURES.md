@@ -32,5 +32,8 @@ Enhances the Wellness Clinic by displaying real-time data on your health, hospit
 ### 9. Message Board Helper (`MessageBoardHelper.js`)
 Provides functionality and quality-of-life improvements specifically on the Message Board gathering pages (`cmd=gathering`). Automatically adds an "Edit: Paid" button to the post editor that appends the current hobo name and a paid message statement. Automatically added structural support for future enhancements.
 
+### 10. Kurtz Camp Helper (`KurtzCampHelper.js`)
+Assists at Kurtz's Camp by keeping a running tally of Fire and Empty Bottles collected while lighting sticks. Retains this count across sessions using local storage, and includes a toggle to reset the counts at any time. Features dynamic display that only exhibits the empty bottle tally if any have been collected.
+
 ---
 *Note: We are constantly updating and tweaking these modules. If you encounter any bugs, please report them!*
