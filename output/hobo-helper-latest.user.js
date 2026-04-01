@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.36
+// @version      7.41
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -509,6 +509,9 @@ const LivingAreaHelper = {
         if (savedSettings['LivingAreaHelper_AlwaysShowSpecialItem'] !== false) {
             this.initAlwaysShowSpecialItem();
         }
+        if (savedSettings['LivingAreaHelper_MixerLink'] !== false) {
+            this.initMixerLink();
+        }
         if (savedSettings['LivingAreaHelper_WinPercentageCalc'] !== false) {
             this.initWinPercentageCalc();
         }
@@ -524,6 +527,29 @@ const LivingAreaHelper = {
                 display.style.display = 'block';
             }
         });
+    },
+
+    initMixerLink: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('cmd') && !window.location.href.includes('cmd=living_area')) return;
+
+        const gearInfo = document.getElementById('gearInfo');
+        if (!gearInfo) return;
+        
+        const icons = gearInfo.querySelectorAll('img[title="Hobo Grail"], img[title="Kings Kiddie Cup"], img[title="Golden Trolly"]');
+        if (icons.length > 0) {
+            const targetIcon = icons[icons.length - 1]; // Append after the last found cup/trolly
+            let appendTarget = targetIcon;
+            if (targetIcon.parentElement.tagName === 'A') {
+                appendTarget = targetIcon.parentElement;
+            }
+            
+            const srObj = new URLSearchParams(window.location.search).get('sr');
+            const srParam = srObj ? `sr=${srObj}&` : '';
+            const mixerLinkHtml = `<a href="game.php?${srParam}cmd=mixer"><img src="/images/items/gifs/Mixer.gif" title="Mixer" alt="Mixer" border="0" height="38"></a>`;
+            
+            appendTarget.insertAdjacentHTML('afterend', mixerLinkHtml);
+        }
     },
 
     initStatRatioTracker: function() {
@@ -571,9 +597,7 @@ const LivingAreaHelper = {
             };
 
             if (scraped.speed && scraped.today !== null) {
-                const currentTotal = scraped.speed + scraped.power + scraped.strength;
                 const minsElapsed = Utils.getHoboMinutes();
-
 
                 if (minsElapsed !== null) {
                     const rate = scraped.today / Math.max(1, minsElapsed);

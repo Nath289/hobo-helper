@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.32
+// @version      7.38
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -331,6 +331,70 @@ const DrinksHelper = {
             }
         }
 
+const KurtzCampHelper = {
+    init: function() {
+        if (!Utils.isCurrentPage('cmd=camp_kurtz')) return;
+        
+        // Check Settings
+        const settings = Utils.getSettings();
+        if (settings.kurtzCampHelper === false) return;
+
+        this.trackItems();
+        this.displayTally();
+    },
+
+    trackItems: function() {
+        const content = document.querySelector('.content-area');
+        if (!content) return;
+
+        let fireCount = parseInt(localStorage.getItem('hw_kurtz_fire_count') || '0');
+        let bottleCount = parseInt(localStorage.getItem('hw_kurtz_bottle_count') || '0');
+
+        // Check for Fire
+        if (content.innerHTML.includes('<b>Fire</b>')) {
+            fireCount++;
+            localStorage.setItem('hw_kurtz_fire_count', fireCount);
+        }
+        // Check for Empty Bottles (case-insensitive check for Empty Bottle(s))
+        else if (content.innerHTML.toLowerCase().includes('empty bottle')) {
+            bottleCount++;
+            localStorage.setItem('hw_kurtz_bottle_count', bottleCount);
+        }
+    },
+
+    displayTally: function() {
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        let fireCount = parseInt(localStorage.getItem('hw_kurtz_fire_count') || '0');
+        let bottleCount = parseInt(localStorage.getItem('hw_kurtz_bottle_count') || '0');
+
+        const tallyDiv = document.createElement('div');
+        tallyDiv.style.textAlign = 'center';
+        tallyDiv.style.marginTop = '20px';
+        tallyDiv.style.fontWeight = 'bold';
+        tallyDiv.style.fontSize = '12px';
+
+        let html = `Fire Collected: ${fireCount}`;
+        if (bottleCount > 0) {
+            html += `<br>Empty Bottles Collected: ${bottleCount}`;
+        }
+
+        html += `<br><br><span style="font-size: 10px; cursor: pointer; color: #888;" id="resetKurtzTally">[Reset Tally]</span>`;
+
+        tallyDiv.innerHTML = html;
+        contentArea.appendChild(tallyDiv);
+
+        document.getElementById('resetKurtzTally').addEventListener('click', () => {
+            if (confirm('Reset your Kurtz Camp tallies?')) {
+                localStorage.setItem('hw_kurtz_fire_count', '0');
+                localStorage.setItem('hw_kurtz_bottle_count', '0');
+                location.reload();
+            }
+        });
+    }
+};
+
 const LiquorStoreHelper = {
             init: function() {
                 if (window.location.href.includes('cmd=liquor_store')) {
@@ -445,6 +509,9 @@ const LivingAreaHelper = {
         if (savedSettings['LivingAreaHelper_AlwaysShowSpecialItem'] !== false) {
             this.initAlwaysShowSpecialItem();
         }
+        if (savedSettings['LivingAreaHelper_MixerLink'] !== false) {
+            this.initMixerLink();
+        }
         if (savedSettings['LivingAreaHelper_WinPercentageCalc'] !== false) {
             this.initWinPercentageCalc();
         }
@@ -460,6 +527,28 @@ const LivingAreaHelper = {
                 display.style.display = 'block';
             }
         });
+    },
+
+    initMixerLink: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('cmd') && !window.location.href.includes('cmd=living_area')) return;
+
+        const gearInfo = document.getElementById('gearInfo');
+        if (!gearInfo) return;
+        
+        const targetIcon = gearInfo.querySelector('img[title="Hobo Grail"], img[title="Kings Kiddie Cup"], img[title="Golden Trolly"]');
+        if (targetIcon) {
+            let appendTarget = targetIcon;
+            if (targetIcon.parentElement.tagName === 'A') {
+                appendTarget = targetIcon.parentElement;
+            }
+            
+            const srObj = new URLSearchParams(window.location.search).get('sr');
+            const srParam = srObj ? `sr=${srObj}&` : '';
+            const mixerLinkHtml = `<a href="game.php?${srParam}cmd=mixer""><img src="/images/items/gifs/Mixer.gif" title="Mixer" alt="Mixer" border="0" height="38"></a>`;
+            
+            appendTarget.insertAdjacentHTML('afterend', mixerLinkHtml);
+        }
     },
 
     initStatRatioTracker: function() {
@@ -507,9 +596,7 @@ const LivingAreaHelper = {
             };
 
             if (scraped.speed && scraped.today !== null) {
-                const currentTotal = scraped.speed + scraped.power + scraped.strength;
                 const minsElapsed = Utils.getHoboMinutes();
-
 
                 if (minsElapsed !== null) {
                     const rate = scraped.today / Math.max(1, minsElapsed);
@@ -572,14 +659,14 @@ const LivingAreaHelper = {
             if (!panel) {
                 panel = document.createElement('div');
                 panel.id = 'stat_ratio_panel';
-                panel.style.cssText = 'margin:12px 0; padding:12px; background:#f4f4f4; border:1px solid #ddd; border-left:4px solid #eec111; font-family: Arial; width: 100%; box-sizing: border-box;';
+                panel.style.cssText = 'margin:5px 0; padding:12px; background:#f4f4f4; outline: 1px solid #CCCCCC;border:2px solid #E8E8E8; font-family: Arial; width: 100%; box-sizing: border-box;';
                 anchor.appendChild(panel);
             }
 
             panel.innerHTML = `
                 <div style="font-size:13px; margin-bottom:5px;"><b>Effective Goal:</b> ${Math.round(target).toLocaleString()} <span id="cog_toggle" style="float:right; cursor:pointer; opacity:0.5;">⚙️</span></div>
-                <div style="font-size:11px; color:#666; margin-bottom:8px; border-bottom:1px solid #ddd; padding-bottom:5px;">Est: ~${config.estDays} days (@ ${Math.round(config.dailyGain)}/day)</div>
-                <div id="settings_area" style="display:${config.showSettings ? 'block' : 'none'};">
+                <div style="font-size:11px; color:#666;">Est: ~${config.estDays} days (@ ${Math.round(config.dailyGain)}/day)</div>
+                <div id="settings_area" style="margin-top:8px; padding-top:5px; border-top:1px solid #ddd; display:${config.showSettings ? 'block' : 'none'};">
                     <div style="font-size:11px; font-weight:bold; color:#0066cc;">Target Total (0 for Auto)</div>
                     <input type="text" id="r_goal" value="${config.targetTotal}" style="width:100%; margin-bottom:8px; box-sizing: border-box;">
                     <div style="font-size:11px; font-weight:bold;">Ratio (Spd : Pwr : Str)</div>
@@ -1262,8 +1349,7 @@ const NorthernFenceHelper = {
 
 const SettingsHelper = {
     init: function() {
-        const url = window.location.href;
-        if (!url.includes('cmd=preferences')) return;
+        if (!window.location.search.endsWith('cmd=preferences')) return;
 
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
@@ -1604,6 +1690,7 @@ const WellnessClinicHelper = {
         BankHelper,
         DrinksData,
         DrinksHelper,
+        KurtzCampHelper,
         LiquorStoreHelper,
         LivingAreaHelper,
         MessageBoardHelper,

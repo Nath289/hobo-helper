@@ -13,6 +13,7 @@ A suite of tools centered around drinking and stat enhancement:
 
 ### 3. Living Area Helper (`LivingAreaHelper.js`)
 Provides quality-of-life additions to your Living Area. May include highlighting, timers, or fast-action buttons depending on your specific living area upgrades.
+- **Mixer Link**: Adds a convenient link to the Mixer directly next to the Hobo Grail, Kings Kiddie Cup, and Golden Trolley icons.
 
 ### 4. Northern Fence Helper (`NorthernFenceHelper.js`)
 Assists in navigating the Northern Fence. Enhances the interface by displaying relevant stats and chances to help streamline exploration or related activities.
