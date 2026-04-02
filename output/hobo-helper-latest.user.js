@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.55
+// @version      7.56
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -698,6 +698,36 @@ const LiquorStoreHelper = {
                                     localStorage.removeItem('hobowarsDrinkShoppingList');
                                     localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
                                     listContainer.style.display = 'none';
+                                });
+
+                                // Highlight drinks in the shop that are on the shopping list
+                                const costs = contentArea.querySelectorAll('.shopCost');
+                                costs.forEach(costDiv => {
+                                    const td = costDiv.parentElement;
+                                    if (!td) return;
+
+                                    const textContent = td.textContent.trim();
+                                    let isMatch = false;
+                                    for (let i = 0; i < items.length; i++) {
+                                        if (textContent.startsWith(items[i])) {
+                                            isMatch = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if (isMatch) {
+                                        const tr = td.closest('tr');
+                                        if (tr) {
+                                            const img = tr.querySelector('img.shopimg') || tr.querySelector('img');
+                                            if (img && img.parentElement && img.parentElement.tagName === 'TD') {
+                                                img.parentElement.style.backgroundColor = '#fff3cd';
+                                                img.parentElement.style.borderRadius = '5px';
+                                            } else {
+                                                td.style.backgroundColor = '#fff3cd';
+                                                td.style.borderRadius = '5px';
+                                            }
+                                        }
+                                    }
                                 });
                             }
                         } catch (e) {

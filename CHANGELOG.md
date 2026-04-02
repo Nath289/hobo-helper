@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.56] - 2026-04-02
+### Changed
+- Updated `LiquorStoreHelper` to visually highlight items from your active shopping list with a faint yellow background directly around the item's image cell.
+
 ## [7.55] - 2026-04-02
 ### Added
 - Created `BackpackHelper` to dynamically display standard and mixed drink details (Base Stat Gains, Effects) on hover tooltips within the inventory.
