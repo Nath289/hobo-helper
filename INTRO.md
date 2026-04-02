@@ -53,5 +53,3 @@ Pull requests and feature suggestions are welcome! Please open an issue to discu
 ## Disclaimer
 
 Hobo Helper is an independent, community-made project and is not affiliated with or endorsed by the HoboWars development team.
-
-Test
