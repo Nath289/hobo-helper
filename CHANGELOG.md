@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.55] - 2026-04-02
+### Added
+- Created `BackpackHelper` to dynamically display standard and mixed drink details (Base Stat Gains, Effects) on hover tooltips within the inventory.
+- Added support for AJAX-loaded inventory tabs like the Living Area backpack.
+### Changed
+- Expanded `DrinksData` configuration to include full statistics (`base_stat_gain`, `effect`) for items using scraped data from the HoboWars wiki.
+- Combined and updated documentation out of various internal files directly into `README.md`.
+
 ## [7.54] - 2026-04-02
 ### Fixed
 - Fixed `BernardsMansionHelper` basement map layout collapsing into a tall rectangle and sizing issues by enforcing a strict fixed layout with `8x8` pixel cells.

@@ -48,5 +48,9 @@ Assists when selling cans at the Can Depo (`cmd=depo`).
 Helper functionality for the Recycling Bin screen.
 - **Quick Recycle Buttons**: Adds "+100", "+200", and "+500" buttons next to the recycle button to quickly add those amounts to the recycle input.
 
+### 14. Backpack Helper (`BackpackHelper.js`)
+Assists with inventory management when viewing the Backpack.
+- **Drink Tooltips**: Hovering over alcoholic or mixed drinks will display their base stat gains and effects right in the tooltip.
+
 ---
 *Note: We are constantly updating and tweaking these modules. If you encounter any bugs, please report them!*
