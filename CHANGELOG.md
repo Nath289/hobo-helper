@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.54] - 2026-04-02
+### Fixed
+- Fixed `BernardsMansionHelper` basement map layout collapsing into a tall rectangle and sizing issues by enforcing a strict fixed layout with `8x8` pixel cells.
+
 ## [7.53] - 2026-04-02
 ### Changed
 - Adjusted the position of the `RecyclingBinHelper` rapid add buttons to appear before the "Recycle em!" button instead of after it.

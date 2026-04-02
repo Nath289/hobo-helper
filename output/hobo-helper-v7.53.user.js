@@ -194,14 +194,14 @@ const BernardsMansionHelper = {
 
         // Create map container
         const mapHTML = `
-        <table cellspacing="0" cellpadding="0" bgcolor="#FFFFFF" style="border-collapse: collapse; border-style: ridge; border-color: black; border-width: 5px;" align="center">
+        <table cellspacing="0" cellpadding="0" bgcolor="#FFFFFF" style="border-collapse: collapse; border-style: ridge; border-color: black; border-width: 5px; table-layout: fixed;" align="center">
             <tbody>
                 ${Array.from({ length: 20 }, (_, r) => {
                     const y = 20 - r; // 20 to 1 (top to bottom)
                     return `<tr>
                         ${Array.from({ length: 20 }, (_, c) => {
                             const x = c + 1; // 1 to 20 (left to right)
-                            return `<td class="bernards-map-cell" data-x="${x}" data-y="${y}" width="6" height="6" title="${x}, ${y}" bgcolor="#FFFFFF" style="border: 1px solid #ddd;"></td>`;
+                            return `<td class="bernards-map-cell" data-x="${x}" data-y="${y}" title="${x}, ${y}" bgcolor="#FFFFFF" style="border: 1px solid #ddd; width: 8px; height: 8px; min-width: 8px; min-height: 8px; max-width: 8px; max-height: 8px; padding: 0; box-sizing: border-box;"></td>`;
                         }).join('')}
                     </tr>`;
                 }).join('')}
