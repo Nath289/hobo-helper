@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.53] - 2026-04-02
+### Changed
+- Adjusted the position of the `RecyclingBinHelper` rapid add buttons to appear before the "Recycle em!" button instead of after it.
+
+## [7.52] - 2026-04-02
+### Added
+- Added `RecyclingBinHelper` to quickly add fixed amounts (+100, +200, +500) to the recycling bin input.
+
 ## [7.51] - 2026-04-02
 ### Added
 - Created `CanDepoHelper` to calculate and display the total value of collected cans at the Can Depo.

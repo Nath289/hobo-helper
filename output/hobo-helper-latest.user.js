@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.51
+// @version      7.53
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -1476,6 +1476,40 @@ const NorthernFenceHelper = {
             }
         }
 
+const RecyclingBinHelper = {
+    init: function() {
+        if (!Utils.isCurrentPage('cmd=recycling_bin')) return;
+
+        const settings = Utils.getSettings();
+        if (settings.global_enabled === false) return;
+        if (settings.RecyclingBinHelper === false) return;
+
+        this.initRecycleButtons();
+    },
+
+    initRecycleButtons: function() {
+        const sCansInput = document.getElementById('s_cans');
+        const submitBtn = document.querySelector('form[name="bin"] input[type="submit"][name="Submit"]');
+
+        if (sCansInput && submitBtn) {
+            const amounts = [100, 200, 500];
+
+            amounts.forEach(amount => {
+                const btn = document.createElement('input');
+                btn.type = 'button';
+                btn.value = '+' + amount;
+                btn.style.marginRight = '5px';
+                btn.onclick = function(e) {
+                    e.preventDefault();
+                    const currentVal = parseInt(sCansInput.value) || 0;
+                    sCansInput.value = currentVal + amount;
+                };
+                submitBtn.parentNode.insertBefore(btn, submitBtn);
+            });
+        }
+    }
+};
+
 const SettingsHelper = {
     init: function() {
         if (!window.location.search.endsWith('cmd=preferences')) return;
@@ -1845,6 +1879,7 @@ const WellnessClinicHelper = {
         MessageBoardHelper,
         MixerHelper,
         NorthernFenceHelper,
+        RecyclingBinHelper,
         SettingsHelper,
         TattooParlorHelper,
         UniversityHelper,

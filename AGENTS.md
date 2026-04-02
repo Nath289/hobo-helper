@@ -12,7 +12,8 @@ Welcome to the `hobo-helper` project! Since this project uses a custom build pro
 1. **Always ask the user** for the URL of the page they want to create the new helper for. When they provide it, the important part to match is after and including `cmd=`. For example, in `https://www.hobowars.com/game/game.php?sr=141&cmd=preferences`, the `sr` number changes, so it cannot be hardcoded (use `cmd=preferences` to identify the page).
 2. Create your new module file in `src/modules/` (e.g., `src/modules/JobHelper.js`).
 3. Ensure the code inside is formatted as a valid constant variable allocation (e.g., `const JobHelper = { init: function() { ... } }`).
-4. **Update Documentation:** Whenever you create a new module or add a new feature to an existing module, you must update the `FEATURES.md` file to reflect the new functionality.
+4. **Settings Helper Integration:** Always add the ability to disable the new helper via the `SettingsHelper`. Update `SettingsHelper` accordingly if needed.
+5. **Update Documentation:** Whenever you create a new module or add a new feature to an existing module, you must update the `FEATURES.md` file to reflect the new functionality.
 The build script automatically detects and includes all JavaScript files in the `src/modules/` directory.
 
 ## Updating the Version & Building

@@ -44,5 +44,9 @@ Provides tools and helpers when exploring Bernard's Mansion (`cmd=bernards`).
 Assists when selling cans at the Can Depo (`cmd=depo`). 
 - **Total Value**: Displays the total monetary value of all your collected cans based on the current per-can price.
 
+### 13. Recycling Bin Helper (`RecyclingBinHelper.js`)
+Helper functionality for the Recycling Bin screen.
+- **Quick Recycle Buttons**: Adds "+100", "+200", and "+500" buttons next to the recycle button to quickly add those amounts to the recycle input.
+
 ---
 *Note: We are constantly updating and tweaking these modules. If you encounter any bugs, please report them!*

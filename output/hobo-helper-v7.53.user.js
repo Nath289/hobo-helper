@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.47
+// @version      7.53
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -194,14 +194,14 @@ const BernardsMansionHelper = {
 
         // Create map container
         const mapHTML = `
-        <table cellspacing="0" cellpadding="0" bgcolor="#FFFFFF" style="border-style: ridge; border-color: black; border-width: 5px;" align="center">
+        <table cellspacing="0" cellpadding="0" bgcolor="#FFFFFF" style="border-collapse: collapse; border-style: ridge; border-color: black; border-width: 5px;" align="center">
             <tbody>
                 ${Array.from({ length: 20 }, (_, r) => {
                     const y = 20 - r; // 20 to 1 (top to bottom)
                     return `<tr>
                         ${Array.from({ length: 20 }, (_, c) => {
                             const x = c + 1; // 1 to 20 (left to right)
-                            return `<td class="bernards-map-cell" data-x="${x}" data-y="${y}" width="6" height="6" title="${x}, ${y}" bgcolor="#FFFFFF"></td>`;
+                            return `<td class="bernards-map-cell" data-x="${x}" data-y="${y}" width="6" height="6" title="${x}, ${y}" bgcolor="#FFFFFF" style="border: 1px solid #ddd;"></td>`;
                         }).join('')}
                     </tr>`;
                 }).join('')}
@@ -211,7 +211,7 @@ const BernardsMansionHelper = {
 
         const mapContainer = document.createElement('div');
         mapContainer.id = 'bernards_map_container';
-        mapContainer.style.cssText = 'display: inline-block; vertical-align: top; margin-left: 20px; text-align: center;';
+        mapContainer.style.cssText = 'position: absolute; left: 100%; top: 50%; transform: translateY(-50%); margin-left: 20px; text-align: center;';
         mapContainer.innerHTML = mapHTML;
 
         // Color cell for current position
@@ -226,33 +226,60 @@ const BernardsMansionHelper = {
             }
         });
 
-        // Wrap the original table and our map in a basic parent structure
-        const parentTd = directionTable.parentNode;
-        const layoutTable = document.createElement('table');
-        layoutTable.width = "100%";
-        const layoutTbody = document.createElement('tbody');
-        const layoutTr = document.createElement('tr');
-        layoutTr.valign = "top";
+        // Use a relative wrapper to prevent any layout shifts of the directional pad
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'position: relative; width: 250px; margin: 0 auto;';
         
-        const leftTd = document.createElement('td');
-        leftTd.width = "70%";
-        
-        const rightTd = document.createElement('td');
-        rightTd.width = "30%";
-        rightTd.align = "right";
+        directionTable.parentNode.insertBefore(wrapper, directionTable);
+        wrapper.appendChild(directionTable);
+        wrapper.appendChild(mapContainer);
+    }
+};
 
-        // Insert new layout table where old direction table was
-        parentTd.insertBefore(layoutTable, directionTable);
-        layoutTable.appendChild(layoutTbody);
-        layoutTbody.appendChild(layoutTr);
-        layoutTr.appendChild(leftTd);
-        layoutTr.appendChild(rightTd);
+const CanDepoHelper = {
+    init: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('cmd') !== 'depo') return;
 
-        // Move direction table to left td
-        leftTd.appendChild(directionTable);
-        
-        // Put our map container into right td
-        rightTd.appendChild(mapContainer);
+        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+
+        if (savedSettings['CanDepoHelper_TotalValue'] !== false) {
+            this.initTotalValue();
+        }
+    },
+
+    initTotalValue: function() {
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        let cansCount = 0;
+        let price = 0;
+        let targetNode = null;
+
+        const walkDom = document.createTreeWalker(contentArea, NodeFilter.SHOW_TEXT, null, false);
+        let node;
+        while ((node = walkDom.nextNode())) {
+            const text = node.textContent;
+
+            const cansMatch = text.match(/You have:\s*([0-9,]+)\s*cans!/);
+            if (cansMatch) {
+                cansCount = Utils.parseNumber(cansMatch[1]);
+                targetNode = node;
+            }
+
+            const priceMatch = text.match(/for\s*\$?([0-9,]+)\s*each/);
+            if (priceMatch && !price) {
+                price = Utils.parseNumber(priceMatch[1]);
+            }
+        }
+
+        if (targetNode && cansCount > 0 && price > 0) {
+            const totalValue = cansCount * price;
+            const span = document.createElement('span');
+            span.innerHTML = ` <b>(Total Value: $${totalValue.toLocaleString()})</b>`;
+            span.style.color = 'green';
+            targetNode.parentNode.insertBefore(span, targetNode.nextSibling);
+        }
     }
 };
 
@@ -1449,6 +1476,40 @@ const NorthernFenceHelper = {
             }
         }
 
+const RecyclingBinHelper = {
+    init: function() {
+        if (!Utils.isCurrentPage('cmd=recycling_bin')) return;
+
+        const settings = Utils.getSettings();
+        if (settings.global_enabled === false) return;
+        if (settings.RecyclingBinHelper === false) return;
+
+        this.initRecycleButtons();
+    },
+
+    initRecycleButtons: function() {
+        const sCansInput = document.getElementById('s_cans');
+        const submitBtn = document.querySelector('form[name="bin"] input[type="submit"][name="Submit"]');
+
+        if (sCansInput && submitBtn) {
+            const amounts = [100, 200, 500];
+
+            amounts.forEach(amount => {
+                const btn = document.createElement('input');
+                btn.type = 'button';
+                btn.value = '+' + amount;
+                btn.style.marginRight = '5px';
+                btn.onclick = function(e) {
+                    e.preventDefault();
+                    const currentVal = parseInt(sCansInput.value) || 0;
+                    sCansInput.value = currentVal + amount;
+                };
+                submitBtn.parentNode.insertBefore(btn, submitBtn);
+            });
+        }
+    }
+};
+
 const SettingsHelper = {
     init: function() {
         if (!window.location.search.endsWith('cmd=preferences')) return;
@@ -1727,7 +1788,9 @@ const WellnessClinicHelper = {
                         const rowID = isCurrentRow ? 'id="hw-current-row"' : '';
                         const bg = isCurrentRow ? 'rgba(255, 255, 153, 0.4)' : 'transparent';
                         const isBlue = (savedGoal && parseInt(savedGoal) === runningFutureCost);
-                        const cellStyle = isBlue ? 'background-color: lightblue; font-weight: bold;' : '';
+                        const activeClass = isBlue ? 'active' : '';
+                        const interactiveClass = isCurrentOrFuture ? 'interactive' : '';
+                        const cellClasses = `hw-wellness-finish-cell ${interactiveClass} ${activeClass}`.trim();
                         const interactiveStyle = isCurrentOrFuture ? 'cursor: pointer; color: #800;' : 'color: #888;';
 
                         tableRows += `
@@ -1735,7 +1798,7 @@ const WellnessClinicHelper = {
                                 <td style="padding: 4px; text-align: center; border-right: 1px solid #bbb;">${row.lv}</td>
                                 <td style="padding: 4px; text-align: right; border-right: 1px solid #bbb;">$${row.fee.toLocaleString()}</td>
                                 <td style="padding: 4px; text-align: right; border-right: 1px solid #bbb;">$${runningTotalSpentDay.toLocaleString()}</td>
-                                <td class="hw-wellness-finish-cell" data-val="${runningFutureCost}" style="padding: 4px; text-align: right; ${interactiveStyle} ${cellStyle}">
+                                <td class="${cellClasses}" data-val="${runningFutureCost}" style="padding: 4px; text-align: right; ${interactiveStyle}">
                                     ${isCurrentOrFuture ? `$${runningFutureCost.toLocaleString()}` : '-'}
                                 </td>
                             </tr>
@@ -1745,6 +1808,15 @@ const WellnessClinicHelper = {
                     const spentToday = (currentIndex !== -1) ? (runningTotalSpentDay - runningFutureCost) : 0;
 
                     const trackerHtml = `
+                        <style>
+                            .hw-wellness-finish-cell.interactive:hover:not(.active) {
+                                background-color: #e0f0ff !important;
+                            }
+                            .hw-wellness-finish-cell.active {
+                                background-color: lightblue !important;
+                                font-weight: bold;
+                            }
+                        </style>
                         <div id="hw-tracker-container" style="margin: 20px auto; width: 95%; max-width: 580px; font-family: Verdana, sans-serif;">
                             <div id="hw-scroll-box" style="max-height: 350px; overflow-y: auto; border: 1px solid #666; border-radius: 4px; background-color: rgba(255,255,255,0.7);">
                                 <table style="width: 100%; border-collapse: collapse; color: #000; font-size: 11px;">
@@ -1753,11 +1825,14 @@ const WellnessClinicHelper = {
                                             <th style="padding: 6px; border-right: 1px solid #bbb;">Lv</th>
                                             <th style="padding: 6px; border-right: 1px solid #bbb;">Fee</th>
                                             <th style="padding: 6px; border-right: 1px solid #bbb;">Total Spent Day</th>
-                                            <th style="padding: 6px; background: #f9f9e8;">To Finish</th>
+                                            <th style="padding: 6px; background: #f9f9e8;">Cumulative Spend</th>
                                         </tr>
                                     </thead>
                                     <tbody>${tableRows}</tbody>
                                 </table>
+                            </div>
+                            <div style="font-size: 11px; font-style: italic; color: #555; margin-top: 4px; text-align: center;">
+                               💡 Click any amount in the <b>Cumulative Spend</b> column to set it as a Bank Withdraw Goal.
                             </div>
                             <div style="font-size: 12px; margin-top: 8px; color: #333; text-align: right; font-weight: bold;">
                                Total Spent Today: <span style="color: #800;">$${spentToday.toLocaleString()}</span>
@@ -1769,14 +1844,14 @@ const WellnessClinicHelper = {
 
                     document.querySelectorAll('.hw-wellness-finish-cell').forEach(cell => {
                         cell.addEventListener('click', function() {
+                            if (!this.classList.contains('interactive')) return;
                             const val = this.getAttribute('data-val');
                             if (val === "0") return;
-                            const isAlreadyBlue = (this.style.backgroundColor === 'lightblue');
-                            document.querySelectorAll('.hw-wellness-finish-cell').forEach(c => { c.style.backgroundColor = 'transparent'; c.style.fontWeight = 'normal'; });
+                            const isAlreadyActive = this.classList.contains('active');
+                            document.querySelectorAll('.hw-wellness-finish-cell').forEach(c => c.classList.remove('active'));
 
-                            if (!isAlreadyBlue) {
-                                this.style.backgroundColor = 'lightblue';
-                                this.style.fontWeight = 'bold';
+                            if (!isAlreadyActive) {
+                                this.classList.add('active');
                                 Modules.BankHelper.addBankGoal('Wellness', parseInt(val));
                             } else {
                                 Modules.BankHelper.addBankGoal('Wellness', 0);
@@ -1795,6 +1870,7 @@ const WellnessClinicHelper = {
     const Modules = {
         BankHelper,
         BernardsMansionHelper,
+        CanDepoHelper,
         DrinksData,
         DrinksHelper,
         KurtzCampHelper,
@@ -1803,6 +1879,7 @@ const WellnessClinicHelper = {
         MessageBoardHelper,
         MixerHelper,
         NorthernFenceHelper,
+        RecyclingBinHelper,
         SettingsHelper,
         TattooParlorHelper,
         UniversityHelper,
