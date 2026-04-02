@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.50
+// @version      7.51
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -211,7 +211,7 @@ const BernardsMansionHelper = {
 
         const mapContainer = document.createElement('div');
         mapContainer.id = 'bernards_map_container';
-        mapContainer.style.cssText = 'display: inline-block; vertical-align: top; margin-left: 20px; text-align: center;';
+        mapContainer.style.cssText = 'position: absolute; left: 100%; top: 50%; transform: translateY(-50%); margin-left: 20px; text-align: center;';
         mapContainer.innerHTML = mapHTML;
 
         // Color cell for current position
@@ -226,33 +226,60 @@ const BernardsMansionHelper = {
             }
         });
 
-        // Wrap the original table and our map in a basic parent structure
-        const parentTd = directionTable.parentNode;
-        const layoutTable = document.createElement('table');
-        layoutTable.width = "100%";
-        const layoutTbody = document.createElement('tbody');
-        const layoutTr = document.createElement('tr');
-        layoutTr.valign = "top";
+        // Use a relative wrapper to prevent any layout shifts of the directional pad
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'position: relative; width: 250px; margin: 0 auto;';
         
-        const leftTd = document.createElement('td');
-        leftTd.width = "70%";
-        
-        const rightTd = document.createElement('td');
-        rightTd.width = "30%";
-        rightTd.align = "right";
+        directionTable.parentNode.insertBefore(wrapper, directionTable);
+        wrapper.appendChild(directionTable);
+        wrapper.appendChild(mapContainer);
+    }
+};
 
-        // Insert new layout table where old direction table was
-        parentTd.insertBefore(layoutTable, directionTable);
-        layoutTable.appendChild(layoutTbody);
-        layoutTbody.appendChild(layoutTr);
-        layoutTr.appendChild(leftTd);
-        layoutTr.appendChild(rightTd);
+const CanDepoHelper = {
+    init: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('cmd') !== 'depo') return;
 
-        // Move direction table to left td
-        leftTd.appendChild(directionTable);
-        
-        // Put our map container into right td
-        rightTd.appendChild(mapContainer);
+        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+
+        if (savedSettings['CanDepoHelper_TotalValue'] !== false) {
+            this.initTotalValue();
+        }
+    },
+
+    initTotalValue: function() {
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        let cansCount = 0;
+        let price = 0;
+        let targetNode = null;
+
+        const walkDom = document.createTreeWalker(contentArea, NodeFilter.SHOW_TEXT, null, false);
+        let node;
+        while ((node = walkDom.nextNode())) {
+            const text = node.textContent;
+
+            const cansMatch = text.match(/You have:\s*([0-9,]+)\s*cans!/);
+            if (cansMatch) {
+                cansCount = Utils.parseNumber(cansMatch[1]);
+                targetNode = node;
+            }
+
+            const priceMatch = text.match(/for\s*\$?([0-9,]+)\s*each/);
+            if (priceMatch && !price) {
+                price = Utils.parseNumber(priceMatch[1]);
+            }
+        }
+
+        if (targetNode && cansCount > 0 && price > 0) {
+            const totalValue = cansCount * price;
+            const span = document.createElement('span');
+            span.innerHTML = ` <b>(Total Value: $${totalValue.toLocaleString()})</b>`;
+            span.style.color = 'green';
+            targetNode.parentNode.insertBefore(span, targetNode.nextSibling);
+        }
     }
 };
 
@@ -1809,6 +1836,7 @@ const WellnessClinicHelper = {
     const Modules = {
         BankHelper,
         BernardsMansionHelper,
+        CanDepoHelper,
         DrinksData,
         DrinksHelper,
         KurtzCampHelper,

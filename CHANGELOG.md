@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.51] - 2026-04-02
+### Added
+- Created `CanDepoHelper` to calculate and display the total value of collected cans at the Can Depo.
+- Extracted and generalized HTML templates.
+### Fixed
+- Fixed an issue in `BernardsMansionHelper` where inserting the basement map would horizontally shift the directional navigation links upon page load.
+
 ## [7.50] - 2026-04-02
 ### Changed
 - Improved `WellnessClinicHelper` by changing the label "To Finish" to "Cumulative Spend".

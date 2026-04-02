@@ -54,7 +54,7 @@ const BernardsMansionHelper = {
 
         const mapContainer = document.createElement('div');
         mapContainer.id = 'bernards_map_container';
-        mapContainer.style.cssText = 'display: inline-block; vertical-align: top; margin-left: 20px; text-align: center;';
+        mapContainer.style.cssText = 'position: absolute; left: 100%; top: 50%; transform: translateY(-50%); margin-left: 20px; text-align: center;';
         mapContainer.innerHTML = mapHTML;
 
         // Color cell for current position
@@ -69,32 +69,12 @@ const BernardsMansionHelper = {
             }
         });
 
-        // Wrap the original table and our map in a basic parent structure
-        const parentTd = directionTable.parentNode;
-        const layoutTable = document.createElement('table');
-        layoutTable.width = "100%";
-        const layoutTbody = document.createElement('tbody');
-        const layoutTr = document.createElement('tr');
-        layoutTr.valign = "top";
+        // Use a relative wrapper to prevent any layout shifts of the directional pad
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'position: relative; width: 250px; margin: 0 auto;';
         
-        const leftTd = document.createElement('td');
-        leftTd.width = "70%";
-        
-        const rightTd = document.createElement('td');
-        rightTd.width = "30%";
-        rightTd.align = "right";
-
-        // Insert new layout table where old direction table was
-        parentTd.insertBefore(layoutTable, directionTable);
-        layoutTable.appendChild(layoutTbody);
-        layoutTbody.appendChild(layoutTr);
-        layoutTr.appendChild(leftTd);
-        layoutTr.appendChild(rightTd);
-
-        // Move direction table to left td
-        leftTd.appendChild(directionTable);
-        
-        // Put our map container into right td
-        rightTd.appendChild(mapContainer);
+        directionTable.parentNode.insertBefore(wrapper, directionTable);
+        wrapper.appendChild(directionTable);
+        wrapper.appendChild(mapContainer);
     }
 };

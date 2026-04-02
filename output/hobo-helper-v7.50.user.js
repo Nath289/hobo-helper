@@ -211,7 +211,7 @@ const BernardsMansionHelper = {
 
         const mapContainer = document.createElement('div');
         mapContainer.id = 'bernards_map_container';
-        mapContainer.style.cssText = 'display: inline-block; vertical-align: top; margin-left: 20px; text-align: center;';
+        mapContainer.style.cssText = 'position: absolute; right: 20px; top: 20px; text-align: center;';
         mapContainer.innerHTML = mapHTML;
 
         // Color cell for current position
@@ -226,33 +226,10 @@ const BernardsMansionHelper = {
             }
         });
 
-        // Wrap the original table and our map in a basic parent structure
+        // Use absolute positioning to insert the map without moving the directional pad
         const parentTd = directionTable.parentNode;
-        const layoutTable = document.createElement('table');
-        layoutTable.width = "100%";
-        const layoutTbody = document.createElement('tbody');
-        const layoutTr = document.createElement('tr');
-        layoutTr.valign = "top";
-        
-        const leftTd = document.createElement('td');
-        leftTd.width = "70%";
-        
-        const rightTd = document.createElement('td');
-        rightTd.width = "30%";
-        rightTd.align = "right";
-
-        // Insert new layout table where old direction table was
-        parentTd.insertBefore(layoutTable, directionTable);
-        layoutTable.appendChild(layoutTbody);
-        layoutTbody.appendChild(layoutTr);
-        layoutTr.appendChild(leftTd);
-        layoutTr.appendChild(rightTd);
-
-        // Move direction table to left td
-        leftTd.appendChild(directionTable);
-        
-        // Put our map container into right td
-        rightTd.appendChild(mapContainer);
+        parentTd.style.position = 'relative';
+        parentTd.appendChild(mapContainer);
     }
 };
 

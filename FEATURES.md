@@ -40,5 +40,9 @@ Assists at Kurtz's Camp by keeping a running tally of Fire and Empty Bottles col
 Provides tools and helpers when exploring Bernard's Mansion (`cmd=bernards`). 
 - **Basement Map**: Displays a map when venturing into Bernard's Basement (`cmd=bernards&room=basement`).
 
+### 12. Can Depo Helper (`CanDepoHelper.js`)
+Assists when selling cans at the Can Depo (`cmd=depo`). 
+- **Total Value**: Displays the total monetary value of all your collected cans based on the current per-can price.
+
 ---
 *Note: We are constantly updating and tweaking these modules. If you encounter any bugs, please report them!*
