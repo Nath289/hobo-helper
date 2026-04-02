@@ -1727,7 +1727,9 @@ const WellnessClinicHelper = {
                         const rowID = isCurrentRow ? 'id="hw-current-row"' : '';
                         const bg = isCurrentRow ? 'rgba(255, 255, 153, 0.4)' : 'transparent';
                         const isBlue = (savedGoal && parseInt(savedGoal) === runningFutureCost);
-                        const cellStyle = isBlue ? 'background-color: lightblue; font-weight: bold;' : '';
+                        const activeClass = isBlue ? 'active' : '';
+                        const interactiveClass = isCurrentOrFuture ? 'interactive' : '';
+                        const cellClasses = `hw-wellness-finish-cell ${interactiveClass} ${activeClass}`.trim();
                         const interactiveStyle = isCurrentOrFuture ? 'cursor: pointer; color: #800;' : 'color: #888;';
 
                         tableRows += `
@@ -1735,7 +1737,7 @@ const WellnessClinicHelper = {
                                 <td style="padding: 4px; text-align: center; border-right: 1px solid #bbb;">${row.lv}</td>
                                 <td style="padding: 4px; text-align: right; border-right: 1px solid #bbb;">$${row.fee.toLocaleString()}</td>
                                 <td style="padding: 4px; text-align: right; border-right: 1px solid #bbb;">$${runningTotalSpentDay.toLocaleString()}</td>
-                                <td class="hw-wellness-finish-cell" data-val="${runningFutureCost}" style="padding: 4px; text-align: right; ${interactiveStyle} ${cellStyle}">
+                                <td class="${cellClasses}" data-val="${runningFutureCost}" style="padding: 4px; text-align: right; ${interactiveStyle}">
                                     ${isCurrentOrFuture ? `$${runningFutureCost.toLocaleString()}` : '-'}
                                 </td>
                             </tr>
@@ -1745,6 +1747,15 @@ const WellnessClinicHelper = {
                     const spentToday = (currentIndex !== -1) ? (runningTotalSpentDay - runningFutureCost) : 0;
 
                     const trackerHtml = `
+                        <style>
+                            .hw-wellness-finish-cell.interactive:hover:not(.active) {
+                                background-color: #e0f0ff !important;
+                            }
+                            .hw-wellness-finish-cell.active {
+                                background-color: lightblue !important;
+                                font-weight: bold;
+                            }
+                        </style>
                         <div id="hw-tracker-container" style="margin: 20px auto; width: 95%; max-width: 580px; font-family: Verdana, sans-serif;">
                             <div id="hw-scroll-box" style="max-height: 350px; overflow-y: auto; border: 1px solid #666; border-radius: 4px; background-color: rgba(255,255,255,0.7);">
                                 <table style="width: 100%; border-collapse: collapse; color: #000; font-size: 11px;">
@@ -1753,11 +1764,14 @@ const WellnessClinicHelper = {
                                             <th style="padding: 6px; border-right: 1px solid #bbb;">Lv</th>
                                             <th style="padding: 6px; border-right: 1px solid #bbb;">Fee</th>
                                             <th style="padding: 6px; border-right: 1px solid #bbb;">Total Spent Day</th>
-                                            <th style="padding: 6px; background: #f9f9e8;">To Finish</th>
+                                            <th style="padding: 6px; background: #f9f9e8;">Cumulative Spend</th>
                                         </tr>
                                     </thead>
                                     <tbody>${tableRows}</tbody>
                                 </table>
+                            </div>
+                            <div style="font-size: 11px; font-style: italic; color: #555; margin-top: 4px; text-align: center;">
+                               💡 Click any amount in the <b>Cumulative Spend</b> column to set it as a Bank Withdraw Goal.
                             </div>
                             <div style="font-size: 12px; margin-top: 8px; color: #333; text-align: right; font-weight: bold;">
                                Total Spent Today: <span style="color: #800;">$${spentToday.toLocaleString()}</span>
@@ -1769,14 +1783,14 @@ const WellnessClinicHelper = {
 
                     document.querySelectorAll('.hw-wellness-finish-cell').forEach(cell => {
                         cell.addEventListener('click', function() {
+                            if (!this.classList.contains('interactive')) return;
                             const val = this.getAttribute('data-val');
                             if (val === "0") return;
-                            const isAlreadyBlue = (this.style.backgroundColor === 'lightblue');
-                            document.querySelectorAll('.hw-wellness-finish-cell').forEach(c => { c.style.backgroundColor = 'transparent'; c.style.fontWeight = 'normal'; });
+                            const isAlreadyActive = this.classList.contains('active');
+                            document.querySelectorAll('.hw-wellness-finish-cell').forEach(c => c.classList.remove('active'));
 
-                            if (!isAlreadyBlue) {
-                                this.style.backgroundColor = 'lightblue';
-                                this.style.fontWeight = 'bold';
+                            if (!isAlreadyActive) {
+                                this.classList.add('active');
                                 Modules.BankHelper.addBankGoal('Wellness', parseInt(val));
                             } else {
                                 Modules.BankHelper.addBankGoal('Wellness', 0);

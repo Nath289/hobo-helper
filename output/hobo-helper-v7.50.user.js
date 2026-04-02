@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.45
+// @version      7.50
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -194,13 +194,14 @@ const BernardsMansionHelper = {
 
         // Create map container
         const mapHTML = `
-        <table cellspacing="0" cellpadding="0" bgcolor="#000000" style="border-style: ridge; border-color: black; border-width: 5px;" align="center">
+        <table cellspacing="0" cellpadding="0" bgcolor="#FFFFFF" style="border-collapse: collapse; border-style: ridge; border-color: black; border-width: 5px;" align="center">
             <tbody>
-                ${Array.from({ length: 21 }, (_, r) => {
-                    const y = 20 - r; // 20 to 0 (top to bottom)
+                ${Array.from({ length: 20 }, (_, r) => {
+                    const y = 20 - r; // 20 to 1 (top to bottom)
                     return `<tr>
-                        ${Array.from({ length: 21 }, (_, x) => { // 0 to 20 (left to right)
-                            return `<td class="bernards-map-cell" data-x="${x}" data-y="${y}" width="6" height="6" title="${x}, ${y}" bgcolor="#000000"></td>`;
+                        ${Array.from({ length: 20 }, (_, c) => {
+                            const x = c + 1; // 1 to 20 (left to right)
+                            return `<td class="bernards-map-cell" data-x="${x}" data-y="${y}" width="6" height="6" title="${x}, ${y}" bgcolor="#FFFFFF" style="border: 1px solid #ddd;"></td>`;
                         }).join('')}
                     </tr>`;
                 }).join('')}
@@ -213,18 +214,7 @@ const BernardsMansionHelper = {
         mapContainer.style.cssText = 'display: inline-block; vertical-align: top; margin-left: 20px; text-align: center;';
         mapContainer.innerHTML = mapHTML;
 
-        // Save explored cells in local storage
-        const exploredKey = 'bernards_basement_explored';
-        let explored = JSON.parse(localStorage.getItem(exploredKey) || '[]');
-        
-        // Add current pos to explored
-        const currentCoord = `${currentX},${currentY}`;
-        if (!explored.includes(currentCoord)) {
-            explored.push(currentCoord);
-            localStorage.setItem(exploredKey, JSON.stringify(explored));
-        }
-
-        // Color cells
+        // Color cell for current position
         const cells = mapContainer.querySelectorAll('.bernards-map-cell');
         cells.forEach(cell => {
             const cx = parseInt(cell.getAttribute('data-x'), 10);
@@ -233,24 +223,8 @@ const BernardsMansionHelper = {
             if (cx === currentX && cy === currentY) {
                 cell.setAttribute('bgcolor', '#880000'); // Current position
                 cell.title = "You!";
-            } else if (explored.includes(`${cx},${cy}`)) {
-                cell.setAttribute('bgcolor', '#FFFFFF'); // Explored path
             }
         });
-
-        // Add reset map button
-        const resetBtn = document.createElement('button');
-        resetBtn.innerText = 'Reset Map';
-        resetBtn.style.cssText = 'margin-top: 10px; font-size: 11px; cursor: pointer;';
-        resetBtn.onclick = (e) => {
-            e.preventDefault();
-            if (confirm('Clear explored basement map data?')) {
-                localStorage.removeItem(exploredKey);
-                window.location.reload();
-            }
-        };
-        mapContainer.appendChild(document.createElement('br'));
-        mapContainer.appendChild(resetBtn);
 
         // Wrap the original table and our map in a basic parent structure
         const parentTd = directionTable.parentNode;
@@ -1753,7 +1727,9 @@ const WellnessClinicHelper = {
                         const rowID = isCurrentRow ? 'id="hw-current-row"' : '';
                         const bg = isCurrentRow ? 'rgba(255, 255, 153, 0.4)' : 'transparent';
                         const isBlue = (savedGoal && parseInt(savedGoal) === runningFutureCost);
-                        const cellStyle = isBlue ? 'background-color: lightblue; font-weight: bold;' : '';
+                        const activeClass = isBlue ? 'active' : '';
+                        const interactiveClass = isCurrentOrFuture ? 'interactive' : '';
+                        const cellClasses = `hw-wellness-finish-cell ${interactiveClass} ${activeClass}`.trim();
                         const interactiveStyle = isCurrentOrFuture ? 'cursor: pointer; color: #800;' : 'color: #888;';
 
                         tableRows += `
@@ -1761,7 +1737,7 @@ const WellnessClinicHelper = {
                                 <td style="padding: 4px; text-align: center; border-right: 1px solid #bbb;">${row.lv}</td>
                                 <td style="padding: 4px; text-align: right; border-right: 1px solid #bbb;">$${row.fee.toLocaleString()}</td>
                                 <td style="padding: 4px; text-align: right; border-right: 1px solid #bbb;">$${runningTotalSpentDay.toLocaleString()}</td>
-                                <td class="hw-wellness-finish-cell" data-val="${runningFutureCost}" style="padding: 4px; text-align: right; ${interactiveStyle} ${cellStyle}">
+                                <td class="${cellClasses}" data-val="${runningFutureCost}" style="padding: 4px; text-align: right; ${interactiveStyle}">
                                     ${isCurrentOrFuture ? `$${runningFutureCost.toLocaleString()}` : '-'}
                                 </td>
                             </tr>
@@ -1771,6 +1747,15 @@ const WellnessClinicHelper = {
                     const spentToday = (currentIndex !== -1) ? (runningTotalSpentDay - runningFutureCost) : 0;
 
                     const trackerHtml = `
+                        <style>
+                            .hw-wellness-finish-cell.interactive:hover:not(.active) {
+                                background-color: #e0f0ff !important;
+                            }
+                            .hw-wellness-finish-cell.active {
+                                background-color: lightblue !important;
+                                font-weight: bold;
+                            }
+                        </style>
                         <div id="hw-tracker-container" style="margin: 20px auto; width: 95%; max-width: 580px; font-family: Verdana, sans-serif;">
                             <div id="hw-scroll-box" style="max-height: 350px; overflow-y: auto; border: 1px solid #666; border-radius: 4px; background-color: rgba(255,255,255,0.7);">
                                 <table style="width: 100%; border-collapse: collapse; color: #000; font-size: 11px;">
@@ -1779,11 +1764,14 @@ const WellnessClinicHelper = {
                                             <th style="padding: 6px; border-right: 1px solid #bbb;">Lv</th>
                                             <th style="padding: 6px; border-right: 1px solid #bbb;">Fee</th>
                                             <th style="padding: 6px; border-right: 1px solid #bbb;">Total Spent Day</th>
-                                            <th style="padding: 6px; background: #f9f9e8;">To Finish</th>
+                                            <th style="padding: 6px; background: #f9f9e8;">Cumulative Spend</th>
                                         </tr>
                                     </thead>
                                     <tbody>${tableRows}</tbody>
                                 </table>
+                            </div>
+                            <div style="font-size: 11px; font-style: italic; color: #555; margin-top: 4px; text-align: center;">
+                               💡 Click any amount in the <b>Cumulative Spend</b> column to set it as a Bank Withdraw Goal.
                             </div>
                             <div style="font-size: 12px; margin-top: 8px; color: #333; text-align: right; font-weight: bold;">
                                Total Spent Today: <span style="color: #800;">$${spentToday.toLocaleString()}</span>
@@ -1795,14 +1783,14 @@ const WellnessClinicHelper = {
 
                     document.querySelectorAll('.hw-wellness-finish-cell').forEach(cell => {
                         cell.addEventListener('click', function() {
+                            if (!this.classList.contains('interactive')) return;
                             const val = this.getAttribute('data-val');
                             if (val === "0") return;
-                            const isAlreadyBlue = (this.style.backgroundColor === 'lightblue');
-                            document.querySelectorAll('.hw-wellness-finish-cell').forEach(c => { c.style.backgroundColor = 'transparent'; c.style.fontWeight = 'normal'; });
+                            const isAlreadyActive = this.classList.contains('active');
+                            document.querySelectorAll('.hw-wellness-finish-cell').forEach(c => c.classList.remove('active'));
 
-                            if (!isAlreadyBlue) {
-                                this.style.backgroundColor = 'lightblue';
-                                this.style.fontWeight = 'bold';
+                            if (!isAlreadyActive) {
+                                this.classList.add('active');
                                 Modules.BankHelper.addBankGoal('Wellness', parseInt(val));
                             } else {
                                 Modules.BankHelper.addBankGoal('Wellness', 0);

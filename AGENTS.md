@@ -15,20 +15,19 @@ Welcome to the `hobo-helper` project! Since this project uses a custom build pro
 4. **Update Documentation:** Whenever you create a new module or add a new feature to an existing module, you must update the `FEATURES.md` file to reflect the new functionality.
 The build script automatically detects and includes all JavaScript files in the `src/modules/` directory.
 
-## Updating the Version
-**CRITICAL:** Every time you make *any functional change* or fix to the codebase, you must bump the `$version` variable at the top of `build.ps1` so that Tampermonkey knows an update is available. Usually, simply incrementing the minor version is sufficient (e.g., from `7.6` to `7.7`).
-**Update Instructions:** Whenever you increment the version and build a new version, you must also update the version number and file links inside `INSTALL.md` to point to the newly compiled version (e.g. `output/hobo-helper-v[NEW_VERSION].user.js`).
-**Changelog:** You must also add an entry to `CHANGELOG.md` under the newly bumped version, logging what was added, changed, or fixed. Format the version headers like `## [7.43] - YYYY-MM-DD`.
+## Updating the Version & Building
+**CRITICAL:** Only update the changelog, bump the version, and do a build **when the change has been finalized and the user explicitly instructs you to do so**. 
+If you believe the change is final, **ask the user** if they want to finalize the change and do a build. Otherwise, suggest additional functionality and improvements.
 
-## Building the Script
-Instead of using Webpack, Rollup, or NPM, this project uses a custom PowerShell script to stitch the raw `.js` files together into a single Tampermonkey script.
-
-**After making ANY code changes, you must run:**
+When finalizing a change:
+1. Bump the `$version` variable at the top of `build.ps1` so that Tampermonkey knows an update is available (e.g., from `7.6` to `7.7`).
+2. Update the version number and file links inside `INSTALL.md` to point to the newly compiled version.
+3. Add an entry to `CHANGELOG.md` under the newly bumped version, logging what was added, changed, or fixed. Format the version headers like `## [7.43] - YYYY-MM-DD`.
+4. Run the build script:
 ```powershell
 .\build.ps1
 ```
-
-This will write the unified final file to `output/hobo-helper-v[VERSION].user.js` (e.g. `output/hobo-helper-v7.6.user.js`). Provide this compiled file path to the user if they need to copy it into Tampermonkey.
+This will write the unified final file to `output/hobo-helper-v[VERSION].user.js` and `output/hobo-helper-latest.user.js`.
 
 ## Terminal Commands
 - **Git Diff:** When running `git diff` in the terminal to verify your edits, **you must use the `--no-pager` flag** to prevent the terminal from hanging interactively (e.g. `git --no-pager diff`).

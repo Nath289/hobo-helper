@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.50] - 2026-04-02
+### Changed
+- Improved `WellnessClinicHelper` by changing the label "To Finish" to "Cumulative Spend".
+- Added a visual hover effect on "Cumulative Spend" cells (turning light blue).
+- Clicking a cell in the "Cumulative Spend" column now visually selects it (darker blue bold) and automatically sets it as a Bank Withdraw Goal.
+- Added a visual helper hint indicating that clicking the "Cumulative Spend" sets the Bank Withdraw Goal.
+
 ## [7.49] - 2026-04-02
 ### Changed
 - Added a thin border around individual cells in the `BernardsMansionHelper` basement map grid to visually distinguish the squares.

@@ -34,7 +34,7 @@ Once installed, you will see the Tampermonkey icon (a dark square with two overl
    > 1. Click the Tampermonkey icon in your toolbar.
    > 2. Select **Dashboard**.
    > 3. Click the **+** (new script) tab.
-   > 4. Paste the entire contents of the latest `output/hobo-helper-v7.49.user.js` file into the editor.
+   > 4. Paste the entire contents of the latest `output/hobo-helper-v7.50.user.js` file into the editor.
    > 5. Press **Ctrl + S** (or **Cmd + S** on Mac) to save.
 
 ---
