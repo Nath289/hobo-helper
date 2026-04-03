@@ -682,16 +682,28 @@ const FoodHelper = {
         const checkboxes = document.querySelectorAll('.checkMe');
         let crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
 
+        // Track the desired state of foods currently visible on the page
+        const presentFoods = {};
+
         checkboxes.forEach(cb => {
             const foodName = this.getFoodNameFromCheckbox(cb);
             if (foodName) {
                 if (cb.checked) {
-                    if (!crapList.includes(foodName)) {
-                        crapList.push(foodName);
-                    }
-                } else {
-                    crapList = crapList.filter(name => name !== foodName);
+                    presentFoods[foodName] = true; // At least one is checked, keep it
+                } else if (presentFoods[foodName] === undefined) {
+                    presentFoods[foodName] = false; // Seen but not checked (yet)
                 }
+            }
+        });
+
+        // Update the crapList based on the visible foods' states
+        Object.keys(presentFoods).forEach(foodName => {
+            if (presentFoods[foodName]) {
+                if (!crapList.includes(foodName)) {
+                    crapList.push(foodName);
+                }
+            } else {
+                crapList = crapList.filter(name => name !== foodName);
             }
         });
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.61
+// @version      7.63
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -366,6 +366,20 @@ const CanDepoHelper = {
 
 const ChangelogData = [
   {
+    version: "7.63",
+    date: "2026-04-04",
+    changes: [
+      "Changed: Updated the success message text on the `FoodHelper` button to say \"✅ Updated Crap!\" for better clarity."
+    ]
+  },
+  {
+    version: "7.62",
+    date: "2026-04-04",
+    changes: [
+      "Fixed: Re-architected the `FoodHelper` \"Mark as Crap\" logic. The script now exclusively monitors items currently present in your inventory when updating the \"crap\" list, ensuring off-screen previously marked \"crap\" foods are safely preserved rather than being automatically wiped out."
+    ]
+  },
+  {
     version: "7.61",
     date: "2026-04-04",
     changes: [
@@ -385,28 +399,6 @@ const ChangelogData = [
     date: "2026-04-04",
     changes: [
       "Fixed: Addressed bugs across `LivingAreaHelper` and `FoodHelper` which caused helpers to incorrectly rely on a non-existent `cmd=living_area` URL parameter parameter resulting in UI elements frequently failing to load."
-    ]
-  },
-  {
-    version: "7.58",
-    date: "2026-04-03",
-    changes: [
-      "Added: Added `FoodHelper` to manage unwanted food items.",
-      "Added: Added a \"Select Crap\" button to automatically check all previously marked \"crap\" foods.",
-      "Added: Added a \"Mark as Crap\" button to add selected foods to the \"crap\" list, saving them for future sweeps.",
-      "Added: Integrated the new `FoodHelper` into both the main Food page (`cmd=food`) and within the Living Area.",
-      "Added: Added a \"Crap Foods List\" section inside the Game Preferences \"Helper Settings\", allowing you to view and delete items you've previously marked."
-    ]
-  },
-  {
-    version: "7.57",
-    date: "2026-04-03",
-    changes: [
-      "Added: Added custom settings configurations for Message Board features (`MessageBoardHelper_CtrlEnter`).",
-      "Added: Added a `💾 Save Repliers List` button to `MessageBoardHelper` explicitly for Gang Board posts (`cmd=gathering&do=vpost`), securely extracting and exporting a unique timestamped list of user names and IDs replying to the active topic locally.",
-      "Added: Established foundations for `LockoutHelper` (presently disabled but accessible), designed to intelligently inject recent changelog activity directly over the intermittent 12-hour game reset lockout screen.",
-      "Added: Extensively documented and injected `Supported Layouts` layout warnings noting only `The Future` layout format has been officially tested throughout README, INTRO, FEATURES, and internal AGENT reference files.",
-      "Added: Appended concrete rule compliance references directly into `AGENTS.md` explicitly banning automated Macros/Refreshers implementation."
     ]
   }
 ];
@@ -682,22 +674,34 @@ const FoodHelper = {
         const checkboxes = document.querySelectorAll('.checkMe');
         let crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
 
+        // Track the desired state of foods currently visible on the page
+        const presentFoods = {};
+
         checkboxes.forEach(cb => {
             const foodName = this.getFoodNameFromCheckbox(cb);
             if (foodName) {
                 if (cb.checked) {
-                    if (!crapList.includes(foodName)) {
-                        crapList.push(foodName);
-                    }
-                } else {
-                    crapList = crapList.filter(name => name !== foodName);
+                    presentFoods[foodName] = true; // At least one is checked, keep it
+                } else if (presentFoods[foodName] === undefined) {
+                    presentFoods[foodName] = false; // Seen but not checked (yet)
                 }
+            }
+        });
+
+        // Update the crapList based on the visible foods' states
+        Object.keys(presentFoods).forEach(foodName => {
+            if (presentFoods[foodName]) {
+                if (!crapList.includes(foodName)) {
+                    crapList.push(foodName);
+                }
+            } else {
+                crapList = crapList.filter(name => name !== foodName);
             }
         });
 
         localStorage.setItem('hw_helper_food_crap', JSON.stringify(crapList));
         if (btn) {
-            btn.value = `✅ Updated Crap List`;
+            btn.value = `✅ Updated Crap!`;
             setTimeout(() => { btn.value = 'Mark as Crap'; }, 3000);
         }
     }

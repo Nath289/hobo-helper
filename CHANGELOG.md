@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.63] - 2026-04-04
+### Changed
+- Updated the success message text on the `FoodHelper` button to say "✅ Updated Crap!" for better clarity.
+
+## [7.62] - 2026-04-04
+### Fixed
+- Re-architected the `FoodHelper` "Mark as Crap" logic. The script now exclusively monitors items currently present in your inventory when updating the "crap" list, ensuring off-screen previously marked "crap" foods are safely preserved rather than being automatically wiped out.
+
 ## [7.61] - 2026-04-04
 ### Changed
 - Added a +750 quick add button to the `RecyclingBinHelper`.
