@@ -17,6 +17,12 @@
 
 > More features will be added over time. Suggestions and contributions are welcome!
 
+## Supported Layouts
+
+HoboWars can be viewed in various layouts that significantly change how the UI is displayed, including: Simple, Original, Stripped, Darkened, Classic (v2), Modern (v3), Stylish (v4), SFW, and The Future.
+
+**Warning:** So far the tool has only been built for the layout called **"The Future"**. If you use a different layout, expect broken features or unexpected behavior.
+
 ## Is Hobo Helper Legal?
 
 Andy has confirmed that the Hobo Helper is Legal to use in its current form and for its current purpose, given that it doesn't breach the Hobowars Game Rules. 

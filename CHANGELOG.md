@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.57] - 2026-04-03
+### Added
+- Added custom settings configurations for Message Board features (`MessageBoardHelper_CtrlEnter`).
+- Added a `💾 Save Repliers List` button to `MessageBoardHelper` explicitly for Gang Board posts (`cmd=gathering&do=vpost`), securely extracting and exporting a unique timestamped list of user names and IDs replying to the active topic locally.
+- Established foundations for `LockoutHelper`, injecting recent changelog activity directly into the intermittent 12-hour game reset lockout screen.
+- Extensively documented and injected `Supported Layouts` layout warnings noting only `The Future` layout format has been officially tested throughout README, INTRO, FEATURES, and internal AGENT reference files.
+- Appended concrete rule compliance references directly into `AGENTS.md` explicitly banning automated Macros/Refreshers implementation.
+
 ## [7.56] - 2026-04-02
 ### Changed
 - Updated `LiquorStoreHelper` to visually highlight items from your active shopping list with a faint yellow background directly around the item's image cell.

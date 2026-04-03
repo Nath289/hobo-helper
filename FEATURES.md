@@ -2,6 +2,8 @@
 
 The Hobo Helper script breaks its functionality down into individual modules. Below is a full list of all active helpers included in the latest version:
 
+> **Layout Warning:** HoboWars can be viewed in various layouts (Simple, Original, Stripped, Darkened, Classic, Modern, Stylish, SFW, and The Future). So far this tool has only been built for **"The Future"** layout. Unexpected behavior may occur if using a different layout.
+
 ### 1. Bank Helper (`BankHelper.js`)
 Helps manage bank savings by allowing you to add and display custom financial goals. Makes withdrawing and depositing the exact amounts you need much easier.
 
@@ -51,6 +53,10 @@ Helper functionality for the Recycling Bin screen.
 ### 14. Backpack Helper (`BackpackHelper.js`)
 Assists with inventory management when viewing the Backpack.
 - **Drink Tooltips**: Hovering over alcoholic or mixed drinks will display their base stat gains and effects right in the tooltip.
+
+### 15. Lockout Helper (`LockoutHelper.js`)
+Helper functionality activated during the game's 12-hour resets (lockout periods).
+- **Changelog Display**: While the game is locked for resetting, this feature prominently displays the most recent Hobo Helper changelog notes via an overlaid UI directly on the reset screen, providing reading material during the wait.
 
 ---
 *Note: We are constantly updating and tweaking these modules. If you encounter any bugs, please report them!*

@@ -81,12 +81,21 @@ const SettingsHelper = {
             ],
             'BernardsMansionHelper': [
                 { key: 'BernardsMansionHelper_BasementMap', label: 'Basement Map' }
+            ],
+            'LockoutHelper': [
+                { key: 'LockoutHelper_ShowChangelog', label: 'Show Changelog' }
+            ],
+            'MessageBoardHelper': [
+                { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
+                { key: 'MessageBoardHelper_SaveRepliers', label: 'Save Repliers List Button' }
             ]
         };
 
         if (typeof Modules !== 'undefined') {
             Object.keys(Modules).forEach(modName => {
                 if (modName === 'SettingsHelper') return; 
+                if (typeof Modules[modName].init !== 'function') return; // Hide data objects like DrinksData / ChangelogData
+
                 contentArea.appendChild(createToggle(modName, `Enable ${modName}`));
 
                 // Render sub-features if this module has them defined

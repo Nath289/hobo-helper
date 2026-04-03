@@ -364,6 +364,47 @@ const CanDepoHelper = {
     }
 };
 
+const ChangelogData = [
+  {
+    version: "7.56",
+    date: "2026-04-02",
+    changes: [
+      "Changed: Updated `LiquorStoreHelper` to visually highlight items from your active shopping list with a faint yellow background directly around the item's image cell."
+    ]
+  },
+  {
+    version: "7.55",
+    date: "2026-04-02",
+    changes: [
+      "Added: Created `BackpackHelper` to dynamically display standard and mixed drink details (Base Stat Gains, Effects) on hover tooltips within the inventory.",
+      "Added: Added support for AJAX-loaded inventory tabs like the Living Area backpack.",
+      "Changed: Expanded `DrinksData` configuration to include full statistics (`base_stat_gain`, `effect`) for items using scraped data from the HoboWars wiki.",
+      "Changed: Combined and updated documentation out of various internal files directly into `README.md`."
+    ]
+  },
+  {
+    version: "7.54",
+    date: "2026-04-02",
+    changes: [
+      "Fixed: Fixed `BernardsMansionHelper` basement map layout collapsing into a tall rectangle and sizing issues by enforcing a strict fixed layout with `8x8` pixel cells."
+    ]
+  },
+  {
+    version: "7.53",
+    date: "2026-04-02",
+    changes: [
+      "Changed: Adjusted the position of the `RecyclingBinHelper` rapid add buttons to appear before the \"Recycle em!\" button instead of after it."
+    ]
+  },
+  {
+    version: "7.52",
+    date: "2026-04-02",
+    changes: [
+      "Added: Added `RecyclingBinHelper` to quickly add fixed amounts (+100, +200, +500) to the recycling bin input."
+    ]
+  }
+];
+
 const DrinksData = {
             // Data structure containing all drinks in the game
             drinks: {
@@ -1027,39 +1068,132 @@ const LivingAreaHelper = {
     }
 }
 
+const LockoutHelper = {
+    init: function() {
+        // The game auto-locks during the 12-hour reset.
+        // We detect this specific screen via document title or body text.
+        const isLockoutScreen = document.title.includes("Closed for daily maintenance") ||
+                                (document.body.innerText || "").includes("Temporary Lockout");
+
+        if (!isLockoutScreen) return;
+
+        console.log("LockoutHelper: Detected game lockout screen.");
+
+        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+
+        if (savedSettings['LockoutHelper_ShowChangelog'] !== false) {
+            this.renderChangelog();
+        }
+    },
+
+    renderChangelog: function() {
+        if (typeof ChangelogData === 'undefined') {
+            console.error("LockoutHelper: ChangelogData is missing. Cannot display changelog.");
+            return;
+        }
+
+        const container = document.createElement("div");
+        container.id = "hw-helper-changelog-container";
+        // Styling matches "The Future" layout aesthetic broadly, but forces visibility
+        container.style.cssText = "margin: 20px auto; padding: 15px; max-width: 600px; background-color: #f9f9f9; border: 1px dashed #777; border-radius: 8px; text-align: left; font-family: Tahoma, Arial, sans-serif; color: #333; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);";
+
+        const title = document.createElement("h2");
+        title.innerText = "Hobo Helper - Recent Updates";
+        title.style.margin = "0 0 10px 0";
+        title.style.borderBottom = "1px solid #ccc";
+        title.style.paddingBottom = "5px";
+        title.style.fontSize = "16px";
+        container.appendChild(title);
+
+        ChangelogData.forEach(release => {
+            const releaseBlock = document.createElement("div");
+            releaseBlock.style.marginTop = "10px";
+
+            const versionHeader = document.createElement("div");
+            versionHeader.innerHTML = `<strong>v${release.version}</strong> <span style="font-size: 11px; color: #666;">(${release.date})</span>`;
+            versionHeader.style.fontSize = "14px";
+            releaseBlock.appendChild(versionHeader);
+
+            const changesList = document.createElement("ul");
+            changesList.style.margin = "5px 0 0 0";
+            changesList.style.paddingLeft = "20px";
+            changesList.style.fontSize = "12px";
+
+            release.changes.forEach(change => {
+                const li = document.createElement("li");
+                li.style.marginBottom = "3px";
+                // Simple markdown parsing for inline code blocks (backticks)
+                let formattedChange = change.replace(/`([^`]+)`/g, '<code style="background-color: #eaeaea; padding: 1px 4px; border-radius: 3px; font-family: monospace;">$1</code>');
+                // Bold prefixes (e.g. Added:, Changed:, Fixed:)
+                formattedChange = formattedChange.replace(/^(Added:|Changed:|Fixed:)/g, '<strong>$1</strong>');
+                li.innerHTML = formattedChange;
+                changesList.appendChild(li);
+            });
+
+            releaseBlock.appendChild(changesList);
+            container.appendChild(releaseBlock);
+        });
+
+        const note = document.createElement("div");
+        note.innerHTML = "<em>You can disable this popup in the Hobo Helper Settings on the Preferences page.</em>";
+        note.style.fontSize = "10px";
+        note.style.color = "#888";
+        note.style.marginTop = "15px";
+        note.style.textAlign = "center";
+        container.appendChild(note);
+
+        // Inject below the main lockout message content.
+        // The lockout screen content lives inside a white table data cell.
+        const targetTd = document.querySelector('td[bgcolor="#FFFFFF"]');
+
+        if (targetTd) {
+            // Append it nicely inside the white background area
+            targetTd.appendChild(container);
+        } else {
+            // Fallback
+            const centerWrapper = document.createElement('div');
+            centerWrapper.align = 'center';
+            centerWrapper.appendChild(container);
+            document.body.appendChild(centerWrapper);
+        }
+    }
+};
+
 const MessageBoardHelper = {
     init: function() {
         if (!Utils.isCurrentPage('cmd=gathering')) return;
 
-        this.initMessageBoardFeatures();
-    },
-
-    initMessageBoardFeatures: function() {
-        // Basic setup for message board features based on settings
         const settings = Utils.getSettings();
         if (settings?.MessageBoardHelper?.enabled === false) return;
 
-        this.enhanceMessageEditor();
+        this.initMessageBoardFeatures(settings);
+
+        if (Utils.isCurrentPage('do=vpost')) {
+            this.initGangPostFeatures(settings);
+        }
     },
 
-    enhanceMessageEditor: function() {
+    initMessageBoardFeatures: function(settings) {
+        this.enhanceMessageEditor(settings);
+    },
+
+    enhanceMessageEditor: function(settings) {
         const messageArea = document.querySelector('textarea[name="t_message"]');
         if (!messageArea) return;
 
-        // Auto-focus the message area
-        messageArea.focus();
-
         // Ctrl + Enter to submit
-        messageArea.addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                const submitBtn = document.querySelector('input[type="submit"][name="button"]') ||
-                                  document.querySelector('input[type="submit"][value*="Post"]');
-                if (submitBtn) {
-                    e.preventDefault();
-                    submitBtn.click();
+        if (settings?.MessageBoardHelper_CtrlEnter !== false) {
+            messageArea.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    const submitBtn = document.querySelector('input[type="submit"][name="button"]') ||
+                                      document.querySelector('input[type="submit"][value*="Post"]');
+                    if (submitBtn) {
+                        e.preventDefault();
+                        submitBtn.click();
+                    }
                 }
-            }
-        });
+            });
+        }
 
         this.addPaidMessageButton(messageArea);
     },
@@ -1097,6 +1231,94 @@ const MessageBoardHelper = {
         });
 
         parentDiv.appendChild(btn);
+    },
+
+    initGangPostFeatures: function(settings) {
+        if (settings?.MessageBoardHelper_SaveGangReplies === false) return;
+
+        const pageText = document.body.innerText || "";
+        // Check if we're on the Gang Board by looking at the page breadcrumb
+        const breadcrumbMatch = pageText.match(/Board Selection\s*\/\s*Gang Board\s*\/\s*Topic:\s*(.*?)\s*(?:\[Page:|\[Latest\]|\n|$)/i);
+        if (!breadcrumbMatch) return; // Not a Gang Board post or format didn't match
+
+        const topicName = breadcrumbMatch[1].trim();
+
+        // Find "Now Viewing Topic & Replies" text nodes
+        const headerNodes = Array.from(document.querySelectorAll('b, strong, th, td, div, font, span')).filter(el => el.textContent.trim() === 'Now Viewing Topic & Replies');
+        if (headerNodes.length === 0) return;
+        
+        // Grab the deepest node to inject our button right above it
+        const headerToInjectAbove = headerNodes[headerNodes.length - 1]; 
+        const tableNode = headerToInjectAbove.closest('table');
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = '💾 Save Gang Replies';
+        btn.title = 'Collects the names of everyone who has replied to this post';
+        btn.style.cssText = 'margin-bottom: 8px; padding: 5px 12px; cursor: pointer; font-weight: bold; background: #eee; border: 1px solid #aaa; border-radius: 3px; color: #333; font-family: Tahoma, sans-serif; font-size: 11px; display: block;';
+        
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Only search inside the replies table to avoid grabbing the current logged-in user from the top nav
+            const searchScope = tableNode || document;
+            const playerLinks = Array.from(searchScope.querySelectorAll('a[href*="cmd=player&ID="]'));
+            const hoboMap = new Map();
+            
+            let firstPostTr = null;
+
+            playerLinks.forEach(link => {
+                const nameNode = link.querySelector('.player-name') || link;
+                if (!nameNode) return;
+
+                const tr = link.closest('tr');
+                if (!firstPostTr && tr) {
+                    firstPostTr = tr; // The first row containing a player is the original topic post
+                }
+
+                // Skip any player links found within the original topic post
+                if (tr && tr === firstPostTr) return;
+
+                const idMatch = link.href.match(/ID=(\d+)/i);
+                if (idMatch) {
+                    const id = idMatch[1];
+                    const name = nameNode.textContent.trim();
+                    if (name && !hoboMap.has(id)) {
+                        hoboMap.set(id, { id: id, name: name });
+                    }
+                }
+            });
+            
+            const hoboList = Array.from(hoboMap.values());
+            
+            const savedPosts = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+            savedPosts[topicName] = { 
+                timestamp: Date.now(),
+                topic: topicName,
+                totalHobos: hoboList.length,
+                hobos: hoboList 
+            };
+            localStorage.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
+            
+            console.log(`[Hobo Helper] Gathered gang replies for topic: "${topicName}"`, savedPosts[topicName]);
+            
+            btn.textContent = `✅ Saved ${hoboList.length} Unique Hobos!`;
+            setTimeout(() => { btn.textContent = '💾 Save Gang Replies'; }, 3000);
+        });
+
+        // Insert just above the header text's table container and replace preceding <br> tags
+        if (tableNode) {
+            // Traverse backwards to remove empty text nodes and <br> tags
+            let prev = tableNode.previousSibling;
+            while (prev && (prev.nodeName === 'BR' || (prev.nodeType === 3 && prev.nodeValue.trim() === ''))) {
+                const toRemove = prev;
+                prev = prev.previousSibling;
+                toRemove.parentNode.removeChild(toRemove);
+            }
+            tableNode.parentNode.insertBefore(btn, tableNode);
+        } else {
+            headerToInjectAbove.parentNode.insertBefore(btn, headerToInjectAbove);
+        }
     }
 };
 
@@ -1704,12 +1926,21 @@ const SettingsHelper = {
             ],
             'BernardsMansionHelper': [
                 { key: 'BernardsMansionHelper_BasementMap', label: 'Basement Map' }
+            ],
+            'LockoutHelper': [
+                { key: 'LockoutHelper_ShowChangelog', label: 'Show Changelog' }
+            ],
+            'MessageBoardHelper': [
+                { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
+                { key: 'MessageBoardHelper_SaveGangReplies', label: 'Save Gang Replies Button' }
             ]
         };
 
         if (typeof Modules !== 'undefined') {
             Object.keys(Modules).forEach(modName => {
                 if (modName === 'SettingsHelper') return; 
+                if (typeof Modules[modName].init !== 'function') return; // Hide data objects like DrinksData / ChangelogData
+
                 contentArea.appendChild(createToggle(modName, `Enable ${modName}`));
 
                 // Render sub-features if this module has them defined
@@ -1983,11 +2214,13 @@ const WellnessClinicHelper = {
         BankHelper,
         BernardsMansionHelper,
         CanDepoHelper,
+        ChangelogData,
         DrinksData,
         DrinksHelper,
         KurtzCampHelper,
         LiquorStoreHelper,
         LivingAreaHelper,
+        LockoutHelper,
         MessageBoardHelper,
         MixerHelper,
         NorthernFenceHelper,

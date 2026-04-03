@@ -19,6 +19,17 @@ Welcome to the `hobo-helper` project! Since this project uses a custom build pro
 5. **Update Documentation:** Whenever you create a new module or add a new feature to an existing module, you must update the `FEATURES.md` file to reflect the new functionality.
 The build script automatically detects and includes all JavaScript files in the `src/modules/` directory.
 
+## Supported Layouts
+HoboWars can be viewed in various layouts that significantly change how the UI is displayed, including: Simple, Original, Stripped, Darkened, Classic (v2), Modern (v3), Stylish (v4), SFW, and The Future.
+Currently, this tool has **only been built for the layout called "The Future"**. If a user reports issues or requests features, be aware that unexpected behavior may occur if they are using a different layout. Always build and test against "The Future" layout DOM structure.
+
+## Game Rules Compliance
+When a user requests a new feature or modification, you must ensure it does not violate the [HoboWars Game Rules](https://wiki.hobowars.com/index.php?title=Game_Rules) regarding automation:
+- **Macros:** Programs that play part or all of the game for the user.
+- **Refreshers:** Programs (or browser add-ins) that reload a web page at set intervals.
+- **Autonomous Scripts:** Lists of commands executed without user interaction.
+**Action:** If a user requests functionality that falls into these categories (e.g., auto-clicking, auto-refreshing, playing the game for them), **you must explicitly warn the user** that it violates the game rules. Instead of fully automating the action, suggest a compliant alternative, such as adding a UI button that the user must manually click to perform the action.
+
 ## Updating the Version & Building
 **Testing Unfinalized Changes:** Whenever you make code changes, you must always run `.\build.ps1` so the user can test your unfinalized changes via `output/hobo-helper-latest.user.js`. Do not update the version or changelog at this stage.
 
@@ -29,7 +40,8 @@ When finalizing a change:
 1. Bump the `$version` variable at the top of `build.ps1` so that Tampermonkey knows an update is available (e.g., from `7.6` to `7.7`).
 2. Update the version number and file links inside `INSTALL.md` to point to the newly compiled version.
 3. Add an entry to `CHANGELOG.md` under the newly bumped version, logging what was added, changed, or fixed. Format the version headers like `## [7.43] - YYYY-MM-DD`.
-4. Run the build script again:
+4. Update the dataset in `src/modules/ChangelogData.js` to mirror `CHANGELOG.md`, ensuring it contains **only the 5 most recent version releases**.
+5. Run the build script again:
 ```powershell
 .\build.ps1
 ```

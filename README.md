@@ -17,6 +17,12 @@ Hobo Helper breaks its functionality into individual modules. Notable features i
 
 For a complete list of all active modules natively supported, see our [Features Documentation](FEATURES.md). To see what's changed recently, check out the [Changelog](CHANGELOG.md).
 
+## Supported Layouts
+
+HoboWars can be viewed in various layouts that significantly change how the UI is displayed, including: Simple, Original, Stripped, Darkened, Classic (v2), Modern (v3), Stylish (v4), SFW, and The Future.
+
+**Important:** So far this tool has only been built for the layout called **"The Future"**. Unexpected behavior or visual bugs may occur if you are using a different layout.
+
 ## Installation
 
 Hobo Helper runs inside your browser via the **Tampermonkey** extension.
