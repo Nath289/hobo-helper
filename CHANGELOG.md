@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.59] - 2026-04-04
+### Fixed
+- Addressed bugs across `LivingAreaHelper` and `FoodHelper` which caused helpers to incorrectly rely on a non-existent `cmd=living_area` URL parameter parameter resulting in UI elements frequently failing to load.
+
 ## [7.58] - 2026-04-03
 ### Added
 - Added `FoodHelper` to manage unwanted food items.

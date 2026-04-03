@@ -5,8 +5,9 @@ const FoodHelper = {
 
         // Ensure we are either on the food page or living area page
         const urlParams = new URLSearchParams(window.location.search);
-        const isFoodMenu = window.location.search.includes('cmd=food');
-        const isLivingArea = !urlParams.has('cmd') || window.location.search.includes('cmd=living_area');
+        const cmd = urlParams.get('cmd');
+        const isFoodMenu = cmd === 'food';
+        const isLivingArea = !cmd; // Matches null or ""
 
         if (!isFoodMenu && !isLivingArea) return;
 

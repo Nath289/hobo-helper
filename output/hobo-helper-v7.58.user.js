@@ -372,7 +372,7 @@ const ChangelogData = [
       "Added: Added `FoodHelper` to manage unwanted food items.",
       "Added: Added a \"Select Crap\" button to automatically check all previously marked \"crap\" foods.",
       "Added: Added a \"Mark as Crap\" button to add selected foods to the \"crap\" list, saving them for future sweeps.",
-      "Added: Integrated the new `FoodHelper` into both the main Food page (`cmd=food`) and within the Living Area (`cmd=living_area`).",
+      "Added: Integrated the new `FoodHelper` into both the main Food page (`cmd=food`) and within the Living Area.",
       "Added: Added a \"Crap Foods List\" section inside the Game Preferences \"Helper Settings\", allowing you to view and delete items you've previously marked."
     ]
   },
@@ -596,8 +596,9 @@ const FoodHelper = {
 
         // Ensure we are either on the food page or living area page
         const urlParams = new URLSearchParams(window.location.search);
-        const isFoodMenu = window.location.search.includes('cmd=food');
-        const isLivingArea = !urlParams.has('cmd') || window.location.search.includes('cmd=living_area');
+        const cmd = urlParams.get('cmd');
+        const isFoodMenu = cmd === 'food';
+        const isLivingArea = !cmd; // Matches null or ""
 
         if (!isFoodMenu && !isLivingArea) return;
 
@@ -930,7 +931,8 @@ const LivingAreaHelper = {
 
     initMixerLink: function() {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('cmd') && !window.location.href.includes('cmd=living_area')) return;
+        const cmd = urlParams.get('cmd');
+        if (cmd) return;
 
         const gearInfo = document.getElementById('gearInfo');
         if (!gearInfo) return;
@@ -1144,7 +1146,8 @@ const LivingAreaHelper = {
 
     initWinPercentageCalc: function() {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('cmd')) return;
+        const cmd = urlParams.get('cmd');
+        if (cmd) return;
 
         const battleBlock = document.getElementById('battleRecord');
         if (!battleBlock) return;

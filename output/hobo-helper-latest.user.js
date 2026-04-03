@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.58
+// @version      7.59
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -366,13 +366,20 @@ const CanDepoHelper = {
 
 const ChangelogData = [
   {
+    version: "7.59",
+    date: "2026-04-04",
+    changes: [
+      "Fixed: Addressed bugs across `LivingAreaHelper` and `FoodHelper` which caused helpers to incorrectly rely on a non-existent `cmd=living_area` URL parameter parameter resulting in UI elements frequently failing to load."
+    ]
+  },
+  {
     version: "7.58",
     date: "2026-04-03",
     changes: [
       "Added: Added `FoodHelper` to manage unwanted food items.",
       "Added: Added a \"Select Crap\" button to automatically check all previously marked \"crap\" foods.",
       "Added: Added a \"Mark as Crap\" button to add selected foods to the \"crap\" list, saving them for future sweeps.",
-      "Added: Integrated the new `FoodHelper` into both the main Food page (`cmd=food`) and within the Living Area (`cmd=living_area`).",
+      "Added: Integrated the new `FoodHelper` into both the main Food page (`cmd=food`) and within the Living Area.",
       "Added: Added a \"Crap Foods List\" section inside the Game Preferences \"Helper Settings\", allowing you to view and delete items you've previously marked."
     ]
   },
@@ -402,13 +409,6 @@ const ChangelogData = [
       "Added: Added support for AJAX-loaded inventory tabs like the Living Area backpack.",
       "Changed: Expanded `DrinksData` configuration to include full statistics (`base_stat_gain`, `effect`) for items using scraped data from the HoboWars wiki.",
       "Changed: Combined and updated documentation out of various internal files directly into `README.md`."
-    ]
-  },
-  {
-    version: "7.54",
-    date: "2026-04-02",
-    changes: [
-      "Fixed: Fixed `BernardsMansionHelper` basement map layout collapsing into a tall rectangle and sizing issues by enforcing a strict fixed layout with `8x8` pixel cells."
     ]
   }
 ];
@@ -596,8 +596,9 @@ const FoodHelper = {
 
         // Ensure we are either on the food page or living area page
         const urlParams = new URLSearchParams(window.location.search);
-        const isFoodMenu = window.location.search.includes('cmd=food');
-        const isLivingArea = !urlParams.has('cmd') || window.location.search.includes('cmd=living_area');
+        const cmd = urlParams.get('cmd');
+        const isFoodMenu = cmd === 'food';
+        const isLivingArea = !cmd; // Matches null or ""
 
         if (!isFoodMenu && !isLivingArea) return;
 
@@ -930,7 +931,8 @@ const LivingAreaHelper = {
 
     initMixerLink: function() {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('cmd') && !window.location.href.includes('cmd=living_area')) return;
+        const cmd = urlParams.get('cmd');
+        if (cmd) return;
 
         const gearInfo = document.getElementById('gearInfo');
         if (!gearInfo) return;
@@ -1144,7 +1146,8 @@ const LivingAreaHelper = {
 
     initWinPercentageCalc: function() {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('cmd')) return;
+        const cmd = urlParams.get('cmd');
+        if (cmd) return;
 
         const battleBlock = document.getElementById('battleRecord');
         if (!battleBlock) return;

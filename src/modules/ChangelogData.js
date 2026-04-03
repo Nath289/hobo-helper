@@ -1,5 +1,12 @@
 const ChangelogData = [
   {
+    version: "7.59",
+    date: "2026-04-04",
+    changes: [
+      "Fixed: Addressed bugs across `LivingAreaHelper` and `FoodHelper` which caused helpers to incorrectly rely on a non-existent `cmd=living_area` URL parameter parameter resulting in UI elements frequently failing to load."
+    ]
+  },
+  {
     version: "7.58",
     date: "2026-04-03",
     changes: [
@@ -36,13 +43,6 @@ const ChangelogData = [
       "Added: Added support for AJAX-loaded inventory tabs like the Living Area backpack.",
       "Changed: Expanded `DrinksData` configuration to include full statistics (`base_stat_gain`, `effect`) for items using scraped data from the HoboWars wiki.",
       "Changed: Combined and updated documentation out of various internal files directly into `README.md`."
-    ]
-  },
-  {
-    version: "7.54",
-    date: "2026-04-02",
-    changes: [
-      "Fixed: Fixed `BernardsMansionHelper` basement map layout collapsing into a tall rectangle and sizing issues by enforcing a strict fixed layout with `8x8` pixel cells."
     ]
   }
 ];

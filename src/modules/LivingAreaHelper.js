@@ -30,7 +30,8 @@ const LivingAreaHelper = {
 
     initMixerLink: function() {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('cmd') && !window.location.href.includes('cmd=living_area')) return;
+        const cmd = urlParams.get('cmd');
+        if (cmd) return;
 
         const gearInfo = document.getElementById('gearInfo');
         if (!gearInfo) return;
@@ -244,7 +245,8 @@ const LivingAreaHelper = {
 
     initWinPercentageCalc: function() {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('cmd')) return;
+        const cmd = urlParams.get('cmd');
+        if (cmd) return;
 
         const battleBlock = document.getElementById('battleRecord');
         if (!battleBlock) return;
