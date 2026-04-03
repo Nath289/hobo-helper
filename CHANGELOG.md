@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.58] - 2026-04-03
+### Added
+- Added `FoodHelper` to manage unwanted food items.
+- Added a "Select Crap" button to automatically check all previously marked "crap" foods.
+- Added a "Mark as Crap" button to add selected foods to the "crap" list, saving them for future sweeps.
+- Integrated the new `FoodHelper` into both the main Food page (`cmd=food`) and within the Living Area.
+- Added a "Crap Foods List" section inside the Game Preferences "Helper Settings", allowing you to view and delete items you've previously marked.
+
 ## [7.57] - 2026-04-03
 ### Added
 - Added custom settings configurations for Message Board features (`MessageBoardHelper_CtrlEnter`).

@@ -58,5 +58,16 @@ Assists with inventory management when viewing the Backpack.
 Helper functionality activated during the game's 12-hour resets (lockout periods).
 - **Changelog Display**: While the game is locked for resetting, this feature prominently displays the most recent Hobo Helper changelog notes via an overlaid UI directly on the reset screen, providing reading material during the wait.
 
+### Drink Helpers
+- [x] Automatically inject stat and effect data as tooltips to all drinks when hovering your mouse over them inside of your backpack and living area page.
+
+### Food Helpers
+- [x] Food Menu Management: Add a "Mark as Crap" button to mark selected foods as "crap". Unchecked foods will be removed from the list.
+- [x] Add a "Select Crap" button to automatically select all foods you have marked as crap, making it easy to throw them away.
+- [x] Works both in the main Food page and within the Living Area Food tab.
+
+### Gang Profile Helpers
+- [x] Display real-time count of currently active members in a gang that you belong to.
+
 ---
 *Note: We are constantly updating and tweaking these modules. If you encounter any bugs, please report them!*

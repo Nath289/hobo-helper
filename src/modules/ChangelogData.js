@@ -1,5 +1,16 @@
 const ChangelogData = [
   {
+    version: "7.58",
+    date: "2026-04-03",
+    changes: [
+      "Added: Added `FoodHelper` to manage unwanted food items.",
+      "Added: Added a \"Select Crap\" button to automatically check all previously marked \"crap\" foods.",
+      "Added: Added a \"Mark as Crap\" button to add selected foods to the \"crap\" list, saving them for future sweeps.",
+      "Added: Integrated the new `FoodHelper` into both the main Food page (`cmd=food`) and within the Living Area.",
+      "Added: Added a \"Crap Foods List\" section inside the Game Preferences \"Helper Settings\", allowing you to view and delete items you've previously marked."
+    ]
+  },
+  {
     version: "7.57",
     date: "2026-04-03",
     changes: [
@@ -32,13 +43,6 @@ const ChangelogData = [
     date: "2026-04-02",
     changes: [
       "Fixed: Fixed `BernardsMansionHelper` basement map layout collapsing into a tall rectangle and sizing issues by enforcing a strict fixed layout with `8x8` pixel cells."
-    ]
-  },
-  {
-    version: "7.53",
-    date: "2026-04-02",
-    changes: [
-      "Changed: Adjusted the position of the `RecyclingBinHelper` rapid add buttons to appear before the \"Recycle em!\" button instead of after it."
     ]
   }
 ];
