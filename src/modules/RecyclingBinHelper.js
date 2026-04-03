@@ -14,7 +14,7 @@ const RecyclingBinHelper = {
         const submitBtn = document.querySelector('form[name="bin"] input[type="submit"][name="Submit"]');
 
         if (sCansInput && submitBtn) {
-            const amounts = [100, 200, 500];
+            const amounts = [100, 200, 500, 750];
 
             amounts.forEach(amount => {
                 const btn = document.createElement('input');

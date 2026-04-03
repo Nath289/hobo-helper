@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.60
+// @version      7.61
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -366,6 +366,13 @@ const CanDepoHelper = {
 
 const ChangelogData = [
   {
+    version: "7.61",
+    date: "2026-04-04",
+    changes: [
+      "Changed: Added a +750 quick add button to the `RecyclingBinHelper`."
+    ]
+  },
+  {
     version: "7.60",
     date: "2026-04-04",
     changes: [
@@ -400,13 +407,6 @@ const ChangelogData = [
       "Added: Established foundations for `LockoutHelper` (presently disabled but accessible), designed to intelligently inject recent changelog activity directly over the intermittent 12-hour game reset lockout screen.",
       "Added: Extensively documented and injected `Supported Layouts` layout warnings noting only `The Future` layout format has been officially tested throughout README, INTRO, FEATURES, and internal AGENT reference files.",
       "Added: Appended concrete rule compliance references directly into `AGENTS.md` explicitly banning automated Macros/Refreshers implementation."
-    ]
-  },
-  {
-    version: "7.56",
-    date: "2026-04-02",
-    changes: [
-      "Changed: Updated `LiquorStoreHelper` to visually highlight items from your active shopping list with a faint yellow background directly around the item's image cell."
     ]
   }
 ];
@@ -1949,7 +1949,7 @@ const RecyclingBinHelper = {
         const submitBtn = document.querySelector('form[name="bin"] input[type="submit"][name="Submit"]');
 
         if (sCansInput && submitBtn) {
-            const amounts = [100, 200, 500];
+            const amounts = [100, 200, 500, 750];
 
             amounts.forEach(amount => {
                 const btn = document.createElement('input');

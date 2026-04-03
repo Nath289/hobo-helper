@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.56
+// @version      7.61
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -366,41 +366,47 @@ const CanDepoHelper = {
 
 const ChangelogData = [
   {
-    version: "7.56",
-    date: "2026-04-02",
+    version: "7.61",
+    date: "2026-04-04",
     changes: [
-      "Changed: Updated `LiquorStoreHelper` to visually highlight items from your active shopping list with a faint yellow background directly around the item's image cell."
+      "Changed: Added a +750 quick add button to the `RecyclingBinHelper`."
     ]
   },
   {
-    version: "7.55",
-    date: "2026-04-02",
+    version: "7.60",
+    date: "2026-04-04",
     changes: [
-      "Added: Created `BackpackHelper` to dynamically display standard and mixed drink details (Base Stat Gains, Effects) on hover tooltips within the inventory.",
-      "Added: Added support for AJAX-loaded inventory tabs like the Living Area backpack.",
-      "Changed: Expanded `DrinksData` configuration to include full statistics (`base_stat_gain`, `effect`) for items using scraped data from the HoboWars wiki.",
-      "Changed: Combined and updated documentation out of various internal files directly into `README.md`."
+      "Fixed: Fixed an issue in `LivingAreaHelper` where `StatRatioTracker` would crash and fail to display if a user had gained precisely 0 stats that day, causing the \"Gained Today\" text to be missing from the DOM.",
+      "Fixed: Fixed a bug in `FoodHelper` where selecting an item that was already in your Crap Foods List but leaving others unchecked would accidentally purge the others from the tracker. Now properly syncs checked/unchecked state for visible items while preserving stored off-screen items."
     ]
   },
   {
-    version: "7.54",
-    date: "2026-04-02",
+    version: "7.59",
+    date: "2026-04-04",
     changes: [
-      "Fixed: Fixed `BernardsMansionHelper` basement map layout collapsing into a tall rectangle and sizing issues by enforcing a strict fixed layout with `8x8` pixel cells."
+      "Fixed: Addressed bugs across `LivingAreaHelper` and `FoodHelper` which caused helpers to incorrectly rely on a non-existent `cmd=living_area` URL parameter parameter resulting in UI elements frequently failing to load."
     ]
   },
   {
-    version: "7.53",
-    date: "2026-04-02",
+    version: "7.58",
+    date: "2026-04-03",
     changes: [
-      "Changed: Adjusted the position of the `RecyclingBinHelper` rapid add buttons to appear before the \"Recycle em!\" button instead of after it."
+      "Added: Added `FoodHelper` to manage unwanted food items.",
+      "Added: Added a \"Select Crap\" button to automatically check all previously marked \"crap\" foods.",
+      "Added: Added a \"Mark as Crap\" button to add selected foods to the \"crap\" list, saving them for future sweeps.",
+      "Added: Integrated the new `FoodHelper` into both the main Food page (`cmd=food`) and within the Living Area.",
+      "Added: Added a \"Crap Foods List\" section inside the Game Preferences \"Helper Settings\", allowing you to view and delete items you've previously marked."
     ]
   },
   {
-    version: "7.52",
-    date: "2026-04-02",
+    version: "7.57",
+    date: "2026-04-03",
     changes: [
-      "Added: Added `RecyclingBinHelper` to quickly add fixed amounts (+100, +200, +500) to the recycling bin input."
+      "Added: Added custom settings configurations for Message Board features (`MessageBoardHelper_CtrlEnter`).",
+      "Added: Added a `💾 Save Repliers List` button to `MessageBoardHelper` explicitly for Gang Board posts (`cmd=gathering&do=vpost`), securely extracting and exporting a unique timestamped list of user names and IDs replying to the active topic locally.",
+      "Added: Established foundations for `LockoutHelper` (presently disabled but accessible), designed to intelligently inject recent changelog activity directly over the intermittent 12-hour game reset lockout screen.",
+      "Added: Extensively documented and injected `Supported Layouts` layout warnings noting only `The Future` layout format has been officially tested throughout README, INTRO, FEATURES, and internal AGENT reference files.",
+      "Added: Appended concrete rule compliance references directly into `AGENTS.md` explicitly banning automated Macros/Refreshers implementation."
     ]
   }
 ];
@@ -580,6 +586,122 @@ const DrinksHelper = {
                 handleBartenderGuide();
             }
         }
+
+const FoodHelper = {
+    init: function() {
+        const settings = Utils.getSettings();
+        if (settings?.FoodHelper?.enabled === false) return;
+
+        // Ensure we are either on the food page or living area page
+        const urlParams = new URLSearchParams(window.location.search);
+        const cmd = urlParams.get('cmd');
+        const isFoodMenu = cmd === 'food';
+        const isLivingArea = !cmd; // Matches null or ""
+
+        if (!isFoodMenu && !isLivingArea) return;
+
+        this.observeFood();
+    },
+
+    observeFood: function() {
+        const bindButtons = () => {
+            const throwBtn = document.getElementById('throw');
+            if (!throwBtn || throwBtn.hasAttribute('data-fh-injected')) return;
+
+            throwBtn.setAttribute('data-fh-injected', 'true');
+
+            // inject "Select Crap" and "Mark as Crap" buttons next to the throw button
+            const btnMark = document.createElement('input');
+            btnMark.type = 'button';
+            btnMark.value = 'Mark as Crap';
+            btnMark.style.marginLeft = '10px';
+            btnMark.onclick = (e) => {
+                e.preventDefault();
+                this.markAsCrap(e.target);
+            };
+
+            const btnSelect = document.createElement('input');
+            btnSelect.type = 'button';
+            btnSelect.value = 'Select Crap';
+            btnSelect.style.marginLeft = '10px';
+            btnSelect.onclick = (e) => {
+                e.preventDefault();
+                this.selectCrap();
+            };
+
+            // Insert after throwBtn (in reverse order because we rely on nextSibling)
+            throwBtn.parentNode.insertBefore(btnMark, throwBtn.nextSibling);
+            throwBtn.parentNode.insertBefore(btnSelect, throwBtn.nextSibling);
+        };
+
+        let timeout = null;
+        const observer = new MutationObserver(() => {
+            if (timeout) clearTimeout(timeout);
+            timeout = setTimeout(bindButtons, 250);
+        });
+
+        // The UI might be inside a #foodTab container (living area) or the main document body
+        const targetNode = document.getElementById('foodTab') ? document.getElementById('foodTab') : document.body;
+        if (targetNode) {
+            observer.observe(targetNode, { childList: true, subtree: true });
+        }
+
+        // Initial run
+        bindButtons();
+    },
+
+    getFoodNameFromCheckbox: function(checkbox) {
+        // The food name is usually in the title of the image within the next <a> element
+        const nextLink = checkbox.nextElementSibling;
+        if (nextLink && nextLink.tagName === 'A') {
+            const img = nextLink.querySelector('img');
+            if (img && img.title) {
+                return img.title.trim();
+            }
+            // Fallback: extract text directly
+            return nextLink.innerText.trim();
+        }
+        return null;
+    },
+
+    selectCrap: function() {
+        const crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
+        const checkboxes = document.querySelectorAll('.checkMe');
+
+        checkboxes.forEach(cb => {
+            const foodName = this.getFoodNameFromCheckbox(cb);
+            if (foodName && crapList.includes(foodName)) {
+                cb.checked = true;
+            } else {
+                cb.checked = false;
+            }
+        });
+    },
+
+    markAsCrap: function(btn) {
+        const checkboxes = document.querySelectorAll('.checkMe');
+        let crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
+
+        checkboxes.forEach(cb => {
+            const foodName = this.getFoodNameFromCheckbox(cb);
+            if (foodName) {
+                if (cb.checked) {
+                    if (!crapList.includes(foodName)) {
+                        crapList.push(foodName);
+                    }
+                } else {
+                    crapList = crapList.filter(name => name !== foodName);
+                }
+            }
+        });
+
+        localStorage.setItem('hw_helper_food_crap', JSON.stringify(crapList));
+        if (btn) {
+            btn.value = `✅ Updated Crap List`;
+            setTimeout(() => { btn.value = 'Mark as Crap'; }, 3000);
+        }
+    }
+};
 
 const KurtzCampHelper = {
     init: function() {
@@ -811,7 +933,8 @@ const LivingAreaHelper = {
 
     initMixerLink: function() {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('cmd') && !window.location.href.includes('cmd=living_area')) return;
+        const cmd = urlParams.get('cmd');
+        if (cmd) return;
 
         const gearInfo = document.getElementById('gearInfo');
         if (!gearInfo) return;
@@ -872,7 +995,7 @@ const LivingAreaHelper = {
                 speed: findValue('Speed:'),
                 power: findValue('Power:'),
                 strength: findValue('Strength:'),
-                today: findValue('Gained Today:'),
+                today: findValue('Gained Today:') !== null ? findValue('Gained Today:') : 0,
                 biggest: findValue('Biggest Gain:')
             };
 
@@ -1025,7 +1148,8 @@ const LivingAreaHelper = {
 
     initWinPercentageCalc: function() {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('cmd')) return;
+        const cmd = urlParams.get('cmd');
+        if (cmd) return;
 
         const battleBlock = document.getElementById('battleRecord');
         if (!battleBlock) return;
@@ -1234,7 +1358,7 @@ const MessageBoardHelper = {
     },
 
     initGangPostFeatures: function(settings) {
-        if (settings?.MessageBoardHelper_SaveGangReplies === false) return;
+        if (settings?.MessageBoardHelper_SaveRepliers === false) return;
 
         const pageText = document.body.innerText || "";
         // Check if we're on the Gang Board by looking at the page breadcrumb
@@ -1253,7 +1377,7 @@ const MessageBoardHelper = {
 
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.textContent = '💾 Save Gang Replies';
+        btn.textContent = '💾 Save Repliers List';
         btn.title = 'Collects the names of everyone who has replied to this post';
         btn.style.cssText = 'margin-bottom: 8px; padding: 5px 12px; cursor: pointer; font-weight: bold; background: #eee; border: 1px solid #aaa; border-radius: 3px; color: #333; font-family: Tahoma, sans-serif; font-size: 11px; display: block;';
         
@@ -1303,7 +1427,7 @@ const MessageBoardHelper = {
             console.log(`[Hobo Helper] Gathered gang replies for topic: "${topicName}"`, savedPosts[topicName]);
             
             btn.textContent = `✅ Saved ${hoboList.length} Unique Hobos!`;
-            setTimeout(() => { btn.textContent = '💾 Save Gang Replies'; }, 3000);
+            setTimeout(() => { btn.textContent = '💾 Save Repliers List'; }, 3000);
         });
 
         // Insert just above the header text's table container and replace preceding <br> tags
@@ -1825,7 +1949,7 @@ const RecyclingBinHelper = {
         const submitBtn = document.querySelector('form[name="bin"] input[type="submit"][name="Submit"]');
 
         if (sCansInput && submitBtn) {
-            const amounts = [100, 200, 500];
+            const amounts = [100, 200, 500, 750];
 
             amounts.forEach(amount => {
                 const btn = document.createElement('input');
@@ -1932,7 +2056,7 @@ const SettingsHelper = {
             ],
             'MessageBoardHelper': [
                 { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
-                { key: 'MessageBoardHelper_SaveGangReplies', label: 'Save Gang Replies Button' }
+                { key: 'MessageBoardHelper_SaveRepliers', label: 'Save Repliers List Button' }
             ]
         };
 
@@ -1951,6 +2075,60 @@ const SettingsHelper = {
                         subContainer.appendChild(createToggle(feature.key, feature.label));
                     });
                     contentArea.appendChild(subContainer);
+                }
+
+                // Custom settings for FoodHelper
+                if (modName === 'FoodHelper') {
+                    const foodContainer = document.createElement('div');
+                    foodContainer.style.paddingLeft = '40px';
+                    foodContainer.style.marginTop = '10px';
+
+                    const label = document.createElement('b');
+                    label.innerText = 'Crap Foods List:';
+                    foodContainer.appendChild(label);
+                    foodContainer.appendChild(document.createElement('br'));
+
+                    const listContainer = document.createElement('div');
+                    listContainer.style.marginTop = '5px';
+                    listContainer.style.background = '#f1f1f1';
+                    listContainer.style.padding = '10px';
+                    listContainer.style.border = '1px solid #ccc';
+                    listContainer.style.maxWidth = '300px';
+
+                    const crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
+                    if (crapList.length === 0) {
+                        listContainer.innerText = 'No foods marked as crap.';
+                    } else {
+                        const ul = document.createElement('ul');
+                        ul.style.margin = '0';
+                        ul.style.paddingLeft = '20px';
+                        crapList.forEach(food => {
+                            const li = document.createElement('li');
+                            const a = document.createElement('a');
+                            a.href = '#';
+                            a.innerText = '[x]';
+                            a.style.color = 'red';
+                            a.style.textDecoration = 'none';
+                            a.style.marginRight = '5px';
+                            a.title = 'Remove from Crap list';
+                            a.onclick = (e) => {
+                                e.preventDefault();
+                                let currentList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
+                                const updatedList = currentList.filter(f => f !== food);
+                                localStorage.setItem('hw_helper_food_crap', JSON.stringify(updatedList));
+                                li.remove();
+                                if (updatedList.length === 0) {
+                                    listContainer.innerText = 'No foods marked as crap.';
+                                }
+                            };
+                            li.appendChild(a);
+                            li.appendChild(document.createTextNode(food));
+                            ul.appendChild(li);
+                        });
+                        listContainer.appendChild(ul);
+                    }
+                    foodContainer.appendChild(listContainer);
+                    contentArea.appendChild(foodContainer);
                 }
             });
         }
@@ -2217,6 +2395,7 @@ const WellnessClinicHelper = {
         ChangelogData,
         DrinksData,
         DrinksHelper,
+        FoodHelper,
         KurtzCampHelper,
         LiquorStoreHelper,
         LivingAreaHelper,

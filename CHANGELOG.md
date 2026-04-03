@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.61] - 2026-04-04
+### Changed
+- Added a +750 quick add button to the `RecyclingBinHelper`.
+
 ## [7.60] - 2026-04-04
 ### Fixed
 - Fixed an issue in `LivingAreaHelper` where `StatRatioTracker` would crash and fail to display if a user had gained precisely 0 stats that day, causing the "Gained Today" text to be missing from the DOM.
