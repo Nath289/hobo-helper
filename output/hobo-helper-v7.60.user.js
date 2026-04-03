@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.55
+// @version      7.60
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -364,6 +364,53 @@ const CanDepoHelper = {
     }
 };
 
+const ChangelogData = [
+  {
+    version: "7.60",
+    date: "2026-04-04",
+    changes: [
+      "Fixed: Fixed an issue in `LivingAreaHelper` where `StatRatioTracker` would crash and fail to display if a user had gained precisely 0 stats that day, causing the \"Gained Today\" text to be missing from the DOM.",
+      "Fixed: Fixed a bug in `FoodHelper` where selecting an item that was already in your Crap Foods List but leaving others unchecked would accidentally purge the others from the tracker. Now properly syncs checked/unchecked state for visible items while preserving stored off-screen items."
+    ]
+  },
+  {
+    version: "7.59",
+    date: "2026-04-04",
+    changes: [
+      "Fixed: Addressed bugs across `LivingAreaHelper` and `FoodHelper` which caused helpers to incorrectly rely on a non-existent `cmd=living_area` URL parameter parameter resulting in UI elements frequently failing to load."
+    ]
+  },
+  {
+    version: "7.58",
+    date: "2026-04-03",
+    changes: [
+      "Added: Added `FoodHelper` to manage unwanted food items.",
+      "Added: Added a \"Select Crap\" button to automatically check all previously marked \"crap\" foods.",
+      "Added: Added a \"Mark as Crap\" button to add selected foods to the \"crap\" list, saving them for future sweeps.",
+      "Added: Integrated the new `FoodHelper` into both the main Food page (`cmd=food`) and within the Living Area.",
+      "Added: Added a \"Crap Foods List\" section inside the Game Preferences \"Helper Settings\", allowing you to view and delete items you've previously marked."
+    ]
+  },
+  {
+    version: "7.57",
+    date: "2026-04-03",
+    changes: [
+      "Added: Added custom settings configurations for Message Board features (`MessageBoardHelper_CtrlEnter`).",
+      "Added: Added a `💾 Save Repliers List` button to `MessageBoardHelper` explicitly for Gang Board posts (`cmd=gathering&do=vpost`), securely extracting and exporting a unique timestamped list of user names and IDs replying to the active topic locally.",
+      "Added: Established foundations for `LockoutHelper` (presently disabled but accessible), designed to intelligently inject recent changelog activity directly over the intermittent 12-hour game reset lockout screen.",
+      "Added: Extensively documented and injected `Supported Layouts` layout warnings noting only `The Future` layout format has been officially tested throughout README, INTRO, FEATURES, and internal AGENT reference files.",
+      "Added: Appended concrete rule compliance references directly into `AGENTS.md` explicitly banning automated Macros/Refreshers implementation."
+    ]
+  },
+  {
+    version: "7.56",
+    date: "2026-04-02",
+    changes: [
+      "Changed: Updated `LiquorStoreHelper` to visually highlight items from your active shopping list with a faint yellow background directly around the item's image cell."
+    ]
+  }
+];
+
 const DrinksData = {
             // Data structure containing all drinks in the game
             drinks: {
@@ -539,6 +586,122 @@ const DrinksHelper = {
                 handleBartenderGuide();
             }
         }
+
+const FoodHelper = {
+    init: function() {
+        const settings = Utils.getSettings();
+        if (settings?.FoodHelper?.enabled === false) return;
+
+        // Ensure we are either on the food page or living area page
+        const urlParams = new URLSearchParams(window.location.search);
+        const cmd = urlParams.get('cmd');
+        const isFoodMenu = cmd === 'food';
+        const isLivingArea = !cmd; // Matches null or ""
+
+        if (!isFoodMenu && !isLivingArea) return;
+
+        this.observeFood();
+    },
+
+    observeFood: function() {
+        const bindButtons = () => {
+            const throwBtn = document.getElementById('throw');
+            if (!throwBtn || throwBtn.hasAttribute('data-fh-injected')) return;
+
+            throwBtn.setAttribute('data-fh-injected', 'true');
+
+            // inject "Select Crap" and "Mark as Crap" buttons next to the throw button
+            const btnMark = document.createElement('input');
+            btnMark.type = 'button';
+            btnMark.value = 'Mark as Crap';
+            btnMark.style.marginLeft = '10px';
+            btnMark.onclick = (e) => {
+                e.preventDefault();
+                this.markAsCrap(e.target);
+            };
+
+            const btnSelect = document.createElement('input');
+            btnSelect.type = 'button';
+            btnSelect.value = 'Select Crap';
+            btnSelect.style.marginLeft = '10px';
+            btnSelect.onclick = (e) => {
+                e.preventDefault();
+                this.selectCrap();
+            };
+
+            // Insert after throwBtn (in reverse order because we rely on nextSibling)
+            throwBtn.parentNode.insertBefore(btnMark, throwBtn.nextSibling);
+            throwBtn.parentNode.insertBefore(btnSelect, throwBtn.nextSibling);
+        };
+
+        let timeout = null;
+        const observer = new MutationObserver(() => {
+            if (timeout) clearTimeout(timeout);
+            timeout = setTimeout(bindButtons, 250);
+        });
+
+        // The UI might be inside a #foodTab container (living area) or the main document body
+        const targetNode = document.getElementById('foodTab') ? document.getElementById('foodTab') : document.body;
+        if (targetNode) {
+            observer.observe(targetNode, { childList: true, subtree: true });
+        }
+
+        // Initial run
+        bindButtons();
+    },
+
+    getFoodNameFromCheckbox: function(checkbox) {
+        // The food name is usually in the title of the image within the next <a> element
+        const nextLink = checkbox.nextElementSibling;
+        if (nextLink && nextLink.tagName === 'A') {
+            const img = nextLink.querySelector('img');
+            if (img && img.title) {
+                return img.title.trim();
+            }
+            // Fallback: extract text directly
+            return nextLink.innerText.trim();
+        }
+        return null;
+    },
+
+    selectCrap: function() {
+        const crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
+        const checkboxes = document.querySelectorAll('.checkMe');
+
+        checkboxes.forEach(cb => {
+            const foodName = this.getFoodNameFromCheckbox(cb);
+            if (foodName && crapList.includes(foodName)) {
+                cb.checked = true;
+            } else {
+                cb.checked = false;
+            }
+        });
+    },
+
+    markAsCrap: function(btn) {
+        const checkboxes = document.querySelectorAll('.checkMe');
+        let crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
+
+        checkboxes.forEach(cb => {
+            const foodName = this.getFoodNameFromCheckbox(cb);
+            if (foodName) {
+                if (cb.checked) {
+                    if (!crapList.includes(foodName)) {
+                        crapList.push(foodName);
+                    }
+                } else {
+                    crapList = crapList.filter(name => name !== foodName);
+                }
+            }
+        });
+
+        localStorage.setItem('hw_helper_food_crap', JSON.stringify(crapList));
+        if (btn) {
+            btn.value = `✅ Updated Crap List`;
+            setTimeout(() => { btn.value = 'Mark as Crap'; }, 3000);
+        }
+    }
+};
 
 const KurtzCampHelper = {
     init: function() {
@@ -770,7 +933,8 @@ const LivingAreaHelper = {
 
     initMixerLink: function() {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('cmd') && !window.location.href.includes('cmd=living_area')) return;
+        const cmd = urlParams.get('cmd');
+        if (cmd) return;
 
         const gearInfo = document.getElementById('gearInfo');
         if (!gearInfo) return;
@@ -831,7 +995,7 @@ const LivingAreaHelper = {
                 speed: findValue('Speed:'),
                 power: findValue('Power:'),
                 strength: findValue('Strength:'),
-                today: findValue('Gained Today:'),
+                today: findValue('Gained Today:') !== null ? findValue('Gained Today:') : 0,
                 biggest: findValue('Biggest Gain:')
             };
 
@@ -984,7 +1148,8 @@ const LivingAreaHelper = {
 
     initWinPercentageCalc: function() {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('cmd')) return;
+        const cmd = urlParams.get('cmd');
+        if (cmd) return;
 
         const battleBlock = document.getElementById('battleRecord');
         if (!battleBlock) return;
@@ -1027,39 +1192,132 @@ const LivingAreaHelper = {
     }
 }
 
+const LockoutHelper = {
+    init: function() {
+        // The game auto-locks during the 12-hour reset.
+        // We detect this specific screen via document title or body text.
+        const isLockoutScreen = document.title.includes("Closed for daily maintenance") ||
+                                (document.body.innerText || "").includes("Temporary Lockout");
+
+        if (!isLockoutScreen) return;
+
+        console.log("LockoutHelper: Detected game lockout screen.");
+
+        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+
+        if (savedSettings['LockoutHelper_ShowChangelog'] !== false) {
+            this.renderChangelog();
+        }
+    },
+
+    renderChangelog: function() {
+        if (typeof ChangelogData === 'undefined') {
+            console.error("LockoutHelper: ChangelogData is missing. Cannot display changelog.");
+            return;
+        }
+
+        const container = document.createElement("div");
+        container.id = "hw-helper-changelog-container";
+        // Styling matches "The Future" layout aesthetic broadly, but forces visibility
+        container.style.cssText = "margin: 20px auto; padding: 15px; max-width: 600px; background-color: #f9f9f9; border: 1px dashed #777; border-radius: 8px; text-align: left; font-family: Tahoma, Arial, sans-serif; color: #333; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);";
+
+        const title = document.createElement("h2");
+        title.innerText = "Hobo Helper - Recent Updates";
+        title.style.margin = "0 0 10px 0";
+        title.style.borderBottom = "1px solid #ccc";
+        title.style.paddingBottom = "5px";
+        title.style.fontSize = "16px";
+        container.appendChild(title);
+
+        ChangelogData.forEach(release => {
+            const releaseBlock = document.createElement("div");
+            releaseBlock.style.marginTop = "10px";
+
+            const versionHeader = document.createElement("div");
+            versionHeader.innerHTML = `<strong>v${release.version}</strong> <span style="font-size: 11px; color: #666;">(${release.date})</span>`;
+            versionHeader.style.fontSize = "14px";
+            releaseBlock.appendChild(versionHeader);
+
+            const changesList = document.createElement("ul");
+            changesList.style.margin = "5px 0 0 0";
+            changesList.style.paddingLeft = "20px";
+            changesList.style.fontSize = "12px";
+
+            release.changes.forEach(change => {
+                const li = document.createElement("li");
+                li.style.marginBottom = "3px";
+                // Simple markdown parsing for inline code blocks (backticks)
+                let formattedChange = change.replace(/`([^`]+)`/g, '<code style="background-color: #eaeaea; padding: 1px 4px; border-radius: 3px; font-family: monospace;">$1</code>');
+                // Bold prefixes (e.g. Added:, Changed:, Fixed:)
+                formattedChange = formattedChange.replace(/^(Added:|Changed:|Fixed:)/g, '<strong>$1</strong>');
+                li.innerHTML = formattedChange;
+                changesList.appendChild(li);
+            });
+
+            releaseBlock.appendChild(changesList);
+            container.appendChild(releaseBlock);
+        });
+
+        const note = document.createElement("div");
+        note.innerHTML = "<em>You can disable this popup in the Hobo Helper Settings on the Preferences page.</em>";
+        note.style.fontSize = "10px";
+        note.style.color = "#888";
+        note.style.marginTop = "15px";
+        note.style.textAlign = "center";
+        container.appendChild(note);
+
+        // Inject below the main lockout message content.
+        // The lockout screen content lives inside a white table data cell.
+        const targetTd = document.querySelector('td[bgcolor="#FFFFFF"]');
+
+        if (targetTd) {
+            // Append it nicely inside the white background area
+            targetTd.appendChild(container);
+        } else {
+            // Fallback
+            const centerWrapper = document.createElement('div');
+            centerWrapper.align = 'center';
+            centerWrapper.appendChild(container);
+            document.body.appendChild(centerWrapper);
+        }
+    }
+};
+
 const MessageBoardHelper = {
     init: function() {
         if (!Utils.isCurrentPage('cmd=gathering')) return;
 
-        this.initMessageBoardFeatures();
-    },
-
-    initMessageBoardFeatures: function() {
-        // Basic setup for message board features based on settings
         const settings = Utils.getSettings();
         if (settings?.MessageBoardHelper?.enabled === false) return;
 
-        this.enhanceMessageEditor();
+        this.initMessageBoardFeatures(settings);
+
+        if (Utils.isCurrentPage('do=vpost')) {
+            this.initGangPostFeatures(settings);
+        }
     },
 
-    enhanceMessageEditor: function() {
+    initMessageBoardFeatures: function(settings) {
+        this.enhanceMessageEditor(settings);
+    },
+
+    enhanceMessageEditor: function(settings) {
         const messageArea = document.querySelector('textarea[name="t_message"]');
         if (!messageArea) return;
 
-        // Auto-focus the message area
-        messageArea.focus();
-
         // Ctrl + Enter to submit
-        messageArea.addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                const submitBtn = document.querySelector('input[type="submit"][name="button"]') ||
-                                  document.querySelector('input[type="submit"][value*="Post"]');
-                if (submitBtn) {
-                    e.preventDefault();
-                    submitBtn.click();
+        if (settings?.MessageBoardHelper_CtrlEnter !== false) {
+            messageArea.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    const submitBtn = document.querySelector('input[type="submit"][name="button"]') ||
+                                      document.querySelector('input[type="submit"][value*="Post"]');
+                    if (submitBtn) {
+                        e.preventDefault();
+                        submitBtn.click();
+                    }
                 }
-            }
-        });
+            });
+        }
 
         this.addPaidMessageButton(messageArea);
     },
@@ -1097,6 +1355,94 @@ const MessageBoardHelper = {
         });
 
         parentDiv.appendChild(btn);
+    },
+
+    initGangPostFeatures: function(settings) {
+        if (settings?.MessageBoardHelper_SaveRepliers === false) return;
+
+        const pageText = document.body.innerText || "";
+        // Check if we're on the Gang Board by looking at the page breadcrumb
+        const breadcrumbMatch = pageText.match(/Board Selection\s*\/\s*Gang Board\s*\/\s*Topic:\s*(.*?)\s*(?:\[Page:|\[Latest\]|\n|$)/i);
+        if (!breadcrumbMatch) return; // Not a Gang Board post or format didn't match
+
+        const topicName = breadcrumbMatch[1].trim();
+
+        // Find "Now Viewing Topic & Replies" text nodes
+        const headerNodes = Array.from(document.querySelectorAll('b, strong, th, td, div, font, span')).filter(el => el.textContent.trim() === 'Now Viewing Topic & Replies');
+        if (headerNodes.length === 0) return;
+        
+        // Grab the deepest node to inject our button right above it
+        const headerToInjectAbove = headerNodes[headerNodes.length - 1]; 
+        const tableNode = headerToInjectAbove.closest('table');
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = '💾 Save Repliers List';
+        btn.title = 'Collects the names of everyone who has replied to this post';
+        btn.style.cssText = 'margin-bottom: 8px; padding: 5px 12px; cursor: pointer; font-weight: bold; background: #eee; border: 1px solid #aaa; border-radius: 3px; color: #333; font-family: Tahoma, sans-serif; font-size: 11px; display: block;';
+        
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Only search inside the replies table to avoid grabbing the current logged-in user from the top nav
+            const searchScope = tableNode || document;
+            const playerLinks = Array.from(searchScope.querySelectorAll('a[href*="cmd=player&ID="]'));
+            const hoboMap = new Map();
+            
+            let firstPostTr = null;
+
+            playerLinks.forEach(link => {
+                const nameNode = link.querySelector('.player-name') || link;
+                if (!nameNode) return;
+
+                const tr = link.closest('tr');
+                if (!firstPostTr && tr) {
+                    firstPostTr = tr; // The first row containing a player is the original topic post
+                }
+
+                // Skip any player links found within the original topic post
+                if (tr && tr === firstPostTr) return;
+
+                const idMatch = link.href.match(/ID=(\d+)/i);
+                if (idMatch) {
+                    const id = idMatch[1];
+                    const name = nameNode.textContent.trim();
+                    if (name && !hoboMap.has(id)) {
+                        hoboMap.set(id, { id: id, name: name });
+                    }
+                }
+            });
+            
+            const hoboList = Array.from(hoboMap.values());
+            
+            const savedPosts = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+            savedPosts[topicName] = { 
+                timestamp: Date.now(),
+                topic: topicName,
+                totalHobos: hoboList.length,
+                hobos: hoboList 
+            };
+            localStorage.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
+            
+            console.log(`[Hobo Helper] Gathered gang replies for topic: "${topicName}"`, savedPosts[topicName]);
+            
+            btn.textContent = `✅ Saved ${hoboList.length} Unique Hobos!`;
+            setTimeout(() => { btn.textContent = '💾 Save Repliers List'; }, 3000);
+        });
+
+        // Insert just above the header text's table container and replace preceding <br> tags
+        if (tableNode) {
+            // Traverse backwards to remove empty text nodes and <br> tags
+            let prev = tableNode.previousSibling;
+            while (prev && (prev.nodeName === 'BR' || (prev.nodeType === 3 && prev.nodeValue.trim() === ''))) {
+                const toRemove = prev;
+                prev = prev.previousSibling;
+                toRemove.parentNode.removeChild(toRemove);
+            }
+            tableNode.parentNode.insertBefore(btn, tableNode);
+        } else {
+            headerToInjectAbove.parentNode.insertBefore(btn, headerToInjectAbove);
+        }
     }
 };
 
@@ -1704,12 +2050,21 @@ const SettingsHelper = {
             ],
             'BernardsMansionHelper': [
                 { key: 'BernardsMansionHelper_BasementMap', label: 'Basement Map' }
+            ],
+            'LockoutHelper': [
+                { key: 'LockoutHelper_ShowChangelog', label: 'Show Changelog' }
+            ],
+            'MessageBoardHelper': [
+                { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
+                { key: 'MessageBoardHelper_SaveRepliers', label: 'Save Repliers List Button' }
             ]
         };
 
         if (typeof Modules !== 'undefined') {
             Object.keys(Modules).forEach(modName => {
                 if (modName === 'SettingsHelper') return; 
+                if (typeof Modules[modName].init !== 'function') return; // Hide data objects like DrinksData / ChangelogData
+
                 contentArea.appendChild(createToggle(modName, `Enable ${modName}`));
 
                 // Render sub-features if this module has them defined
@@ -1720,6 +2075,60 @@ const SettingsHelper = {
                         subContainer.appendChild(createToggle(feature.key, feature.label));
                     });
                     contentArea.appendChild(subContainer);
+                }
+
+                // Custom settings for FoodHelper
+                if (modName === 'FoodHelper') {
+                    const foodContainer = document.createElement('div');
+                    foodContainer.style.paddingLeft = '40px';
+                    foodContainer.style.marginTop = '10px';
+
+                    const label = document.createElement('b');
+                    label.innerText = 'Crap Foods List:';
+                    foodContainer.appendChild(label);
+                    foodContainer.appendChild(document.createElement('br'));
+
+                    const listContainer = document.createElement('div');
+                    listContainer.style.marginTop = '5px';
+                    listContainer.style.background = '#f1f1f1';
+                    listContainer.style.padding = '10px';
+                    listContainer.style.border = '1px solid #ccc';
+                    listContainer.style.maxWidth = '300px';
+
+                    const crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
+                    if (crapList.length === 0) {
+                        listContainer.innerText = 'No foods marked as crap.';
+                    } else {
+                        const ul = document.createElement('ul');
+                        ul.style.margin = '0';
+                        ul.style.paddingLeft = '20px';
+                        crapList.forEach(food => {
+                            const li = document.createElement('li');
+                            const a = document.createElement('a');
+                            a.href = '#';
+                            a.innerText = '[x]';
+                            a.style.color = 'red';
+                            a.style.textDecoration = 'none';
+                            a.style.marginRight = '5px';
+                            a.title = 'Remove from Crap list';
+                            a.onclick = (e) => {
+                                e.preventDefault();
+                                let currentList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
+                                const updatedList = currentList.filter(f => f !== food);
+                                localStorage.setItem('hw_helper_food_crap', JSON.stringify(updatedList));
+                                li.remove();
+                                if (updatedList.length === 0) {
+                                    listContainer.innerText = 'No foods marked as crap.';
+                                }
+                            };
+                            li.appendChild(a);
+                            li.appendChild(document.createTextNode(food));
+                            ul.appendChild(li);
+                        });
+                        listContainer.appendChild(ul);
+                    }
+                    foodContainer.appendChild(listContainer);
+                    contentArea.appendChild(foodContainer);
                 }
             });
         }
@@ -1983,11 +2392,14 @@ const WellnessClinicHelper = {
         BankHelper,
         BernardsMansionHelper,
         CanDepoHelper,
+        ChangelogData,
         DrinksData,
         DrinksHelper,
+        FoodHelper,
         KurtzCampHelper,
         LiquorStoreHelper,
         LivingAreaHelper,
+        LockoutHelper,
         MessageBoardHelper,
         MixerHelper,
         NorthernFenceHelper,

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.59
+// @version      7.60
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -366,6 +366,14 @@ const CanDepoHelper = {
 
 const ChangelogData = [
   {
+    version: "7.60",
+    date: "2026-04-04",
+    changes: [
+      "Fixed: Fixed an issue in `LivingAreaHelper` where `StatRatioTracker` would crash and fail to display if a user had gained precisely 0 stats that day, causing the \"Gained Today\" text to be missing from the DOM.",
+      "Fixed: Fixed a bug in `FoodHelper` where selecting an item that was already in your Crap Foods List but leaving others unchecked would accidentally purge the others from the tracker. Now properly syncs checked/unchecked state for visible items while preserving stored off-screen items."
+    ]
+  },
+  {
     version: "7.59",
     date: "2026-04-04",
     changes: [
@@ -399,16 +407,6 @@ const ChangelogData = [
     date: "2026-04-02",
     changes: [
       "Changed: Updated `LiquorStoreHelper` to visually highlight items from your active shopping list with a faint yellow background directly around the item's image cell."
-    ]
-  },
-  {
-    version: "7.55",
-    date: "2026-04-02",
-    changes: [
-      "Added: Created `BackpackHelper` to dynamically display standard and mixed drink details (Base Stat Gains, Effects) on hover tooltips within the inventory.",
-      "Added: Added support for AJAX-loaded inventory tabs like the Living Area backpack.",
-      "Changed: Expanded `DrinksData` configuration to include full statistics (`base_stat_gain`, `effect`) for items using scraped data from the HoboWars wiki.",
-      "Changed: Combined and updated documentation out of various internal files directly into `README.md`."
     ]
   }
 ];
@@ -682,20 +680,24 @@ const FoodHelper = {
 
     markAsCrap: function(btn) {
         const checkboxes = document.querySelectorAll('.checkMe');
-        const newCrap = [];
+        let crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
 
         checkboxes.forEach(cb => {
-            if (cb.checked) {
-                const foodName = this.getFoodNameFromCheckbox(cb);
-                if (foodName && !newCrap.includes(foodName)) {
-                    newCrap.push(foodName);
+            const foodName = this.getFoodNameFromCheckbox(cb);
+            if (foodName) {
+                if (cb.checked) {
+                    if (!crapList.includes(foodName)) {
+                        crapList.push(foodName);
+                    }
+                } else {
+                    crapList = crapList.filter(name => name !== foodName);
                 }
             }
         });
 
-        localStorage.setItem('hw_helper_food_crap', JSON.stringify(newCrap));
+        localStorage.setItem('hw_helper_food_crap', JSON.stringify(crapList));
         if (btn) {
-            btn.value = `✅ Marked ${newCrap.length} items`;
+            btn.value = `✅ Updated Crap List`;
             setTimeout(() => { btn.value = 'Mark as Crap'; }, 3000);
         }
     }
@@ -993,7 +995,7 @@ const LivingAreaHelper = {
                 speed: findValue('Speed:'),
                 power: findValue('Power:'),
                 strength: findValue('Strength:'),
-                today: findValue('Gained Today:'),
+                today: findValue('Gained Today:') !== null ? findValue('Gained Today:') : 0,
                 biggest: findValue('Biggest Gain:')
             };
 

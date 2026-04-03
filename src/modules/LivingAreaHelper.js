@@ -92,7 +92,7 @@ const LivingAreaHelper = {
                 speed: findValue('Speed:'),
                 power: findValue('Power:'),
                 strength: findValue('Strength:'),
-                today: findValue('Gained Today:'),
+                today: findValue('Gained Today:') !== null ? findValue('Gained Today:') : 0,
                 biggest: findValue('Biggest Gain:')
             };
 

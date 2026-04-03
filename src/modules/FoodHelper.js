@@ -91,20 +91,24 @@ const FoodHelper = {
 
     markAsCrap: function(btn) {
         const checkboxes = document.querySelectorAll('.checkMe');
-        const newCrap = [];
+        let crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
 
         checkboxes.forEach(cb => {
-            if (cb.checked) {
-                const foodName = this.getFoodNameFromCheckbox(cb);
-                if (foodName && !newCrap.includes(foodName)) {
-                    newCrap.push(foodName);
+            const foodName = this.getFoodNameFromCheckbox(cb);
+            if (foodName) {
+                if (cb.checked) {
+                    if (!crapList.includes(foodName)) {
+                        crapList.push(foodName);
+                    }
+                } else {
+                    crapList = crapList.filter(name => name !== foodName);
                 }
             }
         });
 
-        localStorage.setItem('hw_helper_food_crap', JSON.stringify(newCrap));
+        localStorage.setItem('hw_helper_food_crap', JSON.stringify(crapList));
         if (btn) {
-            btn.value = `✅ Marked ${newCrap.length} items`;
+            btn.value = `✅ Updated Crap List`;
             setTimeout(() => { btn.value = 'Mark as Crap'; }, 3000);
         }
     }
