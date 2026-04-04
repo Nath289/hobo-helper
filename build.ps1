@@ -1,4 +1,4 @@
-$version = "7.72"
+$version = "7.73"
 $templateContent = Get-Content -Path "src/template.js" -Raw
 
 $outputFile = "output/hobo-helper-v${version}.user.js"

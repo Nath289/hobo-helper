@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.68
+// @version      7.73
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -92,6 +92,16 @@ const Utils = {
         },
         getFightersLunchCost: function(level) {
             return ((10 * (level + 3)) / 2) * 2;
+        },
+        getHoboAgeInDays: function() {
+            const ageLine = document.querySelector('#personalInfo .line font[title*="days"]');
+            if (ageLine && ageLine.title) {
+                const match = ageLine.title.match(/(\d+)\s*days/i);
+                if (match) {
+                    return parseInt(match[1], 10);
+                }
+            }
+            return null;
         }
 
 };
@@ -399,45 +409,36 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
-            version: "7.68",
+            version: "7.73",
             date: "2026-04-04",
             type: "Added",
             notes: [
-                "Added an \"Add Payment\" button to individual replies within Gang Message Board posts locally tracking custom transactions linked to specific topic responses.",
-                "The button opens a floating panel pre-populated with the replier's Hobo Name, Hobo ID, and a suggested amount securely parsed from the post text, allowing local storage of expected payments."
+                "Added \"Enable Improved Avatars\" sub-feature to DisplayHelper to apply custom CSS shaping and styling to avatar images, including online status indicators. This can be configured in the Settings menu."
             ]
         },
         {
-            version: "7.67",
-            date: "2026-04-04",
-            type: "Fixed",
-            notes: [
-                "Fixed an issue where LockoutHelper failed to display the changelog because it was incorrectly referencing the ChangelogData module structure."
-            ]
-        },
-        {
-            version: "7.66",
+            version: "7.72",
             date: "2026-04-04",
             type: "Added",
             notes: [
-                "Added Display Helper, with initial display tweaks."
+                "Added the SoupKitchenHelper module to display the current tracked age of your Hobo in days and present an informational wiki table showing which soup items correspond to each age range when visiting the soup line."
             ]
         },
         {
-            version: "7.65",
-            date: "2026-04-04",
-            type: "Changed",
-            notes: [
-                "Updated the \"5 Fighter's Lunches\" BankHelper button to support multiple sequential clicks, allowing withdrawals in multiples of 5 lunches at a time, while dynamically tracking and updating the total count added in the button's display value."
-            ]
-        },
-        {
-            version: "7.64",
+            version: "7.71",
             date: "2026-04-04",
             type: "Added",
             notes: [
-                "Added a \"5 Fighter's Lunches\" withdraw goal to the BankHelper, dynamic to your Hobo Level.",
-                "Added a configuration toggle for the 5 Fighter's Lunches Goal within the SettingsHelper."
+                "Added a configurable toggle for the HitlistHelper's 'Highlight Online Players' feature within the SettingsHelper preferences page."
+            ]
+        },
+        {
+            version: "7.70",
+            date: "2026-04-04",
+            type: "Added",
+            notes: [
+                "Added the HitlistHelper module to provide usability improvements to the Personal Hitlist page.",
+                "Formatted Personal Hitlist elements to automatically map and highlight any currently online opponents with a light green row background, dramatically improving visual recognition instead of having to spot the small online icon."
             ]
         }
     ]
@@ -460,6 +461,57 @@ const DisplayHelper = {
         const settings = Utils.getSettings();
         // This function only runs if the global helper is enabled,
         // and if this specific 'DisplayHelper' is enabled via SettingsHelper.
+        if (settings['DisplayHelper_ImprovedAvatars'] !== false) {
+            this.initImprovedAvatars();
+        }
+    },
+    initImprovedAvatars: function() {
+        const style = document.createElement('style');
+        style.innerHTML = `
+            /* Avatars */
+            .pavatar .avatar-circle {
+                border-radius: 35% 35% 25% 35% !important;
+                border: 3px solid #531 !important;
+            }
+            .pavatar .avatar-special.don {
+                border-radius: 35% 35% 24% 35% !important;
+                border-style: solid!important;
+                border-width: 4px!important;
+                border-color: #fa0!important;
+            }
+            .pavatar .avatar-special {
+                border-radius: 35% 35% 24% 35% !important;
+                border-style: solid!important;
+                border-width: 4px!important;
+                border-color: #000 !important;
+            }
+            .pavatar .avatar-circle .avatar-active {
+                position: absolute;
+                bottom: 0;
+                right: 0;
+                width: 30%;
+                height: 30%;
+                border: 2px solid #531!important;
+                border-bottom-width: 0!important;
+                border-right-width: 0!important;
+                border-radius: 70%;
+                border-top-right-radius: 0;
+                border-bottom-left-radius: 0;
+                border-top-left-radius: 100%;
+                cursor: progress;
+            }
+            .pavatar .avatar-circle .avatar-active.recently {
+                background-color: #5fd05f;
+            }
+            .pavatar .avatar-circle .avatar-active.pulse {
+                background-color: #00f406;
+                animation: 1.5s Online linear infinite !important;
+            }
+            .pavatar.tt {
+                padding: 0 !important;
+            }
+        `;
+        document.head.appendChild(style);
     }
 };
 
@@ -1151,6 +1203,37 @@ const GangLoansHelper = {
     }
 };
 
+const HitlistHelper = {
+    init: function() {
+        if (!window.location.search.includes('cmd=battle') || !window.location.search.includes('do=phlist')) return;
+
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        const settings = Utils.getSettings();
+        if (settings?.HitlistHelper?.enabled === false) return;
+
+        console.log('[Hobo Helper] Initializing HitlistHelper');
+
+        if (settings?.HitlistHelper_HighlightOnline !== false) {
+            this.highlightOnlinePlayers();
+        }
+    },
+
+    highlightOnlinePlayers: function() {
+        const onlineImages = document.querySelectorAll('img[src*="online_now"]');
+        onlineImages.forEach(img => {
+            const tr = img.closest('tr');
+            if (tr) {
+                const tds = tr.querySelectorAll('td');
+                tds.forEach(td => {
+                    td.style.backgroundColor = '#d4edda'; // Light green highlight
+                });
+            }
+        });
+    }
+};
+
 const KurtzCampHelper = {
     init: function() {
         if (!Utils.isCurrentPage('cmd=camp_kurtz')) return;
@@ -1353,6 +1436,11 @@ const LivingAreaHelper = {
     init: function() {
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
         
+        const hoboAgeDays = Utils.getHoboAgeInDays();
+        if (hoboAgeDays !== null) {
+            localStorage.setItem('hw_helper_hobo_age_days', hoboAgeDays);
+        }
+
         if (savedSettings['LivingAreaHelper_StatRatioTracker'] !== false) {
             this.initStatRatioTracker();
         }
@@ -2665,6 +2753,12 @@ const SettingsHelper = {
             ],
             'BankHelper': [
                 { key: 'BankHelper_5FightersLunches', label: '5 Fighter\'s Lunches Goal' }
+            ],
+            'HitlistHelper': [
+                { key: 'HitlistHelper_HighlightOnline', label: 'Highlight Online Players' }
+            ],
+            'DisplayHelper': [
+                { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' }
             ]
         };
 
@@ -2742,6 +2836,98 @@ const SettingsHelper = {
         }
     }
 }
+
+const SoupKitchenHelper = {
+    init: function() {
+        if (!window.location.search.includes('cmd=soup_kitchen')) return;
+
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        const settings = Utils.getSettings();
+        if (settings['SoupKitchenHelper'] === false) return;
+
+        const isSoupLine = window.location.search.includes('action=line') ||
+                           Array.from(contentArea.querySelectorAll('a')).some(a => a.href.includes('action=bowl'));
+
+        if (isSoupLine) {
+            this.initSoupLine();
+        }
+    },
+
+    initSoupLine: function() {
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        const hoboAgeDays = localStorage.getItem('hw_helper_hobo_age_days');
+        if (hoboAgeDays) {
+            this.renderAgeDisplay(contentArea, hoboAgeDays);
+        }
+
+        this.renderSoupTable(contentArea);
+    },
+
+    renderAgeDisplay: function(contentArea, hoboAgeDays) {
+        const ageContainer = document.createElement('div');
+        ageContainer.style.cssText = 'margin-top: 15px; margin-bottom: 15px; font-size: 14px; font-weight: bold; text-align: center; color: #333; border: 1px solid #ccc; background: #fdfdfd; padding: 10px; border-radius: 4px; width: 60%; margin-left: auto; margin-right: auto;';
+        ageContainer.innerHTML = `Your Hobo is currently <span style="color: #d9534f;">${hoboAgeDays}</span> days old!`;
+
+        const firstLink = contentArea.querySelector('a[href*="action=bowl"]');
+        if (firstLink && firstLink.previousElementSibling && firstLink.previousElementSibling.tagName === 'BR') {
+            contentArea.insertBefore(ageContainer, firstLink.previousElementSibling);
+        } else if (firstLink) {
+            contentArea.insertBefore(ageContainer, firstLink);
+        } else {
+            contentArea.appendChild(ageContainer);
+        }
+    },
+
+    renderSoupTable: function(contentArea) {
+        const soups = [
+            { img: 'Beef-Mushroom-Stew.gif', name: 'Beef Mushroom Stew', stats: '+12T<br>+1 Strength', endsIn: [0, 5] },
+            { img: 'Texas-Fajita-Soup.gif', name: 'Texas Fajita Soup', stats: '+12T<br>+1 Speed', endsIn: [1, 6] },
+            { img: 'Cream-of-Okra-Soup.gif', name: 'Cream of Okra Soup', stats: '+12T<br>+1 Power', endsIn: [2, 7] },
+            { img: 'Garlic-Salmon-Bisque.gif', name: 'Garlic Salmon Bisque', stats: '+12T<br>+1 Intelligence', endsIn: [3, 8] },
+            { img: 'Beggar%27s-Bouillon.gif', name: "Beggar's Bouillon", stats: '+12T<br>+0.5 Begging', endsIn: [4, 9] }
+        ];
+
+        const tableContainer = document.createElement('div');
+        tableContainer.style.cssText = 'margin-top: 20px; font-size: 12px; width: 100%; display: flex; justify-content: center;';
+
+        let html = `
+            <table style="border-collapse: collapse; background: #fff; border: 1px solid #ccc; width: 80%;">
+                <thead>
+                    <tr style="background: #e0e0e0; text-align: center;">
+                        <th style="padding: 5px; border: 1px solid #ccc;" colspan="2">Soup</th>
+                        <th style="padding: 5px; border: 1px solid #ccc;">Stats</th>
+                        <th style="padding: 5px; border: 1px solid #ccc;">Age Ends In</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        soups.forEach(soup => {
+            html += `
+                <tr style="background: #fff; text-align: center; border-bottom: 1px solid #eee;">
+                    <td style="padding: 5px; border: 1px solid #ccc; width: 40px;">
+                        <img src="/images/items/gifs/${soup.img}" width="30" height="30" alt="${soup.name}">
+                    </td>
+                    <td style="padding: 5px; border: 1px solid #ccc;">${soup.name}</td>
+                    <td style="padding: 5px; border: 1px solid #ccc;">${soup.stats}</td>
+                    <td style="padding: 5px; border: 1px solid #ccc;">${soup.endsIn.join(' or ')}</td>
+                </tr>
+            `;
+        });
+
+        html += `
+                </tbody>
+            </table>
+        `;
+
+        tableContainer.innerHTML = html;
+        contentArea.appendChild(tableContainer);
+    }
+};
 
 const TattooParlorHelper = {
             init: function() {
@@ -3006,6 +3192,7 @@ const WellnessClinicHelper = {
         DrinksHelper,
         FoodHelper,
         GangLoansHelper,
+        HitlistHelper,
         KurtzCampHelper,
         LiquorStoreHelper,
         LivingAreaHelper,
@@ -3015,6 +3202,7 @@ const WellnessClinicHelper = {
         NorthernFenceHelper,
         RecyclingBinHelper,
         SettingsHelper,
+        SoupKitchenHelper,
         TattooParlorHelper,
         UniversityHelper,
         WellnessClinicHelper

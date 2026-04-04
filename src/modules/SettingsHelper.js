@@ -93,6 +93,9 @@ const SettingsHelper = {
             ],
             'HitlistHelper': [
                 { key: 'HitlistHelper_HighlightOnline', label: 'Highlight Online Players' }
+            ],
+            'DisplayHelper': [
+                { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' }
             ]
         };
 

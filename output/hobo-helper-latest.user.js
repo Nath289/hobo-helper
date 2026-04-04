@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.72
+// @version      7.73
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -409,6 +409,14 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
+            version: "7.73",
+            date: "2026-04-04",
+            type: "Added",
+            notes: [
+                "Added \"Enable Improved Avatars\" sub-feature to DisplayHelper to apply custom CSS shaping and styling to avatar images, including online status indicators. This can be configured in the Settings menu."
+            ]
+        },
+        {
             version: "7.72",
             date: "2026-04-04",
             type: "Added",
@@ -432,27 +440,6 @@ const ChangelogData = {
                 "Added the HitlistHelper module to provide usability improvements to the Personal Hitlist page.",
                 "Formatted Personal Hitlist elements to automatically map and highlight any currently online opponents with a light green row background, dramatically improving visual recognition instead of having to spot the small online icon."
             ]
-        },
-        {
-            version: "7.69",
-            date: "2026-04-04",
-            type: "Added",
-            notes: [
-                "Added the GangLoansHelper module which introduces a robust tracking dashboard to the Gang Loans page specifically for bulk post-payments and replier workflow administration.",
-                "Formatted Export features attached to tracked topics, allowing clipboard export of both saved repliers and generated payment objects directly mapped with dollar outputs.",
-                "Integrated a generic 'Save' and dynamic insertion mechanism onto the dashboard, automatically filling out the site's default input forms from tracked payments.",
-                "The 'Add Payment' and 'Save Repliers List' buttons that appear over Gang Message Board posts are now inherently restricted to users posessing Gang Staff status.",
-                "Removed the obsolete 'Save Repliers List Button' option from Hobo Helper settings."
-            ]
-        },
-        {
-            version: "7.68",
-            date: "2026-04-04",
-            type: "Added",
-            notes: [
-                "Added an \"Add Payment\" button to individual replies within Gang Message Board posts locally tracking custom transactions linked to specific topic responses.",
-                "The button opens a floating panel pre-populated with the replier's Hobo Name, Hobo ID, and a suggested amount securely parsed from the post text, allowing local storage of expected payments."
-            ]
         }
     ]
 };
@@ -474,6 +461,57 @@ const DisplayHelper = {
         const settings = Utils.getSettings();
         // This function only runs if the global helper is enabled,
         // and if this specific 'DisplayHelper' is enabled via SettingsHelper.
+        if (settings['DisplayHelper_ImprovedAvatars'] !== false) {
+            this.initImprovedAvatars();
+        }
+    },
+    initImprovedAvatars: function() {
+        const style = document.createElement('style');
+        style.innerHTML = `
+            /* Avatars */
+            .pavatar .avatar-circle {
+                border-radius: 35% 35% 25% 35% !important;
+                border: 3px solid #531 !important;
+            }
+            .pavatar .avatar-special.don {
+                border-radius: 35% 35% 24% 35% !important;
+                border-style: solid!important;
+                border-width: 4px!important;
+                border-color: #fa0!important;
+            }
+            .pavatar .avatar-special {
+                border-radius: 35% 35% 24% 35% !important;
+                border-style: solid!important;
+                border-width: 4px!important;
+                border-color: #000 !important;
+            }
+            .pavatar .avatar-circle .avatar-active {
+                position: absolute;
+                bottom: 0;
+                right: 0;
+                width: 30%;
+                height: 30%;
+                border: 2px solid #531!important;
+                border-bottom-width: 0!important;
+                border-right-width: 0!important;
+                border-radius: 70%;
+                border-top-right-radius: 0;
+                border-bottom-left-radius: 0;
+                border-top-left-radius: 100%;
+                cursor: progress;
+            }
+            .pavatar .avatar-circle .avatar-active.recently {
+                background-color: #5fd05f;
+            }
+            .pavatar .avatar-circle .avatar-active.pulse {
+                background-color: #00f406;
+                animation: 1.5s Online linear infinite !important;
+            }
+            .pavatar.tt {
+                padding: 0 !important;
+            }
+        `;
+        document.head.appendChild(style);
     }
 };
 
@@ -2718,6 +2756,9 @@ const SettingsHelper = {
             ],
             'HitlistHelper': [
                 { key: 'HitlistHelper_HighlightOnline', label: 'Highlight Online Players' }
+            ],
+            'DisplayHelper': [
+                { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' }
             ]
         };
 
