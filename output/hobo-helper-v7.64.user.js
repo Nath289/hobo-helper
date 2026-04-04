@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.60
+// @version      7.64
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -89,6 +89,9 @@ const Utils = {
         },
         getSettings: function() {
             return JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        },
+        getFightersLunchCost: function(level) {
+            return ((10 * (level + 3)) / 2) * 2;
         }
 
 };
@@ -198,14 +201,42 @@ const BankHelper = {
                 const url = window.location.href;
                 if (!url.includes('cmd=bank')) return;
 
-                const goals = this.getBankGoals();
-                if (Object.keys(goals).length === 0) return;
-
+                const settings = Utils.getSettings();
                 const withdrawInput = document.getElementById('w_money');
                 const withdrawForm = document.querySelector('form[name="with"]');
                 const nativeWithdrawBtn = withdrawForm ? withdrawForm.querySelector('input[type="submit"]') : null;
 
                 if (!withdrawInput || !nativeWithdrawBtn) return;
+
+                if (settings.BankHelper_5FightersLunches !== false) {
+                    const level = Utils.getHoboLevel();
+                    const lunchCost = Utils.getFightersLunchCost(level);
+                    const totalCost = lunchCost * 5;
+
+                    if (totalCost > 0) {
+                        let clickCount = 0;
+                        const lunchBtn = document.createElement('input');
+                        lunchBtn.type = 'button';
+                        lunchBtn.value = ` + Add 5 Fighter's Lunches ($${totalCost.toLocaleString()}) `;
+                        lunchBtn.style.marginLeft = '10px';
+                        lunchBtn.style.cursor = 'pointer';
+                        lunchBtn.style.backgroundColor = '#e6f7ff';
+                        lunchBtn.style.border = '1px solid #91d5ff';
+
+                        lunchBtn.onclick = function() {
+                            clickCount++;
+                            let currentVal = parseInt(withdrawInput.value.replace(/,/g, '')) || 0;
+                            withdrawInput.value = (currentVal + totalCost).toString();
+                            
+                            this.value = ` + Add 5 Fighter's Lunches ($${totalCost.toLocaleString()}) [Added ${clickCount * 5}] `;
+                        };
+
+                        nativeWithdrawBtn.parentNode.insertBefore(lunchBtn, nativeWithdrawBtn.nextSibling);
+                    }
+                }
+
+                const goals = this.getBankGoals();
+                if (Object.keys(goals).length === 0) return;
 
                 Object.keys(goals).forEach(goalName => {
                     const goalVal = parseInt(goals[goalName]);
@@ -364,52 +395,53 @@ const CanDepoHelper = {
     }
 };
 
-const ChangelogData = [
-  {
-    version: "7.60",
-    date: "2026-04-04",
+const ChangelogData = {
+    init: function() {} ,
     changes: [
-      "Fixed: Fixed an issue in `LivingAreaHelper` where `StatRatioTracker` would crash and fail to display if a user had gained precisely 0 stats that day, causing the \"Gained Today\" text to be missing from the DOM.",
-      "Fixed: Fixed a bug in `FoodHelper` where selecting an item that was already in your Crap Foods List but leaving others unchecked would accidentally purge the others from the tracker. Now properly syncs checked/unchecked state for visible items while preserving stored off-screen items."
+        {
+            version: "7.64",
+            date: "2026-04-04",
+            type: "Added",
+            notes: [
+                "Added a \"5 Fighter's Lunches\" withdraw goal to the BankHelper, dynamic to your Hobo Level.",
+                "Added a configuration toggle for the 5 Fighter's Lunches Goal within the SettingsHelper."
+            ]
+        },
+        {
+            version: "7.63",
+            date: "2026-04-04",
+            type: "Changed",
+            notes: [
+                "Updated the success message text on the FoodHelper button to say \"✅ Updated Crap!\" for better clarity."
+            ]
+        },
+        {
+            version: "7.62",
+            date: "2026-04-04",
+            type: "Fixed",
+            notes: [
+                "Re-architected the FoodHelper \"Mark as Crap\" logic. The script now exclusively monitors items currently present in your inventory when updating the \"crap\" list, ensuring off-screen previously marked \"crap\" foods are safely preserved rather than being automatically wiped out."
+            ]
+        },
+        {
+            version: "7.61",
+            date: "2026-04-04",
+            type: "Changed",
+            notes: [
+                "Added a +750 quick add button to the RecyclingBinHelper."
+            ]
+        },
+        {
+            version: "7.60",
+            date: "2026-04-04",
+            type: "Fixed",
+            notes: [
+                "Fixed an issue in LivingAreaHelper where StatRatioTracker would crash and fail to display if a user had gained precisely 0 stats that day, causing the \"Gained Today\" text to be missing from the DOM.",
+                "Fixed a bug in FoodHelper where selecting an item that was already in your Crap Foods List but leaving others unchecked would accidentally purge the others from the tracker. Now properly syncs checked/unchecked state for visible items while preserving stored off-screen items."
+            ]
+        }
     ]
-  },
-  {
-    version: "7.59",
-    date: "2026-04-04",
-    changes: [
-      "Fixed: Addressed bugs across `LivingAreaHelper` and `FoodHelper` which caused helpers to incorrectly rely on a non-existent `cmd=living_area` URL parameter parameter resulting in UI elements frequently failing to load."
-    ]
-  },
-  {
-    version: "7.58",
-    date: "2026-04-03",
-    changes: [
-      "Added: Added `FoodHelper` to manage unwanted food items.",
-      "Added: Added a \"Select Crap\" button to automatically check all previously marked \"crap\" foods.",
-      "Added: Added a \"Mark as Crap\" button to add selected foods to the \"crap\" list, saving them for future sweeps.",
-      "Added: Integrated the new `FoodHelper` into both the main Food page (`cmd=food`) and within the Living Area.",
-      "Added: Added a \"Crap Foods List\" section inside the Game Preferences \"Helper Settings\", allowing you to view and delete items you've previously marked."
-    ]
-  },
-  {
-    version: "7.57",
-    date: "2026-04-03",
-    changes: [
-      "Added: Added custom settings configurations for Message Board features (`MessageBoardHelper_CtrlEnter`).",
-      "Added: Added a `💾 Save Repliers List` button to `MessageBoardHelper` explicitly for Gang Board posts (`cmd=gathering&do=vpost`), securely extracting and exporting a unique timestamped list of user names and IDs replying to the active topic locally.",
-      "Added: Established foundations for `LockoutHelper` (presently disabled but accessible), designed to intelligently inject recent changelog activity directly over the intermittent 12-hour game reset lockout screen.",
-      "Added: Extensively documented and injected `Supported Layouts` layout warnings noting only `The Future` layout format has been officially tested throughout README, INTRO, FEATURES, and internal AGENT reference files.",
-      "Added: Appended concrete rule compliance references directly into `AGENTS.md` explicitly banning automated Macros/Refreshers implementation."
-    ]
-  },
-  {
-    version: "7.56",
-    date: "2026-04-02",
-    changes: [
-      "Changed: Updated `LiquorStoreHelper` to visually highlight items from your active shopping list with a faint yellow background directly around the item's image cell."
-    ]
-  }
-];
+};
 
 const DrinksData = {
             // Data structure containing all drinks in the game
@@ -682,22 +714,34 @@ const FoodHelper = {
         const checkboxes = document.querySelectorAll('.checkMe');
         let crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
 
+        // Track the desired state of foods currently visible on the page
+        const presentFoods = {};
+
         checkboxes.forEach(cb => {
             const foodName = this.getFoodNameFromCheckbox(cb);
             if (foodName) {
                 if (cb.checked) {
-                    if (!crapList.includes(foodName)) {
-                        crapList.push(foodName);
-                    }
-                } else {
-                    crapList = crapList.filter(name => name !== foodName);
+                    presentFoods[foodName] = true; // At least one is checked, keep it
+                } else if (presentFoods[foodName] === undefined) {
+                    presentFoods[foodName] = false; // Seen but not checked (yet)
                 }
+            }
+        });
+
+        // Update the crapList based on the visible foods' states
+        Object.keys(presentFoods).forEach(foodName => {
+            if (presentFoods[foodName]) {
+                if (!crapList.includes(foodName)) {
+                    crapList.push(foodName);
+                }
+            } else {
+                crapList = crapList.filter(name => name !== foodName);
             }
         });
 
         localStorage.setItem('hw_helper_food_crap', JSON.stringify(crapList));
         if (btn) {
-            btn.value = `✅ Updated Crap List`;
+            btn.value = `✅ Updated Crap!`;
             setTimeout(() => { btn.value = 'Mark as Crap'; }, 3000);
         }
     }
@@ -1949,7 +1993,7 @@ const RecyclingBinHelper = {
         const submitBtn = document.querySelector('form[name="bin"] input[type="submit"][name="Submit"]');
 
         if (sCansInput && submitBtn) {
-            const amounts = [100, 200, 500];
+            const amounts = [100, 200, 500, 750];
 
             amounts.forEach(amount => {
                 const btn = document.createElement('input');
@@ -2057,6 +2101,9 @@ const SettingsHelper = {
             'MessageBoardHelper': [
                 { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
                 { key: 'MessageBoardHelper_SaveRepliers', label: 'Save Repliers List Button' }
+            ],
+            'BankHelper': [
+                { key: 'BankHelper_5FightersLunches', label: '5 Fighter\'s Lunches Goal' }
             ]
         };
 

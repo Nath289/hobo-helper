@@ -6,6 +6,7 @@ The Hobo Helper script breaks its functionality down into individual modules. Be
 
 ### 1. Bank Helper (`BankHelper.js`)
 Helps manage bank savings by allowing you to add and display custom financial goals. Makes withdrawing and depositing the exact amounts you need much easier.
+- **5 Fighter's Lunches Goal**: Adds a button to withdraw the exact cost of 5 Fighter's Lunches based on your current Hobo Level. Can be disabled in Settings.
 
 ### 2. Drinks & Mixing System (`DrinksHelper.js`, `DrinksData.js`, `LiquorStoreHelper.js`, `MixerHelper.js`)
 A suite of tools centered around drinking and stat enhancement:

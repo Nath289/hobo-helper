@@ -77,6 +77,9 @@ const Utils = {
         },
         getSettings: function() {
             return JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        },
+        getFightersLunchCost: function(level) {
+            return ((10 * (level + 3)) / 2) * 2;
         }
 
 };

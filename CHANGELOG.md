@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.65] - 2026-04-04
+### Changed
+- Updated the "5 Fighter's Lunches" `BankHelper` button to support multiple sequential clicks, allowing withdrawals in multiples of 5 lunches at a time, while dynamically tracking and updating the total count added in the button's display value.
+
+## [7.64] - 2026-04-04
+### Added
+- Added a "5 Fighter's Lunches" withdraw goal to the `BankHelper`, dynamic to your Hobo Level.
+- Added a configuration toggle for the 5 Fighter's Lunches Goal within the `SettingsHelper`.
+
 ## [7.63] - 2026-04-04
 ### Changed
 - Updated the success message text on the `FoodHelper` button to say "✅ Updated Crap!" for better clarity.

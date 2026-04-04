@@ -88,6 +88,9 @@ const SettingsHelper = {
             'MessageBoardHelper': [
                 { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
                 { key: 'MessageBoardHelper_SaveRepliers', label: 'Save Repliers List Button' }
+            ],
+            'BankHelper': [
+                { key: 'BankHelper_5FightersLunches', label: '5 Fighter\'s Lunches Goal' }
             ]
         };
 

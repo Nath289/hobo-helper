@@ -89,6 +89,9 @@ const Utils = {
         },
         getSettings: function() {
             return JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        },
+        getFightersLunchCost: function(level) {
+            return ((10 * (level + 3)) / 2) * 2;
         }
 
 };
@@ -198,14 +201,43 @@ const BankHelper = {
                 const url = window.location.href;
                 if (!url.includes('cmd=bank')) return;
 
-                const goals = this.getBankGoals();
-                if (Object.keys(goals).length === 0) return;
-
+                const settings = Utils.getSettings();
                 const withdrawInput = document.getElementById('w_money');
                 const withdrawForm = document.querySelector('form[name="with"]');
                 const nativeWithdrawBtn = withdrawForm ? withdrawForm.querySelector('input[type="submit"]') : null;
 
                 if (!withdrawInput || !nativeWithdrawBtn) return;
+
+                if (settings.BankHelper_5FightersLunches !== false) {
+                    const level = Utils.getHoboLevel();
+                    const lunchCost = Utils.getFightersLunchCost(level);
+                    const totalCost = lunchCost * 5;
+
+                    if (totalCost > 0) {
+                        const lunchBtn = document.createElement('input');
+                        lunchBtn.type = 'button';
+                        lunchBtn.value = ` + Add 5 Fighter's Lunches ($${totalCost.toLocaleString()}) `;
+                        lunchBtn.style.marginLeft = '10px';
+                        lunchBtn.style.cursor = 'pointer';
+                        lunchBtn.style.backgroundColor = '#e6f7ff';
+                        lunchBtn.style.border = '1px solid #91d5ff';
+
+                        lunchBtn.onclick = function() {
+                            let currentVal = parseInt(withdrawInput.value.replace(/,/g, '')) || 0;
+                            withdrawInput.value = (currentVal + totalCost).toString();
+
+                            this.value = "Added!";
+                            this.disabled = true;
+                            this.style.backgroundColor = '#f5f5f5';
+                            this.style.border = '1px solid #d9d9d9';
+                        };
+
+                        nativeWithdrawBtn.parentNode.insertBefore(lunchBtn, nativeWithdrawBtn.nextSibling);
+                    }
+                }
+
+                const goals = this.getBankGoals();
+                if (Object.keys(goals).length === 0) return;
 
                 Object.keys(goals).forEach(goalName => {
                     const goalVal = parseInt(goals[goalName]);
@@ -2061,6 +2093,9 @@ const SettingsHelper = {
             'MessageBoardHelper': [
                 { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
                 { key: 'MessageBoardHelper_SaveRepliers', label: 'Save Repliers List Button' }
+            ],
+            'BankHelper': [
+                { key: 'BankHelper_5FightersLunches', label: '5 Fighter\'s Lunches Goal' }
             ]
         };
 
