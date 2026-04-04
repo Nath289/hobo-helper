@@ -68,7 +68,11 @@ A gang management tool that creates a specialized dashboard within the Gang Loan
 
 ### 18. Hitlist Helper (`HitlistHelper.js`)
 A helper designed to operate on the main game Hitlist page (`cmd=battle&do=phlist`).
-- *(Features pending)*
+- **Highlight Online Players**: Scans your hitlist for opponents currently online and highlights their entire row green, avoiding the need to search for the small online icon.
+
+### 19. Soup Kitchen Helper (`SoupKitchenHelper.js`)
+A helper designed to operate on the Soup Kitchen page (`cmd=soup_kitchen`).
+- **Soup Line Predictor**: Displays your Hobo's exact age in days right alongside a handy wiki reference table to help you determine exactly which soup rewards correlate to which age ranges when waiting in the soup line.
 
 ### Drink Helpers
 - [x] Automatically inject stat and effect data as tooltips to all drinks when hovering your mouse over them inside of your backpack and living area page.

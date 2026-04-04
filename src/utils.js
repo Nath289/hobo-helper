@@ -80,6 +80,16 @@ const Utils = {
         },
         getFightersLunchCost: function(level) {
             return ((10 * (level + 3)) / 2) * 2;
+        },
+        getHoboAgeInDays: function() {
+            const ageLine = document.querySelector('#personalInfo .line font[title*="days"]');
+            if (ageLine && ageLine.title) {
+                const match = ageLine.title.match(/(\d+)\s*days/i);
+                if (match) {
+                    return parseInt(match[1], 10);
+                }
+            }
+            return null;
         }
 
 };

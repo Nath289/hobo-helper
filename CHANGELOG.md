@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.72] - 2026-04-04
+### Added
+- Added the `SoupKitchenHelper` module to display the current tracked age of your Hobo in days and present an informational wiki table showing which soup items correspond to each age range when visiting the soup line.
+
 ## [7.71] - 2026-04-04
 ### Added
 - Added a configurable toggle for the `HitlistHelper`'s "Highlight Online Players" feature within the `SettingsHelper` preferences page.

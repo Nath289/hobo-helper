@@ -2,6 +2,14 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
+            version: "7.72",
+            date: "2026-04-04",
+            type: "Added",
+            notes: [
+                "Added the SoupKitchenHelper module to display the current tracked age of your Hobo in days and present an informational wiki table showing which soup items correspond to each age range when visiting the soup line."
+            ]
+        },
+        {
             version: "7.71",
             date: "2026-04-04",
             type: "Added",
@@ -37,14 +45,6 @@ const ChangelogData = {
             notes: [
                 "Added an \"Add Payment\" button to individual replies within Gang Message Board posts locally tracking custom transactions linked to specific topic responses.",
                 "The button opens a floating panel pre-populated with the replier's Hobo Name, Hobo ID, and a suggested amount securely parsed from the post text, allowing local storage of expected payments."
-            ]
-        },
-        {
-            version: "7.67",
-            date: "2026-04-04",
-            type: "Fixed",
-            notes: [
-                "Fixed an issue where LockoutHelper failed to display the changelog because it was incorrectly referencing the ChangelogData module structure."
             ]
         }
     ]

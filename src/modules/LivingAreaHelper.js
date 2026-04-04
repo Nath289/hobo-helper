@@ -2,6 +2,11 @@ const LivingAreaHelper = {
     init: function() {
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
         
+        const hoboAgeDays = Utils.getHoboAgeInDays();
+        if (hoboAgeDays !== null) {
+            localStorage.setItem('hw_helper_hobo_age_days', hoboAgeDays);
+        }
+
         if (savedSettings['LivingAreaHelper_StatRatioTracker'] !== false) {
             this.initStatRatioTracker();
         }
