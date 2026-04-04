@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.73
+// @version      7.78
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -409,36 +409,45 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
-            version: "7.73",
-            date: "2026-04-04",
+            version: "7.78",
+            date: "2026-04-05",
             type: "Added",
             notes: [
-                "Added \"Enable Improved Avatars\" sub-feature to DisplayHelper to apply custom CSS shaping and styling to avatar images, including online status indicators. This can be configured in the Settings menu."
+                "Added automated state handling to GangLoansHelper which tracks when 'Add' and 'Clear' actions resolve via persistent cache across synchronous page loads.",
+                "The GangLoansHelper dashboard now seamlessly transitions rows through permanent workflow states ('Loan Created', 'Loan Cleared') after confirming system responses.",
+                "Added a native 'Select Loan' shortcut button on 'Loan Created' items which instantly parses the existing HTML DOM and form elements to prepare a specific loan ID for immediate clearing."
             ]
         },
         {
-            version: "7.72",
+            version: "7.77",
             date: "2026-04-04",
-            type: "Added",
+            type: "Fixed",
             notes: [
-                "Added the SoupKitchenHelper module to display the current tracked age of your Hobo in days and present an informational wiki table showing which soup items correspond to each age range when visiting the soup line."
+                "Improved MessageBoardHelper topic name extraction reliability on Gang Board posts, fixing bugs that prevented the Save Repliers/Add Payment buttons from appearing correctly."
             ]
         },
         {
-            version: "7.71",
+            version: "7.76",
             date: "2026-04-04",
-            type: "Added",
+            type: "Changed",
             notes: [
-                "Added a configurable toggle for the HitlistHelper's 'Highlight Online Players' feature within the SettingsHelper preferences page."
+                "Enhanced the MessageBoardHelper 'Add Payment' dollar amount parser to correctly interpret multiplier suffixes (k, m, mil, mill, million) and automatically format the mapped value with commas and a dollar sign."
             ]
         },
         {
-            version: "7.70",
+            version: "7.75",
             date: "2026-04-04",
-            type: "Added",
+            type: "Changed",
             notes: [
-                "Added the HitlistHelper module to provide usability improvements to the Personal Hitlist page.",
-                "Formatted Personal Hitlist elements to automatically map and highlight any currently online opponents with a light green row background, dramatically improving visual recognition instead of having to spot the small online icon."
+                "Adjusted the padding of the SettingsHelper card boxes and global toggle container for a tighter, cleaner appearance."
+            ]
+        },
+        {
+            version: "7.74",
+            date: "2026-04-04",
+            type: "Changed",
+            notes: [
+                "Overhauled the SettingsHelper Game Preferences page layout, migrating from a continuous vertical list to a balanced and stylized two-column card grid to improve readability and aesthetics."
             ]
         }
     ]
@@ -821,10 +830,56 @@ const FoodHelper = {
 
 const GangLoansHelper = {
     init: function() {
-        if (!window.location.search.includes('cmd=gang2') || !window.location.search.includes('do=loans')) return;
+        const isLoans = window.location.search.includes('cmd=gang2') && window.location.search.includes('do=loans');
+        const isLoanAdd = window.location.search.includes('cmd=gang2') && window.location.search.includes('do=loan_add');
+        const isLoanDel = window.location.search.includes('cmd=gang2') && window.location.search.includes('do=loan_del');
+
+        if (!isLoans && !isLoanAdd && !isLoanDel) return;
 
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
+
+        if (isLoanAdd && contentArea.innerText.includes('You have successfully completed the transfer')) {
+            const pendingStr = sessionStorage.getItem('hw_helper_pending_loan');
+            if (pendingStr) {
+                try {
+                    const pending = JSON.parse(pendingStr);
+                    const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                    if (d[pending.topic]) {
+                        if (pending.type === 'bulk' && d[pending.topic].hobos && d[pending.topic].hobos[pending.index]) {
+                            d[pending.topic].hobos[pending.index].completed = true;
+                        } else if (pending.type === 'payment' && d[pending.topic].paymentsToHobos && d[pending.topic].paymentsToHobos[pending.index]) {
+                            d[pending.topic].paymentsToHobos[pending.index].completed = true;
+                        }
+                        localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    }
+                } catch (e) {
+                    console.error('Error parsing pending loan', e);
+                }
+                sessionStorage.removeItem('hw_helper_pending_loan');
+            }
+        }
+
+        if (isLoanDel && contentArea.innerText.includes('This loan has been removed')) {
+            const pendingClearStr = sessionStorage.getItem('hw_helper_pending_clear');
+            if (pendingClearStr) {
+                try {
+                    const pending = JSON.parse(pendingClearStr);
+                    const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                    if (d[pending.topic]) {
+                        if (pending.type === 'bulk' && d[pending.topic].hobos && d[pending.topic].hobos[pending.index]) {
+                            d[pending.topic].hobos[pending.index].cleared = true;
+                        } else if (pending.type === 'payment' && d[pending.topic].paymentsToHobos && d[pending.topic].paymentsToHobos[pending.index]) {
+                            d[pending.topic].paymentsToHobos[pending.index].cleared = true;
+                        }
+                        localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    }
+                } catch (e) {
+                    console.error('Error parsing pending clear', e);
+                }
+                sessionStorage.removeItem('hw_helper_pending_clear');
+            }
+        }
 
         console.log('[Hobo Helper] Initializing GangLoansHelper');
         this.renderPanel(contentArea);
@@ -917,7 +972,25 @@ const GangLoansHelper = {
 
                     hobos.forEach((h, hIndex) => {
                         const isCompleted = h.completed;
-                        const rowBg = isCompleted ? '#e6ffe6' : 'transparent';
+                        const isCleared = h.cleared;
+                        const rowBg = isCleared ? '#f0f0f0' : (isCompleted ? '#e6ffe6' : 'transparent');
+
+                        let actionsHtml = '';
+                        if (isCleared) {
+                            actionsHtml = `<span style="color: #666; font-weight: bold; font-style: italic;">Completed</span>`;
+                        } else if (!isCompleted) {
+                            actionsHtml = `
+                                <button class="hw-insert-bulk" data-id="${h.id}" data-ctrl="${safeTopicId}" data-topic="${topic}" data-index="${hIndex}" style="cursor:pointer; background:#e6f3ff; border:1px solid #99c2ff; border-radius:3px; padding:3px 8px; margin-right:4px;">Insert</button>
+                                <button class="hw-complete-bulk" data-topic="${topic}" data-index="${hIndex}" style="cursor:pointer; background:#e6ffe6; border:1px solid #66cc66; border-radius:3px; padding:3px 8px; margin-right:4px;">Done</button>
+                                <button class="hw-remove-bulk" data-topic="${topic}" data-index="${hIndex}" style="cursor:pointer; background:#ffe6e6; border:1px solid #ff9999; border-radius:3px; padding:3px 8px;">Remove</button>
+                            `;
+                        } else {
+                            actionsHtml = `
+                                <span style="color: #00aa00; font-weight: bold; margin-right: 8px;">Loan Created ✅</span>
+                                <button class="hw-select-loan" data-id="${h.id}" data-type="bulk" data-ctrl="${safeTopicId}" data-topic="${topic}" data-index="${hIndex}" style="cursor:pointer; background:#fff2cc; border:1px solid #ffcc00; border-radius:3px; padding:3px 8px;">Select Loan</button>
+                            `;
+                        }
+
                         hobosHtml += `
                             <tr style="border-bottom: 1px solid #eee; background: ${rowBg};">
                                 <td style="padding: 4px;">
@@ -925,9 +998,7 @@ const GangLoansHelper = {
                                     <span style="color: #666; font-size: 11px;">[ID: ${h.id}]</span>
                                 </td>
                                 <td style="padding: 4px; text-align: right; white-space: nowrap;">
-                                    <button class="hw-insert-bulk" data-id="${h.id}" data-ctrl="${safeTopicId}" style="cursor:pointer; background:#e6f3ff; border:1px solid #99c2ff; border-radius:3px; padding:3px 8px; margin-right:4px;">Insert</button>
-                                    <button class="hw-complete-bulk" data-topic="${topic}" data-index="${hIndex}" style="cursor:pointer; background:#e6ffe6; border:1px solid #66cc66; border-radius:3px; padding:3px 8px; margin-right:4px;">${isCompleted ? 'Undo' : 'Done'}</button>
-                                    <button class="hw-remove-bulk" data-topic="${topic}" data-index="${hIndex}" style="cursor:pointer; background:#ffe6e6; border:1px solid #ff9999; border-radius:3px; padding:3px 8px;">Remove</button>
+                                    ${actionsHtml}
                                 </td>
                             </tr>
                         `;
@@ -966,7 +1037,25 @@ const GangLoansHelper = {
                         const hoboId = p.hoboId || p.id || '';
                         const hoboName = p.hoboName || p.name || '';
                         const isCompleted = p.completed;
-                        const rowBg = isCompleted ? '#e6ffe6' : '#fff';
+                        const isCleared = p.cleared;
+                        const rowBg = isCleared ? '#f0f0f0' : (isCompleted ? '#e6ffe6' : '#fff');
+
+                        let payActionsHtml = '';
+                        if (isCleared) {
+                            payActionsHtml = `<span style="color: #666; font-weight: bold; font-style: italic;">Completed</span>`;
+                        } else if (!isCompleted) {
+                            payActionsHtml = `
+                                <button class="hw-insert-payment" data-id="${hoboId}" data-amount="${p.amount || ''}" data-desc="${p.description || ''}" data-topic="${topic}" data-index="${pIndex}" style="cursor:pointer; background:#e6f3ff; border:1px solid #99c2ff; border-radius:3px; padding:3px 8px; margin-right:6px;">Insert</button>
+                                <button class="hw-complete-payment" data-topic="${topic}" data-index="${pIndex}" style="cursor:pointer; background:#e6ffe6; border:1px solid #66cc66; border-radius:3px; padding:3px 8px; margin-right:6px;">Done</button>
+                                <button class="hw-remove-payment" data-topic="${topic}" data-index="${pIndex}" style="cursor:pointer; background:#ffe6e6; border:1px solid #ff9999; border-radius:3px; padding:3px 8px;">Remove</button>
+                            `;
+                        } else {
+                            payActionsHtml = `
+                                <span style="color: #00aa00; font-weight: bold; margin-right: 8px;">Loan Created ✅</span>
+                                <button class="hw-select-loan" data-id="${hoboId}" data-amount="${p.amount || ''}" data-type="payment" data-topic="${topic}" data-index="${pIndex}" style="cursor:pointer; background:#fff2cc; border:1px solid #ffcc00; border-radius:3px; padding:3px 8px;">Select Loan</button>
+                            `;
+                        }
+
                         payHtml += `
                             <tr style="background: ${rowBg}; border-bottom: 1px solid #f0f0f0;">
                                 <td style="padding: 5px; border: 1px solid #ececec;"><a href="game.php?sr=${this.getSr()}&cmd=player&ID=${hoboId}" target="_blank" style="color:#0055aa;text-decoration:none;">${hoboId}</a></td>
@@ -974,9 +1063,7 @@ const GangLoansHelper = {
                                 <td style="padding: 5px; border: 1px solid #ececec; font-family: monospace; font-size: 13px;">${p.amount || ''}</td>
                                 <td style="padding: 5px; border: 1px solid #ececec;">${p.description || ''}</td>
                                 <td style="padding: 5px; border: 1px solid #ececec; text-align: center; white-space: nowrap;">
-                                    <button class="hw-insert-payment" data-id="${hoboId}" data-amount="${p.amount || ''}" data-desc="${p.description || ''}" style="cursor:pointer; background:#e6f3ff; border:1px solid #99c2ff; border-radius:3px; padding:3px 8px; margin-right:6px;">Insert</button>
-                                    <button class="hw-complete-payment" data-topic="${topic}" data-index="${pIndex}" style="cursor:pointer; background:#e6ffe6; border:1px solid #66cc66; border-radius:3px; padding:3px 8px; margin-right:6px;">${isCompleted ? 'Undo' : 'Done'}</button>
-                                    <button class="hw-remove-payment" data-topic="${topic}" data-index="${pIndex}" style="cursor:pointer; background:#ffe6e6; border:1px solid #ff9999; border-radius:3px; padding:3px 8px;">Remove</button>
+                                    ${payActionsHtml}
                                 </td>
                             </tr>
                         `;
@@ -1048,6 +1135,10 @@ const GangLoansHelper = {
         const insertBtns = panel.querySelectorAll('.hw-insert-payment');
         insertBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const index = parseInt(e.target.getAttribute('data-index'), 10);
+                sessionStorage.setItem('hw_helper_pending_loan', JSON.stringify({topic, index, type: 'payment'}));
+
                 const hoboField = document.getElementById('hobo');
                 const amtField = document.getElementById('addAmt');
                 const memoField = document.querySelector('input[name="l_memo"]');
@@ -1094,6 +1185,10 @@ const GangLoansHelper = {
         // BIND BULK REPLIERS EVENTS
         panel.querySelectorAll('.hw-insert-bulk').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const index = parseInt(e.target.getAttribute('data-index'), 10);
+                sessionStorage.setItem('hw_helper_pending_loan', JSON.stringify({topic, index, type: 'bulk'}));
+
                 const ctrlId = e.target.getAttribute('data-ctrl');
                 const bulkAmtInput = document.getElementById('amt-' + ctrlId);
                 const bulkMemoInput = document.getElementById('memo-' + ctrlId);
@@ -1118,7 +1213,7 @@ const GangLoansHelper = {
 
                 let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
                 if (d[topic] && d[topic].hobos) {
-                    d[topic].hobos[index].completed = !d[topic].hobos[index].completed;
+                    d[topic].hobos[index].completed = true;
                     localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
                     window.location.reload();
                 }
@@ -1194,6 +1289,92 @@ const GangLoansHelper = {
                 copyToCb(parts.join('\n'), e.target);
             });
         });
+
+        // BIND SELECT LOAN
+        panel.querySelectorAll('.hw-select-loan').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const hoboId = e.target.getAttribute('data-id');
+                let amount = '';
+                if (e.target.getAttribute('data-type') === 'bulk') {
+                    const ctrlId = e.target.getAttribute('data-ctrl');
+                    const bulkInput = document.getElementById('amt-' + ctrlId);
+                    if (bulkInput) amount = bulkInput.value;
+                } else {
+                    amount = e.target.getAttribute('data-amount');
+                }
+
+                const tables = document.querySelectorAll('table[cellspacing="1"]');
+                const lastTable = tables[tables.length - 1]; // The loans table is the last one
+                if (!lastTable) return;
+
+                const rows = lastTable.querySelectorAll('tr');
+                let bestMatchId = null;
+                const cleanTargetAmt = String(amount).replace(/[^0-9]/g, '');
+
+                for (let row of rows) {
+                    const link = row.querySelector(`a[href*="cmd=player&ID=${hoboId}"]`);
+                    if (link) {
+                        const toggle = row.querySelector('a.toggle[data-target^="td#td_"]');
+                        if (toggle) {
+                            const loanIdMatch = toggle.getAttribute('data-target').match(/td_(\d+)/);
+                            if (loanIdMatch) {
+                                const loanId = loanIdMatch[1];
+                                const tds = row.querySelectorAll('td');
+                                if (tds.length >= 3 && cleanTargetAmt) {
+                                    // Parse only the text before a slash to avoid merging with limits
+                                    const cellAmtText = tds[2].innerText.split('/')[0];
+                                    const cleanRowAmt = cellAmtText.replace(/[^0-9]/g, '');
+
+                                    if (cleanRowAmt === cleanTargetAmt) {
+                                        bestMatchId = loanId;
+                                        break;
+                                    }
+                                }
+                                if (!bestMatchId) bestMatchId = loanId;
+                            }
+                        }
+                    }
+                }
+
+                if (bestMatchId) {
+                    const select = document.getElementById('clearLoan') || document.querySelector('select[name="ID"]');
+                    if (select) {
+                        select.value = bestMatchId;
+                        window.scrollTo(0, select.offsetTop - 100);
+                        const oldText = e.target.innerText;
+                        e.target.innerText = 'Selected!';
+                        setTimeout(() => { e.target.innerText = oldText; }, 2000);
+
+                        const topic = e.target.getAttribute('data-topic');
+                        const index = parseInt(e.target.getAttribute('data-index'), 10);
+                        const type = e.target.getAttribute('data-type');
+                        sessionStorage.setItem('hw_helper_selected_loan_for_clear', JSON.stringify({id: bestMatchId, topic, index, type}));
+                    } else {
+                        alert('Clear Loan dropdown not found.');
+                    }
+                } else {
+                    alert('Could not locate a matching loan in the table.');
+                }
+            });
+        });
+
+        // BIND CLEAR LOAN SUBMISSION
+        const clearForm = document.querySelector('form[action*="do=loan_del"]');
+        if (clearForm) {
+            clearForm.addEventListener('submit', () => {
+                const select = clearForm.querySelector('select[name="ID"]');
+                if (select) {
+                    const val = select.value;
+                    const storedStr = sessionStorage.getItem('hw_helper_selected_loan_for_clear');
+                    if (storedStr) {
+                        const stored = JSON.parse(storedStr);
+                        if (stored.id === val) {
+                            sessionStorage.setItem('hw_helper_pending_clear', JSON.stringify({topic: stored.topic, index: stored.index, type: stored.type}));
+                        }
+                    }
+                }
+            });
+        }
 
     },
 
@@ -1898,18 +2079,22 @@ const MessageBoardHelper = {
     },
 
     initGangPostFeatures: function(settings) {
-        const pageText = document.body.innerText || "";
-        // Check if we're on the Gang Board by looking at the page breadcrumb
-        const breadcrumbMatch = pageText.match(/Board Selection\s*\/\s*Gang Board\s*\/\s*Topic:\s*(.*?)\s*(?:\[Page:\[Latest\]\n$|)/i);
-        if (!breadcrumbMatch) return; // Not a Gang Board post or format didn't match
+        let topicName = '';
+        const titleEl = document.getElementById('thread-topic');
+        if (titleEl) {
+            topicName = titleEl.textContent.trim();
+        } else {
+            const pageText = document.body.innerText || "";
+            const breadcrumbMatch = pageText.match(/Board Selection\s*\/\s*Gang Board\s*\/\s*Topic:\s*(.*)/i);
+            if (!breadcrumbMatch) return;
+            topicName = breadcrumbMatch[1].split(/(\[Page:|Jump to Bottom|Gang:)/)[0].trim();
+        }
 
         // Check if the user is Gang Staff
         const topOps = document.getElementById('topOps');
         const isGangStaff = topOps && (topOps.querySelector('a[title="Toggle Lock"]') || topOps.querySelector('a[title="Delete"]'));
 
         if (!isGangStaff) return;
-
-        const topicName = breadcrumbMatch[1].trim();
 
         this.addSaveRepliersButton(topicName);
         this.addPaymentButtons(topicName);
@@ -1933,25 +2118,24 @@ const MessageBoardHelper = {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             
-            // Only search inside the replies table to avoid grabbing the current logged-in user from the top nav
-            const searchScope = tableNode || document;
-            const playerLinks = Array.from(searchScope.querySelectorAll('a[href*="cmd=player&ID="]'));
             const hoboMap = new Map();
+            let isFirstPost = true;
             
-            let firstPostTr = null;
+            const posts = document.querySelectorAll('tr[id^="tr_post_"]');
 
-            playerLinks.forEach(link => {
-                const nameNode = link.querySelector('.player-name') || link;
-                if (!nameNode) return;
-
-                const tr = link.closest('tr');
-                if (!firstPostTr && tr) {
-                    firstPostTr = tr; // The first row containing a player is the original topic post
+            posts.forEach(post => {
+                if (isFirstPost) {
+                    isFirstPost = false; // Skip the original topic post
+                    return;
                 }
 
-                // Skip any player links found within the original topic post
-                if (tr && tr === firstPostTr) return;
+                const firstTd = post.querySelector('td');
+                if (!firstTd) return;
 
+                const link = firstTd.querySelector('a[href*="cmd=player&ID="]');
+                if (!link) return;
+
+                const nameNode = link.querySelector('.player-name') || link;
                 const idMatch = link.href.match(/ID=(\d+)/i);
                 if (idMatch) {
                     const id = idMatch[1];
@@ -1972,8 +2156,6 @@ const MessageBoardHelper = {
                 hobos: hoboList 
             };
             localStorage.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
-            
-            console.log(`[Hobo Helper] Gathered gang replies for topic: "${topicName}"`, savedPosts[topicName]);
             
             btn.textContent = `✅ Saved ${hoboList.length} Unique Hobos!`;
             setTimeout(() => { btn.textContent = '💾 Save Repliers List'; }, 3000);
@@ -2031,9 +2213,18 @@ const MessageBoardHelper = {
 
                     let parsedAmount = '';
                     const messageText = secondTd.innerText || "";
-                    const dollarMatch = messageText.match(/\$([\d,]+)/);
+                    const amountRegex = /(?:\$([\d,]+(?:\.\d+)?)\s*(k|m|mil|mill|million)?\b)|(?:([\d,]+(?:\.\d+)?)\s*(k|m|mil|mill|million)\b)/i;
+                    const dollarMatch = messageText.match(amountRegex);
                     if (dollarMatch) {
-                        parsedAmount = dollarMatch[1].replace(/,/g, '');
+                        let amountStr = dollarMatch[1] || dollarMatch[3];
+                        let multStr = (dollarMatch[2] || dollarMatch[4] || "").toLowerCase();
+                        let num = parseFloat(amountStr.replace(/,/g, ''));
+                        if (['m', 'mil', 'mill', 'million'].includes(multStr)) {
+                            num *= 1000000;
+                        } else if (multStr === 'k') {
+                            num *= 1000;
+                        }
+                        parsedAmount = '$' + Math.round(num).toLocaleString();
                     }
 
                     let panel = document.getElementById('payment-panel-' + postId);
@@ -2075,7 +2266,7 @@ const MessageBoardHelper = {
                         </div>
                         <div style="margin-bottom:10px;">
                             <label style="display:inline-block; width:80px; font-weight:bold;">Amount:</label>
-                            <input type="number" id="pay-amt-${postId}" value="${parsedAmount}" style="width:140px; font-size:11px;" />
+                            <input type="text" id="pay-amt-${postId}" value="${parsedAmount}" style="width:140px; font-size:11px;" />
                         </div>
                         <div style="text-align:right;">
                             <button type="button" id="pay-save-${postId}" style="cursor:pointer; font-weight:bold; margin-right:5px; padding:2px 8px; background:#eee; border:1px solid #aaa; border-radius:3px;">Save</button>

@@ -151,8 +151,6 @@ const MessageBoardHelper = {
             };
             localStorage.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
             
-            console.log(`[Hobo Helper] Gathered gang replies for topic: "${topicName}"`, savedPosts[topicName]);
-            
             btn.textContent = `✅ Saved ${hoboList.length} Unique Hobos!`;
             setTimeout(() => { btn.textContent = '💾 Save Repliers List'; }, 3000);
         });

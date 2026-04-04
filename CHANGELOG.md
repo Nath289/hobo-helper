@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.78] - 2026-04-05
+### Added
+- Added automated state handling to `GangLoansHelper` which tracks when "Add" and "Clear" actions resolve via persistent cache across synchronous page loads.
+- The `GangLoansHelper` dashboard now seamlessly transitions rows through permanent workflow states ("Loan Created", "Loan Cleared") after confirming system responses.
+- Added a native "Select Loan" shortcut button on "Loan Created" items which instantly parses the existing HTML DOM and form elements to prepare a specific loan ID for immediate clearing.
+
 ## [7.77] - 2026-04-04
 ### Fixed
 - Improved `MessageBoardHelper` topic name extraction reliability on Gang Board posts, fixing bugs that prevented the Save Repliers/Add Payment buttons from appearing correctly.

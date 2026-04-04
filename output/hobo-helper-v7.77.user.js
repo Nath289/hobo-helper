@@ -828,10 +828,56 @@ const FoodHelper = {
 
 const GangLoansHelper = {
     init: function() {
-        if (!window.location.search.includes('cmd=gang2') || !window.location.search.includes('do=loans')) return;
+        const isLoans = window.location.search.includes('cmd=gang2') && window.location.search.includes('do=loans');
+        const isLoanAdd = window.location.search.includes('cmd=gang2') && window.location.search.includes('do=loan_add');
+        const isLoanDel = window.location.search.includes('cmd=gang2') && window.location.search.includes('do=loan_del');
+
+        if (!isLoans && !isLoanAdd && !isLoanDel) return;
 
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
+
+        if (isLoanAdd && contentArea.innerText.includes('You have successfully completed the transfer')) {
+            const pendingStr = sessionStorage.getItem('hw_helper_pending_loan');
+            if (pendingStr) {
+                try {
+                    const pending = JSON.parse(pendingStr);
+                    const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                    if (d[pending.topic]) {
+                        if (pending.type === 'bulk' && d[pending.topic].hobos && d[pending.topic].hobos[pending.index]) {
+                            d[pending.topic].hobos[pending.index].completed = true;
+                        } else if (pending.type === 'payment' && d[pending.topic].paymentsToHobos && d[pending.topic].paymentsToHobos[pending.index]) {
+                            d[pending.topic].paymentsToHobos[pending.index].completed = true;
+                        }
+                        localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    }
+                } catch (e) {
+                    console.error('Error parsing pending loan', e);
+                }
+                sessionStorage.removeItem('hw_helper_pending_loan');
+            }
+        }
+
+        if (isLoanDel && contentArea.innerText.includes('This loan has been removed')) {
+            const pendingClearStr = sessionStorage.getItem('hw_helper_pending_clear');
+            if (pendingClearStr) {
+                try {
+                    const pending = JSON.parse(pendingClearStr);
+                    const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                    if (d[pending.topic]) {
+                        if (pending.type === 'bulk' && d[pending.topic].hobos && d[pending.topic].hobos[pending.index]) {
+                            d[pending.topic].hobos[pending.index].cleared = true;
+                        } else if (pending.type === 'payment' && d[pending.topic].paymentsToHobos && d[pending.topic].paymentsToHobos[pending.index]) {
+                            d[pending.topic].paymentsToHobos[pending.index].cleared = true;
+                        }
+                        localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    }
+                } catch (e) {
+                    console.error('Error parsing pending clear', e);
+                }
+                sessionStorage.removeItem('hw_helper_pending_clear');
+            }
+        }
 
         console.log('[Hobo Helper] Initializing GangLoansHelper');
         this.renderPanel(contentArea);
@@ -924,7 +970,25 @@ const GangLoansHelper = {
 
                     hobos.forEach((h, hIndex) => {
                         const isCompleted = h.completed;
-                        const rowBg = isCompleted ? '#e6ffe6' : 'transparent';
+                        const isCleared = h.cleared;
+                        const rowBg = isCleared ? '#f0f0f0' : (isCompleted ? '#e6ffe6' : 'transparent');
+
+                        let actionsHtml = '';
+                        if (isCleared) {
+                            actionsHtml = `<span style="color: #666; font-weight: bold; font-style: italic;">Completed</span>`;
+                        } else if (!isCompleted) {
+                            actionsHtml = `
+                                <button class="hw-insert-bulk" data-id="${h.id}" data-ctrl="${safeTopicId}" data-topic="${topic}" data-index="${hIndex}" style="cursor:pointer; background:#e6f3ff; border:1px solid #99c2ff; border-radius:3px; padding:3px 8px; margin-right:4px;">Insert</button>
+                                <button class="hw-complete-bulk" data-topic="${topic}" data-index="${hIndex}" style="cursor:pointer; background:#e6ffe6; border:1px solid #66cc66; border-radius:3px; padding:3px 8px; margin-right:4px;">Done</button>
+                                <button class="hw-remove-bulk" data-topic="${topic}" data-index="${hIndex}" style="cursor:pointer; background:#ffe6e6; border:1px solid #ff9999; border-radius:3px; padding:3px 8px;">Remove</button>
+                            `;
+                        } else {
+                            actionsHtml = `
+                                <span style="color: #00aa00; font-weight: bold; margin-right: 8px;">Loan Created ✅</span>
+                                <button class="hw-select-loan" data-id="${h.id}" data-type="bulk" data-ctrl="${safeTopicId}" data-topic="${topic}" data-index="${hIndex}" style="cursor:pointer; background:#fff2cc; border:1px solid #ffcc00; border-radius:3px; padding:3px 8px;">Select Loan</button>
+                            `;
+                        }
+
                         hobosHtml += `
                             <tr style="border-bottom: 1px solid #eee; background: ${rowBg};">
                                 <td style="padding: 4px;">
@@ -932,9 +996,7 @@ const GangLoansHelper = {
                                     <span style="color: #666; font-size: 11px;">[ID: ${h.id}]</span>
                                 </td>
                                 <td style="padding: 4px; text-align: right; white-space: nowrap;">
-                                    <button class="hw-insert-bulk" data-id="${h.id}" data-ctrl="${safeTopicId}" style="cursor:pointer; background:#e6f3ff; border:1px solid #99c2ff; border-radius:3px; padding:3px 8px; margin-right:4px;">Insert</button>
-                                    <button class="hw-complete-bulk" data-topic="${topic}" data-index="${hIndex}" style="cursor:pointer; background:#e6ffe6; border:1px solid #66cc66; border-radius:3px; padding:3px 8px; margin-right:4px;">${isCompleted ? 'Undo' : 'Done'}</button>
-                                    <button class="hw-remove-bulk" data-topic="${topic}" data-index="${hIndex}" style="cursor:pointer; background:#ffe6e6; border:1px solid #ff9999; border-radius:3px; padding:3px 8px;">Remove</button>
+                                    ${actionsHtml}
                                 </td>
                             </tr>
                         `;
@@ -973,7 +1035,25 @@ const GangLoansHelper = {
                         const hoboId = p.hoboId || p.id || '';
                         const hoboName = p.hoboName || p.name || '';
                         const isCompleted = p.completed;
-                        const rowBg = isCompleted ? '#e6ffe6' : '#fff';
+                        const isCleared = p.cleared;
+                        const rowBg = isCleared ? '#f0f0f0' : (isCompleted ? '#e6ffe6' : '#fff');
+
+                        let payActionsHtml = '';
+                        if (isCleared) {
+                            payActionsHtml = `<span style="color: #666; font-weight: bold; font-style: italic;">Completed</span>`;
+                        } else if (!isCompleted) {
+                            payActionsHtml = `
+                                <button class="hw-insert-payment" data-id="${hoboId}" data-amount="${p.amount || ''}" data-desc="${p.description || ''}" data-topic="${topic}" data-index="${pIndex}" style="cursor:pointer; background:#e6f3ff; border:1px solid #99c2ff; border-radius:3px; padding:3px 8px; margin-right:6px;">Insert</button>
+                                <button class="hw-complete-payment" data-topic="${topic}" data-index="${pIndex}" style="cursor:pointer; background:#e6ffe6; border:1px solid #66cc66; border-radius:3px; padding:3px 8px; margin-right:6px;">Done</button>
+                                <button class="hw-remove-payment" data-topic="${topic}" data-index="${pIndex}" style="cursor:pointer; background:#ffe6e6; border:1px solid #ff9999; border-radius:3px; padding:3px 8px;">Remove</button>
+                            `;
+                        } else {
+                            payActionsHtml = `
+                                <span style="color: #00aa00; font-weight: bold; margin-right: 8px;">Loan Created ✅</span>
+                                <button class="hw-select-loan" data-id="${hoboId}" data-amount="${p.amount || ''}" data-type="payment" data-topic="${topic}" data-index="${pIndex}" style="cursor:pointer; background:#fff2cc; border:1px solid #ffcc00; border-radius:3px; padding:3px 8px;">Select Loan</button>
+                            `;
+                        }
+
                         payHtml += `
                             <tr style="background: ${rowBg}; border-bottom: 1px solid #f0f0f0;">
                                 <td style="padding: 5px; border: 1px solid #ececec;"><a href="game.php?sr=${this.getSr()}&cmd=player&ID=${hoboId}" target="_blank" style="color:#0055aa;text-decoration:none;">${hoboId}</a></td>
@@ -981,9 +1061,7 @@ const GangLoansHelper = {
                                 <td style="padding: 5px; border: 1px solid #ececec; font-family: monospace; font-size: 13px;">${p.amount || ''}</td>
                                 <td style="padding: 5px; border: 1px solid #ececec;">${p.description || ''}</td>
                                 <td style="padding: 5px; border: 1px solid #ececec; text-align: center; white-space: nowrap;">
-                                    <button class="hw-insert-payment" data-id="${hoboId}" data-amount="${p.amount || ''}" data-desc="${p.description || ''}" style="cursor:pointer; background:#e6f3ff; border:1px solid #99c2ff; border-radius:3px; padding:3px 8px; margin-right:6px;">Insert</button>
-                                    <button class="hw-complete-payment" data-topic="${topic}" data-index="${pIndex}" style="cursor:pointer; background:#e6ffe6; border:1px solid #66cc66; border-radius:3px; padding:3px 8px; margin-right:6px;">${isCompleted ? 'Undo' : 'Done'}</button>
-                                    <button class="hw-remove-payment" data-topic="${topic}" data-index="${pIndex}" style="cursor:pointer; background:#ffe6e6; border:1px solid #ff9999; border-radius:3px; padding:3px 8px;">Remove</button>
+                                    ${payActionsHtml}
                                 </td>
                             </tr>
                         `;
@@ -1055,6 +1133,10 @@ const GangLoansHelper = {
         const insertBtns = panel.querySelectorAll('.hw-insert-payment');
         insertBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const index = parseInt(e.target.getAttribute('data-index'), 10);
+                sessionStorage.setItem('hw_helper_pending_loan', JSON.stringify({topic, index, type: 'payment'}));
+
                 const hoboField = document.getElementById('hobo');
                 const amtField = document.getElementById('addAmt');
                 const memoField = document.querySelector('input[name="l_memo"]');
@@ -1101,6 +1183,10 @@ const GangLoansHelper = {
         // BIND BULK REPLIERS EVENTS
         panel.querySelectorAll('.hw-insert-bulk').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const index = parseInt(e.target.getAttribute('data-index'), 10);
+                sessionStorage.setItem('hw_helper_pending_loan', JSON.stringify({topic, index, type: 'bulk'}));
+
                 const ctrlId = e.target.getAttribute('data-ctrl');
                 const bulkAmtInput = document.getElementById('amt-' + ctrlId);
                 const bulkMemoInput = document.getElementById('memo-' + ctrlId);
@@ -1125,7 +1211,7 @@ const GangLoansHelper = {
 
                 let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
                 if (d[topic] && d[topic].hobos) {
-                    d[topic].hobos[index].completed = !d[topic].hobos[index].completed;
+                    d[topic].hobos[index].completed = true;
                     localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
                     window.location.reload();
                 }
@@ -1201,6 +1287,92 @@ const GangLoansHelper = {
                 copyToCb(parts.join('\n'), e.target);
             });
         });
+
+        // BIND SELECT LOAN
+        panel.querySelectorAll('.hw-select-loan').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const hoboId = e.target.getAttribute('data-id');
+                let amount = '';
+                if (e.target.getAttribute('data-type') === 'bulk') {
+                    const ctrlId = e.target.getAttribute('data-ctrl');
+                    const bulkInput = document.getElementById('amt-' + ctrlId);
+                    if (bulkInput) amount = bulkInput.value;
+                } else {
+                    amount = e.target.getAttribute('data-amount');
+                }
+
+                const tables = document.querySelectorAll('table[cellspacing="1"]');
+                const lastTable = tables[tables.length - 1]; // The loans table is the last one
+                if (!lastTable) return;
+
+                const rows = lastTable.querySelectorAll('tr');
+                let bestMatchId = null;
+                const cleanTargetAmt = String(amount).replace(/[^0-9]/g, '');
+
+                for (let row of rows) {
+                    const link = row.querySelector(`a[href*="cmd=player&ID=${hoboId}"]`);
+                    if (link) {
+                        const toggle = row.querySelector('a.toggle[data-target^="td#td_"]');
+                        if (toggle) {
+                            const loanIdMatch = toggle.getAttribute('data-target').match(/td_(\d+)/);
+                            if (loanIdMatch) {
+                                const loanId = loanIdMatch[1];
+                                const tds = row.querySelectorAll('td');
+                                if (tds.length >= 3 && cleanTargetAmt) {
+                                    // Parse only the text before a slash to avoid merging with limits
+                                    const cellAmtText = tds[2].innerText.split('/')[0];
+                                    const cleanRowAmt = cellAmtText.replace(/[^0-9]/g, '');
+
+                                    if (cleanRowAmt === cleanTargetAmt) {
+                                        bestMatchId = loanId;
+                                        break;
+                                    }
+                                }
+                                if (!bestMatchId) bestMatchId = loanId;
+                            }
+                        }
+                    }
+                }
+
+                if (bestMatchId) {
+                    const select = document.getElementById('clearLoan') || document.querySelector('select[name="ID"]');
+                    if (select) {
+                        select.value = bestMatchId;
+                        window.scrollTo(0, select.offsetTop - 100);
+                        const oldText = e.target.innerText;
+                        e.target.innerText = 'Selected!';
+                        setTimeout(() => { e.target.innerText = oldText; }, 2000);
+
+                        const topic = e.target.getAttribute('data-topic');
+                        const index = parseInt(e.target.getAttribute('data-index'), 10);
+                        const type = e.target.getAttribute('data-type');
+                        sessionStorage.setItem('hw_helper_selected_loan_for_clear', JSON.stringify({id: bestMatchId, topic, index, type}));
+                    } else {
+                        alert('Clear Loan dropdown not found.');
+                    }
+                } else {
+                    alert('Could not locate a matching loan in the table.');
+                }
+            });
+        });
+
+        // BIND CLEAR LOAN SUBMISSION
+        const clearForm = document.querySelector('form[action*="do=loan_del"]');
+        if (clearForm) {
+            clearForm.addEventListener('submit', () => {
+                const select = clearForm.querySelector('select[name="ID"]');
+                if (select) {
+                    const val = select.value;
+                    const storedStr = sessionStorage.getItem('hw_helper_selected_loan_for_clear');
+                    if (storedStr) {
+                        const stored = JSON.parse(storedStr);
+                        if (stored.id === val) {
+                            sessionStorage.setItem('hw_helper_pending_clear', JSON.stringify({topic: stored.topic, index: stored.index, type: stored.type}));
+                        }
+                    }
+                }
+            });
+        }
 
     },
 
@@ -1982,8 +2154,6 @@ const MessageBoardHelper = {
                 hobos: hoboList 
             };
             localStorage.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
-            
-            console.log(`[Hobo Helper] Gathered gang replies for topic: "${topicName}"`, savedPosts[topicName]);
             
             btn.textContent = `✅ Saved ${hoboList.length} Unique Hobos!`;
             setTimeout(() => { btn.textContent = '💾 Save Repliers List'; }, 3000);
