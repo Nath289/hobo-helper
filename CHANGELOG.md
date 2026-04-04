@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.69] - 2026-04-04
+### Added
+- Added the `GangLoansHelper` module which introduces a robust tracking dashboard to the Gang Loans page specifically for bulk post-payments and replier workflow administration.
+- Formatted `Export` features attached to tracked topics, allowing clipboard export of both saved repliers and generated payment objects directly mapped with dollar outputs. 
+- Integrated a generic "Save" and dynamic insertion mechanism onto the dashboard, automatically filling out the site's default input forms from tracked payments.
+
+### Changed
+- The "Add Payment" and "Save Repliers List" buttons that appear over Gang Message Board posts are now inherently restricted to users posessing Gang Staff status.
+- Removed the obsolete "Save Repliers List Button" option from Hobo Helper settings.
+
+## [7.68] - 2026-04-04
+### Added
+- Added an "Add Payment" button to individual replies within Gang Message Board posts locally tracking custom transactions linked to specific topic responses.
+- The button opens a floating panel pre-populated with the replier's Hobo Name, Hobo ID, and a suggested amount securely parsed from the post text, allowing local storage of expected payments.
+
 ## [7.67] - 2026-04-04
 ### Fixed
 - Fixed an issue where `LockoutHelper` failed to display the changelog because it was incorrectly referencing the `ChangelogData` module structure.

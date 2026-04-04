@@ -62,6 +62,10 @@ Helper functionality activated during the game's 12-hour resets (lockout periods
 ### 16. Display Helper (`DisplayHelper.js`)
 A core helper that runs display improvement related functions.
 
+### 17. Gang Loans Helper (`GangLoansHelper.js`)
+A gang management tool that creates a specialized dashboard within the Gang Loans page (`cmd=gang2&do=loans`).
+- **Saved Posts & Payments Panel**: Aggregates and displays all saved gang post repliers and recorded payments from the Message Board Helper into a single convenient panel, making it easy to action bulk loans or payments and track who has replied to recruitment or event threads.
+
 ### Drink Helpers
 - [x] Automatically inject stat and effect data as tooltips to all drinks when hovering your mouse over them inside of your backpack and living area page.
 

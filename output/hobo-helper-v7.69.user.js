@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.63
+// @version      7.69
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -214,6 +214,7 @@ const BankHelper = {
                     const totalCost = lunchCost * 5;
 
                     if (totalCost > 0) {
+                        let clickCount = 0;
                         const lunchBtn = document.createElement('input');
                         lunchBtn.type = 'button';
                         lunchBtn.value = ` + Add 5 Fighter's Lunches ($${totalCost.toLocaleString()}) `;
@@ -223,13 +224,11 @@ const BankHelper = {
                         lunchBtn.style.border = '1px solid #91d5ff';
 
                         lunchBtn.onclick = function() {
+                            clickCount++;
                             let currentVal = parseInt(withdrawInput.value.replace(/,/g, '')) || 0;
                             withdrawInput.value = (currentVal + totalCost).toString();
-
-                            this.value = "Added!";
-                            this.disabled = true;
-                            this.style.backgroundColor = '#f5f5f5';
-                            this.style.border = '1px solid #d9d9d9';
+                            
+                            this.value = ` + Add 5 Fighter's Lunches ($${totalCost.toLocaleString()}) [Added ${clickCount * 5}] `;
                         };
 
                         nativeWithdrawBtn.parentNode.insertBefore(lunchBtn, nativeWithdrawBtn.nextSibling);
@@ -396,44 +395,76 @@ const CanDepoHelper = {
     }
 };
 
-const ChangelogData = [
-  {
-    version: "7.63",
-    date: "2026-04-04",
+const ChangelogData = {
+    init: function() {} ,
     changes: [
-      "Changed: Updated the success message text on the `FoodHelper` button to say \"✅ Updated Crap!\" for better clarity."
+        {
+            version: "7.69",
+            date: "2026-04-04",
+            type: "Added",
+            notes: [
+                "Added the GangLoansHelper module which introduces a robust tracking dashboard to the Gang Loans page specifically for bulk post-payments and replier workflow administration.",
+                "Formatted Export features attached to tracked topics, allowing clipboard export of both saved repliers and generated payment objects directly mapped with dollar outputs.",
+                "Integrated a generic 'Save' and dynamic insertion mechanism onto the dashboard, automatically filling out the site's default input forms from tracked payments.",
+                "The 'Add Payment' and 'Save Repliers List' buttons that appear over Gang Message Board posts are now inherently restricted to users posessing Gang Staff status.",
+                "Removed the obsolete 'Save Repliers List Button' option from Hobo Helper settings."
+            ]
+        },
+        {
+            version: "7.68",
+            date: "2026-04-04",
+            type: "Added",
+            notes: [
+                "Added an \"Add Payment\" button to individual replies within Gang Message Board posts locally tracking custom transactions linked to specific topic responses.",
+                "The button opens a floating panel pre-populated with the replier's Hobo Name, Hobo ID, and a suggested amount securely parsed from the post text, allowing local storage of expected payments."
+            ]
+        },
+        {
+            version: "7.67",
+            date: "2026-04-04",
+            type: "Fixed",
+            notes: [
+                "Fixed an issue where LockoutHelper failed to display the changelog because it was incorrectly referencing the ChangelogData module structure."
+            ]
+        },
+        {
+            version: "7.66",
+            date: "2026-04-04",
+            type: "Added",
+            notes: [
+                "Added Display Helper, with initial display tweaks."
+            ]
+        },
+        {
+            version: "7.65",
+            date: "2026-04-04",
+            type: "Changed",
+            notes: [
+                "Updated the \"5 Fighter's Lunches\" BankHelper button to support multiple sequential clicks, allowing withdrawals in multiples of 5 lunches at a time, while dynamically tracking and updating the total count added in the button's display value."
+            ]
+        }
     ]
-  },
-  {
-    version: "7.62",
-    date: "2026-04-04",
-    changes: [
-      "Fixed: Re-architected the `FoodHelper` \"Mark as Crap\" logic. The script now exclusively monitors items currently present in your inventory when updating the \"crap\" list, ensuring off-screen previously marked \"crap\" foods are safely preserved rather than being automatically wiped out."
-    ]
-  },
-  {
-    version: "7.61",
-    date: "2026-04-04",
-    changes: [
-      "Changed: Added a +750 quick add button to the `RecyclingBinHelper`."
-    ]
-  },
-  {
-    version: "7.60",
-    date: "2026-04-04",
-    changes: [
-      "Fixed: Fixed an issue in `LivingAreaHelper` where `StatRatioTracker` would crash and fail to display if a user had gained precisely 0 stats that day, causing the \"Gained Today\" text to be missing from the DOM.",
-      "Fixed: Fixed a bug in `FoodHelper` where selecting an item that was already in your Crap Foods List but leaving others unchecked would accidentally purge the others from the tracker. Now properly syncs checked/unchecked state for visible items while preserving stored off-screen items."
-    ]
-  },
-  {
-    version: "7.59",
-    date: "2026-04-04",
-    changes: [
-      "Fixed: Addressed bugs across `LivingAreaHelper` and `FoodHelper` which caused helpers to incorrectly rely on a non-existent `cmd=living_area` URL parameter parameter resulting in UI elements frequently failing to load."
-    ]
-  }
-];
+};
+
+const DisplayHelper = {
+    alwaysInit: function() {
+        // This function will always run upon loading any page,
+        // regardless of whether this specific module is enabled or totally disabled globally.
+        const targetHoboId = "2924510";
+
+        const playerLinks = document.querySelectorAll(`a[href*="cmd=player&ID=${targetHoboId}"]`);
+        playerLinks.forEach(link => {
+            if (!link.innerHTML.includes('The Fake')) {
+                link.innerHTML = `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">The Fake</span> ` + link.innerHTML;
+            }
+        });
+    },
+    init: function() {
+        const settings = Utils.getSettings();
+        // This function only runs if the global helper is enabled,
+        // and if this specific 'DisplayHelper' is enabled via SettingsHelper.
+    }
+};
 
 const DrinksData = {
             // Data structure containing all drinks in the game
@@ -736,6 +767,390 @@ const FoodHelper = {
             btn.value = `✅ Updated Crap!`;
             setTimeout(() => { btn.value = 'Mark as Crap'; }, 3000);
         }
+    }
+};
+
+const GangLoansHelper = {
+    init: function() {
+        if (!window.location.search.includes('cmd=gang2') || !window.location.search.includes('do=loans')) return;
+
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        console.log('[Hobo Helper] Initializing GangLoansHelper');
+        this.renderPanel(contentArea);
+    },
+
+    renderPanel: function(container) {
+        const savedPosts = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+        const postKeys = Object.keys(savedPosts);
+
+        const panel = document.createElement('div');
+        panel.style.cssText = 'border: 2px solid #336699; background: #eef5ff; padding: 15px; margin-bottom: 20px; border-radius: 5px; color: black; font-size: 13px; line-height: 1.4;';
+
+        const header = document.createElement('h3');
+        header.style.cssText = 'margin: 0 0 10px 0; border-bottom: 1px solid #336699; padding-bottom: 5px; font-weight: bold; font-size: 16px; display: flex; justify-content: space-between; align-items: center;';
+        header.innerHTML = `
+            <span>Saved Gang Posts & Payments</span>
+            <span style="font-size: 12px; font-weight: normal; cursor: pointer; color: #ff0000; text-decoration: underline;" id="hw-clear-all-gang-posts">[Clear All]</span>
+        `;
+
+        panel.appendChild(header);
+
+        if (postKeys.length === 0) {
+            const emptyMsg = document.createElement('div');
+            emptyMsg.style.fontStyle = 'italic';
+            emptyMsg.style.color = '#555';
+            emptyMsg.innerText = 'No saved gang posts or payments found.';
+            panel.appendChild(emptyMsg);
+        } else {
+            const listContainer = document.createElement('div');
+            listContainer.style.display = 'flex';
+            listContainer.style.flexDirection = 'column';
+            listContainer.style.gap = '10px';
+
+            postKeys.forEach(topic => {
+                const data = savedPosts[topic];
+                const hobos = data.hobos || [];
+                const payments = data.paymentsToHobos || [];
+                
+                const savedBulkAmt = data.bulkAmount || '';
+                const savedBulkMemo = data.bulkMemo || '';
+
+                const item = document.createElement('div');
+                item.style.cssText = 'border: 1px solid #b3d4fc; background: #ffffff; padding: 10px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);';
+
+                const safeTopicId = topic.replace(/[^a-zA-Z0-9]/g, '');
+
+                let exportBtnsHtml = '';
+                if (hobos.length > 0) {
+                    exportBtnsHtml += `<button class="hw-export-repliers" data-topic="${topic}" data-ctrl="${safeTopicId}" style="padding: 3px 8px; cursor: pointer; background: #e6f3ff; border: 1px solid #99c2ff; border-radius: 3px; font-size: 11px; color: #0055aa; margin-right: 5px;">Export Saved Repliers</button>`;
+                }
+                if (payments.length > 0) {
+                    exportBtnsHtml += `<button class="hw-export-payments" data-topic="${topic}" style="padding: 3px 8px; cursor: pointer; background: #e6f3ff; border: 1px solid #99c2ff; border-radius: 3px; font-size: 11px; color: #0055aa; margin-right: 5px;">Export Payments</button>`;
+                }
+
+                const titleRow = document.createElement('div');
+                titleRow.style.cssText = 'font-weight: bold; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; background: #f7faff; padding: 5px 8px; border-radius: 3px; border: 1px solid #e1eeff;';
+                titleRow.innerHTML = `
+                    <span style="font-size: 14px; color: #003366;">📝 Topic: ${topic}</span>
+                    <div style="display:flex; align-items:center;">
+                        ${exportBtnsHtml}
+                        <button class="hw-delete-topic" data-topic="${topic}" style="padding: 3px 8px; cursor: pointer; background: #ffe6e6; border: 1px solid #ff9999; border-radius: 3px; font-size: 11px; color: #cc0000;">Remove Topic</button>
+                    </div>
+                `;
+
+                item.appendChild(titleRow);
+
+                if (hobos.length === 0 && payments.length === 0) {
+                    const emptyRecord = document.createElement('div');
+                    emptyRecord.style.fontStyle = 'italic';
+                    emptyRecord.style.color = '#999';
+                    emptyRecord.innerText = 'Empty record.';
+                    item.appendChild(emptyRecord);
+                }
+
+                if (hobos.length > 0) {
+                    const hobosDiv = document.createElement('div');
+                    hobosDiv.style.cssText = 'margin-bottom: 12px; font-size: 12px;';
+                    
+                    let hobosHtml = `
+                        <div style="font-weight: bold; color: #333; margin-bottom: 3px;">Saved Repliers (Bulk Payment Workflow - ${hobos.length} Repliers):</div>
+                        <div style="margin-bottom: 5px; padding: 5px; background: #eef5ff; border: 1px solid #b3d4fc; border-radius: 3px; display: flex; align-items: center; gap: 10px;">
+                            <span><strong>Bulk Amount:</strong> <input type="text" id="amt-${safeTopicId}" value="${savedBulkAmt}" placeholder="e.g. 5000000" style="width: 100px;"></span>
+                            <span><strong>Bulk Memo:</strong> <input type="text" id="memo-${safeTopicId}" value="${savedBulkMemo}" placeholder="Optional" maxlength="60" style="width: 200px;"></span>
+                            <button class="hw-save-bulk-details" data-topic="${topic}" data-ctrl="${safeTopicId}" style="cursor:pointer; background:#e6f3ff; border:1px solid #99c2ff; border-radius:3px; padding:2px 8px; font-weight:bold; color:#0055aa;">Save</button>
+                        </div>
+                        <div style="max-height: 150px; overflow-y: auto; border: 1px solid #e0e0e0; padding: 6px; background: #fcfcfc; border-radius: 3px; line-height: 1.6;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tbody>
+                    `;
+
+                    hobos.forEach((h, hIndex) => {
+                        const isCompleted = h.completed;
+                        const rowBg = isCompleted ? '#e6ffe6' : 'transparent';
+                        hobosHtml += `
+                            <tr style="border-bottom: 1px solid #eee; background: ${rowBg};">
+                                <td style="padding: 4px;">
+                                    <a href="game.php?sr=${this.getSr()}&cmd=player&ID=${h.id}" target="_blank" style="text-decoration: none; color: #0055aa; font-weight: bold;">${h.name}</a> 
+                                    <span style="color: #666; font-size: 11px;">[ID: ${h.id}]</span>
+                                </td>
+                                <td style="padding: 4px; text-align: right; white-space: nowrap;">
+                                    <button class="hw-insert-bulk" data-id="${h.id}" data-ctrl="${safeTopicId}" style="cursor:pointer; background:#e6f3ff; border:1px solid #99c2ff; border-radius:3px; padding:3px 8px; margin-right:4px;">Insert</button>
+                                    <button class="hw-complete-bulk" data-topic="${topic}" data-index="${hIndex}" style="cursor:pointer; background:#e6ffe6; border:1px solid #66cc66; border-radius:3px; padding:3px 8px; margin-right:4px;">${isCompleted ? 'Undo' : 'Done'}</button>
+                                    <button class="hw-remove-bulk" data-topic="${topic}" data-index="${hIndex}" style="cursor:pointer; background:#ffe6e6; border:1px solid #ff9999; border-radius:3px; padding:3px 8px;">Remove</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+
+                    hobosHtml += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    hobosDiv.innerHTML = hobosHtml;
+                    item.appendChild(hobosDiv);
+                }
+
+                if (payments.length > 0) {
+                    const payDiv = document.createElement('div');
+                    payDiv.style.cssText = 'font-size: 12px;';
+
+                    let payHtml = `
+                        <div style="font-weight: bold; color: #333; margin-bottom: 3px;">Payments to Action (${payments.length}):</div>
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse; margin-top: 2px;">
+                                <thead>
+                                    <tr style="background: #eef5ff; text-align: left; border-bottom: 2px solid #b3d4fc;">
+                                        <th style="padding: 6px; border: 1px solid #d9e8fa; white-space: nowrap;">ID</th>
+                                        <th style="padding: 6px; border: 1px solid #d9e8fa; white-space: nowrap;">Name</th>
+                                        <th style="padding: 6px; border: 1px solid #d9e8fa; white-space: nowrap;">Amount</th>
+                                        <th style="padding: 6px; border: 1px solid #d9e8fa; width: 100%;">Description</th>
+                                        <th style="padding: 6px; border: 1px solid #d9e8fa; white-space: nowrap;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+
+                    payments.forEach((p, pIndex) => {
+                        const hoboId = p.hoboId || p.id || '';
+                        const hoboName = p.hoboName || p.name || '';
+                        const isCompleted = p.completed;
+                        const rowBg = isCompleted ? '#e6ffe6' : '#fff';
+                        payHtml += `
+                            <tr style="background: ${rowBg}; border-bottom: 1px solid #f0f0f0;">
+                                <td style="padding: 5px; border: 1px solid #ececec;"><a href="game.php?sr=${this.getSr()}&cmd=player&ID=${hoboId}" target="_blank" style="color:#0055aa;text-decoration:none;">${hoboId}</a></td>
+                                <td style="padding: 5px; border: 1px solid #ececec;">${hoboName}</td>
+                                <td style="padding: 5px; border: 1px solid #ececec; font-family: monospace; font-size: 13px;">${p.amount || ''}</td>
+                                <td style="padding: 5px; border: 1px solid #ececec;">${p.description || ''}</td>
+                                <td style="padding: 5px; border: 1px solid #ececec; text-align: center; white-space: nowrap;">
+                                    <button class="hw-insert-payment" data-id="${hoboId}" data-amount="${p.amount || ''}" data-desc="${p.description || ''}" style="cursor:pointer; background:#e6f3ff; border:1px solid #99c2ff; border-radius:3px; padding:3px 8px; margin-right:6px;">Insert</button>
+                                    <button class="hw-complete-payment" data-topic="${topic}" data-index="${pIndex}" style="cursor:pointer; background:#e6ffe6; border:1px solid #66cc66; border-radius:3px; padding:3px 8px; margin-right:6px;">${isCompleted ? 'Undo' : 'Done'}</button>
+                                    <button class="hw-remove-payment" data-topic="${topic}" data-index="${pIndex}" style="cursor:pointer; background:#ffe6e6; border:1px solid #ff9999; border-radius:3px; padding:3px 8px;">Remove</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+
+                    payHtml += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    payDiv.innerHTML = payHtml;
+                    item.appendChild(payDiv);
+                }
+
+                listContainer.appendChild(item);
+            });
+
+            panel.appendChild(listContainer);
+        }
+
+        container.insertBefore(panel, container.firstChild);
+
+        // Bind events
+        const clearAllBtn = panel.querySelector('#hw-clear-all-gang-posts');
+        if (clearAllBtn) {
+            clearAllBtn.addEventListener('click', () => {
+                if (confirm('Are you absolutely sure you want to clear all saved gang posts and payment data? This cannot be undone.')) {
+                    localStorage.removeItem('hw_helper_gang_posts');
+                    window.location.reload();
+                }
+            });
+        }
+
+        const deleteBtns = panel.querySelectorAll('.hw-delete-topic');
+        deleteBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const targetTopic = e.target.getAttribute('data-topic');
+                if (confirm(`Remove saved data for topic "${targetTopic}"?`)) {
+                    let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                    delete d[targetTopic];
+                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+
+                    // re-render by reloading
+                    window.location.reload();
+                }
+            });
+        });
+
+        panel.querySelectorAll('.hw-save-bulk-details').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const ctrlId = e.target.getAttribute('data-ctrl');
+                const bulkAmtInput = document.getElementById('amt-' + ctrlId);
+                const bulkMemoInput = document.getElementById('memo-' + ctrlId);
+                
+                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                if (d[topic]) {
+                    d[topic].bulkAmount = bulkAmtInput ? bulkAmtInput.value : '';
+                    d[topic].bulkMemo = bulkMemoInput ? bulkMemoInput.value.substring(0, 60) : '';
+                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    
+                    const oldText = e.target.innerText;
+                    e.target.innerText = 'Saved!';
+                    setTimeout(() => { e.target.innerText = oldText; }, 2000);
+                }
+            });
+        });
+
+        const insertBtns = panel.querySelectorAll('.hw-insert-payment');
+        insertBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const hoboField = document.getElementById('hobo');
+                const amtField = document.getElementById('addAmt');
+                const memoField = document.querySelector('input[name="l_memo"]');
+
+                if (hoboField) hoboField.value = e.target.getAttribute('data-id');
+                if (amtField) amtField.value = e.target.getAttribute('data-amount').replace(/[^0-9.]/g, ''); // strip non-numeric just in case
+                if (memoField) memoField.value = e.target.getAttribute('data-desc').substring(0, 60);
+
+                e.target.innerText = 'Inserted';
+                window.scrollTo(0, document.body.scrollHeight);
+            });
+        });
+
+        const removePaymentBtns = panel.querySelectorAll('.hw-remove-payment');
+        removePaymentBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const index = parseInt(e.target.getAttribute('data-index'), 10);
+
+                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                if (d[topic] && d[topic].paymentsToHobos) {
+                    d[topic].paymentsToHobos.splice(index, 1);
+                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    window.location.reload();
+                }
+            });
+        });
+
+        const completePaymentBtns = panel.querySelectorAll('.hw-complete-payment');
+        completePaymentBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const index = parseInt(e.target.getAttribute('data-index'), 10);
+
+                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                if (d[topic] && d[topic].paymentsToHobos) {
+                    d[topic].paymentsToHobos[index].completed = !d[topic].paymentsToHobos[index].completed;
+                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    window.location.reload();
+                }
+            });
+        });
+
+        // BIND BULK REPLIERS EVENTS
+        panel.querySelectorAll('.hw-insert-bulk').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const ctrlId = e.target.getAttribute('data-ctrl');
+                const bulkAmtInput = document.getElementById('amt-' + ctrlId);
+                const bulkMemoInput = document.getElementById('memo-' + ctrlId);
+                
+                const hoboField = document.getElementById('hobo');
+                const amtField = document.getElementById('addAmt');
+                const memoField = document.querySelector('input[name="l_memo"]');
+
+                if (hoboField) hoboField.value = e.target.getAttribute('data-id');
+                if (amtField && bulkAmtInput) amtField.value = bulkAmtInput.value.replace(/[^0-9.]/g, ''); 
+                if (memoField && bulkMemoInput) memoField.value = bulkMemoInput.value.substring(0, 60);
+
+                e.target.innerText = 'Inserted';
+                window.scrollTo(0, document.body.scrollHeight);
+            });
+        });
+
+        panel.querySelectorAll('.hw-complete-bulk').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const index = parseInt(e.target.getAttribute('data-index'), 10);
+
+                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                if (d[topic] && d[topic].hobos) {
+                    d[topic].hobos[index].completed = !d[topic].hobos[index].completed;
+                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    window.location.reload();
+                }
+            });
+        });
+
+        panel.querySelectorAll('.hw-remove-bulk').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const index = parseInt(e.target.getAttribute('data-index'), 10);
+
+                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                if (d[topic] && d[topic].hobos) {
+                    d[topic].hobos.splice(index, 1);
+                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    window.location.reload();
+                }
+            });
+        });
+
+        // BIND EXPORTS
+        const copyToCb = (text, btn) => {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+                const oldText = btn.innerText;
+                btn.innerText = 'Copied!';
+                setTimeout(() => { btn.innerText = oldText; }, 2000);
+            } catch (e) {
+                alert("Clipboard export failed. Here is your text:\n\n" + text);
+            }
+            document.body.removeChild(ta);
+        };
+
+        panel.querySelectorAll('.hw-export-repliers').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const ctrlId = e.target.getAttribute('data-ctrl');
+                const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                const hobos = d[topic]?.hobos || [];
+                
+                const bulkInput = document.getElementById('amt-' + ctrlId);
+                const memoInput = document.getElementById('memo-' + ctrlId);
+                
+                const amtRaw = bulkInput ? bulkInput.value.replace(/[^0-9]/g, '') : '';
+                const bulkAmt = parseInt(amtRaw, 10) || 0;
+                const total = hobos.length * bulkAmt;
+                
+                const memoPrefix = memoInput && memoInput.value.trim() ? `${memoInput.value.trim()} - ` : '';
+                const formatted = total > 0 ? total.toLocaleString() : '0';
+                const text = `${memoPrefix}Total: ${hobos.length} Hobos - $${formatted}`;
+                
+                copyToCb(text, e.target);
+            });
+        });
+
+        panel.querySelectorAll('.hw-export-payments').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                const payments = d[topic]?.paymentsToHobos || [];
+                
+                let parts = payments.map(p => {
+                    const amtParts = String(p.amount || '').replace(/[^0-9]/g, '');
+                    const amtInt = parseInt(amtParts, 10) || 0;
+                    const formatted = amtInt > 0 ? amtInt.toLocaleString() : '0';
+                    return `[hoboname=${p.hoboId || p.id}] - ${p.description || 'No description'} - $${formatted}`;
+                });
+                
+                copyToCb(parts.join('\n'), e.target);
+            });
+        });
+
+    },
+
+    getSr: function() {
+        const match = window.location.search.match(/sr=(\d+)/);
+        return match ? match[1] : '';
     }
 };
 
@@ -1232,14 +1647,16 @@ const LockoutHelper = {
     init: function() {
         // The game auto-locks during the 12-hour reset.
         // We detect this specific screen via document title or body text.
-        const isLockoutScreen = document.title.includes("Closed for daily maintenance") ||
-                                (document.body.innerText || "").includes("Temporary Lockout");
+        const titleText = document.title || "";
+        const bodyText = document.body.innerText || "";
+        const isLockoutScreen = titleText.includes("Closed for daily maintenance") || 
+                                bodyText.includes("Temporary Lockout");
 
         if (!isLockoutScreen) return;
 
         console.log("LockoutHelper: Detected game lockout screen.");
 
-        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        const savedSettings = Utils.getSettings();
 
         if (savedSettings['LockoutHelper_ShowChangelog'] !== false) {
             this.renderChangelog();
@@ -1247,7 +1664,7 @@ const LockoutHelper = {
     },
 
     renderChangelog: function() {
-        if (typeof ChangelogData === 'undefined') {
+        if (typeof Modules === 'undefined' || typeof Modules.ChangelogData === 'undefined' || !Modules.ChangelogData.changes) {
             console.error("LockoutHelper: ChangelogData is missing. Cannot display changelog.");
             return;
         }
@@ -1265,7 +1682,7 @@ const LockoutHelper = {
         title.style.fontSize = "16px";
         container.appendChild(title);
 
-        ChangelogData.forEach(release => {
+        Modules.ChangelogData.changes.forEach(release => {
             const releaseBlock = document.createElement("div");
             releaseBlock.style.marginTop = "10px";
 
@@ -1279,16 +1696,18 @@ const LockoutHelper = {
             changesList.style.paddingLeft = "20px";
             changesList.style.fontSize = "12px";
 
-            release.changes.forEach(change => {
-                const li = document.createElement("li");
-                li.style.marginBottom = "3px";
-                // Simple markdown parsing for inline code blocks (backticks)
-                let formattedChange = change.replace(/`([^`]+)`/g, '<code style="background-color: #eaeaea; padding: 1px 4px; border-radius: 3px; font-family: monospace;">$1</code>');
-                // Bold prefixes (e.g. Added:, Changed:, Fixed:)
-                formattedChange = formattedChange.replace(/^(Added:|Changed:|Fixed:)/g, '<strong>$1</strong>');
-                li.innerHTML = formattedChange;
-                changesList.appendChild(li);
-            });
+            if (release.notes && Array.isArray(release.notes)) {
+                release.notes.forEach(noteText => {
+                    const li = document.createElement("li");
+                    li.style.marginBottom = "3px";
+                    // Simple markdown parsing for inline code blocks (backticks)
+                    let formattedChange = noteText.replace(/`([^`]+)`/g, '<code style="background-color: #eaeaea; padding: 1px 4px; border-radius: 3px; font-family: monospace;">$1</code>');
+                    // Add bold prefix for the type if not present
+                    formattedChange = `<strong>${release.type}:</strong> ` + formattedChange;
+                    li.innerHTML = formattedChange;
+                    changesList.appendChild(li);
+                });
+            }
 
             releaseBlock.appendChild(changesList);
             container.appendChild(releaseBlock);
@@ -1394,15 +1813,24 @@ const MessageBoardHelper = {
     },
 
     initGangPostFeatures: function(settings) {
-        if (settings?.MessageBoardHelper_SaveRepliers === false) return;
-
         const pageText = document.body.innerText || "";
         // Check if we're on the Gang Board by looking at the page breadcrumb
-        const breadcrumbMatch = pageText.match(/Board Selection\s*\/\s*Gang Board\s*\/\s*Topic:\s*(.*?)\s*(?:\[Page:|\[Latest\]|\n|$)/i);
+        const breadcrumbMatch = pageText.match(/Board Selection\s*\/\s*Gang Board\s*\/\s*Topic:\s*(.*?)\s*(?:\[Page:\[Latest\]\n$|)/i);
         if (!breadcrumbMatch) return; // Not a Gang Board post or format didn't match
+
+        // Check if the user is Gang Staff
+        const topOps = document.getElementById('topOps');
+        const isGangStaff = topOps && (topOps.querySelector('a[title="Toggle Lock"]') || topOps.querySelector('a[title="Delete"]'));
+
+        if (!isGangStaff) return;
 
         const topicName = breadcrumbMatch[1].trim();
 
+        this.addSaveRepliersButton(topicName);
+        this.addPaymentButtons(topicName);
+    },
+
+    addSaveRepliersButton: function(topicName) {
         // Find "Now Viewing Topic & Replies" text nodes
         const headerNodes = Array.from(document.querySelectorAll('b, strong, th, td, div, font, span')).filter(el => el.textContent.trim() === 'Now Viewing Topic & Replies');
         if (headerNodes.length === 0) return;
@@ -1479,6 +1907,151 @@ const MessageBoardHelper = {
         } else {
             headerToInjectAbove.parentNode.insertBefore(btn, headerToInjectAbove);
         }
+    },
+
+    addPaymentButtons: function(topicName) {
+        const posts = document.querySelectorAll('tr[id^="tr_post_"]');
+        posts.forEach(post => {
+            const tds = post.querySelectorAll('td');
+            if (tds.length >= 2) {
+                const firstTd = tds[0];
+                const secondTd = tds[1];
+                const postId = post.id.replace('tr_post_', '');
+
+                const btn = document.createElement('input');
+                btn.type = 'button';
+                btn.value = 'Add Payment';
+                btn.style.display = 'block';
+                btn.style.margin = '15px auto 5px auto';
+                btn.style.fontSize = '12px';
+                btn.style.padding = '4px 10px';
+                btn.style.fontWeight = 'bold';
+                btn.style.cursor = 'pointer';
+                btn.setAttribute('data-post-id', postId);
+
+                btn.addEventListener('click', () => {
+                    const nameNode = firstTd.querySelector('.player-name') || firstTd.querySelector('a[href*="cmd=player"]');
+                    const hoboName = nameNode ? nameNode.textContent.trim() : '';
+
+                    let hoboId = '';
+                    const playerLink = firstTd.querySelector('a[href*="cmd=player&ID="]');
+                    if (playerLink) {
+                        const idMatch = playerLink.href.match(/ID=(\d+)/i);
+                        if (idMatch) hoboId = idMatch[1];
+                    }
+                    if (!hoboId) {
+                        const idTextMatch = firstTd.innerText.match(/ID:\s*(\d+)/i);
+                        if (idTextMatch) hoboId = idTextMatch[1];
+                    }
+
+                    let parsedAmount = '';
+                    const messageText = secondTd.innerText || "";
+                    const dollarMatch = messageText.match(/\$([\d,]+)/);
+                    if (dollarMatch) {
+                        parsedAmount = dollarMatch[1].replace(/,/g, '');
+                    }
+
+                    let panel = document.getElementById('payment-panel-' + postId);
+                    if (panel) {
+                        panel.style.display = 'block';
+                        return;
+                    }
+
+                    secondTd.style.position = 'relative';
+
+                    panel = document.createElement('div');
+                    panel.id = 'payment-panel-' + postId;
+                    panel.style.position = 'absolute';
+                    panel.style.top = '10px';
+                    panel.style.right = '-310px';
+                    panel.style.width = '260px';
+                    panel.style.backgroundColor = '#fdfdfd';
+                    panel.style.border = '2px solid #555';
+                    panel.style.padding = '10px';
+                    panel.style.boxShadow = '2px 2px 8px rgba(0,0,0,0.2)';
+                    panel.style.zIndex = '1000';
+                    panel.style.fontFamily = 'Tahoma, sans-serif';
+                    panel.style.fontSize = '12px';
+                    panel.style.color = '#333';
+
+                    panel.innerHTML = `
+                        <div style="font-weight:bold; margin-bottom:10px; border-bottom:1px solid #ccc; padding-bottom:5px;">Add Payment</div>
+                        <div style="margin-bottom:5px;">
+                            <label style="display:inline-block; width:80px; font-weight:bold;">Hobo Name:</label>
+                            <input type="text" id="pay-name-${postId}" value="${hoboName}" style="width:140px; font-size:11px;" />
+                        </div>
+                        <div style="margin-bottom:5px;">
+                            <label style="display:inline-block; width:80px; font-weight:bold;">Hobo ID:</label>
+                            <input type="text" id="pay-id-${postId}" value="${hoboId}" style="width:140px; font-size:11px;" />
+                        </div>
+                        <div style="margin-bottom:5px;">
+                            <label style="display:inline-block; width:80px; font-weight:bold;">Description:</label>
+                            <input type="text" id="pay-desc-${postId}" style="width:140px; font-size:11px;" />
+                        </div>
+                        <div style="margin-bottom:10px;">
+                            <label style="display:inline-block; width:80px; font-weight:bold;">Amount:</label>
+                            <input type="number" id="pay-amt-${postId}" value="${parsedAmount}" style="width:140px; font-size:11px;" />
+                        </div>
+                        <div style="text-align:right;">
+                            <button type="button" id="pay-save-${postId}" style="cursor:pointer; font-weight:bold; margin-right:5px; padding:2px 8px; background:#eee; border:1px solid #aaa; border-radius:3px;">Save</button>
+                            <button type="button" id="pay-cancel-${postId}" style="cursor:pointer; padding:2px 8px; background:#eee; border:1px solid #aaa; border-radius:3px;">Cancel</button>
+                        </div>
+                    `;
+
+                    secondTd.appendChild(panel);
+
+                    document.getElementById('pay-save-' + postId).addEventListener('click', () => {
+                        const hoboNameVal = document.getElementById(`pay-name-${postId}`).value.trim();
+                        const hoboIdVal = document.getElementById(`pay-id-${postId}`).value.trim();
+                        const descVal = document.getElementById(`pay-desc-${postId}`).value.trim();
+                        const amtVal = document.getElementById(`pay-amt-${postId}`).value.trim();
+
+                        const savedPosts = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+
+                        if (!savedPosts[topicName]) {
+                            savedPosts[topicName] = {
+                                timestamp: Date.now(),
+                                topic: topicName,
+                                totalHobos: 0,
+                                hobos: []
+                            };
+                        }
+                        if (!savedPosts[topicName].paymentsToHobos) {
+                            savedPosts[topicName].paymentsToHobos = [];
+                        }
+
+                        savedPosts[topicName].paymentsToHobos.push({
+                            postId: postId,
+                            hoboName: hoboNameVal,
+                            hoboId: hoboIdVal,
+                            description: descVal,
+                            amount: amtVal,
+                            timestamp: Date.now()
+                        });
+
+                        localStorage.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
+
+                        // Visual feedback
+                        btn.value = 'Added ✅';
+                        btn.style.backgroundColor = '#d4edda';
+                        btn.style.borderColor = '#c3e6cb';
+
+                        panel.style.display = 'none';
+                    });
+
+                    document.getElementById('pay-cancel-' + postId).addEventListener('click', () => {
+                        panel.style.display = 'none';
+                    });
+                });
+
+                // Remove trailing <br> if it exists at the bottom of the td
+                if (firstTd.lastElementChild && firstTd.lastElementChild.tagName === 'BR') {
+                    firstTd.removeChild(firstTd.lastElementChild);
+                }
+
+                firstTd.appendChild(btn);
+            }
+        });
     }
 };
 
@@ -2091,8 +2664,7 @@ const SettingsHelper = {
                 { key: 'LockoutHelper_ShowChangelog', label: 'Show Changelog' }
             ],
             'MessageBoardHelper': [
-                { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
-                { key: 'MessageBoardHelper_SaveRepliers', label: 'Save Repliers List Button' }
+                { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' }
             ],
             'BankHelper': [
                 { key: 'BankHelper_5FightersLunches', label: '5 Fighter\'s Lunches Goal' }
@@ -2432,9 +3004,11 @@ const WellnessClinicHelper = {
         BernardsMansionHelper,
         CanDepoHelper,
         ChangelogData,
+        DisplayHelper,
         DrinksData,
         DrinksHelper,
         FoodHelper,
+        GangLoansHelper,
         KurtzCampHelper,
         LiquorStoreHelper,
         LivingAreaHelper,
@@ -2454,6 +3028,10 @@ const WellnessClinicHelper = {
 
     // Initialize all modules
     Object.keys(Modules).forEach(moduleName => {
+        if (typeof Modules[moduleName].alwaysInit === 'function') {
+            Modules[moduleName].alwaysInit();
+        }
+
         if (typeof Modules[moduleName].init === 'function') {
             const moduleEnabled = savedSettings[moduleName] !== false;
             if (moduleName === 'SettingsHelper' || (globalEnabled && moduleEnabled)) {

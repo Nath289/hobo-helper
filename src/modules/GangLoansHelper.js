@@ -1,0 +1,387 @@
+const GangLoansHelper = {
+    init: function() {
+        if (!window.location.search.includes('cmd=gang2') || !window.location.search.includes('do=loans')) return;
+
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        console.log('[Hobo Helper] Initializing GangLoansHelper');
+        this.renderPanel(contentArea);
+    },
+
+    renderPanel: function(container) {
+        const savedPosts = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+        const postKeys = Object.keys(savedPosts);
+
+        const panel = document.createElement('div');
+        panel.style.cssText = 'border: 2px solid #336699; background: #eef5ff; padding: 15px; margin-bottom: 20px; border-radius: 5px; color: black; font-size: 13px; line-height: 1.4;';
+
+        const header = document.createElement('h3');
+        header.style.cssText = 'margin: 0 0 10px 0; border-bottom: 1px solid #336699; padding-bottom: 5px; font-weight: bold; font-size: 16px; display: flex; justify-content: space-between; align-items: center;';
+        header.innerHTML = `
+            <span>Saved Gang Posts & Payments</span>
+            <span style="font-size: 12px; font-weight: normal; cursor: pointer; color: #ff0000; text-decoration: underline;" id="hw-clear-all-gang-posts">[Clear All]</span>
+        `;
+
+        panel.appendChild(header);
+
+        if (postKeys.length === 0) {
+            const emptyMsg = document.createElement('div');
+            emptyMsg.style.fontStyle = 'italic';
+            emptyMsg.style.color = '#555';
+            emptyMsg.innerText = 'No saved gang posts or payments found.';
+            panel.appendChild(emptyMsg);
+        } else {
+            const listContainer = document.createElement('div');
+            listContainer.style.display = 'flex';
+            listContainer.style.flexDirection = 'column';
+            listContainer.style.gap = '10px';
+
+            postKeys.forEach(topic => {
+                const data = savedPosts[topic];
+                const hobos = data.hobos || [];
+                const payments = data.paymentsToHobos || [];
+                
+                const savedBulkAmt = data.bulkAmount || '';
+                const savedBulkMemo = data.bulkMemo || '';
+
+                const item = document.createElement('div');
+                item.style.cssText = 'border: 1px solid #b3d4fc; background: #ffffff; padding: 10px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);';
+
+                const safeTopicId = topic.replace(/[^a-zA-Z0-9]/g, '');
+
+                let exportBtnsHtml = '';
+                if (hobos.length > 0) {
+                    exportBtnsHtml += `<button class="hw-export-repliers" data-topic="${topic}" data-ctrl="${safeTopicId}" style="padding: 3px 8px; cursor: pointer; background: #e6f3ff; border: 1px solid #99c2ff; border-radius: 3px; font-size: 11px; color: #0055aa; margin-right: 5px;">Export Saved Repliers</button>`;
+                }
+                if (payments.length > 0) {
+                    exportBtnsHtml += `<button class="hw-export-payments" data-topic="${topic}" style="padding: 3px 8px; cursor: pointer; background: #e6f3ff; border: 1px solid #99c2ff; border-radius: 3px; font-size: 11px; color: #0055aa; margin-right: 5px;">Export Payments</button>`;
+                }
+
+                const titleRow = document.createElement('div');
+                titleRow.style.cssText = 'font-weight: bold; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; background: #f7faff; padding: 5px 8px; border-radius: 3px; border: 1px solid #e1eeff;';
+                titleRow.innerHTML = `
+                    <span style="font-size: 14px; color: #003366;">📝 Topic: ${topic}</span>
+                    <div style="display:flex; align-items:center;">
+                        ${exportBtnsHtml}
+                        <button class="hw-delete-topic" data-topic="${topic}" style="padding: 3px 8px; cursor: pointer; background: #ffe6e6; border: 1px solid #ff9999; border-radius: 3px; font-size: 11px; color: #cc0000;">Remove Topic</button>
+                    </div>
+                `;
+
+                item.appendChild(titleRow);
+
+                if (hobos.length === 0 && payments.length === 0) {
+                    const emptyRecord = document.createElement('div');
+                    emptyRecord.style.fontStyle = 'italic';
+                    emptyRecord.style.color = '#999';
+                    emptyRecord.innerText = 'Empty record.';
+                    item.appendChild(emptyRecord);
+                }
+
+                if (hobos.length > 0) {
+                    const hobosDiv = document.createElement('div');
+                    hobosDiv.style.cssText = 'margin-bottom: 12px; font-size: 12px;';
+                    
+                    let hobosHtml = `
+                        <div style="font-weight: bold; color: #333; margin-bottom: 3px;">Saved Repliers (Bulk Payment Workflow - ${hobos.length} Repliers):</div>
+                        <div style="margin-bottom: 5px; padding: 5px; background: #eef5ff; border: 1px solid #b3d4fc; border-radius: 3px; display: flex; align-items: center; gap: 10px;">
+                            <span><strong>Bulk Amount:</strong> <input type="text" id="amt-${safeTopicId}" value="${savedBulkAmt}" placeholder="e.g. 5000000" style="width: 100px;"></span>
+                            <span><strong>Bulk Memo:</strong> <input type="text" id="memo-${safeTopicId}" value="${savedBulkMemo}" placeholder="Optional" maxlength="60" style="width: 200px;"></span>
+                            <button class="hw-save-bulk-details" data-topic="${topic}" data-ctrl="${safeTopicId}" style="cursor:pointer; background:#e6f3ff; border:1px solid #99c2ff; border-radius:3px; padding:2px 8px; font-weight:bold; color:#0055aa;">Save</button>
+                        </div>
+                        <div style="max-height: 150px; overflow-y: auto; border: 1px solid #e0e0e0; padding: 6px; background: #fcfcfc; border-radius: 3px; line-height: 1.6;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tbody>
+                    `;
+
+                    hobos.forEach((h, hIndex) => {
+                        const isCompleted = h.completed;
+                        const rowBg = isCompleted ? '#e6ffe6' : 'transparent';
+                        hobosHtml += `
+                            <tr style="border-bottom: 1px solid #eee; background: ${rowBg};">
+                                <td style="padding: 4px;">
+                                    <a href="game.php?sr=${this.getSr()}&cmd=player&ID=${h.id}" target="_blank" style="text-decoration: none; color: #0055aa; font-weight: bold;">${h.name}</a> 
+                                    <span style="color: #666; font-size: 11px;">[ID: ${h.id}]</span>
+                                </td>
+                                <td style="padding: 4px; text-align: right; white-space: nowrap;">
+                                    <button class="hw-insert-bulk" data-id="${h.id}" data-ctrl="${safeTopicId}" style="cursor:pointer; background:#e6f3ff; border:1px solid #99c2ff; border-radius:3px; padding:3px 8px; margin-right:4px;">Insert</button>
+                                    <button class="hw-complete-bulk" data-topic="${topic}" data-index="${hIndex}" style="cursor:pointer; background:#e6ffe6; border:1px solid #66cc66; border-radius:3px; padding:3px 8px; margin-right:4px;">${isCompleted ? 'Undo' : 'Done'}</button>
+                                    <button class="hw-remove-bulk" data-topic="${topic}" data-index="${hIndex}" style="cursor:pointer; background:#ffe6e6; border:1px solid #ff9999; border-radius:3px; padding:3px 8px;">Remove</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+
+                    hobosHtml += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    hobosDiv.innerHTML = hobosHtml;
+                    item.appendChild(hobosDiv);
+                }
+
+                if (payments.length > 0) {
+                    const payDiv = document.createElement('div');
+                    payDiv.style.cssText = 'font-size: 12px;';
+
+                    let payHtml = `
+                        <div style="font-weight: bold; color: #333; margin-bottom: 3px;">Payments to Action (${payments.length}):</div>
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse; margin-top: 2px;">
+                                <thead>
+                                    <tr style="background: #eef5ff; text-align: left; border-bottom: 2px solid #b3d4fc;">
+                                        <th style="padding: 6px; border: 1px solid #d9e8fa; white-space: nowrap;">ID</th>
+                                        <th style="padding: 6px; border: 1px solid #d9e8fa; white-space: nowrap;">Name</th>
+                                        <th style="padding: 6px; border: 1px solid #d9e8fa; white-space: nowrap;">Amount</th>
+                                        <th style="padding: 6px; border: 1px solid #d9e8fa; width: 100%;">Description</th>
+                                        <th style="padding: 6px; border: 1px solid #d9e8fa; white-space: nowrap;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+
+                    payments.forEach((p, pIndex) => {
+                        const hoboId = p.hoboId || p.id || '';
+                        const hoboName = p.hoboName || p.name || '';
+                        const isCompleted = p.completed;
+                        const rowBg = isCompleted ? '#e6ffe6' : '#fff';
+                        payHtml += `
+                            <tr style="background: ${rowBg}; border-bottom: 1px solid #f0f0f0;">
+                                <td style="padding: 5px; border: 1px solid #ececec;"><a href="game.php?sr=${this.getSr()}&cmd=player&ID=${hoboId}" target="_blank" style="color:#0055aa;text-decoration:none;">${hoboId}</a></td>
+                                <td style="padding: 5px; border: 1px solid #ececec;">${hoboName}</td>
+                                <td style="padding: 5px; border: 1px solid #ececec; font-family: monospace; font-size: 13px;">${p.amount || ''}</td>
+                                <td style="padding: 5px; border: 1px solid #ececec;">${p.description || ''}</td>
+                                <td style="padding: 5px; border: 1px solid #ececec; text-align: center; white-space: nowrap;">
+                                    <button class="hw-insert-payment" data-id="${hoboId}" data-amount="${p.amount || ''}" data-desc="${p.description || ''}" style="cursor:pointer; background:#e6f3ff; border:1px solid #99c2ff; border-radius:3px; padding:3px 8px; margin-right:6px;">Insert</button>
+                                    <button class="hw-complete-payment" data-topic="${topic}" data-index="${pIndex}" style="cursor:pointer; background:#e6ffe6; border:1px solid #66cc66; border-radius:3px; padding:3px 8px; margin-right:6px;">${isCompleted ? 'Undo' : 'Done'}</button>
+                                    <button class="hw-remove-payment" data-topic="${topic}" data-index="${pIndex}" style="cursor:pointer; background:#ffe6e6; border:1px solid #ff9999; border-radius:3px; padding:3px 8px;">Remove</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+
+                    payHtml += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    payDiv.innerHTML = payHtml;
+                    item.appendChild(payDiv);
+                }
+
+                listContainer.appendChild(item);
+            });
+
+            panel.appendChild(listContainer);
+        }
+
+        container.insertBefore(panel, container.firstChild);
+
+        // Bind events
+        const clearAllBtn = panel.querySelector('#hw-clear-all-gang-posts');
+        if (clearAllBtn) {
+            clearAllBtn.addEventListener('click', () => {
+                if (confirm('Are you absolutely sure you want to clear all saved gang posts and payment data? This cannot be undone.')) {
+                    localStorage.removeItem('hw_helper_gang_posts');
+                    window.location.reload();
+                }
+            });
+        }
+
+        const deleteBtns = panel.querySelectorAll('.hw-delete-topic');
+        deleteBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const targetTopic = e.target.getAttribute('data-topic');
+                if (confirm(`Remove saved data for topic "${targetTopic}"?`)) {
+                    let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                    delete d[targetTopic];
+                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+
+                    // re-render by reloading
+                    window.location.reload();
+                }
+            });
+        });
+
+        panel.querySelectorAll('.hw-save-bulk-details').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const ctrlId = e.target.getAttribute('data-ctrl');
+                const bulkAmtInput = document.getElementById('amt-' + ctrlId);
+                const bulkMemoInput = document.getElementById('memo-' + ctrlId);
+                
+                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                if (d[topic]) {
+                    d[topic].bulkAmount = bulkAmtInput ? bulkAmtInput.value : '';
+                    d[topic].bulkMemo = bulkMemoInput ? bulkMemoInput.value.substring(0, 60) : '';
+                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    
+                    const oldText = e.target.innerText;
+                    e.target.innerText = 'Saved!';
+                    setTimeout(() => { e.target.innerText = oldText; }, 2000);
+                }
+            });
+        });
+
+        const insertBtns = panel.querySelectorAll('.hw-insert-payment');
+        insertBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const hoboField = document.getElementById('hobo');
+                const amtField = document.getElementById('addAmt');
+                const memoField = document.querySelector('input[name="l_memo"]');
+
+                if (hoboField) hoboField.value = e.target.getAttribute('data-id');
+                if (amtField) amtField.value = e.target.getAttribute('data-amount').replace(/[^0-9.]/g, ''); // strip non-numeric just in case
+                if (memoField) memoField.value = e.target.getAttribute('data-desc').substring(0, 60);
+
+                e.target.innerText = 'Inserted';
+                window.scrollTo(0, document.body.scrollHeight);
+            });
+        });
+
+        const removePaymentBtns = panel.querySelectorAll('.hw-remove-payment');
+        removePaymentBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const index = parseInt(e.target.getAttribute('data-index'), 10);
+
+                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                if (d[topic] && d[topic].paymentsToHobos) {
+                    d[topic].paymentsToHobos.splice(index, 1);
+                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    window.location.reload();
+                }
+            });
+        });
+
+        const completePaymentBtns = panel.querySelectorAll('.hw-complete-payment');
+        completePaymentBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const index = parseInt(e.target.getAttribute('data-index'), 10);
+
+                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                if (d[topic] && d[topic].paymentsToHobos) {
+                    d[topic].paymentsToHobos[index].completed = !d[topic].paymentsToHobos[index].completed;
+                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    window.location.reload();
+                }
+            });
+        });
+
+        // BIND BULK REPLIERS EVENTS
+        panel.querySelectorAll('.hw-insert-bulk').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const ctrlId = e.target.getAttribute('data-ctrl');
+                const bulkAmtInput = document.getElementById('amt-' + ctrlId);
+                const bulkMemoInput = document.getElementById('memo-' + ctrlId);
+                
+                const hoboField = document.getElementById('hobo');
+                const amtField = document.getElementById('addAmt');
+                const memoField = document.querySelector('input[name="l_memo"]');
+
+                if (hoboField) hoboField.value = e.target.getAttribute('data-id');
+                if (amtField && bulkAmtInput) amtField.value = bulkAmtInput.value.replace(/[^0-9.]/g, ''); 
+                if (memoField && bulkMemoInput) memoField.value = bulkMemoInput.value.substring(0, 60);
+
+                e.target.innerText = 'Inserted';
+                window.scrollTo(0, document.body.scrollHeight);
+            });
+        });
+
+        panel.querySelectorAll('.hw-complete-bulk').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const index = parseInt(e.target.getAttribute('data-index'), 10);
+
+                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                if (d[topic] && d[topic].hobos) {
+                    d[topic].hobos[index].completed = !d[topic].hobos[index].completed;
+                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    window.location.reload();
+                }
+            });
+        });
+
+        panel.querySelectorAll('.hw-remove-bulk').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const index = parseInt(e.target.getAttribute('data-index'), 10);
+
+                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                if (d[topic] && d[topic].hobos) {
+                    d[topic].hobos.splice(index, 1);
+                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    window.location.reload();
+                }
+            });
+        });
+
+        // BIND EXPORTS
+        const copyToCb = (text, btn) => {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+                const oldText = btn.innerText;
+                btn.innerText = 'Copied!';
+                setTimeout(() => { btn.innerText = oldText; }, 2000);
+            } catch (e) {
+                alert("Clipboard export failed. Here is your text:\n\n" + text);
+            }
+            document.body.removeChild(ta);
+        };
+
+        panel.querySelectorAll('.hw-export-repliers').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const ctrlId = e.target.getAttribute('data-ctrl');
+                const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                const hobos = d[topic]?.hobos || [];
+                
+                const bulkInput = document.getElementById('amt-' + ctrlId);
+                const memoInput = document.getElementById('memo-' + ctrlId);
+                
+                const amtRaw = bulkInput ? bulkInput.value.replace(/[^0-9]/g, '') : '';
+                const bulkAmt = parseInt(amtRaw, 10) || 0;
+                const total = hobos.length * bulkAmt;
+                
+                const memoPrefix = memoInput && memoInput.value.trim() ? `${memoInput.value.trim()} - ` : '';
+                const formatted = total > 0 ? total.toLocaleString() : '0';
+                const text = `${memoPrefix}Total: ${hobos.length} Hobos - $${formatted}`;
+                
+                copyToCb(text, e.target);
+            });
+        });
+
+        panel.querySelectorAll('.hw-export-payments').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                const payments = d[topic]?.paymentsToHobos || [];
+                
+                let parts = payments.map(p => {
+                    const amtParts = String(p.amount || '').replace(/[^0-9]/g, '');
+                    const amtInt = parseInt(amtParts, 10) || 0;
+                    const formatted = amtInt > 0 ? amtInt.toLocaleString() : '0';
+                    return `[hoboname=${p.hoboId || p.id}] - ${p.description || 'No description'} - $${formatted}`;
+                });
+                
+                copyToCb(parts.join('\n'), e.target);
+            });
+        });
+
+    },
+
+    getSr: function() {
+        const match = window.location.search.match(/sr=(\d+)/);
+        return match ? match[1] : '';
+    }
+};
+
+
+
+
