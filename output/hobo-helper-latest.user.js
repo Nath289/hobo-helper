@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.66
+// @version      7.67
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -399,6 +399,14 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
+            version: "7.67",
+            date: "2026-04-04",
+            type: "Fixed",
+            notes: [
+                "Fixed an issue where LockoutHelper failed to display the changelog because it was incorrectly referencing the ChangelogData module structure."
+            ]
+        },
+        {
             version: "7.66",
             date: "2026-04-04",
             type: "Added",
@@ -429,14 +437,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Updated the success message text on the FoodHelper button to say \"✅ Updated Crap!\" for better clarity."
-            ]
-        },
-        {
-            version: "7.62",
-            date: "2026-04-04",
-            type: "Fixed",
-            notes: [
-                "Re-architected the FoodHelper \"Mark as Crap\" logic. The script now exclusively monitors items currently present in your inventory when updating the \"crap\" list, ensuring off-screen previously marked \"crap\" foods are safely preserved rather than being automatically wiped out."
             ]
         }
     ]
@@ -1259,14 +1259,16 @@ const LockoutHelper = {
     init: function() {
         // The game auto-locks during the 12-hour reset.
         // We detect this specific screen via document title or body text.
-        const isLockoutScreen = document.title.includes("Closed for daily maintenance") ||
-                                (document.body.innerText || "").includes("Temporary Lockout");
+        const titleText = document.title || "";
+        const bodyText = document.body.innerText || "";
+        const isLockoutScreen = titleText.includes("Closed for daily maintenance") || 
+                                bodyText.includes("Temporary Lockout");
 
         if (!isLockoutScreen) return;
 
         console.log("LockoutHelper: Detected game lockout screen.");
 
-        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        const savedSettings = Utils.getSettings();
 
         if (savedSettings['LockoutHelper_ShowChangelog'] !== false) {
             this.renderChangelog();
@@ -1274,7 +1276,7 @@ const LockoutHelper = {
     },
 
     renderChangelog: function() {
-        if (typeof ChangelogData === 'undefined') {
+        if (typeof Modules === 'undefined' || typeof Modules.ChangelogData === 'undefined' || !Modules.ChangelogData.changes) {
             console.error("LockoutHelper: ChangelogData is missing. Cannot display changelog.");
             return;
         }
@@ -1292,7 +1294,7 @@ const LockoutHelper = {
         title.style.fontSize = "16px";
         container.appendChild(title);
 
-        ChangelogData.forEach(release => {
+        Modules.ChangelogData.changes.forEach(release => {
             const releaseBlock = document.createElement("div");
             releaseBlock.style.marginTop = "10px";
 
@@ -1306,16 +1308,18 @@ const LockoutHelper = {
             changesList.style.paddingLeft = "20px";
             changesList.style.fontSize = "12px";
 
-            release.changes.forEach(change => {
-                const li = document.createElement("li");
-                li.style.marginBottom = "3px";
-                // Simple markdown parsing for inline code blocks (backticks)
-                let formattedChange = change.replace(/`([^`]+)`/g, '<code style="background-color: #eaeaea; padding: 1px 4px; border-radius: 3px; font-family: monospace;">$1</code>');
-                // Bold prefixes (e.g. Added:, Changed:, Fixed:)
-                formattedChange = formattedChange.replace(/^(Added:|Changed:|Fixed:)/g, '<strong>$1</strong>');
-                li.innerHTML = formattedChange;
-                changesList.appendChild(li);
-            });
+            if (release.notes && Array.isArray(release.notes)) {
+                release.notes.forEach(noteText => {
+                    const li = document.createElement("li");
+                    li.style.marginBottom = "3px";
+                    // Simple markdown parsing for inline code blocks (backticks)
+                    let formattedChange = noteText.replace(/`([^`]+)`/g, '<code style="background-color: #eaeaea; padding: 1px 4px; border-radius: 3px; font-family: monospace;">$1</code>');
+                    // Add bold prefix for the type if not present
+                    formattedChange = `<strong>${release.type}:</strong> ` + formattedChange;
+                    li.innerHTML = formattedChange;
+                    changesList.appendChild(li);
+                });
+            }
 
             releaseBlock.appendChild(changesList);
             container.appendChild(releaseBlock);

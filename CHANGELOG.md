@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.67] - 2026-04-04
+### Fixed
+- Fixed an issue where `LockoutHelper` failed to display the changelog because it was incorrectly referencing the `ChangelogData` module structure.
+
 ## [7.66] - 2026-04-04
 ### Added
 - Added Display Helper, with initial display tweaks.
