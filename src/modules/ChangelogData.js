@@ -2,6 +2,14 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
+            version: "7.76",
+            date: "2026-04-04",
+            type: "Changed",
+            notes: [
+                "Enhanced the MessageBoardHelper 'Add Payment' dollar amount parser to correctly interpret multiplier suffixes (k, m, mil, mill, million) and automatically format the mapped value with commas and a dollar sign."
+            ]
+        },
+        {
             version: "7.75",
             date: "2026-04-04",
             type: "Changed",
@@ -31,14 +39,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added the SoupKitchenHelper module to display the current tracked age of your Hobo in days and present an informational wiki table showing which soup items correspond to each age range when visiting the soup line."
-            ]
-        },
-        {
-            version: "7.71",
-            date: "2026-04-04",
-            type: "Added",
-            notes: [
-                "Added a configurable toggle for the HitlistHelper's 'Highlight Online Players' feature within the SettingsHelper preferences page."
             ]
         }
     ]

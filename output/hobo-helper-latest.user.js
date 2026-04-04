@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.75
+// @version      7.76
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -409,6 +409,14 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
+            version: "7.76",
+            date: "2026-04-04",
+            type: "Changed",
+            notes: [
+                "Enhanced the MessageBoardHelper 'Add Payment' dollar amount parser to correctly interpret multiplier suffixes (k, m, mil, mill, million) and automatically format the mapped value with commas and a dollar sign."
+            ]
+        },
+        {
             version: "7.75",
             date: "2026-04-04",
             type: "Changed",
@@ -438,14 +446,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added the SoupKitchenHelper module to display the current tracked age of your Hobo in days and present an informational wiki table showing which soup items correspond to each age range when visiting the soup line."
-            ]
-        },
-        {
-            version: "7.71",
-            date: "2026-04-04",
-            type: "Added",
-            notes: [
-                "Added a configurable toggle for the HitlistHelper's 'Highlight Online Players' feature within the SettingsHelper preferences page."
             ]
         }
     ]
@@ -2038,9 +2038,18 @@ const MessageBoardHelper = {
 
                     let parsedAmount = '';
                     const messageText = secondTd.innerText || "";
-                    const dollarMatch = messageText.match(/\$([\d,]+)/);
+                    const amountRegex = /(?:\$([\d,]+(?:\.\d+)?)\s*(k|m|mil|mill|million)?\b)|(?:([\d,]+(?:\.\d+)?)\s*(k|m|mil|mill|million)\b)/i;
+                    const dollarMatch = messageText.match(amountRegex);
                     if (dollarMatch) {
-                        parsedAmount = dollarMatch[1].replace(/,/g, '');
+                        let amountStr = dollarMatch[1] || dollarMatch[3];
+                        let multStr = (dollarMatch[2] || dollarMatch[4] || "").toLowerCase();
+                        let num = parseFloat(amountStr.replace(/,/g, ''));
+                        if (['m', 'mil', 'mill', 'million'].includes(multStr)) {
+                            num *= 1000000;
+                        } else if (multStr === 'k') {
+                            num *= 1000;
+                        }
+                        parsedAmount = '$' + Math.round(num).toLocaleString();
                     }
 
                     let panel = document.getElementById('payment-panel-' + postId);
@@ -2082,7 +2091,7 @@ const MessageBoardHelper = {
                         </div>
                         <div style="margin-bottom:10px;">
                             <label style="display:inline-block; width:80px; font-weight:bold;">Amount:</label>
-                            <input type="number" id="pay-amt-${postId}" value="${parsedAmount}" style="width:140px; font-size:11px;" />
+                            <input type="text" id="pay-amt-${postId}" value="${parsedAmount}" style="width:140px; font-size:11px;" />
                         </div>
                         <div style="text-align:right;">
                             <button type="button" id="pay-save-${postId}" style="cursor:pointer; font-weight:bold; margin-right:5px; padding:2px 8px; background:#eee; border:1px solid #aaa; border-radius:3px;">Save</button>

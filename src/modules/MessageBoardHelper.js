@@ -206,9 +206,18 @@ const MessageBoardHelper = {
 
                     let parsedAmount = '';
                     const messageText = secondTd.innerText || "";
-                    const dollarMatch = messageText.match(/\$([\d,]+)/);
+                    const amountRegex = /(?:\$([\d,]+(?:\.\d+)?)\s*(k|m|mil|mill|million)?\b)|(?:([\d,]+(?:\.\d+)?)\s*(k|m|mil|mill|million)\b)/i;
+                    const dollarMatch = messageText.match(amountRegex);
                     if (dollarMatch) {
-                        parsedAmount = dollarMatch[1].replace(/,/g, '');
+                        let amountStr = dollarMatch[1] || dollarMatch[3];
+                        let multStr = (dollarMatch[2] || dollarMatch[4] || "").toLowerCase();
+                        let num = parseFloat(amountStr.replace(/,/g, ''));
+                        if (['m', 'mil', 'mill', 'million'].includes(multStr)) {
+                            num *= 1000000;
+                        } else if (multStr === 'k') {
+                            num *= 1000;
+                        }
+                        parsedAmount = '$' + Math.round(num).toLocaleString();
                     }
 
                     let panel = document.getElementById('payment-panel-' + postId);
@@ -250,7 +259,7 @@ const MessageBoardHelper = {
                         </div>
                         <div style="margin-bottom:10px;">
                             <label style="display:inline-block; width:80px; font-weight:bold;">Amount:</label>
-                            <input type="number" id="pay-amt-${postId}" value="${parsedAmount}" style="width:140px; font-size:11px;" />
+                            <input type="text" id="pay-amt-${postId}" value="${parsedAmount}" style="width:140px; font-size:11px;" />
                         </div>
                         <div style="text-align:right;">
                             <button type="button" id="pay-save-${postId}" style="cursor:pointer; font-weight:bold; margin-right:5px; padding:2px 8px; background:#eee; border:1px solid #aaa; border-radius:3px;">Save</button>

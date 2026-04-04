@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.76] - 2026-04-04
+### Changed
+- Enhanced the `MessageBoardHelper` 'Add Payment' dollar amount parser to correctly interpret multiplier suffixes (k, m, mil, mill, million) and automatically format the mapped value with commas and a dollar sign.
+
 ## [7.75] - 2026-04-04
 ### Changed
 - Adjusted the padding of the `SettingsHelper` card boxes and global toggle container for a tighter, cleaner appearance.
