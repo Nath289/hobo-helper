@@ -2,6 +2,14 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
+            version: "7.66",
+            date: "2026-04-04",
+            type: "Added",
+            notes: [
+                "Added Display Helper, with initial display tweaks."
+            ]
+        },
+        {
             version: "7.65",
             date: "2026-04-04",
             type: "Changed",
@@ -32,23 +40,6 @@ const ChangelogData = {
             type: "Fixed",
             notes: [
                 "Re-architected the FoodHelper \"Mark as Crap\" logic. The script now exclusively monitors items currently present in your inventory when updating the \"crap\" list, ensuring off-screen previously marked \"crap\" foods are safely preserved rather than being automatically wiped out."
-            ]
-        },
-        {
-            version: "7.61",
-            date: "2026-04-04",
-            type: "Changed",
-            notes: [
-                "Added a +750 quick add button to the RecyclingBinHelper."
-            ]
-        },
-        {
-            version: "7.60",
-            date: "2026-04-04",
-            type: "Fixed",
-            notes: [
-                "Fixed an issue in LivingAreaHelper where StatRatioTracker would crash and fail to display if a user had gained precisely 0 stats that day, causing the \"Gained Today\" text to be missing from the DOM.",
-                "Fixed a bug in FoodHelper where selecting an item that was already in your Crap Foods List but leaving others unchecked would accidentally purge the others from the tracker. Now properly syncs checked/unchecked state for visible items while preserving stored off-screen items."
             ]
         }
     ]

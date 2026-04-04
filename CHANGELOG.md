@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.66] - 2026-04-04
+### Added
+- Added Display Helper, with initial display tweaks.
+
 ## [7.65] - 2026-04-04
 ### Changed
 - Updated the "5 Fighter's Lunches" `BankHelper` button to support multiple sequential clicks, allowing withdrawals in multiples of 5 lunches at a time, while dynamically tracking and updating the total count added in the button's display value.

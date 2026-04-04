@@ -21,6 +21,10 @@
 
     // Initialize all modules
     Object.keys(Modules).forEach(moduleName => {
+        if (typeof Modules[moduleName].alwaysInit === 'function') {
+            Modules[moduleName].alwaysInit();
+        }
+
         if (typeof Modules[moduleName].init === 'function') {
             const moduleEnabled = savedSettings[moduleName] !== false;
             if (moduleName === 'SettingsHelper' || (globalEnabled && moduleEnabled)) {

@@ -59,6 +59,9 @@ Assists with inventory management when viewing the Backpack.
 Helper functionality activated during the game's 12-hour resets (lockout periods).
 - **Changelog Display**: While the game is locked for resetting, this feature prominently displays the most recent Hobo Helper changelog notes via an overlaid UI directly on the reset screen, providing reading material during the wait.
 
+### 16. Display Helper (`DisplayHelper.js`)
+A core helper that runs display improvement related functions.
+
 ### Drink Helpers
 - [x] Automatically inject stat and effect data as tooltips to all drinks when hovering your mouse over them inside of your backpack and living area page.
 
