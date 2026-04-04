@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.75] - 2026-04-04
+### Changed
+- Adjusted the padding of the `SettingsHelper` card boxes and global toggle container for a tighter, cleaner appearance.
+
+## [7.74] - 2026-04-04
+### Changed
+- Overhauled the `SettingsHelper` Game Preferences page layout, migrating from a continuous vertical list to a balanced and stylized two-column card grid to improve readability and aesthetics.
+
 ## [7.73] - 2026-04-04
 ### Added
 - Added "Enable Improved Avatars" sub-feature to `DisplayHelper` to apply custom CSS shaping and styling to avatar images, including online status indicators. This can be configured in the Settings menu.

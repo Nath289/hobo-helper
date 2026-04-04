@@ -2,6 +2,22 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
+            version: "7.75",
+            date: "2026-04-04",
+            type: "Changed",
+            notes: [
+                "Adjusted the padding of the SettingsHelper card boxes and global toggle container for a tighter, cleaner appearance."
+            ]
+        },
+        {
+            version: "7.74",
+            date: "2026-04-04",
+            type: "Changed",
+            notes: [
+                "Overhauled the SettingsHelper Game Preferences page layout, migrating from a continuous vertical list to a balanced and stylized two-column card grid to improve readability and aesthetics."
+            ]
+        },
+        {
             version: "7.73",
             date: "2026-04-04",
             type: "Added",
@@ -23,15 +39,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added a configurable toggle for the HitlistHelper's 'Highlight Online Players' feature within the SettingsHelper preferences page."
-            ]
-        },
-        {
-            version: "7.70",
-            date: "2026-04-04",
-            type: "Added",
-            notes: [
-                "Added the HitlistHelper module to provide usability improvements to the Personal Hitlist page.",
-                "Formatted Personal Hitlist elements to automatically map and highlight any currently online opponents with a light green row background, dramatically improving visual recognition instead of having to spot the small online icon."
             ]
         }
     ]

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.70
+// @version      7.74
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -92,6 +92,16 @@ const Utils = {
         },
         getFightersLunchCost: function(level) {
             return ((10 * (level + 3)) / 2) * 2;
+        },
+        getHoboAgeInDays: function() {
+            const ageLine = document.querySelector('#personalInfo .line font[title*="days"]');
+            if (ageLine && ageLine.title) {
+                const match = ageLine.title.match(/(\d+)\s*days/i);
+                if (match) {
+                    return parseInt(match[1], 10);
+                }
+            }
+            return null;
         }
 
 };
@@ -399,49 +409,44 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
+            version: "7.74",
+            date: "2026-04-04",
+            type: "Changed",
+            notes: [
+                "Overhauled the SettingsHelper Game Preferences page layout, migrating from a continuous vertical list to a balanced and stylized two-column card grid to improve readability and aesthetics."
+            ]
+        },
+        {
+            version: "7.73",
+            date: "2026-04-04",
+            type: "Added",
+            notes: [
+                "Added \"Enable Improved Avatars\" sub-feature to DisplayHelper to apply custom CSS shaping and styling to avatar images, including online status indicators. This can be configured in the Settings menu."
+            ]
+        },
+        {
+            version: "7.72",
+            date: "2026-04-04",
+            type: "Added",
+            notes: [
+                "Added the SoupKitchenHelper module to display the current tracked age of your Hobo in days and present an informational wiki table showing which soup items correspond to each age range when visiting the soup line."
+            ]
+        },
+        {
+            version: "7.71",
+            date: "2026-04-04",
+            type: "Added",
+            notes: [
+                "Added a configurable toggle for the HitlistHelper's 'Highlight Online Players' feature within the SettingsHelper preferences page."
+            ]
+        },
+        {
             version: "7.70",
             date: "2026-04-04",
             type: "Added",
             notes: [
                 "Added the HitlistHelper module to provide usability improvements to the Personal Hitlist page.",
                 "Formatted Personal Hitlist elements to automatically map and highlight any currently online opponents with a light green row background, dramatically improving visual recognition instead of having to spot the small online icon."
-            ]
-        },
-        {
-            version: "7.69",
-            date: "2026-04-04",
-            type: "Added",
-            notes: [
-                "Added the GangLoansHelper module which introduces a robust tracking dashboard to the Gang Loans page specifically for bulk post-payments and replier workflow administration.",
-                "Formatted Export features attached to tracked topics, allowing clipboard export of both saved repliers and generated payment objects directly mapped with dollar outputs.",
-                "Integrated a generic 'Save' and dynamic insertion mechanism onto the dashboard, automatically filling out the site's default input forms from tracked payments.",
-                "The 'Add Payment' and 'Save Repliers List' buttons that appear over Gang Message Board posts are now inherently restricted to users posessing Gang Staff status.",
-                "Removed the obsolete 'Save Repliers List Button' option from Hobo Helper settings."
-            ]
-        },
-        {
-            version: "7.68",
-            date: "2026-04-04",
-            type: "Added",
-            notes: [
-                "Added an \"Add Payment\" button to individual replies within Gang Message Board posts locally tracking custom transactions linked to specific topic responses.",
-                "The button opens a floating panel pre-populated with the replier's Hobo Name, Hobo ID, and a suggested amount securely parsed from the post text, allowing local storage of expected payments."
-            ]
-        },
-        {
-            version: "7.67",
-            date: "2026-04-04",
-            type: "Fixed",
-            notes: [
-                "Fixed an issue where LockoutHelper failed to display the changelog because it was incorrectly referencing the ChangelogData module structure."
-            ]
-        },
-        {
-            version: "7.66",
-            date: "2026-04-04",
-            type: "Added",
-            notes: [
-                "Added Display Helper, with initial display tweaks."
             ]
         }
     ]
@@ -464,6 +469,57 @@ const DisplayHelper = {
         const settings = Utils.getSettings();
         // This function only runs if the global helper is enabled,
         // and if this specific 'DisplayHelper' is enabled via SettingsHelper.
+        if (settings['DisplayHelper_ImprovedAvatars'] !== false) {
+            this.initImprovedAvatars();
+        }
+    },
+    initImprovedAvatars: function() {
+        const style = document.createElement('style');
+        style.innerHTML = `
+            /* Avatars */
+            .pavatar .avatar-circle {
+                border-radius: 35% 35% 25% 35% !important;
+                border: 3px solid #531 !important;
+            }
+            .pavatar .avatar-special.don {
+                border-radius: 35% 35% 24% 35% !important;
+                border-style: solid!important;
+                border-width: 4px!important;
+                border-color: #fa0!important;
+            }
+            .pavatar .avatar-special {
+                border-radius: 35% 35% 24% 35% !important;
+                border-style: solid!important;
+                border-width: 4px!important;
+                border-color: #000 !important;
+            }
+            .pavatar .avatar-circle .avatar-active {
+                position: absolute;
+                bottom: 0;
+                right: 0;
+                width: 30%;
+                height: 30%;
+                border: 2px solid #531!important;
+                border-bottom-width: 0!important;
+                border-right-width: 0!important;
+                border-radius: 70%;
+                border-top-right-radius: 0;
+                border-bottom-left-radius: 0;
+                border-top-left-radius: 100%;
+                cursor: progress;
+            }
+            .pavatar .avatar-circle .avatar-active.recently {
+                background-color: #5fd05f;
+            }
+            .pavatar .avatar-circle .avatar-active.pulse {
+                background-color: #00f406;
+                animation: 1.5s Online linear infinite !important;
+            }
+            .pavatar.tt {
+                padding: 0 !important;
+            }
+        `;
+        document.head.appendChild(style);
     }
 };
 
@@ -1388,6 +1444,11 @@ const LivingAreaHelper = {
     init: function() {
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
         
+        const hoboAgeDays = Utils.getHoboAgeInDays();
+        if (hoboAgeDays !== null) {
+            localStorage.setItem('hw_helper_hobo_age_days', hoboAgeDays);
+        }
+
         if (savedSettings['LivingAreaHelper_StatRatioTracker'] !== false) {
             this.initStatRatioTracker();
         }
@@ -2618,36 +2679,45 @@ const SettingsHelper = {
         console.log('Settings Helper loaded for preferences page');
         
         // Add divider and title
-        const hr = document.createElement('hr');
-        hr.width = "300";
-        contentArea.appendChild(document.createElement('br'));
-        contentArea.appendChild(hr);
-        contentArea.appendChild(document.createElement('br'));
+        const headerContainer = document.createElement('div');
+        headerContainer.style.textAlign = 'center';
+        headerContainer.style.margin = '20px 0';
+        headerContainer.style.padding = '10px';
+        headerContainer.style.background = 'rgba(128, 128, 128, 0.1)';
+        headerContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
+        headerContainer.style.borderRadius = '5px';
 
         const titleDiv = document.createElement('div');
-        titleDiv.align = "center";
-        titleDiv.innerHTML = "<b><font size=\"3\">Hobo Helper Settings</font></b>";
-        contentArea.appendChild(titleDiv);
-        contentArea.appendChild(document.createElement('br'));
+        titleDiv.innerHTML = "<h2 style='margin: 0; font-family: Arial, sans-serif; font-size: 20px; text-transform: uppercase; letter-spacing: 1px;'>Hobo Helper Settings</h2>";
+        headerContainer.appendChild(titleDiv);
+        contentArea.appendChild(headerContainer);
 
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
         
         // Helper function for toggles
         const createToggle = (key, labelText, isGlobal = false) => {
             const container = document.createElement('div');
-            container.style.marginBottom = '5px';
-            container.style.paddingLeft = isGlobal ? '0' : '20px';
-            
+            container.style.marginBottom = '8px';
+            container.style.paddingLeft = isGlobal ? '0' : '5px';
+            container.style.display = 'flex';
+            container.style.alignItems = 'center';
+
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.id = `hw_helper_${key}`;
             // default to true if undefined
             checkbox.checked = savedSettings[key] !== false;
-            
+            checkbox.style.cursor = 'pointer';
+            checkbox.style.transform = 'scale(1.2)';
+            checkbox.style.marginRight = '8px';
+            checkbox.style.accentColor = '#2196F3';
+
             const label = document.createElement('label');
             label.htmlFor = `hw_helper_${key}`;
             label.innerHTML = ` ${labelText}`;
-            if (isGlobal) label.style.fontWeight = 'bold';
+            label.style.cursor = 'pointer';
+            label.style.fontFamily = 'Arial, sans-serif';
+            label.style.fontSize = '14px';
 
             const toast = document.createElement('span');
             toast.innerText = ' (Saved! Reload to apply)';
@@ -2673,14 +2743,25 @@ const SettingsHelper = {
             return container;
         };
 
+        const topDiv = document.createElement('div');
+        topDiv.style.background = 'rgba(128, 128, 128, 0.05)';
+        topDiv.style.border = '1px solid rgba(128, 128, 128, 0.2)';
+        topDiv.style.borderRadius = '5px';
+        topDiv.style.padding = '10px';
+        topDiv.style.marginBottom = '20px';
+
         // Add global toggle
-        contentArea.appendChild(createToggle('global_enabled', 'Enable Hobo Helper (Global)', true));
-        
-        contentArea.appendChild(document.createElement('br'));
-        const modsLabel = document.createElement('b');
+        topDiv.appendChild(createToggle('global_enabled', 'Enable Hobo Helper (Global)', true));
+        contentArea.appendChild(topDiv);
+
+        const modsLabel = document.createElement('div');
         modsLabel.innerText = "Active Modules:";
+        modsLabel.style.fontWeight = 'bold';
+        modsLabel.style.fontSize = '16px';
+        modsLabel.style.marginBottom = '10px';
+        modsLabel.style.borderBottom = '2px solid rgba(128, 128, 128, 0.3)';
+        modsLabel.style.paddingBottom = '5px';
         contentArea.appendChild(modsLabel);
-        contentArea.appendChild(document.createElement('br'));
 
         const subFeatures = {
             'LivingAreaHelper': [
@@ -2703,43 +2784,72 @@ const SettingsHelper = {
             ],
             'HitlistHelper': [
                 { key: 'HitlistHelper_HighlightOnline', label: 'Highlight Online Players' }
+            ],
+            'DisplayHelper': [
+                { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' }
             ]
         };
 
-        if (typeof Modules !== 'undefined') {
-            Object.keys(Modules).forEach(modName => {
-                if (modName === 'SettingsHelper') return; 
-                if (typeof Modules[modName].init !== 'function') return; // Hide data objects like DrinksData / ChangelogData
+        const gridContainer = document.createElement('div');
+        gridContainer.style.display = 'flex';
+        gridContainer.style.justifyContent = 'space-between';
+        gridContainer.style.alignItems = 'flex-start';
+        contentArea.appendChild(gridContainer);
 
-                contentArea.appendChild(createToggle(modName, `Enable ${modName}`));
+        const col1 = document.createElement('div');
+        col1.style.width = '48%';
+        gridContainer.appendChild(col1);
+
+        const col2 = document.createElement('div');
+        col2.style.width = '48%';
+        gridContainer.appendChild(col2);
+
+        if (typeof Modules !== 'undefined') {
+            const activeModules = Object.keys(Modules).filter(modName => {
+                return modName !== 'SettingsHelper' && typeof Modules[modName].init === 'function';
+            });
+
+            activeModules.sort().forEach((modName) => {
+                const moduleBlock = document.createElement('div');
+                moduleBlock.style.marginBottom = '12px';
+                moduleBlock.style.padding = '8px 10px';
+                moduleBlock.style.background = 'rgba(128, 128, 128, 0.05)';
+                moduleBlock.style.border = '1px solid rgba(128, 128, 128, 0.2)';
+                moduleBlock.style.borderRadius = '6px';
+                moduleBlock.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+
+                moduleBlock.appendChild(createToggle(modName, `<b>Enable ${modName}</b>`));
 
                 // Render sub-features if this module has them defined
                 if (subFeatures[modName]) {
                     const subContainer = document.createElement('div');
-                    subContainer.style.paddingLeft = '40px';
+                    subContainer.style.paddingLeft = '25px';
+                    subContainer.style.marginTop = '8px';
+                    subContainer.style.borderLeft = '2px solid #2196F3';
                     subFeatures[modName].forEach(feature => {
                         subContainer.appendChild(createToggle(feature.key, feature.label));
                     });
-                    contentArea.appendChild(subContainer);
+                    moduleBlock.appendChild(subContainer);
                 }
 
                 // Custom settings for FoodHelper
                 if (modName === 'FoodHelper') {
                     const foodContainer = document.createElement('div');
-                    foodContainer.style.paddingLeft = '40px';
+                    foodContainer.style.paddingLeft = '25px';
                     foodContainer.style.marginTop = '10px';
 
                     const label = document.createElement('b');
                     label.innerText = 'Crap Foods List:';
+                    label.style.display = 'block';
+                    label.style.marginBottom = '5px';
                     foodContainer.appendChild(label);
-                    foodContainer.appendChild(document.createElement('br'));
 
                     const listContainer = document.createElement('div');
-                    listContainer.style.marginTop = '5px';
-                    listContainer.style.background = '#f1f1f1';
+                    listContainer.style.background = 'rgba(0, 0, 0, 0.05)';
                     listContainer.style.padding = '10px';
-                    listContainer.style.border = '1px solid #ccc';
-                    listContainer.style.maxWidth = '300px';
+                    listContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
+                    listContainer.style.borderRadius = '4px';
+                    listContainer.style.maxWidth = '100%';
 
                     const crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
                     if (crapList.length === 0) {
@@ -2774,12 +2884,111 @@ const SettingsHelper = {
                         listContainer.appendChild(ul);
                     }
                     foodContainer.appendChild(listContainer);
-                    contentArea.appendChild(foodContainer);
+                    moduleBlock.appendChild(foodContainer);
+                }
+
+                // Manually balance columns: FoodHelper's large box goes left, the rest goes right.
+                if (modName <= 'FoodHelper') {
+                    col1.appendChild(moduleBlock);
+                } else {
+                    col2.appendChild(moduleBlock);
                 }
             });
         }
     }
 }
+
+const SoupKitchenHelper = {
+    init: function() {
+        if (!window.location.search.includes('cmd=soup_kitchen')) return;
+
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        const settings = Utils.getSettings();
+        if (settings['SoupKitchenHelper'] === false) return;
+
+        const isSoupLine = window.location.search.includes('action=line') ||
+                           Array.from(contentArea.querySelectorAll('a')).some(a => a.href.includes('action=bowl'));
+
+        if (isSoupLine) {
+            this.initSoupLine();
+        }
+    },
+
+    initSoupLine: function() {
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        const hoboAgeDays = localStorage.getItem('hw_helper_hobo_age_days');
+        if (hoboAgeDays) {
+            this.renderAgeDisplay(contentArea, hoboAgeDays);
+        }
+
+        this.renderSoupTable(contentArea);
+    },
+
+    renderAgeDisplay: function(contentArea, hoboAgeDays) {
+        const ageContainer = document.createElement('div');
+        ageContainer.style.cssText = 'margin-top: 15px; margin-bottom: 15px; font-size: 14px; font-weight: bold; text-align: center; color: #333; border: 1px solid #ccc; background: #fdfdfd; padding: 10px; border-radius: 4px; width: 60%; margin-left: auto; margin-right: auto;';
+        ageContainer.innerHTML = `Your Hobo is currently <span style="color: #d9534f;">${hoboAgeDays}</span> days old!`;
+
+        const firstLink = contentArea.querySelector('a[href*="action=bowl"]');
+        if (firstLink && firstLink.previousElementSibling && firstLink.previousElementSibling.tagName === 'BR') {
+            contentArea.insertBefore(ageContainer, firstLink.previousElementSibling);
+        } else if (firstLink) {
+            contentArea.insertBefore(ageContainer, firstLink);
+        } else {
+            contentArea.appendChild(ageContainer);
+        }
+    },
+
+    renderSoupTable: function(contentArea) {
+        const soups = [
+            { img: 'Beef-Mushroom-Stew.gif', name: 'Beef Mushroom Stew', stats: '+12T<br>+1 Strength', endsIn: [0, 5] },
+            { img: 'Texas-Fajita-Soup.gif', name: 'Texas Fajita Soup', stats: '+12T<br>+1 Speed', endsIn: [1, 6] },
+            { img: 'Cream-of-Okra-Soup.gif', name: 'Cream of Okra Soup', stats: '+12T<br>+1 Power', endsIn: [2, 7] },
+            { img: 'Garlic-Salmon-Bisque.gif', name: 'Garlic Salmon Bisque', stats: '+12T<br>+1 Intelligence', endsIn: [3, 8] },
+            { img: 'Beggar%27s-Bouillon.gif', name: "Beggar's Bouillon", stats: '+12T<br>+0.5 Begging', endsIn: [4, 9] }
+        ];
+
+        const tableContainer = document.createElement('div');
+        tableContainer.style.cssText = 'margin-top: 20px; font-size: 12px; width: 100%; display: flex; justify-content: center;';
+
+        let html = `
+            <table style="border-collapse: collapse; background: #fff; border: 1px solid #ccc; width: 80%;">
+                <thead>
+                    <tr style="background: #e0e0e0; text-align: center;">
+                        <th style="padding: 5px; border: 1px solid #ccc;" colspan="2">Soup</th>
+                        <th style="padding: 5px; border: 1px solid #ccc;">Stats</th>
+                        <th style="padding: 5px; border: 1px solid #ccc;">Age Ends In</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        soups.forEach(soup => {
+            html += `
+                <tr style="background: #fff; text-align: center; border-bottom: 1px solid #eee;">
+                    <td style="padding: 5px; border: 1px solid #ccc; width: 40px;">
+                        <img src="/images/items/gifs/${soup.img}" width="30" height="30" alt="${soup.name}">
+                    </td>
+                    <td style="padding: 5px; border: 1px solid #ccc;">${soup.name}</td>
+                    <td style="padding: 5px; border: 1px solid #ccc;">${soup.stats}</td>
+                    <td style="padding: 5px; border: 1px solid #ccc;">${soup.endsIn.join(' or ')}</td>
+                </tr>
+            `;
+        });
+
+        html += `
+                </tbody>
+            </table>
+        `;
+
+        tableContainer.innerHTML = html;
+        contentArea.appendChild(tableContainer);
+    }
+};
 
 const TattooParlorHelper = {
             init: function() {
@@ -3054,6 +3263,7 @@ const WellnessClinicHelper = {
         NorthernFenceHelper,
         RecyclingBinHelper,
         SettingsHelper,
+        SoupKitchenHelper,
         TattooParlorHelper,
         UniversityHelper,
         WellnessClinicHelper

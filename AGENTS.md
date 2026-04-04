@@ -38,7 +38,7 @@ If you believe the change is final, **ask the user** if they want to finalize th
 
 When finalizing a change:
 1. Bump the `$version` variable at the top of `build.ps1` so that Tampermonkey knows an update is available (e.g., from `7.6` to `7.7`).
-2. Update the version number and file links inside `INSTALL.md` to point to the newly compiled version.
+2. **DO NOT** update the file links inside `INSTALL.md` to point to a specific version number. All script links in `INSTALL.md` must ALWAYS point to `output/hobo-helper-latest.user.js` to ensure users continue receiving auto-updates via Tampermonkey.
 3. Add an entry to `CHANGELOG.md` under the newly bumped version, logging what was added, changed, or fixed. Format the version headers like `## [7.43] - YYYY-MM-DD`.
 4. Update the dataset in `src/modules/ChangelogData.js` to mirror `CHANGELOG.md`, ensuring it contains **only the 5 most recent version releases**.
 5. Run the build script again:
