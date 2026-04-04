@@ -2,6 +2,14 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
+            version: "7.77",
+            date: "2026-04-04",
+            type: "Fixed",
+            notes: [
+                "Improved MessageBoardHelper topic name extraction reliability on Gang Board posts, fixing bugs that prevented the Save Repliers/Add Payment buttons from appearing correctly."
+            ]
+        },
+        {
             version: "7.76",
             date: "2026-04-04",
             type: "Changed",
@@ -31,14 +39,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added \"Enable Improved Avatars\" sub-feature to DisplayHelper to apply custom CSS shaping and styling to avatar images, including online status indicators. This can be configured in the Settings menu."
-            ]
-        },
-        {
-            version: "7.72",
-            date: "2026-04-04",
-            type: "Added",
-            notes: [
-                "Added the SoupKitchenHelper module to display the current tracked age of your Hobo in days and present an informational wiki table showing which soup items correspond to each age range when visiting the soup line."
             ]
         }
     ]

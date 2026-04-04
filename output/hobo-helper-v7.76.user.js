@@ -1905,18 +1905,22 @@ const MessageBoardHelper = {
     },
 
     initGangPostFeatures: function(settings) {
-        const pageText = document.body.innerText || "";
-        // Check if we're on the Gang Board by looking at the page breadcrumb
-        const breadcrumbMatch = pageText.match(/Board Selection\s*\/\s*Gang Board\s*\/\s*Topic:\s*(.*?)\s*(?:\[Page:\[Latest\]\n$|)/i);
-        if (!breadcrumbMatch) return; // Not a Gang Board post or format didn't match
+        let topicName = '';
+        const titleEl = document.getElementById('thread-topic');
+        if (titleEl) {
+            topicName = titleEl.textContent.trim();
+        } else {
+            const pageText = document.body.innerText || "";
+            const breadcrumbMatch = pageText.match(/Board Selection\s*\/\s*Gang Board\s*\/\s*Topic:\s*(.*)/i);
+            if (!breadcrumbMatch) return;
+            topicName = breadcrumbMatch[1].split(/(\[Page:|Jump to Bottom|Gang:)/)[0].trim();
+        }
 
         // Check if the user is Gang Staff
         const topOps = document.getElementById('topOps');
         const isGangStaff = topOps && (topOps.querySelector('a[title="Toggle Lock"]') || topOps.querySelector('a[title="Delete"]'));
 
         if (!isGangStaff) return;
-
-        const topicName = breadcrumbMatch[1].trim();
 
         this.addSaveRepliersButton(topicName);
         this.addPaymentButtons(topicName);
@@ -1940,25 +1944,24 @@ const MessageBoardHelper = {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             
-            // Only search inside the replies table to avoid grabbing the current logged-in user from the top nav
-            const searchScope = tableNode || document;
-            const playerLinks = Array.from(searchScope.querySelectorAll('a[href*="cmd=player&ID="]'));
             const hoboMap = new Map();
+            let isFirstPost = true;
             
-            let firstPostTr = null;
+            const posts = document.querySelectorAll('tr[id^="tr_post_"]');
 
-            playerLinks.forEach(link => {
-                const nameNode = link.querySelector('.player-name') || link;
-                if (!nameNode) return;
-
-                const tr = link.closest('tr');
-                if (!firstPostTr && tr) {
-                    firstPostTr = tr; // The first row containing a player is the original topic post
+            posts.forEach(post => {
+                if (isFirstPost) {
+                    isFirstPost = false; // Skip the original topic post
+                    return;
                 }
 
-                // Skip any player links found within the original topic post
-                if (tr && tr === firstPostTr) return;
+                const firstTd = post.querySelector('td');
+                if (!firstTd) return;
 
+                const link = firstTd.querySelector('a[href*="cmd=player&ID="]');
+                if (!link) return;
+
+                const nameNode = link.querySelector('.player-name') || link;
                 const idMatch = link.href.match(/ID=(\d+)/i);
                 if (idMatch) {
                     const id = idMatch[1];

@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.77] - 2026-04-04
+### Fixed
+- Improved `MessageBoardHelper` topic name extraction reliability on Gang Board posts, fixing bugs that prevented the Save Repliers/Add Payment buttons from appearing correctly.
+
 ## [7.76] - 2026-04-04
 ### Changed
 - Enhanced the `MessageBoardHelper` 'Add Payment' dollar amount parser to correctly interpret multiplier suffixes (k, m, mil, mill, million) and automatically format the mapped value with commas and a dollar sign.
