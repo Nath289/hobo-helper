@@ -1154,6 +1154,31 @@ const GangLoansHelper = {
     }
 };
 
+const HitlistHelper = {
+    init: function() {
+        if (!window.location.search.includes('cmd=battle') || !window.location.search.includes('do=phlist')) return;
+
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        console.log('[Hobo Helper] Initializing HitlistHelper');
+        this.highlightOnlinePlayers();
+    },
+
+    highlightOnlinePlayers: function() {
+        const onlineImages = document.querySelectorAll('img[src*="online_now"]');
+        onlineImages.forEach(img => {
+            const tr = img.closest('tr');
+            if (tr) {
+                const tds = tr.querySelectorAll('td');
+                tds.forEach(td => {
+                    td.style.backgroundColor = '#d4edda'; // Light green highlight
+                });
+            }
+        });
+    }
+};
+
 const KurtzCampHelper = {
     init: function() {
         if (!Utils.isCurrentPage('cmd=camp_kurtz')) return;
@@ -3009,6 +3034,7 @@ const WellnessClinicHelper = {
         DrinksHelper,
         FoodHelper,
         GangLoansHelper,
+        HitlistHelper,
         KurtzCampHelper,
         LiquorStoreHelper,
         LivingAreaHelper,

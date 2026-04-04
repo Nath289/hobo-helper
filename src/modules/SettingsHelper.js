@@ -90,6 +90,9 @@ const SettingsHelper = {
             ],
             'BankHelper': [
                 { key: 'BankHelper_5FightersLunches', label: '5 Fighter\'s Lunches Goal' }
+            ],
+            'HitlistHelper': [
+                { key: 'HitlistHelper_HighlightOnline', label: 'Highlight Online Players' }
             ]
         };
 

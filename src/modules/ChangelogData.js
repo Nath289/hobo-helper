@@ -2,6 +2,23 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
+            version: "7.71",
+            date: "2026-04-04",
+            type: "Added",
+            notes: [
+                "Added a configurable toggle for the HitlistHelper's 'Highlight Online Players' feature within the SettingsHelper preferences page."
+            ]
+        },
+        {
+            version: "7.70",
+            date: "2026-04-04",
+            type: "Added",
+            notes: [
+                "Added the HitlistHelper module to provide usability improvements to the Personal Hitlist page.",
+                "Formatted Personal Hitlist elements to automatically map and highlight any currently online opponents with a light green row background, dramatically improving visual recognition instead of having to spot the small online icon."
+            ]
+        },
+        {
             version: "7.69",
             date: "2026-04-04",
             type: "Added",
@@ -28,22 +45,6 @@ const ChangelogData = {
             type: "Fixed",
             notes: [
                 "Fixed an issue where LockoutHelper failed to display the changelog because it was incorrectly referencing the ChangelogData module structure."
-            ]
-        },
-        {
-            version: "7.66",
-            date: "2026-04-04",
-            type: "Added",
-            notes: [
-                "Added Display Helper, with initial display tweaks."
-            ]
-        },
-        {
-            version: "7.65",
-            date: "2026-04-04",
-            type: "Changed",
-            notes: [
-                "Updated the \"5 Fighter's Lunches\" BankHelper button to support multiple sequential clicks, allowing withdrawals in multiples of 5 lunches at a time, while dynamically tracking and updating the total count added in the button's display value."
             ]
         }
     ]

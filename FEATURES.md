@@ -66,6 +66,10 @@ A core helper that runs display improvement related functions.
 A gang management tool that creates a specialized dashboard within the Gang Loans page (`cmd=gang2&do=loans`).
 - **Saved Posts & Payments Panel**: Aggregates and displays all saved gang post repliers and recorded payments from the Message Board Helper into a single convenient panel, making it easy to action bulk loans or payments and track who has replied to recruitment or event threads.
 
+### 18. Hitlist Helper (`HitlistHelper.js`)
+A helper designed to operate on the main game Hitlist page (`cmd=battle&do=phlist`).
+- *(Features pending)*
+
 ### Drink Helpers
 - [x] Automatically inject stat and effect data as tooltips to all drinks when hovering your mouse over them inside of your backpack and living area page.
 

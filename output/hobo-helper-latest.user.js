@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.69
+// @version      7.71
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -399,6 +399,23 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
+            version: "7.71",
+            date: "2026-04-04",
+            type: "Added",
+            notes: [
+                "Added a configurable toggle for the HitlistHelper's 'Highlight Online Players' feature within the SettingsHelper preferences page."
+            ]
+        },
+        {
+            version: "7.70",
+            date: "2026-04-04",
+            type: "Added",
+            notes: [
+                "Added the HitlistHelper module to provide usability improvements to the Personal Hitlist page.",
+                "Formatted Personal Hitlist elements to automatically map and highlight any currently online opponents with a light green row background, dramatically improving visual recognition instead of having to spot the small online icon."
+            ]
+        },
+        {
             version: "7.69",
             date: "2026-04-04",
             type: "Added",
@@ -425,22 +442,6 @@ const ChangelogData = {
             type: "Fixed",
             notes: [
                 "Fixed an issue where LockoutHelper failed to display the changelog because it was incorrectly referencing the ChangelogData module structure."
-            ]
-        },
-        {
-            version: "7.66",
-            date: "2026-04-04",
-            type: "Added",
-            notes: [
-                "Added Display Helper, with initial display tweaks."
-            ]
-        },
-        {
-            version: "7.65",
-            date: "2026-04-04",
-            type: "Changed",
-            notes: [
-                "Updated the \"5 Fighter's Lunches\" BankHelper button to support multiple sequential clicks, allowing withdrawals in multiples of 5 lunches at a time, while dynamically tracking and updating the total count added in the button's display value."
             ]
         }
     ]
@@ -1151,6 +1152,37 @@ const GangLoansHelper = {
     getSr: function() {
         const match = window.location.search.match(/sr=(\d+)/);
         return match ? match[1] : '';
+    }
+};
+
+const HitlistHelper = {
+    init: function() {
+        if (!window.location.search.includes('cmd=battle') || !window.location.search.includes('do=phlist')) return;
+
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        const settings = Utils.getSettings();
+        if (settings?.HitlistHelper?.enabled === false) return;
+
+        console.log('[Hobo Helper] Initializing HitlistHelper');
+
+        if (settings?.HitlistHelper_HighlightOnline !== false) {
+            this.highlightOnlinePlayers();
+        }
+    },
+
+    highlightOnlinePlayers: function() {
+        const onlineImages = document.querySelectorAll('img[src*="online_now"]');
+        onlineImages.forEach(img => {
+            const tr = img.closest('tr');
+            if (tr) {
+                const tds = tr.querySelectorAll('td');
+                tds.forEach(td => {
+                    td.style.backgroundColor = '#d4edda'; // Light green highlight
+                });
+            }
+        });
     }
 };
 
@@ -2668,6 +2700,9 @@ const SettingsHelper = {
             ],
             'BankHelper': [
                 { key: 'BankHelper_5FightersLunches', label: '5 Fighter\'s Lunches Goal' }
+            ],
+            'HitlistHelper': [
+                { key: 'HitlistHelper_HighlightOnline', label: 'Highlight Online Players' }
             ]
         };
 
@@ -3009,6 +3044,7 @@ const WellnessClinicHelper = {
         DrinksHelper,
         FoodHelper,
         GangLoansHelper,
+        HitlistHelper,
         KurtzCampHelper,
         LiquorStoreHelper,
         LivingAreaHelper,

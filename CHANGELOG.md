@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.71] - 2026-04-04
+### Added
+- Added a configurable toggle for the `HitlistHelper`'s "Highlight Online Players" feature within the `SettingsHelper` preferences page.
+
+## [7.70] - 2026-04-04
+### Added
+- Added the `HitlistHelper` module to provide usability improvements to the Personal Hitlist page (`cmd=battle&do=phlist`).
+- Formatted Personal Hitlist elements to automatically map and highlight any currently online opponents with a light green row background, dramatically improving visual recognition instead of having to spot the small online icon.
+
 ## [7.69] - 2026-04-04
 ### Added
 - Added the `GangLoansHelper` module which introduces a robust tracking dashboard to the Gang Loans page specifically for bulk post-payments and replier workflow administration.
