@@ -14,6 +14,9 @@ const SoupKitchenHelper = {
         if (isSoupLine) {
             this.initSoupLine();
         }
+        else {
+            this.initSoupLine();
+        }
     },
 
     initSoupLine: function() {

@@ -2,6 +2,14 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
+            version: "7.79",
+            date: "2026-04-05",
+            type: "Changed",
+            notes: [
+                "The SoupKitchenHelper has been refined to consistently display the Hobo age metadata and soup rewards table independently of specific URL query parameters."
+            ]
+        },
+        {
             version: "7.78",
             date: "2026-04-05",
             type: "Added",
@@ -33,14 +41,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Adjusted the padding of the SettingsHelper card boxes and global toggle container for a tighter, cleaner appearance."
-            ]
-        },
-        {
-            version: "7.74",
-            date: "2026-04-04",
-            type: "Changed",
-            notes: [
-                "Overhauled the SettingsHelper Game Preferences page layout, migrating from a continuous vertical list to a balanced and stylized two-column card grid to improve readability and aesthetics."
             ]
         }
     ]

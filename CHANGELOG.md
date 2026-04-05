@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.79] - 2026-04-05
+### Changed
+- The `SoupKitchenHelper` has been refined to consistently display the Hobo age metadata and soup rewards table independently of specific URL query parameters.
+
 ## [7.78] - 2026-04-05
 ### Added
 - Added automated state handling to `GangLoansHelper` which tracks when "Add" and "Clear" actions resolve via persistent cache across synchronous page loads.
