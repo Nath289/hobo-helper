@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.75
+// @version      7.80
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -409,43 +409,46 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
-            version: "7.75",
+            version: "7.80",
+            date: "2026-04-05",
+            type: "Added",
+            notes: [
+                "Added FortSlugworthHelper with functionality for The Ripaparter (room=4).",
+                "Introduced a tile-based UI replacement to The Ripaparter for selecting trolley foods, generating visual interactive grids using the newly added FoodData.js asset map, vastly improving sorting and speed. Includes dynamic image detection parsing names mapped to wiki records."
+            ]
+        },
+        {
+            version: "7.79",
+            date: "2026-04-05",
+            type: "Changed",
+            notes: [
+                "The SoupKitchenHelper has been refined to consistently display the Hobo age metadata and soup rewards table independently of specific URL query parameters."
+            ]
+        },
+        {
+            version: "7.78",
+            date: "2026-04-05",
+            type: "Added",
+            notes: [
+                "Added automated state handling to GangLoansHelper which tracks when 'Add' and 'Clear' actions resolve via persistent cache across synchronous page loads.",
+                "The GangLoansHelper dashboard now seamlessly transitions rows through permanent workflow states ('Loan Created', 'Loan Cleared') after confirming system responses.",
+                "Added a native 'Select Loan' shortcut button on 'Loan Created' items which instantly parses the existing HTML DOM and form elements to prepare a specific loan ID for immediate clearing."
+            ]
+        },
+        {
+            version: "7.77",
+            date: "2026-04-04",
+            type: "Fixed",
+            notes: [
+                "Improved MessageBoardHelper topic name extraction reliability on Gang Board posts, fixing bugs that prevented the Save Repliers/Add Payment buttons from appearing correctly."
+            ]
+        },
+        {
+            version: "7.76",
             date: "2026-04-04",
             type: "Changed",
             notes: [
-                "Adjusted the padding of the SettingsHelper card boxes and global toggle container for a tighter, cleaner appearance."
-            ]
-        },
-        {
-            version: "7.74",
-            date: "2026-04-04",
-            type: "Changed",
-            notes: [
-                "Overhauled the SettingsHelper Game Preferences page layout, migrating from a continuous vertical list to a balanced and stylized two-column card grid to improve readability and aesthetics."
-            ]
-        },
-        {
-            version: "7.73",
-            date: "2026-04-04",
-            type: "Added",
-            notes: [
-                "Added \"Enable Improved Avatars\" sub-feature to DisplayHelper to apply custom CSS shaping and styling to avatar images, including online status indicators. This can be configured in the Settings menu."
-            ]
-        },
-        {
-            version: "7.72",
-            date: "2026-04-04",
-            type: "Added",
-            notes: [
-                "Added the SoupKitchenHelper module to display the current tracked age of your Hobo in days and present an informational wiki table showing which soup items correspond to each age range when visiting the soup line."
-            ]
-        },
-        {
-            version: "7.71",
-            date: "2026-04-04",
-            type: "Added",
-            notes: [
-                "Added a configurable toggle for the HitlistHelper's 'Highlight Online Players' feature within the SettingsHelper preferences page."
+                "Enhanced the MessageBoardHelper 'Add Payment' dollar amount parser to correctly interpret multiplier suffixes (k, m, mil, mill, million) and automatically format the mapped value with commas and a dollar sign."
             ]
         }
     ]
@@ -698,6 +701,138 @@ const DrinksHelper = {
             }
         }
 
+const FoodData = {
+    "Apple Core": { "img": "Apple-Core.gif" },
+    "Half a Donut": { "img": "Half-a-Donut.gif" },
+    "Piece of Bread": { "img": "Piece-of-Bread.gif" },
+    "Can of Coke": { "img": "Can-of-Coke.gif" },
+    "Piece of Pizza": { "img": "Piece-of-Pizza.gif" },
+    "Meat Pie": { "img": "Meat-Pie.gif" },
+    "Can of Pepsi": { "img": "Can-of-Pepsi.gif" },
+    "Rotten Fish": { "img": "Rotten-Fish.gif" },
+    "Half Eaten Burger": { "img": "Half-Eaten-Burger.gif" },
+    "Packet of Fries": { "img": "Packet-of-Fries.gif" },
+    "New Pizza": { "img": "New-Pizza.gif" },
+    "Chewed Chicken Leg": { "img": "Chewed-Chicken-Leg.gif" },
+    "Raw Chicken Leg": { "img": "Raw-Chicken-Leg.gif" },
+    "Cooked Chicken": { "img": "Cooked-Chicken.gif" },
+    "Half a HotDog": { "img": "Half-a-HotDog.gif" },
+    "HotDog": { "img": "HotDog.gif" },
+    "KFC Meal": { "img": "KFC-Meal.gif" },
+    "Raw Potato": { "img": "Raw-Potato.gif" },
+    "Vanilla Ice Cream": { "img": "Vanilla-Ice-Cream.gif" },
+    "Chocolate Ice Cream": { "img": "Chocolate-Ice-Cream.gif" },
+    "Fresh Apple": { "img": "Fresh-Apple.gif" },
+    "Fighters Lunch": { "img": "Fighters-Lunch.gif" },
+    "Double-Double": { "img": "Double-Double.gif" },
+    "Bachelor Chow": { "img": "Bachelor-Chow.gif" },
+    "Smart Bread": { "img": "Smart-Bread.gif" },
+    "Day Old Coffee Naan": { "img": "Day-Old-Coffee-Naan.gif" },
+    "Half a Sandwich Naan": { "img": "Half-a-Sandwich-Naan.gif" },
+    "Discarded Taco Naan": { "img": "Discarded-Taco-Naan.gif" },
+    "Wonka Bar": { "img": "Wonka-Bar.gif" },
+    "Single-Single": { "img": "Single-Single.gif" },
+    "Wonka-stripe Candy Cane": { "img": "Wonka-stripe-Candy-Cane.gif" },
+    "Rainbow Drop": { "img": "Rainbow-Drop.gif" },
+    "Roast Beef": { "img": "Roast-Beef.gif" },
+    "Pre-Chewed Gum": { "img": "Pre-Chewed-Gum.gif" },
+    "Roast Beef Flavored Gum": { "img": "Roast-Beef-Flavored-Gum.gif" },
+    "Semi-Lasting Gobstopper": { "img": "Semi-Lasting-Gobstopper.gif" },
+    "Sweet Bomb": { "img": "Sweet-Bomb.gif" },
+    "Blueberry Blast Jelly Beans": { "img": "Blueberry-Blast-Jelly-Beans.gif" },
+    "Beef Mushroom Stew": { "img": "Beef-Mushroom-Stew.gif" },
+    "Texas Fajita Soup": { "img": "Texas-Fajita-Soup.gif" },
+    "Cream of Okra Soup": { "img": "Cream-of-Okra-Soup.gif" },
+    "Garlic Salmon Bisque": { "img": "Garlic-Salmon-Bisque.gif" },
+    "Beggars Bouillon": { "img": "Beggar%27s-Bouillon.gif" },
+    "Fizzy Lifting Soda": { "img": "Fizzy-Lifting-Soda.gif" },
+    "Wonkas Peppermint Spirits": { "img": "Wonka%27s-Peppermint-Spirits.gif" },
+    "Altoids": { "img": "Altoids.gif" },
+    "Junior Mints": { "img": "Junior-Mints.gif" },
+    "Red Hots": { "img": "Red-Hots.gif" },
+    "Crystal Pepsi": { "img": "Crystal-Pepsi.gif" },
+    "Chocolate Vanilla Swirl Ice Cream": { "img": "Chocolate-Vanilla-Swirl-Ice-Cream.gif" },
+    "Redder Hots": { "img": "Redder-Hots.gif" },
+    "Gas Soaked Red Hots": { "img": "Gas-Soaked-Red-Hots.gif" },
+    "Gummi Gorilla": { "img": "Gummi-Gorilla.gif" },
+    "Gummi Peregrine Falcon": { "img": "Gummi-Peregrine-Falcon.gif" },
+    "Gummi Raptor": { "img": "Gummi-Raptor.gif" },
+    "Quantum Candy": { "img": "Quantum-Candy.gif" },
+    "Gummi Spaghetti Monster": { "img": "Gummi-Spaghetti-Monster.gif" },
+    "Fruit by the Furlong": { "img": "Fruit-by-the-Furlong.gif" },
+    "Candy Cigarette": { "img": "Candy-Cigarette.gif" },
+    "Pack of Candy Cigarettes": { "img": "Pack-of-Candy-Cigarettes.gif" },
+    "Freeze-Packed Dippin Dots": { "img": "Freeze-Packed-Dippin-Dots.gif" },
+    "Dippin Dots": { "img": "Dippin-Dots.gif" },
+    "Military Rations": { "img": "Military-Rations.gif" },
+    "Can of Whipped Cream": { "img": "Can-of-Whipped-Cream.gif" },
+    "Faberge Cream Egg": { "img": "Faberge-Cream-Egg.gif" },
+    "Apple Flavored Gum": { "img": "Apple-Flavored-Gum.gif" },
+    "Cinnamon Flavored Gum": { "img": "Cinnamon-Flavored-Gum.gif" },
+    "Dark Chocolate Wonka Bar": { "img": "Dark-Chocolate-Wonka-Bar.gif" },
+    "Special Brownie": { "img": "Special-Brownie.gif" },
+    "Bacon Blast Jelly Beans": { "img": "Bacon-Blast-Jelly-Beans.gif" },
+    "Fizzy Falling Soda": { "img": "Fizzy-Falling-Soda.gif" },
+    "Caulipop": { "img": "Caulipop.gif" },
+    "Dalipop": { "img": "Dalipop.gif" },
+    "Volleypop": { "img": "Volleypop.gif" },
+    "Polypop": { "img": "Polypop.gif" },
+    "Mountain Honeydew Melon": { "img": "Mountain-Honeydew-Melon.gif" },
+    "Mountain Dew": { "img": "Mountain-Dew.gif" },
+    "Salmon": { "img": "Salmon.gif" },
+    "Catfish": { "img": "Catfish.gif" },
+    "Fish Sticks": { "img": "Fish-Sticks.gif" },
+    "Octopus": { "img": "Octopus.gif" },
+    "Blowfish": { "img": "Blowfish.gif" },
+    "Hobo Stew": { "img": "Hobo-Stew.gif" },
+    "Beggars Brunch": { "img": "Beggars-Brunch.gif" },
+    "Hangover Omelette": { "img": "Hangover-Omelette.gif" },
+    "Stomach Parasite": { "img": "Stomach-Parasite.gif" },
+    "Forest Shroom": { "img": "Forest-Shroom.gif" },
+    "Garlic Clove": { "img": "Garlic-Clove.gif" },
+    "Chili Pepper": { "img": "Chili-Pepper.gif" },
+    "Okra": { "img": "Okra.gif" },
+    "Gingerbread Bum": { "img": "Gingerbread-Bum.gif" },
+    "Bernard Burger": { "img": "Bernard-Burger.gif" },
+    "Flying Dutchman": { "img": "Flying-Dutchman.gif" },
+    "Animal Style Fries": { "img": "Animal-Style-Fries.gif" },
+    "Neapolitan Shake": { "img": "Neapolitan-Shake.gif" },
+    "SARS Bar": { "img": "SARS-Bar.gif" },
+    "Hobowarheads": { "img": "Hobowarheads.gif" },
+    "Mop Rocks": { "img": "Mop-Rocks.gif" },
+    "ICPeanut Butter Cup": { "img": "ICPeanut-Butter-Cup.gif" },
+    "Sugarfree Gum": { "img": "Sugarfree-Gum.gif" },
+    "Kit Rat Bar": { "img": "Kit-Rat-Bar.gif" },
+    "Butlerfinger": { "img": "Butlerfinger.gif" },
+    "Life Savers": { "img": "Life-Savers.gif" },
+    "Pay Day": { "img": "Pay-Day.gif" },
+    "Candycorn": { "img": "Candycorn.gif" },
+    "Sourpatch Bums": { "img": "Sourpatch-Bums.gif" },
+    "L&amp;Ls": { "img": "L&amp;Ls.gif" },
+    "Apple Surprise": { "img": "Apple-Surprise.gif" },
+    "Death Mints": { "img": "Death-Mints.gif" },
+    "Blow-Up Pop": { "img": "Blow-Up-Pop.gif" },
+    "Peppermint Burger Patties": { "img": "Peppermint-Burger-Patties.gif" },
+    "Rock Candy": { "img": "Rock-Candy.gif" },
+    "Walking Taco": { "img": "Walking-Taco.gif" },
+    "Freedom Fries": { "img": "Freedom-Fries.gif" },
+    "Jugger-Nut": { "img": "Jugger-Nut.gif" },
+    "Pizza Del Mare": { "img": "Pizza-Del-Mare.gif" },
+    "Bottle of Coke": { "img": "Bottle-of-Coke.gif" },
+    "Brains": { "img": "Brains.gif" },
+    "Death By Chocolate": { "img": "Death-By-Chocolate.gif" },
+    "Spooky Biscuit": { "img": "Spooky-Biscuit.gif" },
+    "Twozzlers": { "img": "Twozzlers.gif" },
+    "Red Hot Chili Pepper": { "img": "Red-Hot-Chili-Pepper.gif" },
+    "Longer-Lasting Gobstopper": { "img": "Longer-Lasting-Gobstopper.gif" },
+    "Double Gorillas": { "img": "Double-Gorillas.gif" },
+    "Double Falcons": { "img": "Double-Falcons.gif" },
+    "Double Raptors": { "img": "Double-Raptors.gif" },
+    "Triple Dipps": { "img": "Triple-Dipps.gif" },
+    "Rainbow Balls": { "img": "Rainbow-Balls.gif" },
+    "Wonka Quadra Candy Cane": { "img": "Wonka-Quadra-Candy-Cane.gif" },
+};
+
 const FoodHelper = {
     init: function() {
         const settings = Utils.getSettings();
@@ -826,12 +961,147 @@ const FoodHelper = {
     }
 };
 
+const FortSlugworthHelper = {
+    init: function() {
+        if (!window.location.search.includes('cmd=fort_slugworth')) return;
+
+        const settings = Utils.getSettings();
+        if (settings['FortSlugworthHelper'] === false) return;
+
+        if (window.location.search.includes('room=4')) {
+            this.initRipaparter();
+        }
+    },
+
+    initRipaparter: function() {
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+        
+        const form = contentArea.querySelector('form[action*="room=4"]');
+        if (!form) return;
+
+        const select = form.querySelector('select[name="ripapart"]');
+        if (!select) return;
+
+        // Container for tiles
+        const tilesContainer = document.createElement('div');
+        tilesContainer.style.display = 'flex';
+        tilesContainer.style.flexWrap = 'wrap';
+        tilesContainer.style.gap = '10px';
+        tilesContainer.style.justifyContent = 'center';
+        tilesContainer.style.marginBottom = '20px';
+        tilesContainer.style.maxWidth = '500px';
+
+        // Add tiles before the select
+        form.insertBefore(tilesContainer, select);
+
+        // For each option in select, create a tile
+        Array.from(select.options).forEach(opt => {
+            const val = opt.value;
+            let text = opt.textContent.trim(); // e.g. "Fighters Lunch (6)"
+            let imgName = 'unknown.gif';
+
+            const match = text.match(/^(.*?)\s*\((\d+)\)$/);
+            let rawName = text;
+            let qty = 1;
+            if(match) {
+                rawName = match[1].trim();
+                qty = match[2];
+            }
+
+            if(typeof FoodData !== 'undefined' && FoodData[rawName]) {
+                imgName = FoodData[rawName].img;
+            } else {
+                imgName = rawName.replace(/[']/g, '%27').replace(/\s+/g, '-') + '.gif';
+            }
+
+            const tile = document.createElement('div');
+            tile.style.border = '2px solid #ccc';
+            tile.style.borderRadius = '5px';
+            tile.style.padding = '8px';
+            tile.style.cursor = 'pointer';
+            tile.style.textAlign = 'center';
+            tile.style.width = '85px';
+            tile.style.backgroundColor = '#fff';
+            tile.className = 'rip-tile';
+            tile.dataset.val = val;
+
+            tile.innerHTML = `
+                <img src="/images/items/gifs/${imgName}" width="50" height="50" alt="${rawName}" onerror="this.src='/images/items/gifs/Trolly.gif'" title="${rawName}"><br>
+                <div style="font-size:11px; margin-top:6px; line-height:1.2; word-wrap:break-word;">${rawName}</div>
+                <div style="font-size:12px; font-weight:bold; color:#0b61a4; margin-top:3px;">(${qty})</div>
+            `;
+
+            tile.addEventListener('click', () => {
+                tilesContainer.querySelectorAll('.rip-tile').forEach(t => {
+                    t.style.borderColor = '#ccc';
+                    t.style.backgroundColor = '#fff';
+                });
+                tile.style.borderColor = '#2196F3';
+                tile.style.backgroundColor = '#e3f2fd';
+
+                select.value = val;
+            });
+
+            tilesContainer.appendChild(tile);
+        });
+
+        console.log('FortSlugworthHelper: Room 4 (The Ripaparter) loaded tiles.');
+    }
+};
+
 const GangLoansHelper = {
     init: function() {
-        if (!window.location.search.includes('cmd=gang2') || !window.location.search.includes('do=loans')) return;
+        const isLoans = window.location.search.includes('cmd=gang2') && window.location.search.includes('do=loans');
+        const isLoanAdd = window.location.search.includes('cmd=gang2') && window.location.search.includes('do=loan_add');
+        const isLoanDel = window.location.search.includes('cmd=gang2') && window.location.search.includes('do=loan_del');
+
+        if (!isLoans && !isLoanAdd && !isLoanDel) return;
 
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
+
+        if (isLoanAdd && contentArea.innerText.includes('You have successfully completed the transfer')) {
+            const pendingStr = sessionStorage.getItem('hw_helper_pending_loan');
+            if (pendingStr) {
+                try {
+                    const pending = JSON.parse(pendingStr);
+                    const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                    if (d[pending.topic]) {
+                        if (pending.type === 'bulk' && d[pending.topic].hobos && d[pending.topic].hobos[pending.index]) {
+                            d[pending.topic].hobos[pending.index].completed = true;
+                        } else if (pending.type === 'payment' && d[pending.topic].paymentsToHobos && d[pending.topic].paymentsToHobos[pending.index]) {
+                            d[pending.topic].paymentsToHobos[pending.index].completed = true;
+                        }
+                        localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    }
+                } catch (e) {
+                    console.error('Error parsing pending loan', e);
+                }
+                sessionStorage.removeItem('hw_helper_pending_loan');
+            }
+        }
+
+        if (isLoanDel && contentArea.innerText.includes('This loan has been removed')) {
+            const pendingClearStr = sessionStorage.getItem('hw_helper_pending_clear');
+            if (pendingClearStr) {
+                try {
+                    const pending = JSON.parse(pendingClearStr);
+                    const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                    if (d[pending.topic]) {
+                        if (pending.type === 'bulk' && d[pending.topic].hobos && d[pending.topic].hobos[pending.index]) {
+                            d[pending.topic].hobos[pending.index].cleared = true;
+                        } else if (pending.type === 'payment' && d[pending.topic].paymentsToHobos && d[pending.topic].paymentsToHobos[pending.index]) {
+                            d[pending.topic].paymentsToHobos[pending.index].cleared = true;
+                        }
+                        localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    }
+                } catch (e) {
+                    console.error('Error parsing pending clear', e);
+                }
+                sessionStorage.removeItem('hw_helper_pending_clear');
+            }
+        }
 
         console.log('[Hobo Helper] Initializing GangLoansHelper');
         this.renderPanel(contentArea);
@@ -924,7 +1194,25 @@ const GangLoansHelper = {
 
                     hobos.forEach((h, hIndex) => {
                         const isCompleted = h.completed;
-                        const rowBg = isCompleted ? '#e6ffe6' : 'transparent';
+                        const isCleared = h.cleared;
+                        const rowBg = isCleared ? '#f0f0f0' : (isCompleted ? '#e6ffe6' : 'transparent');
+
+                        let actionsHtml = '';
+                        if (isCleared) {
+                            actionsHtml = `<span style="color: #666; font-weight: bold; font-style: italic;">Completed</span>`;
+                        } else if (!isCompleted) {
+                            actionsHtml = `
+                                <button class="hw-insert-bulk" data-id="${h.id}" data-ctrl="${safeTopicId}" data-topic="${topic}" data-index="${hIndex}" style="cursor:pointer; background:#e6f3ff; border:1px solid #99c2ff; border-radius:3px; padding:3px 8px; margin-right:4px;">Insert</button>
+                                <button class="hw-complete-bulk" data-topic="${topic}" data-index="${hIndex}" style="cursor:pointer; background:#e6ffe6; border:1px solid #66cc66; border-radius:3px; padding:3px 8px; margin-right:4px;">Done</button>
+                                <button class="hw-remove-bulk" data-topic="${topic}" data-index="${hIndex}" style="cursor:pointer; background:#ffe6e6; border:1px solid #ff9999; border-radius:3px; padding:3px 8px;">Remove</button>
+                            `;
+                        } else {
+                            actionsHtml = `
+                                <span style="color: #00aa00; font-weight: bold; margin-right: 8px;">Loan Created ✅</span>
+                                <button class="hw-select-loan" data-id="${h.id}" data-type="bulk" data-ctrl="${safeTopicId}" data-topic="${topic}" data-index="${hIndex}" style="cursor:pointer; background:#fff2cc; border:1px solid #ffcc00; border-radius:3px; padding:3px 8px;">Select Loan</button>
+                            `;
+                        }
+
                         hobosHtml += `
                             <tr style="border-bottom: 1px solid #eee; background: ${rowBg};">
                                 <td style="padding: 4px;">
@@ -932,9 +1220,7 @@ const GangLoansHelper = {
                                     <span style="color: #666; font-size: 11px;">[ID: ${h.id}]</span>
                                 </td>
                                 <td style="padding: 4px; text-align: right; white-space: nowrap;">
-                                    <button class="hw-insert-bulk" data-id="${h.id}" data-ctrl="${safeTopicId}" style="cursor:pointer; background:#e6f3ff; border:1px solid #99c2ff; border-radius:3px; padding:3px 8px; margin-right:4px;">Insert</button>
-                                    <button class="hw-complete-bulk" data-topic="${topic}" data-index="${hIndex}" style="cursor:pointer; background:#e6ffe6; border:1px solid #66cc66; border-radius:3px; padding:3px 8px; margin-right:4px;">${isCompleted ? 'Undo' : 'Done'}</button>
-                                    <button class="hw-remove-bulk" data-topic="${topic}" data-index="${hIndex}" style="cursor:pointer; background:#ffe6e6; border:1px solid #ff9999; border-radius:3px; padding:3px 8px;">Remove</button>
+                                    ${actionsHtml}
                                 </td>
                             </tr>
                         `;
@@ -973,7 +1259,25 @@ const GangLoansHelper = {
                         const hoboId = p.hoboId || p.id || '';
                         const hoboName = p.hoboName || p.name || '';
                         const isCompleted = p.completed;
-                        const rowBg = isCompleted ? '#e6ffe6' : '#fff';
+                        const isCleared = p.cleared;
+                        const rowBg = isCleared ? '#f0f0f0' : (isCompleted ? '#e6ffe6' : '#fff');
+
+                        let payActionsHtml = '';
+                        if (isCleared) {
+                            payActionsHtml = `<span style="color: #666; font-weight: bold; font-style: italic;">Completed</span>`;
+                        } else if (!isCompleted) {
+                            payActionsHtml = `
+                                <button class="hw-insert-payment" data-id="${hoboId}" data-amount="${p.amount || ''}" data-desc="${p.description || ''}" data-topic="${topic}" data-index="${pIndex}" style="cursor:pointer; background:#e6f3ff; border:1px solid #99c2ff; border-radius:3px; padding:3px 8px; margin-right:6px;">Insert</button>
+                                <button class="hw-complete-payment" data-topic="${topic}" data-index="${pIndex}" style="cursor:pointer; background:#e6ffe6; border:1px solid #66cc66; border-radius:3px; padding:3px 8px; margin-right:6px;">Done</button>
+                                <button class="hw-remove-payment" data-topic="${topic}" data-index="${pIndex}" style="cursor:pointer; background:#ffe6e6; border:1px solid #ff9999; border-radius:3px; padding:3px 8px;">Remove</button>
+                            `;
+                        } else {
+                            payActionsHtml = `
+                                <span style="color: #00aa00; font-weight: bold; margin-right: 8px;">Loan Created ✅</span>
+                                <button class="hw-select-loan" data-id="${hoboId}" data-amount="${p.amount || ''}" data-type="payment" data-topic="${topic}" data-index="${pIndex}" style="cursor:pointer; background:#fff2cc; border:1px solid #ffcc00; border-radius:3px; padding:3px 8px;">Select Loan</button>
+                            `;
+                        }
+
                         payHtml += `
                             <tr style="background: ${rowBg}; border-bottom: 1px solid #f0f0f0;">
                                 <td style="padding: 5px; border: 1px solid #ececec;"><a href="game.php?sr=${this.getSr()}&cmd=player&ID=${hoboId}" target="_blank" style="color:#0055aa;text-decoration:none;">${hoboId}</a></td>
@@ -981,9 +1285,7 @@ const GangLoansHelper = {
                                 <td style="padding: 5px; border: 1px solid #ececec; font-family: monospace; font-size: 13px;">${p.amount || ''}</td>
                                 <td style="padding: 5px; border: 1px solid #ececec;">${p.description || ''}</td>
                                 <td style="padding: 5px; border: 1px solid #ececec; text-align: center; white-space: nowrap;">
-                                    <button class="hw-insert-payment" data-id="${hoboId}" data-amount="${p.amount || ''}" data-desc="${p.description || ''}" style="cursor:pointer; background:#e6f3ff; border:1px solid #99c2ff; border-radius:3px; padding:3px 8px; margin-right:6px;">Insert</button>
-                                    <button class="hw-complete-payment" data-topic="${topic}" data-index="${pIndex}" style="cursor:pointer; background:#e6ffe6; border:1px solid #66cc66; border-radius:3px; padding:3px 8px; margin-right:6px;">${isCompleted ? 'Undo' : 'Done'}</button>
-                                    <button class="hw-remove-payment" data-topic="${topic}" data-index="${pIndex}" style="cursor:pointer; background:#ffe6e6; border:1px solid #ff9999; border-radius:3px; padding:3px 8px;">Remove</button>
+                                    ${payActionsHtml}
                                 </td>
                             </tr>
                         `;
@@ -1055,6 +1357,10 @@ const GangLoansHelper = {
         const insertBtns = panel.querySelectorAll('.hw-insert-payment');
         insertBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const index = parseInt(e.target.getAttribute('data-index'), 10);
+                sessionStorage.setItem('hw_helper_pending_loan', JSON.stringify({topic, index, type: 'payment'}));
+
                 const hoboField = document.getElementById('hobo');
                 const amtField = document.getElementById('addAmt');
                 const memoField = document.querySelector('input[name="l_memo"]');
@@ -1101,6 +1407,10 @@ const GangLoansHelper = {
         // BIND BULK REPLIERS EVENTS
         panel.querySelectorAll('.hw-insert-bulk').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const index = parseInt(e.target.getAttribute('data-index'), 10);
+                sessionStorage.setItem('hw_helper_pending_loan', JSON.stringify({topic, index, type: 'bulk'}));
+
                 const ctrlId = e.target.getAttribute('data-ctrl');
                 const bulkAmtInput = document.getElementById('amt-' + ctrlId);
                 const bulkMemoInput = document.getElementById('memo-' + ctrlId);
@@ -1125,7 +1435,7 @@ const GangLoansHelper = {
 
                 let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
                 if (d[topic] && d[topic].hobos) {
-                    d[topic].hobos[index].completed = !d[topic].hobos[index].completed;
+                    d[topic].hobos[index].completed = true;
                     localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
                     window.location.reload();
                 }
@@ -1201,6 +1511,92 @@ const GangLoansHelper = {
                 copyToCb(parts.join('\n'), e.target);
             });
         });
+
+        // BIND SELECT LOAN
+        panel.querySelectorAll('.hw-select-loan').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const hoboId = e.target.getAttribute('data-id');
+                let amount = '';
+                if (e.target.getAttribute('data-type') === 'bulk') {
+                    const ctrlId = e.target.getAttribute('data-ctrl');
+                    const bulkInput = document.getElementById('amt-' + ctrlId);
+                    if (bulkInput) amount = bulkInput.value;
+                } else {
+                    amount = e.target.getAttribute('data-amount');
+                }
+
+                const tables = document.querySelectorAll('table[cellspacing="1"]');
+                const lastTable = tables[tables.length - 1]; // The loans table is the last one
+                if (!lastTable) return;
+
+                const rows = lastTable.querySelectorAll('tr');
+                let bestMatchId = null;
+                const cleanTargetAmt = String(amount).replace(/[^0-9]/g, '');
+
+                for (let row of rows) {
+                    const link = row.querySelector(`a[href*="cmd=player&ID=${hoboId}"]`);
+                    if (link) {
+                        const toggle = row.querySelector('a.toggle[data-target^="td#td_"]');
+                        if (toggle) {
+                            const loanIdMatch = toggle.getAttribute('data-target').match(/td_(\d+)/);
+                            if (loanIdMatch) {
+                                const loanId = loanIdMatch[1];
+                                const tds = row.querySelectorAll('td');
+                                if (tds.length >= 3 && cleanTargetAmt) {
+                                    // Parse only the text before a slash to avoid merging with limits
+                                    const cellAmtText = tds[2].innerText.split('/')[0];
+                                    const cleanRowAmt = cellAmtText.replace(/[^0-9]/g, '');
+
+                                    if (cleanRowAmt === cleanTargetAmt) {
+                                        bestMatchId = loanId;
+                                        break;
+                                    }
+                                }
+                                if (!bestMatchId) bestMatchId = loanId;
+                            }
+                        }
+                    }
+                }
+
+                if (bestMatchId) {
+                    const select = document.getElementById('clearLoan') || document.querySelector('select[name="ID"]');
+                    if (select) {
+                        select.value = bestMatchId;
+                        window.scrollTo(0, select.offsetTop - 100);
+                        const oldText = e.target.innerText;
+                        e.target.innerText = 'Selected!';
+                        setTimeout(() => { e.target.innerText = oldText; }, 2000);
+
+                        const topic = e.target.getAttribute('data-topic');
+                        const index = parseInt(e.target.getAttribute('data-index'), 10);
+                        const type = e.target.getAttribute('data-type');
+                        sessionStorage.setItem('hw_helper_selected_loan_for_clear', JSON.stringify({id: bestMatchId, topic, index, type}));
+                    } else {
+                        alert('Clear Loan dropdown not found.');
+                    }
+                } else {
+                    alert('Could not locate a matching loan in the table.');
+                }
+            });
+        });
+
+        // BIND CLEAR LOAN SUBMISSION
+        const clearForm = document.querySelector('form[action*="do=loan_del"]');
+        if (clearForm) {
+            clearForm.addEventListener('submit', () => {
+                const select = clearForm.querySelector('select[name="ID"]');
+                if (select) {
+                    const val = select.value;
+                    const storedStr = sessionStorage.getItem('hw_helper_selected_loan_for_clear');
+                    if (storedStr) {
+                        const stored = JSON.parse(storedStr);
+                        if (stored.id === val) {
+                            sessionStorage.setItem('hw_helper_pending_clear', JSON.stringify({topic: stored.topic, index: stored.index, type: stored.type}));
+                        }
+                    }
+                }
+            });
+        }
 
     },
 
@@ -1905,18 +2301,22 @@ const MessageBoardHelper = {
     },
 
     initGangPostFeatures: function(settings) {
-        const pageText = document.body.innerText || "";
-        // Check if we're on the Gang Board by looking at the page breadcrumb
-        const breadcrumbMatch = pageText.match(/Board Selection\s*\/\s*Gang Board\s*\/\s*Topic:\s*(.*?)\s*(?:\[Page:\[Latest\]\n$|)/i);
-        if (!breadcrumbMatch) return; // Not a Gang Board post or format didn't match
+        let topicName = '';
+        const titleEl = document.getElementById('thread-topic');
+        if (titleEl) {
+            topicName = titleEl.textContent.trim();
+        } else {
+            const pageText = document.body.innerText || "";
+            const breadcrumbMatch = pageText.match(/Board Selection\s*\/\s*Gang Board\s*\/\s*Topic:\s*(.*)/i);
+            if (!breadcrumbMatch) return;
+            topicName = breadcrumbMatch[1].split(/(\[Page:|Jump to Bottom|Gang:)/)[0].trim();
+        }
 
         // Check if the user is Gang Staff
         const topOps = document.getElementById('topOps');
         const isGangStaff = topOps && (topOps.querySelector('a[title="Toggle Lock"]') || topOps.querySelector('a[title="Delete"]'));
 
         if (!isGangStaff) return;
-
-        const topicName = breadcrumbMatch[1].trim();
 
         this.addSaveRepliersButton(topicName);
         this.addPaymentButtons(topicName);
@@ -1940,25 +2340,24 @@ const MessageBoardHelper = {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             
-            // Only search inside the replies table to avoid grabbing the current logged-in user from the top nav
-            const searchScope = tableNode || document;
-            const playerLinks = Array.from(searchScope.querySelectorAll('a[href*="cmd=player&ID="]'));
             const hoboMap = new Map();
+            let isFirstPost = true;
             
-            let firstPostTr = null;
+            const posts = document.querySelectorAll('tr[id^="tr_post_"]');
 
-            playerLinks.forEach(link => {
-                const nameNode = link.querySelector('.player-name') || link;
-                if (!nameNode) return;
-
-                const tr = link.closest('tr');
-                if (!firstPostTr && tr) {
-                    firstPostTr = tr; // The first row containing a player is the original topic post
+            posts.forEach(post => {
+                if (isFirstPost) {
+                    isFirstPost = false; // Skip the original topic post
+                    return;
                 }
 
-                // Skip any player links found within the original topic post
-                if (tr && tr === firstPostTr) return;
+                const firstTd = post.querySelector('td');
+                if (!firstTd) return;
 
+                const link = firstTd.querySelector('a[href*="cmd=player&ID="]');
+                if (!link) return;
+
+                const nameNode = link.querySelector('.player-name') || link;
                 const idMatch = link.href.match(/ID=(\d+)/i);
                 if (idMatch) {
                     const id = idMatch[1];
@@ -1979,8 +2378,6 @@ const MessageBoardHelper = {
                 hobos: hoboList 
             };
             localStorage.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
-            
-            console.log(`[Hobo Helper] Gathered gang replies for topic: "${topicName}"`, savedPosts[topicName]);
             
             btn.textContent = `✅ Saved ${hoboList.length} Unique Hobos!`;
             setTimeout(() => { btn.textContent = '💾 Save Repliers List'; }, 3000);
@@ -2922,6 +3319,9 @@ const SoupKitchenHelper = {
         if (isSoupLine) {
             this.initSoupLine();
         }
+        else {
+            this.initSoupLine();
+        }
     },
 
     initSoupLine: function() {
@@ -3259,7 +3659,9 @@ const WellnessClinicHelper = {
         DisplayHelper,
         DrinksData,
         DrinksHelper,
+        FoodData,
         FoodHelper,
+        FortSlugworthHelper,
         GangLoansHelper,
         HitlistHelper,
         KurtzCampHelper,

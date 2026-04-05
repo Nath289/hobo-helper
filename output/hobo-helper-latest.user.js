@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.79
+// @version      7.81
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -409,6 +409,23 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
+            version: "7.81",
+            date: "2026-04-05",
+            type: "Fixed",
+            notes: [
+                "Fixed an issue where the FoodData mapping incorrectly associated the 'Apple Core' food item with the wrong image asset within FortSlugworthHelper Ripaparter's menu."
+            ]
+        },
+        {
+            version: "7.80",
+            date: "2026-04-05",
+            type: "Added",
+            notes: [
+                "Added FortSlugworthHelper with functionality for The Ripaparter (room=4).",
+                "Introduced a tile-based UI replacement to The Ripaparter for selecting trolley foods, generating visual interactive grids using the newly added FoodData.js asset map, vastly improving sorting and speed. Includes dynamic image detection parsing names mapped to wiki records."
+            ]
+        },
+        {
             version: "7.79",
             date: "2026-04-05",
             type: "Changed",
@@ -432,22 +449,6 @@ const ChangelogData = {
             type: "Fixed",
             notes: [
                 "Improved MessageBoardHelper topic name extraction reliability on Gang Board posts, fixing bugs that prevented the Save Repliers/Add Payment buttons from appearing correctly."
-            ]
-        },
-        {
-            version: "7.76",
-            date: "2026-04-04",
-            type: "Changed",
-            notes: [
-                "Enhanced the MessageBoardHelper 'Add Payment' dollar amount parser to correctly interpret multiplier suffixes (k, m, mil, mill, million) and automatically format the mapped value with commas and a dollar sign."
-            ]
-        },
-        {
-            version: "7.75",
-            date: "2026-04-04",
-            type: "Changed",
-            notes: [
-                "Adjusted the padding of the SettingsHelper card boxes and global toggle container for a tighter, cleaner appearance."
             ]
         }
     ]
@@ -700,6 +701,138 @@ const DrinksHelper = {
             }
         }
 
+const FoodData = {
+    "Apple Core": { "img": "Apple-Core.gif" },
+    "Half a Donut": { "img": "Half-a-Donut.gif" },
+    "Piece of Bread": { "img": "Piece-of-Bread.gif" },
+    "Can of Coke": { "img": "Can-of-Coke.gif" },
+    "Piece of Pizza": { "img": "Piece-of-Pizza.gif" },
+    "Meat Pie": { "img": "Meat-Pie.gif" },
+    "Can of Pepsi": { "img": "Can-of-Pepsi.gif" },
+    "Rotten Fish": { "img": "Rotten-Fish.gif" },
+    "Half Eaten Burger": { "img": "Half-Eaten-Burger.gif" },
+    "Packet of Fries": { "img": "Packet-of-Fries.gif" },
+    "New Pizza": { "img": "New-Pizza.gif" },
+    "Chewed Chicken Leg": { "img": "Chewed-Chicken-Leg.gif" },
+    "Raw Chicken Leg": { "img": "Raw-Chicken-Leg.gif" },
+    "Cooked Chicken": { "img": "Cooked-Chicken.gif" },
+    "Half a HotDog": { "img": "Half-a-HotDog.gif" },
+    "HotDog": { "img": "HotDog.gif" },
+    "KFC Meal": { "img": "KFC-Meal.gif" },
+    "Raw Potato": { "img": "Raw-Potato.gif" },
+    "Vanilla Ice Cream": { "img": "Vanilla-Ice-Cream.gif" },
+    "Chocolate Ice Cream": { "img": "Chocolate-Ice-Cream.gif" },
+    "Fresh Apple": { "img": "Fresh-Apple.gif" },
+    "Fighters Lunch": { "img": "Fighters-Lunch.gif" },
+    "Double-Double": { "img": "Double-Double.gif" },
+    "Bachelor Chow": { "img": "Bachelor-Chow.gif" },
+    "Smart Bread": { "img": "Smart-Bread.gif" },
+    "Day Old Coffee Naan": { "img": "Day-Old-Coffee-Naan.gif" },
+    "Half a Sandwich Naan": { "img": "Half-a-Sandwich-Naan.gif" },
+    "Discarded Taco Naan": { "img": "Discarded-Taco-Naan.gif" },
+    "Wonka Bar": { "img": "Wonka-Bar.gif" },
+    "Single-Single": { "img": "Single-Single.gif" },
+    "Wonka-stripe Candy Cane": { "img": "Wonka-stripe-Candy-Cane.gif" },
+    "Rainbow Drop": { "img": "Rainbow-Drop.gif" },
+    "Roast Beef": { "img": "Roast-Beef.gif" },
+    "Pre-Chewed Gum": { "img": "Pre-Chewed-Gum.gif" },
+    "Roast Beef Flavored Gum": { "img": "Roast-Beef-Flavored-Gum.gif" },
+    "Semi-Lasting Gobstopper": { "img": "Semi-Lasting-Gobstopper.gif" },
+    "Sweet Bomb": { "img": "Sweet-Bomb.gif" },
+    "Blueberry Blast Jelly Beans": { "img": "Blueberry-Blast-Jelly-Beans.gif" },
+    "Beef Mushroom Stew": { "img": "Beef-Mushroom-Stew.gif" },
+    "Texas Fajita Soup": { "img": "Texas-Fajita-Soup.gif" },
+    "Cream of Okra Soup": { "img": "Cream-of-Okra-Soup.gif" },
+    "Garlic Salmon Bisque": { "img": "Garlic-Salmon-Bisque.gif" },
+    "Beggars Bouillon": { "img": "Beggar%27s-Bouillon.gif" },
+    "Fizzy Lifting Soda": { "img": "Fizzy-Lifting-Soda.gif" },
+    "Wonkas Peppermint Spirits": { "img": "Wonka%27s-Peppermint-Spirits.gif" },
+    "Altoids": { "img": "Altoids.gif" },
+    "Junior Mints": { "img": "Junior-Mints.gif" },
+    "Red Hots": { "img": "Red-Hots.gif" },
+    "Crystal Pepsi": { "img": "Crystal-Pepsi.gif" },
+    "Chocolate Vanilla Swirl Ice Cream": { "img": "Chocolate-Vanilla-Swirl-Ice-Cream.gif" },
+    "Redder Hots": { "img": "Redder-Hots.gif" },
+    "Gas Soaked Red Hots": { "img": "Gas-Soaked-Red-Hots.gif" },
+    "Gummi Gorilla": { "img": "Gummi-Gorilla.gif" },
+    "Gummi Peregrine Falcon": { "img": "Gummi-Peregrine-Falcon.gif" },
+    "Gummi Raptor": { "img": "Gummi-Raptor.gif" },
+    "Quantum Candy": { "img": "Quantum-Candy.gif" },
+    "Gummi Spaghetti Monster": { "img": "Gummi-Spaghetti-Monster.gif" },
+    "Fruit by the Furlong": { "img": "Fruit-by-the-Furlong.gif" },
+    "Candy Cigarette": { "img": "Candy-Cigarette.gif" },
+    "Pack of Candy Cigarettes": { "img": "Pack-of-Candy-Cigarettes.gif" },
+    "Freeze-Packed Dippin Dots": { "img": "Freeze-Packed-Dippin-Dots.gif" },
+    "Dippin Dots": { "img": "Dippin-Dots.gif" },
+    "Military Rations": { "img": "Military-Rations.gif" },
+    "Can of Whipped Cream": { "img": "Can-of-Whipped-Cream.gif" },
+    "Faberge Cream Egg": { "img": "Faberge-Cream-Egg.gif" },
+    "Apple Flavored Gum": { "img": "Apple-Flavored-Gum.gif" },
+    "Cinnamon Flavored Gum": { "img": "Cinnamon-Flavored-Gum.gif" },
+    "Dark Chocolate Wonka Bar": { "img": "Dark-Chocolate-Wonka-Bar.gif" },
+    "Special Brownie": { "img": "Special-Brownie.gif" },
+    "Bacon Blast Jelly Beans": { "img": "Bacon-Blast-Jelly-Beans.gif" },
+    "Fizzy Falling Soda": { "img": "Fizzy-Falling-Soda.gif" },
+    "Caulipop": { "img": "Caulipop.gif" },
+    "Dalipop": { "img": "Dalipop.gif" },
+    "Volleypop": { "img": "Volleypop.gif" },
+    "Polypop": { "img": "Polypop.gif" },
+    "Mountain Honeydew Melon": { "img": "Mountain-Honeydew-Melon.gif" },
+    "Mountain Dew": { "img": "Mountain-Dew.gif" },
+    "Salmon": { "img": "Salmon.gif" },
+    "Catfish": { "img": "Catfish.gif" },
+    "Fish Sticks": { "img": "Fish-Sticks.gif" },
+    "Octopus": { "img": "Octopus.gif" },
+    "Blowfish": { "img": "Blowfish.gif" },
+    "Hobo Stew": { "img": "Hobo-Stew.gif" },
+    "Beggars Brunch": { "img": "Beggars-Brunch.gif" },
+    "Hangover Omelette": { "img": "Hangover-Omelette.gif" },
+    "Stomach Parasite": { "img": "Stomach-Parasite.gif" },
+    "Forest Shroom": { "img": "Forest-Shroom.gif" },
+    "Garlic Clove": { "img": "Garlic-Clove.gif" },
+    "Chili Pepper": { "img": "Chili-Pepper.gif" },
+    "Okra": { "img": "Okra.gif" },
+    "Gingerbread Bum": { "img": "Gingerbread-Bum.gif" },
+    "Bernard Burger": { "img": "Bernard-Burger.gif" },
+    "Flying Dutchman": { "img": "Flying-Dutchman.gif" },
+    "Animal Style Fries": { "img": "Animal-Style-Fries.gif" },
+    "Neapolitan Shake": { "img": "Neapolitan-Shake.gif" },
+    "SARS Bar": { "img": "SARS-Bar.gif" },
+    "Hobowarheads": { "img": "Hobowarheads.gif" },
+    "Mop Rocks": { "img": "Mop-Rocks.gif" },
+    "ICPeanut Butter Cup": { "img": "ICPeanut-Butter-Cup.gif" },
+    "Sugarfree Gum": { "img": "Sugarfree-Gum.gif" },
+    "Kit Rat Bar": { "img": "Kit-Rat-Bar.gif" },
+    "Butlerfinger": { "img": "Butlerfinger.gif" },
+    "Life Savers": { "img": "Life-Savers.gif" },
+    "Pay Day": { "img": "Pay-Day.gif" },
+    "Candycorn": { "img": "Candycorn.gif" },
+    "Sourpatch Bums": { "img": "Sourpatch-Bums.gif" },
+    "L&amp;Ls": { "img": "L&amp;Ls.gif" },
+    "Apple Surprise": { "img": "Apple-Surprise.gif" },
+    "Death Mints": { "img": "Death-Mints.gif" },
+    "Blow-Up Pop": { "img": "Blow-Up-Pop.gif" },
+    "Peppermint Burger Patties": { "img": "Peppermint-Burger-Patties.gif" },
+    "Rock Candy": { "img": "Rock-Candy.gif" },
+    "Walking Taco": { "img": "Walking-Taco.gif" },
+    "Freedom Fries": { "img": "Freedom-Fries.gif" },
+    "Jugger-Nut": { "img": "Jugger-Nut.gif" },
+    "Pizza Del Mare": { "img": "Pizza-Del-Mare.gif" },
+    "Bottle of Coke": { "img": "Bottle-of-Coke.gif" },
+    "Brains": { "img": "Brains.gif" },
+    "Death By Chocolate": { "img": "Death-By-Chocolate.gif" },
+    "Spooky Biscuit": { "img": "Spooky-Biscuit.gif" },
+    "Twozzlers": { "img": "Twozzlers.gif" },
+    "Red Hot Chili Pepper": { "img": "Red-Hot-Chili-Pepper.gif" },
+    "Longer-Lasting Gobstopper": { "img": "Longer-Lasting-Gobstopper.gif" },
+    "Double Gorillas": { "img": "Double-Gorillas.gif" },
+    "Double Falcons": { "img": "Double-Falcons.gif" },
+    "Double Raptors": { "img": "Double-Raptors.gif" },
+    "Triple Dipps": { "img": "Triple-Dipps.gif" },
+    "Rainbow Balls": { "img": "Rainbow-Balls.gif" },
+    "Wonka Quadra Candy Cane": { "img": "Wonka-Quadra-Candy-Cane.gif" },
+};
+
 const FoodHelper = {
     init: function() {
         const settings = Utils.getSettings();
@@ -825,6 +958,95 @@ const FoodHelper = {
             btn.value = `✅ Updated Crap!`;
             setTimeout(() => { btn.value = 'Mark as Crap'; }, 3000);
         }
+    }
+};
+
+const FortSlugworthHelper = {
+    init: function() {
+        if (!window.location.search.includes('cmd=fort_slugworth')) return;
+
+        const settings = Utils.getSettings();
+        if (settings['FortSlugworthHelper'] === false) return;
+
+        if (window.location.search.includes('room=4')) {
+            this.initRipaparter();
+        }
+    },
+
+    initRipaparter: function() {
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+        
+        const form = contentArea.querySelector('form[action*="room=4"]');
+        if (!form) return;
+
+        const select = form.querySelector('select[name="ripapart"]');
+        if (!select) return;
+
+        // Container for tiles
+        const tilesContainer = document.createElement('div');
+        tilesContainer.style.display = 'flex';
+        tilesContainer.style.flexWrap = 'wrap';
+        tilesContainer.style.gap = '10px';
+        tilesContainer.style.justifyContent = 'center';
+        tilesContainer.style.marginBottom = '20px';
+        tilesContainer.style.maxWidth = '500px';
+
+        // Add tiles before the select
+        form.insertBefore(tilesContainer, select);
+
+        // For each option in select, create a tile
+        Array.from(select.options).forEach(opt => {
+            const val = opt.value;
+            let text = opt.textContent.trim(); // e.g. "Fighters Lunch (6)"
+            let imgName = 'unknown.gif';
+
+            const match = text.match(/^(.*?)\s*\((\d+)\)$/);
+            let rawName = text;
+            let qty = 1;
+            if(match) {
+                rawName = match[1].trim();
+                qty = match[2];
+            }
+
+            if(typeof FoodData !== 'undefined' && FoodData[rawName]) {
+                imgName = FoodData[rawName].img;
+            } else {
+                imgName = rawName.replace(/[']/g, '%27').replace(/\s+/g, '-') + '.gif';
+            }
+
+            const tile = document.createElement('div');
+            tile.style.border = '2px solid #ccc';
+            tile.style.borderRadius = '5px';
+            tile.style.padding = '8px';
+            tile.style.cursor = 'pointer';
+            tile.style.textAlign = 'center';
+            tile.style.width = '85px';
+            tile.style.backgroundColor = '#fff';
+            tile.className = 'rip-tile';
+            tile.dataset.val = val;
+
+            tile.innerHTML = `
+                <img src="/images/items/gifs/${imgName}" width="50" height="50" alt="${rawName}" onerror="this.src='/images/items/gifs/Trolly.gif'" title="${rawName}"><br>
+                <div style="font-size:11px; margin-top:6px; line-height:1.2; word-wrap:break-word;">${rawName}</div>
+                <div style="font-size:12px; font-weight:bold; color:#0b61a4; margin-top:3px;">(${qty})</div>
+            `;
+
+            tile.addEventListener('click', () => {
+                tilesContainer.querySelectorAll('.rip-tile').forEach(t => {
+                    t.style.borderColor = '#ccc';
+                    t.style.backgroundColor = '#fff';
+                });
+                tile.style.borderColor = '#2196F3';
+                tile.style.backgroundColor = '#e3f2fd';
+
+                select.value = val;
+            });
+
+            tilesContainer.appendChild(tile);
+        });
+
+        console.log('FortSlugworthHelper: Room 4 (The Ripaparter) loaded tiles.');
     }
 };
 
@@ -3437,7 +3659,9 @@ const WellnessClinicHelper = {
         DisplayHelper,
         DrinksData,
         DrinksHelper,
+        FoodData,
         FoodHelper,
+        FortSlugworthHelper,
         GangLoansHelper,
         HitlistHelper,
         KurtzCampHelper,

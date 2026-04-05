@@ -21,56 +21,60 @@ Provides quality-of-life additions to your Living Area. May include highlighting
 ### 4. Northern Fence Helper (`NorthernFenceHelper.js`)
 Assists in navigating the Northern Fence. Enhances the interface by displaying relevant stats and chances to help streamline exploration or related activities.
 
-### 5. Settings Helper (`SettingsHelper.js`)
+### 5. Fort Slugworth Helper (`FortSlugworthHelper.js`)
+Assists in navigating Fort Slugworth (`cmd=fort_slugworth`).
+- **The Ripaparter Feature**: Provides functionality inside The Ripaparter (The Deinventing Room) (`room=4`).
+
+### 6. Settings Helper (`SettingsHelper.js`)
 Integrates directly into your HoboWars in-game "Preferences" page (`cmd=preferences`). It provides a centralized hub to customize how Hobo Helper behaves across the game, allowing you to globally disable the script or granularly toggle individual modules and sub-features (like toggling specific Living Area Helper functionalities) to tailor your experience.
 
-### 6. Tattoo Parlor Helper (`TattooParlorHelper.js`)
+### 7. Tattoo Parlor Helper (`TattooParlorHelper.js`)
 Helps optimize your time at the Tattoo Parlor. Displays relevant stat impacts of different tattoos so you can plan your character build efficiently.
 
-### 7. University Helper (`UniversityHelper.js`)
+### 8. University Helper (`UniversityHelper.js`)
 A tool designed to make stat training smoother at the University. It can help track your stat ratios and highlight optimal training options.
 
-### 8. Wellness Clinic Helper (`WellnessClinicHelper.js`)
+### 9. Wellness Clinic Helper (`WellnessClinicHelper.js`)
 Enhances the Wellness Clinic by displaying real-time data on your health, hospitalizations, or relevant cooldown timers directly into the UI.
 
-### 9. Message Board Helper (`MessageBoardHelper.js`)
+### 10. Message Board Helper (`MessageBoardHelper.js`)
 Provides functionality and quality-of-life improvements specifically on the Message Board gathering pages (`cmd=gathering`). Automatically adds an "Edit: Paid" button to the post editor that appends the current hobo name and a paid message statement. Automatically added structural support for future enhancements.
 
-### 10. Kurtz Camp Helper (`KurtzCampHelper.js`)
+### 11. Kurtz Camp Helper (`KurtzCampHelper.js`)
 Assists at Kurtz's Camp by keeping a running tally of Fire and Empty Bottles collected while lighting sticks. Retains this count across sessions using local storage, and includes a toggle to reset the counts at any time. Features dynamic display that only exhibits the empty bottle tally if any have been collected.
 
-### 11. Bernards Mansion Helper (`BernardsMansionHelper.js`)
+### 12. Bernards Mansion Helper (`BernardsMansionHelper.js`)
 Provides tools and helpers when exploring Bernard's Mansion (`cmd=bernards`). 
 - **Basement Map**: Displays a map when venturing into Bernard's Basement (`cmd=bernards&room=basement`).
 
-### 12. Can Depo Helper (`CanDepoHelper.js`)
+### 13. Can Depo Helper (`CanDepoHelper.js`)
 Assists when selling cans at the Can Depo (`cmd=depo`). 
 - **Total Value**: Displays the total monetary value of all your collected cans based on the current per-can price.
 
-### 13. Recycling Bin Helper (`RecyclingBinHelper.js`)
+### 14. Recycling Bin Helper (`RecyclingBinHelper.js`)
 Helper functionality for the Recycling Bin screen.
 - **Quick Recycle Buttons**: Adds "+100", "+200", and "+500" buttons next to the recycle button to quickly add those amounts to the recycle input.
 
-### 14. Backpack Helper (`BackpackHelper.js`)
+### 15. Backpack Helper (`BackpackHelper.js`)
 Assists with inventory management when viewing the Backpack.
 - **Drink Tooltips**: Hovering over alcoholic or mixed drinks will display their base stat gains and effects right in the tooltip.
 
-### 15. Lockout Helper (`LockoutHelper.js`)
+### 16. Lockout Helper (`LockoutHelper.js`)
 Helper functionality activated during the game's 12-hour resets (lockout periods).
 - **Changelog Display**: While the game is locked for resetting, this feature prominently displays the most recent Hobo Helper changelog notes via an overlaid UI directly on the reset screen, providing reading material during the wait.
 
-### 16. Display Helper (`DisplayHelper.js`)
+### 17. Display Helper (`DisplayHelper.js`)
 A core helper that runs display improvement related functions.
 
-### 17. Gang Loans Helper (`GangLoansHelper.js`)
+### 18. Gang Loans Helper (`GangLoansHelper.js`)
 A gang management tool that creates a specialized dashboard within the Gang Loans page (`cmd=gang2&do=loans`).
 - **Saved Posts & Payments Panel**: Aggregates and displays all saved gang post repliers and recorded payments from the Message Board Helper into a single convenient panel, making it easy to action bulk loans or payments and track who has replied to recruitment or event threads.
 
-### 18. Hitlist Helper (`HitlistHelper.js`)
+### 19. Hitlist Helper (`HitlistHelper.js`)
 A helper designed to operate on the main game Hitlist page (`cmd=battle&do=phlist`).
 - **Highlight Online Players**: Scans your hitlist for opponents currently online and highlights their entire row green, avoiding the need to search for the small online icon.
 
-### 19. Soup Kitchen Helper (`SoupKitchenHelper.js`)
+### 20. Soup Kitchen Helper (`SoupKitchenHelper.js`)
 A helper designed to operate on the Soup Kitchen page (`cmd=soup_kitchen`).
 - **Soup Line Predictor**: Displays your Hobo's exact age in days right alongside a handy wiki reference table to help you determine exactly which soup rewards correlate to which age ranges when waiting in the soup line.
 

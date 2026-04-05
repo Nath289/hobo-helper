@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.81] - 2026-04-05
+### Fixed
+- Fixed an issue where the `FoodData` mapping incorrectly associated the "Apple Core" food item with the wrong image asset within `FortSlugworthHelper` Ripaparter's menu.
+
+## [7.80] - 2026-04-05
+### Added
+- Added `FortSlugworthHelper` with functionality for The Ripaparter (`room=4`).
+- Introduced a tile-based UI replacement to The Ripaparter for selecting trolley foods, generating visual interactive grids using the newly added `FoodData.js` asset map, vastly improving sorting and speed. Includes dynamic image detection parsing names mapped to wiki records.
+
 ## [7.79] - 2026-04-05
 ### Changed
 - The `SoupKitchenHelper` has been refined to consistently display the Hobo age metadata and soup rewards table independently of specific URL query parameters.

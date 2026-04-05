@@ -2,6 +2,23 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
+            version: "7.81",
+            date: "2026-04-05",
+            type: "Fixed",
+            notes: [
+                "Fixed an issue where the FoodData mapping incorrectly associated the 'Apple Core' food item with the wrong image asset within FortSlugworthHelper Ripaparter's menu."
+            ]
+        },
+        {
+            version: "7.80",
+            date: "2026-04-05",
+            type: "Added",
+            notes: [
+                "Added FortSlugworthHelper with functionality for The Ripaparter (room=4).",
+                "Introduced a tile-based UI replacement to The Ripaparter for selecting trolley foods, generating visual interactive grids using the newly added FoodData.js asset map, vastly improving sorting and speed. Includes dynamic image detection parsing names mapped to wiki records."
+            ]
+        },
+        {
             version: "7.79",
             date: "2026-04-05",
             type: "Changed",
@@ -25,22 +42,6 @@ const ChangelogData = {
             type: "Fixed",
             notes: [
                 "Improved MessageBoardHelper topic name extraction reliability on Gang Board posts, fixing bugs that prevented the Save Repliers/Add Payment buttons from appearing correctly."
-            ]
-        },
-        {
-            version: "7.76",
-            date: "2026-04-04",
-            type: "Changed",
-            notes: [
-                "Enhanced the MessageBoardHelper 'Add Payment' dollar amount parser to correctly interpret multiplier suffixes (k, m, mil, mill, million) and automatically format the mapped value with commas and a dollar sign."
-            ]
-        },
-        {
-            version: "7.75",
-            date: "2026-04-04",
-            type: "Changed",
-            notes: [
-                "Adjusted the padding of the SettingsHelper card boxes and global toggle container for a tighter, cleaner appearance."
             ]
         }
     ]
