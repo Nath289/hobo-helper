@@ -33,21 +33,21 @@ When a user requests a new feature or modification, you must ensure it does not 
 **Action:** If a user requests functionality that falls into these categories (e.g., auto-clicking, auto-refreshing, playing the game for them), **you must explicitly warn the user** that it violates the game rules. Instead of fully automating the action, suggest a compliant alternative, such as adding a UI button that the user must manually click to perform the action.
 
 ## Updating the Version & Building
-**Testing Unfinalized Changes:** Whenever you make code changes, you must always run `.\build.ps1` so the user can test your unfinalized changes via `output/hobo-helper-latest.user.js`. Do not update the version or changelog at this stage.
+**Testing Unfinalized Changes (Local Dev Workflow):** Whenever you make code changes, you must always run `.\build.ps1` (with no flags) so the user can test your unfinalized changes via `output/hobo-helper-dev.user.js`. Do not update the version or changelog at this stage.
 
-**CRITICAL:** Only update the changelog and bump the version **when the change has been finalized and the user explicitly instructs you to do so**. 
-If you believe the change is final, **ask the user** if they want to finalize the change and bump the version. Otherwise, suggest additional functionality and improvements.
+**CRITICAL - Proactive Dev Setup:** If the user is beginning development and the file `output/dev-proxy-local.user.js` does not exist, you should proactively generate it for the user. Read the template `output/dev-proxy.template.user.js`, modify the `@require` path on line 7 to point to the exact absolute path of `output/hobo-helper-dev.user.js` on the user's system, and save it as `output/dev-proxy-local.user.js`. After generating it, explicitly direct the user to read `LOCAL_DEV.md` so they can understand how to initialize their fast-iteration local environment.
+
+**CRITICAL:** Only update the changelog **when the change has been finalized and the user explicitly instructs you to do so**. 
+If you believe the change is final, **ask the user** if they want to finalize the change and document it. Otherwise, suggest additional functionality and improvements.
 
 When finalizing a change:
-1. Bump the `$version` variable at the top of `build.ps1` so that Tampermonkey knows an update is available (e.g., from `7.6` to `7.7`).
+1. Add an entry to the top of `CHANGELOG.md` under the newly bumped version, logging what was added, changed, or fixed. Format the version headers like `## [7.43] - YYYY-MM-DD`. Note: The build script automatically parses this file to extract the current version and automatically generates the in-game floating changelog popup UI for you.
 2. **DO NOT** update the file links inside `INSTALL.md` to point to a specific version number. All script links in `INSTALL.md` must ALWAYS point to `output/hobo-helper-latest.user.js` to ensure users continue receiving auto-updates via Tampermonkey.
-3. Add an entry to `CHANGELOG.md` under the newly bumped version, logging what was added, changed, or fixed. Format the version headers like `## [7.43] - YYYY-MM-DD`.
-4. Update the dataset in `src/modules/ChangelogData.js` to mirror `CHANGELOG.md`, ensuring it contains **only the 5 most recent version releases**.
-5. Run the build script again:
+3. Run the release build script:
 ```powershell
-.\build.ps1
+.\build.ps1 -Release
 ```
-This will write the unified final file to `output/hobo-helper-v[VERSION].user.js` and `output/hobo-helper-latest.user.js`.
+This will compile the final unified code into `output/hobo-helper-latest.user.js` for production users.
 
 ## Terminal Commands
 - **Git Diff:** When running `git diff` in the terminal to verify your edits, **you must use the `--no-pager` flag** to prevent the terminal from hanging interactively (e.g. `git --no-pager diff`).

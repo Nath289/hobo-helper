@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         HoboWars Helper Toolkit
+// @name         {{NAME}}
 // @namespace    http://tampermonkey.net/
 // @version      {{VERSION}}
 // @description  Combines original HoboWars helpers into a single modular script.
