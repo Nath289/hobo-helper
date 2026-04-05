@@ -3091,6 +3091,10 @@ const SoupKitchenHelper = {
         const settings = Utils.getSettings();
         if (settings['SoupKitchenHelper'] === false) return;
 
+        this.initSoupLine();
+
+        return;
+
         const isSoupLine = window.location.search.includes('action=line') ||
                            Array.from(contentArea.querySelectorAll('a')).some(a => a.href.includes('action=bowl'));
 
