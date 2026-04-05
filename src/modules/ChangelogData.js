@@ -2,6 +2,14 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
+            version: "7.82",
+            date: "2026-04-05",
+            type: "Changed",
+            notes: [
+                "Modified the MessageBoardHelper dollar matching logic to iteratively extract and map the final trailing dollar volume in instances where text strings list multiplier equations prior to a total summation format."
+            ]
+        },
+        {
             version: "7.81",
             date: "2026-04-05",
             type: "Fixed",
@@ -34,14 +42,6 @@ const ChangelogData = {
                 "Added automated state handling to GangLoansHelper which tracks when 'Add' and 'Clear' actions resolve via persistent cache across synchronous page loads.",
                 "The GangLoansHelper dashboard now seamlessly transitions rows through permanent workflow states ('Loan Created', 'Loan Cleared') after confirming system responses.",
                 "Added a native 'Select Loan' shortcut button on 'Loan Created' items which instantly parses the existing HTML DOM and form elements to prepare a specific loan ID for immediate clearing."
-            ]
-        },
-        {
-            version: "7.77",
-            date: "2026-04-04",
-            type: "Fixed",
-            notes: [
-                "Improved MessageBoardHelper topic name extraction reliability on Gang Board posts, fixing bugs that prevented the Save Repliers/Add Payment buttons from appearing correctly."
             ]
         }
     ]

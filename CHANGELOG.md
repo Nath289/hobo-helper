@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.82] - 2026-04-05
+### Changed
+- Modified the `MessageBoardHelper` dollar matching logic to iteratively extract and map the final trailing dollar volume in instances where text strings list multiplier equations prior to a total summation format.
+
 ## [7.81] - 2026-04-05
 ### Fixed
 - Fixed an issue where the `FoodData` mapping incorrectly associated the "Apple Core" food item with the wrong image asset within `FortSlugworthHelper` Ripaparter's menu.

@@ -2435,8 +2435,14 @@ const MessageBoardHelper = {
 
                     let parsedAmount = '';
                     const messageText = secondTd.innerText || "";
-                    const amountRegex = /(?:\$([\d,]+(?:\.\d+)?)\s*(k|m|mil|mill|million)?\b)|(?:([\d,]+(?:\.\d+)?)\s*(k|m|mil|mill|million)\b)/i;
-                    const dollarMatch = messageText.match(amountRegex);
+                    const amountRegex = /(?:\$([\d,]+(?:\.\d+)?)\s*(k|m|mil|mill|million)?\b)|(?:([\d,]+(?:\.\d+)?)\s*(k|m|mil|mill|million)\b)/gi;
+
+                    let dollarMatch = null;
+                    let match;
+                    while ((match = amountRegex.exec(messageText)) !== null) {
+                        dollarMatch = match;
+                    }
+
                     if (dollarMatch) {
                         let amountStr = dollarMatch[1] || dollarMatch[3];
                         let multStr = (dollarMatch[2] || dollarMatch[4] || "").toLowerCase();
