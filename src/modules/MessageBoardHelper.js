@@ -1,4 +1,7 @@
 const MessageBoardHelper = {
+    settings: [
+        { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' }
+    ],
     init: function() {
         if (!Utils.isCurrentPage('cmd=gathering')) return;
 
@@ -330,3 +333,4 @@ const MessageBoardHelper = {
         });
     }
 };
+

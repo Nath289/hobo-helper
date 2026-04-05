@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.84
+// @version      7.86
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -221,6 +221,9 @@ const BackpackHelper = {
 };
 
 const BankHelper = {
+    settings: [
+        { key: 'BankHelper_5FightersLunches', label: '5 Fighter''s Lunches Goal' }
+    ],
             getBankGoals: function() {
                 try {
                     return JSON.parse(localStorage.getItem('hw_bank_goals') || '{}');
@@ -312,6 +315,9 @@ const BankHelper = {
         }
 
 const BernardsMansionHelper = {
+    settings: [
+        { key: 'BernardsMansionHelper_BasementMap', label: 'Basement Map' }
+    ],
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('cmd') !== 'bernards') return;
@@ -443,6 +449,23 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
+            version: "7.86",
+            date: "2026-04-05",
+            type: "Added",
+            notes: [
+                "Added an \"Enable the Fake Qwee\" setting to the DisplayHelper to allow toggling the \"The Fake\" prefix for user ID 2924510."
+            ]
+        },
+        {
+            version: "7.85",
+            date: "2026-04-05",
+            type: "Added",
+            notes: [
+                "Added a RatsHelper for the Rat page (cmd=rats) that includes an interactive \"Rat News Filter\" using checkbox pills.",
+                "Refactored SettingsHelper architecture: all modules now export their own settings configurations, automatically populating the Preferences page dynamically."
+            ]
+        },
+        {
             version: "7.84",
             date: "2026-04-05",
             type: "Changed",
@@ -466,31 +489,27 @@ const ChangelogData = {
             notes: [
                 "Modified the MessageBoardHelper dollar matching logic to iteratively extract and map the final trailing dollar volume in instances where text strings list multiplier equations prior to a total summation format."
             ]
-        },
-        {
-            version: "7.81",
-            date: "2026-04-05",
-            type: "Fixed",
-            notes: [
-                "Fixed an issue where the FoodData mapping incorrectly associated the 'Apple Core' food item with the wrong image asset within FortSlugworthHelper Ripaparter's menu."
-            ]
-        },
-        {
-            version: "7.80",
-            date: "2026-04-05",
-            type: "Added",
-            notes: [
-                "Added FortSlugworthHelper with functionality for The Ripaparter (room=4).",
-                "Introduced a tile-based UI replacement to The Ripaparter for selecting trolley foods, generating visual interactive grids using the newly added FoodData.js asset map, vastly improving sorting and speed. Includes dynamic image detection parsing names mapped to wiki records."
-            ]
         }
     ]
 };
 
 const DisplayHelper = {
-    alwaysInit: function() {
-        // This function will always run upon loading any page,
-        // regardless of whether this specific module is enabled or totally disabled globally.
+    settings: [
+        { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' },
+        { key: 'DisplayHelper_FakeQwee', label: 'Enable the Fake Qwee' }
+    ],
+    init: function() {
+        const settings = Utils.getSettings();
+        // This function only runs if the global helper is enabled,
+        // and if this specific 'DisplayHelper' is enabled via SettingsHelper.
+        if (settings['DisplayHelper_ImprovedAvatars'] !== false) {
+            this.initImprovedAvatars();
+        }
+        if (settings['DisplayHelper_FakeQwee'] !== false) {
+            this.initFakeQwee();
+        }
+    },
+    initFakeQwee: function() {
         const targetHoboId = "2924510";
 
         const playerLinks = document.querySelectorAll(`a[href*="cmd=player&ID=${targetHoboId}"]`);
@@ -499,14 +518,6 @@ const DisplayHelper = {
                 link.innerHTML = `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">The Fake</span> ` + link.innerHTML;
             }
         });
-    },
-    init: function() {
-        const settings = Utils.getSettings();
-        // This function only runs if the global helper is enabled,
-        // and if this specific 'DisplayHelper' is enabled via SettingsHelper.
-        if (settings['DisplayHelper_ImprovedAvatars'] !== false) {
-            this.initImprovedAvatars();
-        }
     },
     initImprovedAvatars: function() {
         const style = document.createElement('style');
@@ -1728,6 +1739,9 @@ const GangLoansHelper = {
 };
 
 const HitlistHelper = {
+    settings: [
+        { key: 'HitlistHelper_HighlightOnline', label: 'Highlight Online Players' }
+    ],
     init: function() {
         if (!window.location.search.includes('cmd=battle') || !window.location.search.includes('do=phlist')) return;
 
@@ -1957,6 +1971,12 @@ const LiquorStoreHelper = {
         }
 
 const LivingAreaHelper = {
+    settings: [
+        { key: 'LivingAreaHelper_StatRatioTracker', label: 'Stat Ratio Tracker' },
+        { key: 'LivingAreaHelper_AlwaysShowSpecialItem', label: 'Always Show Special Item' },
+        { key: 'LivingAreaHelper_MixerLink', label: 'Mixer Link' },
+        { key: 'LivingAreaHelper_WinPercentageCalc', label: 'Win Percentage Calc' }
+    ],
     init: function() {
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
         
@@ -2253,6 +2273,9 @@ const LivingAreaHelper = {
 }
 
 const LockoutHelper = {
+    settings: [
+        { key: 'LockoutHelper_ShowChangelog', label: 'Show Changelog' }
+    ],
     init: function() {
         // The game auto-locks during the 12-hour reset.
         // We detect this specific screen via document title or body text.
@@ -2348,6 +2371,9 @@ const LockoutHelper = {
 };
 
 const MessageBoardHelper = {
+    settings: [
+        { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' }
+    ],
     init: function() {
         if (!Utils.isCurrentPage('cmd=gathering')) return;
 
@@ -3167,6 +3193,113 @@ const NorthernFenceHelper = {
             }
         }
 
+const RatsHelper = {
+    settings: [
+        { key: 'RatsHelper_NewsFilter', label: 'Rat News Filter' }
+    ],
+    init: function() {
+        if (!window.location.search.includes('cmd=rats')) return;
+
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        console.log('[Hobo Helper] Initializing RatsHelper');
+
+        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        const enableNewsFilter = savedSettings['RatsHelper_NewsFilter'] !== false;
+
+        if (enableNewsFilter) {
+            this.initNewsFilter(contentArea);
+        }
+    },
+
+    initNewsFilter: function(contentArea) {
+        const form = contentArea.querySelector('form[name="DelSelected"]');
+        if (!form) return;
+
+        const table = form.querySelector('table');
+        if (!table) return;
+
+        const rows = Array.from(table.querySelectorAll('tr[height="24"]'));
+        if (rows.length === 0) return;
+
+        const ratNames = new Set();
+
+        rows.forEach(row => {
+            const td = row.querySelectorAll('td')[1];
+            if (!td) return;
+
+            let ratName = 'Unknown';
+            const strongTag = td.querySelector('b');
+            if (strongTag) {
+                ratName = strongTag.innerText.trim();
+            } else if (td.innerText.includes('passed away')) {
+                // Your rat Two Headed Rat passed away... etc
+                const match = td.innerText.match(/Your rat (.*?) passed away/);
+                if (match && match[1]) {
+                    ratName = match[1].trim();
+                }
+            }
+
+            row.dataset.ratName = ratName;
+            ratNames.add(ratName);
+        });
+
+        if (ratNames.size === 0) return;
+
+        // Build UI
+        const filterContainer = document.createElement('div');
+        filterContainer.style.cssText = 'margin: 10px 0; padding: 10px; background: #eef5ff; border: 1px solid #b3d4fc; border-radius: 4px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px;';
+        
+        const label = document.createElement('span');
+        label.style.fontWeight = 'bold';
+        label.innerText = 'Filter News by Rat:';
+        filterContainer.appendChild(label);
+
+        const checkboxes = [];
+
+        const updateFilters = () => {
+            const selectedRats = new Set(checkboxes.filter(cb => cb.checked).map(cb => cb.value));
+            rows.forEach(row => {
+                if (selectedRats.has(row.dataset.ratName)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        };
+
+        Array.from(ratNames).sort().forEach(name => {
+            const cbContainer = document.createElement('label');
+            cbContainer.style.cssText = 'cursor: pointer; display: flex; align-items: center; gap: 4px; background: #fff; border: 1px solid #ccc; padding: 3px 8px; border-radius: 12px; font-size: 12px; user-select: none; -webkit-user-select: none;';
+            
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.value = name;
+            cb.checked = true;
+            cb.addEventListener('change', updateFilters);
+            checkboxes.push(cb);
+
+            cbContainer.appendChild(cb);
+            cbContainer.appendChild(document.createTextNode(name));
+            filterContainer.appendChild(cbContainer);
+        });
+
+        const toggleAllBtn = document.createElement('button');
+        toggleAllBtn.innerText = 'Toggle All';
+        toggleAllBtn.style.cssText = 'cursor: pointer; background: #e6f3ff; border: 1px solid #99c2ff; border-radius: 3px; padding: 3px 8px; font-size: 11px; color: #0055aa; user-select: none; -webkit-user-select: none;';
+        toggleAllBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const allChecked = checkboxes.every(cb => cb.checked);
+            checkboxes.forEach(cb => cb.checked = !allChecked);
+            updateFilters();
+        });
+        filterContainer.appendChild(toggleAllBtn);
+
+        form.parentNode.insertBefore(filterContainer, form);
+    }
+};
+
 const RecyclingBinHelper = {
     init: function() {
         if (!Utils.isCurrentPage('cmd=recycling_bin')) return;
@@ -3295,32 +3428,14 @@ const SettingsHelper = {
         modsLabel.style.paddingBottom = '5px';
         contentArea.appendChild(modsLabel);
 
-        const subFeatures = {
-            'LivingAreaHelper': [
-                { key: 'LivingAreaHelper_StatRatioTracker', label: 'Stat Ratio Tracker' },
-                { key: 'LivingAreaHelper_AlwaysShowSpecialItem', label: 'Always Show Special Item' },
-                { key: 'LivingAreaHelper_MixerLink', label: 'Mixer Link' },
-                { key: 'LivingAreaHelper_WinPercentageCalc', label: 'Win Percentage Calc' }
-            ],
-            'BernardsMansionHelper': [
-                { key: 'BernardsMansionHelper_BasementMap', label: 'Basement Map' }
-            ],
-            'LockoutHelper': [
-                { key: 'LockoutHelper_ShowChangelog', label: 'Show Changelog' }
-            ],
-            'MessageBoardHelper': [
-                { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' }
-            ],
-            'BankHelper': [
-                { key: 'BankHelper_5FightersLunches', label: '5 Fighter\'s Lunches Goal' }
-            ],
-            'HitlistHelper': [
-                { key: 'HitlistHelper_HighlightOnline', label: 'Highlight Online Players' }
-            ],
-            'DisplayHelper': [
-                { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' }
-            ]
-        };
+        const subFeatures = {};
+        if (typeof Modules !== 'undefined') {
+            Object.keys(Modules).forEach(modName => {
+                if (Modules[modName].settings) {
+                    subFeatures[modName] = Modules[modName].settings;
+                }
+            });
+        }
 
         const gridContainer = document.createElement('div');
         gridContainer.style.display = 'flex';
@@ -3798,6 +3913,7 @@ const WellnessClinicHelper = {
         MessageBoardHelper,
         MixerHelper,
         NorthernFenceHelper,
+        RatsHelper,
         RecyclingBinHelper,
         SettingsHelper,
         SoupKitchenHelper,

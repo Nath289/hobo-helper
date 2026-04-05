@@ -65,6 +65,8 @@ Helper functionality activated during the game's 12-hour resets (lockout periods
 
 ### 17. Display Helper (`DisplayHelper.js`)
 A core helper that runs display improvement related functions.
+- **Enable Improved Avatars**: Custom styled shapes and online indicators for avatars.
+- **Enable the Fake Qwee**: Places a "The Fake" prefix label in front of all player links referencing ID 2924510.
 
 ### 18. Gang Loans Helper (`GangLoansHelper.js`)
 A gang management tool that creates a specialized dashboard within the Gang Loans page (`cmd=gang2&do=loans`).
@@ -77,6 +79,10 @@ A helper designed to operate on the main game Hitlist page (`cmd=battle&do=phlis
 ### 20. Soup Kitchen Helper (`SoupKitchenHelper.js`)
 A helper designed to operate on the Soup Kitchen page (`cmd=soup_kitchen`).
 - **Soup Line Predictor**: Displays your Hobo's exact age in days right alongside a handy wiki reference table to help you determine exactly which soup rewards correlate to which age ranges when waiting in the soup line.
+
+### 21. Rats Helper (`RatsHelper.js`)
+A new helper designed to operate on the Rats page (`cmd=rats`).
+- Currently tracking and foundational logic setup. Future features will be added here.
 
 ### Drink Helpers
 - [x] Automatically inject stat and effect data as tooltips to all drinks when hovering your mouse over them inside of your backpack and living area page.

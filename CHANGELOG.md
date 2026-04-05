@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.86] - 2026-04-05
+### Added
+- Added an "Enable the Fake Qwee" setting to the `DisplayHelper` to allow toggling the "The Fake" prefix for user ID 2924510.
+
+## [7.85] - 2026-04-05
+### Added
+- Added a `RatsHelper` for the Rat page (`cmd=rats`) that includes an interactive "Rat News Filter" using checkbox pills.
+### Changed
+- Refactored `SettingsHelper` architecture: all modules now export their own settings configurations, automatically populating the Preferences page dynamically.
+
 ## [7.84] - 2026-04-05
 ### Changed
 - Updated the "Export Saved Repliers" button to output granular line-by-line payment details for each individual recipient instead of a single total summary string.

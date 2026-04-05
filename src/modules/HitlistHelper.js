@@ -1,4 +1,7 @@
 const HitlistHelper = {
+    settings: [
+        { key: 'HitlistHelper_HighlightOnline', label: 'Highlight Online Players' }
+    ],
     init: function() {
         if (!window.location.search.includes('cmd=battle') || !window.location.search.includes('do=phlist')) return;
 
@@ -28,4 +31,5 @@ const HitlistHelper = {
         });
     }
 };
+
 

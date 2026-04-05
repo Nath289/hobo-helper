@@ -1,4 +1,10 @@
 const LivingAreaHelper = {
+    settings: [
+        { key: 'LivingAreaHelper_StatRatioTracker', label: 'Stat Ratio Tracker' },
+        { key: 'LivingAreaHelper_AlwaysShowSpecialItem', label: 'Always Show Special Item' },
+        { key: 'LivingAreaHelper_MixerLink', label: 'Mixer Link' },
+        { key: 'LivingAreaHelper_WinPercentageCalc', label: 'Win Percentage Calc' }
+    ],
     init: function() {
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
         
@@ -293,3 +299,4 @@ const LivingAreaHelper = {
         }
     }
 }
+

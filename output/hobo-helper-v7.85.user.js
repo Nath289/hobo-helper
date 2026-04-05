@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.81
+// @version      7.85
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -11,10 +11,44 @@
 (function() {
     'use strict';
 const Utils = {
-        getHoboMinutes: function() {
+        getHoboDateTime: function() {
             const clockEl = document.getElementById('clock');
             if (!clockEl) return null;
-            const match = clockEl.textContent.trim().toLowerCase().match(/(\d+):(\d+):(\d+)\s*(am|pm)/);
+
+            let dateStr = '';
+            if (clockEl.parentElement) {
+                const dateEl = clockEl.parentElement.querySelector('i');
+                if (dateEl) {
+                    // Remove suffixes like st, nd, rd, th (e.g., "Apr 5th" -> "Apr 5")
+                    dateStr = dateEl.textContent.trim().replace(/(st|nd|rd|th),?/i, '');
+                }
+            }
+
+            const timeStr = clockEl.textContent.trim();
+            if (dateStr && timeStr) {
+                const currentYear = new Date().getFullYear();
+                const parsedDate = new Date(`${dateStr} ${currentYear} ${timeStr}`);
+                if (!isNaN(parsedDate.getTime())) {
+                    return parsedDate;
+                }
+            }
+
+            return null;
+        },
+        getFormattedHoboDateTime: function() {
+            const dateObj = this.getHoboDateTime() || new Date();
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return `${months[dateObj.getMonth()]} ${dateObj.getDate()} ${dateObj.getFullYear()}`;
+        },
+        getHoboTime: function() {
+            const clockEl = document.getElementById('clock');
+            if (!clockEl) return null;
+            return clockEl.textContent.trim().toLowerCase();
+        },
+        getHoboMinutes: function() {
+            const timeStr = this.getHoboTime();
+            if (!timeStr) return null;
+            const match = timeStr.match(/(\d+):(\d+):(\d+)\s*(am|pm)/);
             if (!match) return null;
             let hours = parseInt(match[1]);
             const minutes = parseInt(match[2]);
@@ -187,6 +221,9 @@ const BackpackHelper = {
 };
 
 const BankHelper = {
+    settings: [
+        { key: 'BankHelper_5FightersLunches', label: '5 Fighter''s Lunches Goal' }
+    ],
             getBankGoals: function() {
                 try {
                     return JSON.parse(localStorage.getItem('hw_bank_goals') || '{}');
@@ -278,6 +315,9 @@ const BankHelper = {
         }
 
 const BernardsMansionHelper = {
+    settings: [
+        { key: 'BernardsMansionHelper_BasementMap', label: 'Basement Map' }
+    ],
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('cmd') !== 'bernards') return;
@@ -409,55 +449,67 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
-            version: "7.81",
-            date: "2026-04-05",
-            type: "Fixed",
-            notes: [
-                "Fixed an issue where the FoodData mapping incorrectly associated the 'Apple Core' food item with the wrong image asset within FortSlugworthHelper Ripaparter's menu."
-            ]
-        },
-        {
-            version: "7.80",
+            version: "7.86",
             date: "2026-04-05",
             type: "Added",
             notes: [
-                "Added FortSlugworthHelper with functionality for The Ripaparter (room=4).",
-                "Introduced a tile-based UI replacement to The Ripaparter for selecting trolley foods, generating visual interactive grids using the newly added FoodData.js asset map, vastly improving sorting and speed. Includes dynamic image detection parsing names mapped to wiki records."
+                "Added an \"Enable the Fake Qwee\" setting to the DisplayHelper to allow toggling the \"The Fake\" prefix for user ID 2924510."
             ]
         },
         {
-            version: "7.79",
+            version: "7.85",
+            date: "2026-04-05",
+            type: "Added",
+            notes: [
+                "Added a RatsHelper for the Rat page (cmd=rats) that includes an interactive \"Rat News Filter\" using checkbox pills.",
+                "Refactored SettingsHelper architecture: all modules now export their own settings configurations, automatically populating the Preferences page dynamically."
+            ]
+        },
+        {
+            version: "7.84",
             date: "2026-04-05",
             type: "Changed",
             notes: [
-                "The SoupKitchenHelper has been refined to consistently display the Hobo age metadata and soup rewards table independently of specific URL query parameters."
+                "Updated the \"Export Saved Repliers\" button to output granular line-by-line payment details for each individual recipient instead of a single total summary string."
             ]
         },
         {
-            version: "7.78",
+            version: "7.83",
             date: "2026-04-05",
             type: "Added",
             notes: [
-                "Added automated state handling to GangLoansHelper which tracks when 'Add' and 'Clear' actions resolve via persistent cache across synchronous page loads.",
-                "The GangLoansHelper dashboard now seamlessly transitions rows through permanent workflow states ('Loan Created', 'Loan Cleared') after confirming system responses.",
-                "Added a native 'Select Loan' shortcut button on 'Loan Created' items which instantly parses the existing HTML DOM and form elements to prepare a specific loan ID for immediate clearing."
+                "Added an \"Export Totals\" button to the GangLoansHelper to automatically sum up all processed cash values from both individual actions and bulk replier lists into a single clipboard string.",
+                "Implemented dependent validation states for GangLoansHelper export buttons to explicitly disable interaction until missing dynamic elements are entered."
             ]
         },
         {
-            version: "7.77",
-            date: "2026-04-04",
-            type: "Fixed",
+            version: "7.82",
+            date: "2026-04-05",
+            type: "Changed",
             notes: [
-                "Improved MessageBoardHelper topic name extraction reliability on Gang Board posts, fixing bugs that prevented the Save Repliers/Add Payment buttons from appearing correctly."
+                "Modified the MessageBoardHelper dollar matching logic to iteratively extract and map the final trailing dollar volume in instances where text strings list multiplier equations prior to a total summation format."
             ]
         }
     ]
 };
 
 const DisplayHelper = {
-    alwaysInit: function() {
-        // This function will always run upon loading any page,
-        // regardless of whether this specific module is enabled or totally disabled globally.
+    settings: [
+        { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' },
+        { key: 'DisplayHelper_FakeQwee', label: 'Enable the Fake Qwee' }
+    ],
+    init: function() {
+        const settings = Utils.getSettings();
+        // This function only runs if the global helper is enabled,
+        // and if this specific 'DisplayHelper' is enabled via SettingsHelper.
+        if (settings['DisplayHelper_ImprovedAvatars'] !== false) {
+            this.initImprovedAvatars();
+        }
+        if (settings['DisplayHelper_FakeQwee'] !== false) {
+            this.initFakeQwee();
+        }
+    },
+    initFakeQwee: function() {
         const targetHoboId = "2924510";
 
         const playerLinks = document.querySelectorAll(`a[href*="cmd=player&ID=${targetHoboId}"]`);
@@ -466,14 +518,6 @@ const DisplayHelper = {
                 link.innerHTML = `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">The Fake</span> ` + link.innerHTML;
             }
         });
-    },
-    init: function() {
-        const settings = Utils.getSettings();
-        // This function only runs if the global helper is enabled,
-        // and if this specific 'DisplayHelper' is enabled via SettingsHelper.
-        if (settings['DisplayHelper_ImprovedAvatars'] !== false) {
-            this.initImprovedAvatars();
-        }
     },
     initImprovedAvatars: function() {
         const style = document.createElement('style');
@@ -1103,7 +1147,6 @@ const GangLoansHelper = {
             }
         }
 
-        console.log('[Hobo Helper] Initializing GangLoansHelper');
         this.renderPanel(contentArea);
     },
 
@@ -1149,11 +1192,21 @@ const GangLoansHelper = {
                 const safeTopicId = topic.replace(/[^a-zA-Z0-9]/g, '');
 
                 let exportBtnsHtml = '';
+                const isBulkAmtMissing = hobos.length > 0 && !savedBulkAmt.trim();
+                const disabledStyle = isBulkAmtMissing ? 'opacity: 0.5; cursor: not-allowed;' : 'cursor: pointer;';
+                const disabledAttr = isBulkAmtMissing ? 'disabled="disabled"' : '';
+
                 if (hobos.length > 0) {
-                    exportBtnsHtml += `<button class="hw-export-repliers" data-topic="${topic}" data-ctrl="${safeTopicId}" style="padding: 3px 8px; cursor: pointer; background: #e6f3ff; border: 1px solid #99c2ff; border-radius: 3px; font-size: 11px; color: #0055aa; margin-right: 5px;">Export Saved Repliers</button>`;
+                    exportBtnsHtml += `<button class="hw-export-repliers" data-topic="${topic}" data-ctrl="${safeTopicId}" ${disabledAttr} style="padding: 3px 8px; background: #e6f3ff; border: 1px solid #99c2ff; border-radius: 3px; font-size: 11px; color: #0055aa; margin-right: 5px; ${disabledStyle}">Export Saved Repliers</button>`;
                 }
                 if (payments.length > 0) {
                     exportBtnsHtml += `<button class="hw-export-payments" data-topic="${topic}" style="padding: 3px 8px; cursor: pointer; background: #e6f3ff; border: 1px solid #99c2ff; border-radius: 3px; font-size: 11px; color: #0055aa; margin-right: 5px;">Export Payments</button>`;
+                }
+                if (hobos.length > 0 || payments.length > 0) {
+                    const isTotalBulkMissing = hobos.length > 0 && !savedBulkAmt.trim();
+                    const totalDisabledStyle = isTotalBulkMissing ? 'opacity: 0.5; cursor: not-allowed;' : 'cursor: pointer;';
+                    const totalDisabledAttr = isTotalBulkMissing ? 'disabled="disabled"' : '';
+                    exportBtnsHtml += `<button class="hw-export-totals" data-topic="${topic}" data-ctrl="${safeTopicId}" ${totalDisabledAttr} style="padding: 3px 8px; background: #e6f3ff; border: 1px solid #99c2ff; border-radius: 3px; font-size: 11px; color: #0055aa; margin-right: 5px; ${totalDisabledStyle}">Export Totals</button>`;
                 }
 
                 const titleRow = document.createElement('div');
@@ -1162,7 +1215,7 @@ const GangLoansHelper = {
                     <span style="font-size: 14px; color: #003366;">📝 Topic: ${topic}</span>
                     <div style="display:flex; align-items:center;">
                         ${exportBtnsHtml}
-                        <button class="hw-delete-topic" data-topic="${topic}" style="padding: 3px 8px; cursor: pointer; background: #ffe6e6; border: 1px solid #ff9999; border-radius: 3px; font-size: 11px; color: #cc0000;">Remove Topic</button>
+                        <button class="hw-delete-topic" data-topic="${topic}" style="padding: 3px 8px; cursor: pointer; background: #ffe6e6; border: 1px solid #ff9999; border-radius: 3px; font-size: 11px; color: #cc0000;">Remove</button>
                     </div>
                 `;
 
@@ -1309,6 +1362,27 @@ const GangLoansHelper = {
         container.insertBefore(panel, container.firstChild);
 
         // Bind events
+        panel.querySelectorAll('input[id^="amt-"]').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const ctrlId = e.target.id.replace('amt-', '');
+                const hasValue = e.target.value.trim() !== '';
+                
+                const exportRepliersBtn = panel.querySelector(`.hw-export-repliers[data-ctrl="${ctrlId}"]`);
+                if (exportRepliersBtn) {
+                    exportRepliersBtn.disabled = !hasValue;
+                    exportRepliersBtn.style.opacity = hasValue ? '1' : '0.5';
+                    exportRepliersBtn.style.cursor = hasValue ? 'pointer' : 'not-allowed';
+                }
+                
+                const exportTotalsBtn = panel.querySelector(`.hw-export-totals[data-ctrl="${ctrlId}"]`);
+                if (exportTotalsBtn) {
+                    exportTotalsBtn.disabled = !hasValue;
+                    exportTotalsBtn.style.opacity = hasValue ? '1' : '0.5';
+                    exportTotalsBtn.style.cursor = hasValue ? 'pointer' : 'not-allowed';
+                }
+            });
+        });
+
         const clearAllBtn = panel.querySelector('#hw-clear-all-gang-posts');
         if (clearAllBtn) {
             clearAllBtn.addEventListener('click', () => {
@@ -1420,7 +1494,7 @@ const GangLoansHelper = {
                 const memoField = document.querySelector('input[name="l_memo"]');
 
                 if (hoboField) hoboField.value = e.target.getAttribute('data-id');
-                if (amtField && bulkAmtInput) amtField.value = bulkAmtInput.value.replace(/[^0-9.]/g, ''); 
+                if (amtField && bulkAmtInput) amtField.value = bulkAmtInput.value.replace(/[^0-9]/g, '');
                 if (memoField && bulkMemoInput) memoField.value = bulkMemoInput.value.substring(0, 60);
 
                 e.target.innerText = 'Inserted';
@@ -1458,19 +1532,33 @@ const GangLoansHelper = {
 
         // BIND EXPORTS
         const copyToCb = (text, btn) => {
-            const ta = document.createElement('textarea');
-            ta.value = text;
-            document.body.appendChild(ta);
-            ta.select();
-            try {
-                document.execCommand('copy');
-                const oldText = btn.innerText;
-                btn.innerText = 'Copied!';
-                setTimeout(() => { btn.innerText = oldText; }, 2000);
-            } catch (e) {
-                alert("Clipboard export failed. Here is your text:\n\n" + text);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    const oldText = btn.innerText;
+                    btn.innerText = 'Copied!';
+                    setTimeout(() => { btn.innerText = oldText; }, 2000);
+                }).catch(err => {
+                    console.error("Clipboard export failed", err);
+                    alert("Clipboard export failed. Here is your text:\n\n" + text);
+                });
+            } else {
+                // Fallback for older browsers or insecure contexts
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                try {
+                    document.execCommand('copy');
+                    const oldText = btn.innerText;
+                    btn.innerText = 'Copied!';
+                    setTimeout(() => { btn.innerText = oldText; }, 2000);
+                } catch (e) {
+                    alert("Clipboard export failed. Here is your text:\n\n" + text);
+                }
+                document.body.removeChild(ta);
             }
-            document.body.removeChild(ta);
         };
 
         panel.querySelectorAll('.hw-export-repliers').forEach(btn => {
@@ -1485,13 +1573,25 @@ const GangLoansHelper = {
                 
                 const amtRaw = bulkInput ? bulkInput.value.replace(/[^0-9]/g, '') : '';
                 const bulkAmt = parseInt(amtRaw, 10) || 0;
-                const total = hobos.length * bulkAmt;
+                const formattedAmt = bulkAmt > 0 ? bulkAmt.toLocaleString() : '0';
                 
-                const memoPrefix = memoInput && memoInput.value.trim() ? `${memoInput.value.trim()} - ` : '';
-                const formatted = total > 0 ? total.toLocaleString() : '0';
-                const text = `${memoPrefix}Total: ${hobos.length} Hobos - $${formatted}`;
-                
-                copyToCb(text, e.target);
+                const memoStr = memoInput && memoInput.value.trim() ? memoInput.value.trim() : 'No description';
+
+                const dateStr = typeof Utils !== 'undefined' && Utils.getFormattedHoboDateTime ? Utils.getFormattedHoboDateTime() : 'Unknown Date';
+
+                let hoboTotals = {};
+                hobos.forEach(h => {
+                    if (!hoboTotals[h.id]) hoboTotals[h.id] = 0;
+                    hoboTotals[h.id] += bulkAmt;
+                });
+
+                let parts = Object.keys(hoboTotals).map(id => {
+                    const totalForHobo = hoboTotals[id];
+                    const formatted = totalForHobo > 0 ? totalForHobo.toLocaleString() : '0';
+                    return `${dateStr} - [hoboname=${id}] - ${memoStr} - $${formatted}`;
+                });
+
+                copyToCb(parts.join('\n'), e.target);
             });
         });
 
@@ -1501,14 +1601,46 @@ const GangLoansHelper = {
                 const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
                 const payments = d[topic]?.paymentsToHobos || [];
                 
+                const dateStr = typeof Utils !== 'undefined' && Utils.getFormattedHoboDateTime ? Utils.getFormattedHoboDateTime() : 'Unknown Date';
+
                 let parts = payments.map(p => {
                     const amtParts = String(p.amount || '').replace(/[^0-9]/g, '');
                     const amtInt = parseInt(amtParts, 10) || 0;
                     const formatted = amtInt > 0 ? amtInt.toLocaleString() : '0';
-                    return `[hoboname=${p.hoboId || p.id}] - ${p.description || 'No description'} - $${formatted}`;
+                    return `${dateStr} - [hoboname=${p.hoboId || p.id}] - ${p.description || 'No description'} - $${formatted}`;
                 });
                 
                 copyToCb(parts.join('\n'), e.target);
+            });
+        });
+
+        panel.querySelectorAll('.hw-export-totals').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const ctrlId = e.target.getAttribute('data-ctrl');
+                const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                const payments = d[topic]?.paymentsToHobos || [];
+                const hobos = d[topic]?.hobos || [];
+
+                const dateStr = typeof Utils !== 'undefined' && Utils.getFormattedHoboDateTime ? Utils.getFormattedHoboDateTime() : 'Unknown Date';
+
+                let totalAmt = 0;
+                payments.forEach(p => {
+                    const amtParts = String(p.amount || '').replace(/[^0-9]/g, '');
+                    totalAmt += parseInt(amtParts, 10) || 0;
+                });
+
+                if (hobos.length > 0) {
+                    const bulkInput = document.getElementById('amt-' + ctrlId);
+                    const amtRaw = bulkInput ? bulkInput.value.replace(/[^0-9]/g, '') : (d[topic]?.bulkAmount || '').replace(/[^0-9]/g, '');
+                    const bulkAmt = parseInt(amtRaw, 10) || 0;
+                    totalAmt += (hobos.length * bulkAmt);
+                }
+
+                const formatted = totalAmt > 0 ? totalAmt.toLocaleString() : '0';
+                const text = `${dateStr} - ${topic} - $${formatted}`;
+
+                copyToCb(text, e.target);
             });
         });
 
@@ -1607,6 +1739,9 @@ const GangLoansHelper = {
 };
 
 const HitlistHelper = {
+    settings: [
+        { key: 'HitlistHelper_HighlightOnline', label: 'Highlight Online Players' }
+    ],
     init: function() {
         if (!window.location.search.includes('cmd=battle') || !window.location.search.includes('do=phlist')) return;
 
@@ -1836,6 +1971,12 @@ const LiquorStoreHelper = {
         }
 
 const LivingAreaHelper = {
+    settings: [
+        { key: 'LivingAreaHelper_StatRatioTracker', label: 'Stat Ratio Tracker' },
+        { key: 'LivingAreaHelper_AlwaysShowSpecialItem', label: 'Always Show Special Item' },
+        { key: 'LivingAreaHelper_MixerLink', label: 'Mixer Link' },
+        { key: 'LivingAreaHelper_WinPercentageCalc', label: 'Win Percentage Calc' }
+    ],
     init: function() {
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
         
@@ -2132,6 +2273,9 @@ const LivingAreaHelper = {
 }
 
 const LockoutHelper = {
+    settings: [
+        { key: 'LockoutHelper_ShowChangelog', label: 'Show Changelog' }
+    ],
     init: function() {
         // The game auto-locks during the 12-hour reset.
         // We detect this specific screen via document title or body text.
@@ -2227,6 +2371,9 @@ const LockoutHelper = {
 };
 
 const MessageBoardHelper = {
+    settings: [
+        { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' }
+    ],
     init: function() {
         if (!Utils.isCurrentPage('cmd=gathering')) return;
 
@@ -3046,6 +3193,113 @@ const NorthernFenceHelper = {
             }
         }
 
+const RatsHelper = {
+    settings: [
+        { key: 'RatsHelper_NewsFilter', label: 'Rat News Filter' }
+    ],
+    init: function() {
+        if (!window.location.search.includes('cmd=rats')) return;
+
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        console.log('[Hobo Helper] Initializing RatsHelper');
+
+        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        const enableNewsFilter = savedSettings['RatsHelper_NewsFilter'] !== false;
+
+        if (enableNewsFilter) {
+            this.initNewsFilter(contentArea);
+        }
+    },
+
+    initNewsFilter: function(contentArea) {
+        const form = contentArea.querySelector('form[name="DelSelected"]');
+        if (!form) return;
+
+        const table = form.querySelector('table');
+        if (!table) return;
+
+        const rows = Array.from(table.querySelectorAll('tr[height="24"]'));
+        if (rows.length === 0) return;
+
+        const ratNames = new Set();
+
+        rows.forEach(row => {
+            const td = row.querySelectorAll('td')[1];
+            if (!td) return;
+
+            let ratName = 'Unknown';
+            const strongTag = td.querySelector('b');
+            if (strongTag) {
+                ratName = strongTag.innerText.trim();
+            } else if (td.innerText.includes('passed away')) {
+                // Your rat Two Headed Rat passed away... etc
+                const match = td.innerText.match(/Your rat (.*?) passed away/);
+                if (match && match[1]) {
+                    ratName = match[1].trim();
+                }
+            }
+
+            row.dataset.ratName = ratName;
+            ratNames.add(ratName);
+        });
+
+        if (ratNames.size === 0) return;
+
+        // Build UI
+        const filterContainer = document.createElement('div');
+        filterContainer.style.cssText = 'margin: 10px 0; padding: 10px; background: #eef5ff; border: 1px solid #b3d4fc; border-radius: 4px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px;';
+        
+        const label = document.createElement('span');
+        label.style.fontWeight = 'bold';
+        label.innerText = 'Filter News by Rat:';
+        filterContainer.appendChild(label);
+
+        const checkboxes = [];
+
+        const updateFilters = () => {
+            const selectedRats = new Set(checkboxes.filter(cb => cb.checked).map(cb => cb.value));
+            rows.forEach(row => {
+                if (selectedRats.has(row.dataset.ratName)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        };
+
+        Array.from(ratNames).sort().forEach(name => {
+            const cbContainer = document.createElement('label');
+            cbContainer.style.cssText = 'cursor: pointer; display: flex; align-items: center; gap: 4px; background: #fff; border: 1px solid #ccc; padding: 3px 8px; border-radius: 12px; font-size: 12px; user-select: none; -webkit-user-select: none;';
+            
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.value = name;
+            cb.checked = true;
+            cb.addEventListener('change', updateFilters);
+            checkboxes.push(cb);
+
+            cbContainer.appendChild(cb);
+            cbContainer.appendChild(document.createTextNode(name));
+            filterContainer.appendChild(cbContainer);
+        });
+
+        const toggleAllBtn = document.createElement('button');
+        toggleAllBtn.innerText = 'Toggle All';
+        toggleAllBtn.style.cssText = 'cursor: pointer; background: #e6f3ff; border: 1px solid #99c2ff; border-radius: 3px; padding: 3px 8px; font-size: 11px; color: #0055aa; user-select: none; -webkit-user-select: none;';
+        toggleAllBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const allChecked = checkboxes.every(cb => cb.checked);
+            checkboxes.forEach(cb => cb.checked = !allChecked);
+            updateFilters();
+        });
+        filterContainer.appendChild(toggleAllBtn);
+
+        form.parentNode.insertBefore(filterContainer, form);
+    }
+};
+
 const RecyclingBinHelper = {
     init: function() {
         if (!Utils.isCurrentPage('cmd=recycling_bin')) return;
@@ -3174,32 +3428,14 @@ const SettingsHelper = {
         modsLabel.style.paddingBottom = '5px';
         contentArea.appendChild(modsLabel);
 
-        const subFeatures = {
-            'LivingAreaHelper': [
-                { key: 'LivingAreaHelper_StatRatioTracker', label: 'Stat Ratio Tracker' },
-                { key: 'LivingAreaHelper_AlwaysShowSpecialItem', label: 'Always Show Special Item' },
-                { key: 'LivingAreaHelper_MixerLink', label: 'Mixer Link' },
-                { key: 'LivingAreaHelper_WinPercentageCalc', label: 'Win Percentage Calc' }
-            ],
-            'BernardsMansionHelper': [
-                { key: 'BernardsMansionHelper_BasementMap', label: 'Basement Map' }
-            ],
-            'LockoutHelper': [
-                { key: 'LockoutHelper_ShowChangelog', label: 'Show Changelog' }
-            ],
-            'MessageBoardHelper': [
-                { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' }
-            ],
-            'BankHelper': [
-                { key: 'BankHelper_5FightersLunches', label: '5 Fighter\'s Lunches Goal' }
-            ],
-            'HitlistHelper': [
-                { key: 'HitlistHelper_HighlightOnline', label: 'Highlight Online Players' }
-            ],
-            'DisplayHelper': [
-                { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' }
-            ]
-        };
+        const subFeatures = {};
+        if (typeof Modules !== 'undefined') {
+            Object.keys(Modules).forEach(modName => {
+                if (Modules[modName].settings) {
+                    subFeatures[modName] = Modules[modName].settings;
+                }
+            });
+        }
 
         const gridContainer = document.createElement('div');
         gridContainer.style.display = 'flex';
@@ -3677,6 +3913,7 @@ const WellnessClinicHelper = {
         MessageBoardHelper,
         MixerHelper,
         NorthernFenceHelper,
+        RatsHelper,
         RecyclingBinHelper,
         SettingsHelper,
         SoupKitchenHelper,

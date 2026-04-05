@@ -1,4 +1,7 @@
 const BernardsMansionHelper = {
+    settings: [
+        { key: 'BernardsMansionHelper_BasementMap', label: 'Basement Map' }
+    ],
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('cmd') !== 'bernards') return;
@@ -78,3 +81,4 @@ const BernardsMansionHelper = {
         wrapper.appendChild(mapContainer);
     }
 };
+

@@ -1,4 +1,7 @@
 const LockoutHelper = {
+    settings: [
+        { key: 'LockoutHelper_ShowChangelog', label: 'Show Changelog' }
+    ],
     init: function() {
         // The game auto-locks during the 12-hour reset.
         // We detect this specific screen via document title or body text.
@@ -92,3 +95,4 @@ const LockoutHelper = {
         }
     }
 };
+

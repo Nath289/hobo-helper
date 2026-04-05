@@ -1,4 +1,7 @@
 const BankHelper = {
+    settings: [
+        { key: 'BankHelper_5FightersLunches', label: '5 Fighter''s Lunches Goal' }
+    ],
             getBankGoals: function() {
                 try {
                     return JSON.parse(localStorage.getItem('hw_bank_goals') || '{}');
@@ -88,3 +91,4 @@ const BankHelper = {
                 });
             }
         }
+

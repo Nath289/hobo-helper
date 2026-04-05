@@ -1,7 +1,20 @@
 const DisplayHelper = {
-    alwaysInit: function() {
-        // This function will always run upon loading any page,
-        // regardless of whether this specific module is enabled or totally disabled globally.
+    settings: [
+        { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' },
+        { key: 'DisplayHelper_FakeQwee', label: 'Enable the Fake Qwee' }
+    ],
+    init: function() {
+        const settings = Utils.getSettings();
+        // This function only runs if the global helper is enabled,
+        // and if this specific 'DisplayHelper' is enabled via SettingsHelper.
+        if (settings['DisplayHelper_ImprovedAvatars'] !== false) {
+            this.initImprovedAvatars();
+        }
+        if (settings['DisplayHelper_FakeQwee'] !== false) {
+            this.initFakeQwee();
+        }
+    },
+    initFakeQwee: function() {
         const targetHoboId = "2924510";
 
         const playerLinks = document.querySelectorAll(`a[href*="cmd=player&ID=${targetHoboId}"]`);
@@ -10,14 +23,6 @@ const DisplayHelper = {
                 link.innerHTML = `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">The Fake</span> ` + link.innerHTML;
             }
         });
-    },
-    init: function() {
-        const settings = Utils.getSettings();
-        // This function only runs if the global helper is enabled,
-        // and if this specific 'DisplayHelper' is enabled via SettingsHelper.
-        if (settings['DisplayHelper_ImprovedAvatars'] !== false) {
-            this.initImprovedAvatars();
-        }
     },
     initImprovedAvatars: function() {
         const style = document.createElement('style');

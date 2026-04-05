@@ -13,10 +13,12 @@ Welcome to the `hobo-helper` project! Since this project uses a custom build pro
 
 ## Adding a New Module / Helper
 1. **Always ask the user** for the URL of the page they want to create the new helper for if they have not provided it. **Do not guess or try to determine the URL yourself.** You must ask the user for the URL in order to proceed with the change. When they provide it, the important part to match is after and including `cmd=`. For example, in `https://www.hobowars.com/game/game.php?sr=141&cmd=preferences`, the `sr` number changes, so it cannot be hardcoded (use `cmd=preferences` to identify the page).
-2. Create your new module file in `src/modules/` (e.g., `src/modules/JobHelper.js`).
-3. Ensure the code inside is formatted as a valid constant variable allocation (e.g., `const JobHelper = { init: function() { ... } }`).
-4. **Settings Helper Integration:** Always add the ability to disable the new helper via the `SettingsHelper`. Update `SettingsHelper` accordingly if needed.
-5. **Update Documentation:** Whenever you create a new module or add a new feature to an existing module, you must update the `FEATURES.md` file to reflect the new functionality.
+2. **Context Gathering:** Use PowerShell to search through the `html/` directory to find the specific layout file (e.g., `Select-String -Path "html\*.html" -Pattern "cmd=rats"` or search for unique text headers) to understand the DOM.
+3. Create your new module file in `src/modules/` (e.g., `src/modules/JobHelper.js`).
+4. Ensure the code inside is formatted as a valid constant variable allocation (e.g., `const JobHelper = { init: function() { ... } }`).
+5. **Settings Helper Integration:** Always add the ability to disable the new helper sub-features via the `SettingsHelper`. To do this, include a `settings` array directly inside the module object definition containing the toggle keys and labels (e.g., `const JobHelper = { settings: [{ key: 'JobHelper_EnableFeature', label: 'Enable Feature' }], init: ... }`). The `SettingsHelper` will automatically detect and render them in the preferences page.
+6. **UI Best Practices:** When creating custom interactive UI elements like buttons, toggle pills, or custom checkboxes, always add `user-select: none; -webkit-user-select: none;` to the CSS to prevent annoying text highlighting during rapid clicking.
+7. **Update Documentation:** Whenever you create a new module or add a new feature to an existing module, you must update the `FEATURES.md` file to reflect the new functionality.
 The build script automatically detects and includes all JavaScript files in the `src/modules/` directory.
 
 ## Supported Layouts

@@ -92,32 +92,14 @@ const SettingsHelper = {
         modsLabel.style.paddingBottom = '5px';
         contentArea.appendChild(modsLabel);
 
-        const subFeatures = {
-            'LivingAreaHelper': [
-                { key: 'LivingAreaHelper_StatRatioTracker', label: 'Stat Ratio Tracker' },
-                { key: 'LivingAreaHelper_AlwaysShowSpecialItem', label: 'Always Show Special Item' },
-                { key: 'LivingAreaHelper_MixerLink', label: 'Mixer Link' },
-                { key: 'LivingAreaHelper_WinPercentageCalc', label: 'Win Percentage Calc' }
-            ],
-            'BernardsMansionHelper': [
-                { key: 'BernardsMansionHelper_BasementMap', label: 'Basement Map' }
-            ],
-            'LockoutHelper': [
-                { key: 'LockoutHelper_ShowChangelog', label: 'Show Changelog' }
-            ],
-            'MessageBoardHelper': [
-                { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' }
-            ],
-            'BankHelper': [
-                { key: 'BankHelper_5FightersLunches', label: '5 Fighter\'s Lunches Goal' }
-            ],
-            'HitlistHelper': [
-                { key: 'HitlistHelper_HighlightOnline', label: 'Highlight Online Players' }
-            ],
-            'DisplayHelper': [
-                { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' }
-            ]
-        };
+        const subFeatures = {};
+        if (typeof Modules !== 'undefined') {
+            Object.keys(Modules).forEach(modName => {
+                if (Modules[modName].settings) {
+                    subFeatures[modName] = Modules[modName].settings;
+                }
+            });
+        }
 
         const gridContainer = document.createElement('div');
         gridContainer.style.display = 'flex';
