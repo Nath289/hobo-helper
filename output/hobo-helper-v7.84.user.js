@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.78
+// @version      7.84
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -11,10 +11,44 @@
 (function() {
     'use strict';
 const Utils = {
-        getHoboMinutes: function() {
+        getHoboDateTime: function() {
             const clockEl = document.getElementById('clock');
             if (!clockEl) return null;
-            const match = clockEl.textContent.trim().toLowerCase().match(/(\d+):(\d+):(\d+)\s*(am|pm)/);
+
+            let dateStr = '';
+            if (clockEl.parentElement) {
+                const dateEl = clockEl.parentElement.querySelector('i');
+                if (dateEl) {
+                    // Remove suffixes like st, nd, rd, th (e.g., "Apr 5th" -> "Apr 5")
+                    dateStr = dateEl.textContent.trim().replace(/(st|nd|rd|th),?/i, '');
+                }
+            }
+
+            const timeStr = clockEl.textContent.trim();
+            if (dateStr && timeStr) {
+                const currentYear = new Date().getFullYear();
+                const parsedDate = new Date(`${dateStr} ${currentYear} ${timeStr}`);
+                if (!isNaN(parsedDate.getTime())) {
+                    return parsedDate;
+                }
+            }
+
+            return null;
+        },
+        getFormattedHoboDateTime: function() {
+            const dateObj = this.getHoboDateTime() || new Date();
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return `${months[dateObj.getMonth()]} ${dateObj.getDate()} ${dateObj.getFullYear()}`;
+        },
+        getHoboTime: function() {
+            const clockEl = document.getElementById('clock');
+            if (!clockEl) return null;
+            return clockEl.textContent.trim().toLowerCase();
+        },
+        getHoboMinutes: function() {
+            const timeStr = this.getHoboTime();
+            if (!timeStr) return null;
+            const match = timeStr.match(/(\d+):(\d+):(\d+)\s*(am|pm)/);
             if (!match) return null;
             let hours = parseInt(match[1]);
             const minutes = parseInt(match[2]);
@@ -409,45 +443,45 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
-            version: "7.78",
+            version: "7.84",
+            date: "2026-04-05",
+            type: "Changed",
+            notes: [
+                "Updated the \"Export Saved Repliers\" button to output granular line-by-line payment details for each individual recipient instead of a single total summary string."
+            ]
+        },
+        {
+            version: "7.83",
             date: "2026-04-05",
             type: "Added",
             notes: [
-                "Added automated state handling to GangLoansHelper which tracks when 'Add' and 'Clear' actions resolve via persistent cache across synchronous page loads.",
-                "The GangLoansHelper dashboard now seamlessly transitions rows through permanent workflow states ('Loan Created', 'Loan Cleared') after confirming system responses.",
-                "Added a native 'Select Loan' shortcut button on 'Loan Created' items which instantly parses the existing HTML DOM and form elements to prepare a specific loan ID for immediate clearing."
+                "Added an \"Export Totals\" button to the GangLoansHelper to automatically sum up all processed cash values from both individual actions and bulk replier lists into a single clipboard string.",
+                "Implemented dependent validation states for GangLoansHelper export buttons to explicitly disable interaction until missing dynamic elements are entered."
             ]
         },
         {
-            version: "7.77",
-            date: "2026-04-04",
+            version: "7.82",
+            date: "2026-04-05",
+            type: "Changed",
+            notes: [
+                "Modified the MessageBoardHelper dollar matching logic to iteratively extract and map the final trailing dollar volume in instances where text strings list multiplier equations prior to a total summation format."
+            ]
+        },
+        {
+            version: "7.81",
+            date: "2026-04-05",
             type: "Fixed",
             notes: [
-                "Improved MessageBoardHelper topic name extraction reliability on Gang Board posts, fixing bugs that prevented the Save Repliers/Add Payment buttons from appearing correctly."
+                "Fixed an issue where the FoodData mapping incorrectly associated the 'Apple Core' food item with the wrong image asset within FortSlugworthHelper Ripaparter's menu."
             ]
         },
         {
-            version: "7.76",
-            date: "2026-04-04",
-            type: "Changed",
+            version: "7.80",
+            date: "2026-04-05",
+            type: "Added",
             notes: [
-                "Enhanced the MessageBoardHelper 'Add Payment' dollar amount parser to correctly interpret multiplier suffixes (k, m, mil, mill, million) and automatically format the mapped value with commas and a dollar sign."
-            ]
-        },
-        {
-            version: "7.75",
-            date: "2026-04-04",
-            type: "Changed",
-            notes: [
-                "Adjusted the padding of the SettingsHelper card boxes and global toggle container for a tighter, cleaner appearance."
-            ]
-        },
-        {
-            version: "7.74",
-            date: "2026-04-04",
-            type: "Changed",
-            notes: [
-                "Overhauled the SettingsHelper Game Preferences page layout, migrating from a continuous vertical list to a balanced and stylized two-column card grid to improve readability and aesthetics."
+                "Added FortSlugworthHelper with functionality for The Ripaparter (room=4).",
+                "Introduced a tile-based UI replacement to The Ripaparter for selecting trolley foods, generating visual interactive grids using the newly added FoodData.js asset map, vastly improving sorting and speed. Includes dynamic image detection parsing names mapped to wiki records."
             ]
         }
     ]
@@ -700,6 +734,138 @@ const DrinksHelper = {
             }
         }
 
+const FoodData = {
+    "Apple Core": { "img": "Apple-Core.gif" },
+    "Half a Donut": { "img": "Half-a-Donut.gif" },
+    "Piece of Bread": { "img": "Piece-of-Bread.gif" },
+    "Can of Coke": { "img": "Can-of-Coke.gif" },
+    "Piece of Pizza": { "img": "Piece-of-Pizza.gif" },
+    "Meat Pie": { "img": "Meat-Pie.gif" },
+    "Can of Pepsi": { "img": "Can-of-Pepsi.gif" },
+    "Rotten Fish": { "img": "Rotten-Fish.gif" },
+    "Half Eaten Burger": { "img": "Half-Eaten-Burger.gif" },
+    "Packet of Fries": { "img": "Packet-of-Fries.gif" },
+    "New Pizza": { "img": "New-Pizza.gif" },
+    "Chewed Chicken Leg": { "img": "Chewed-Chicken-Leg.gif" },
+    "Raw Chicken Leg": { "img": "Raw-Chicken-Leg.gif" },
+    "Cooked Chicken": { "img": "Cooked-Chicken.gif" },
+    "Half a HotDog": { "img": "Half-a-HotDog.gif" },
+    "HotDog": { "img": "HotDog.gif" },
+    "KFC Meal": { "img": "KFC-Meal.gif" },
+    "Raw Potato": { "img": "Raw-Potato.gif" },
+    "Vanilla Ice Cream": { "img": "Vanilla-Ice-Cream.gif" },
+    "Chocolate Ice Cream": { "img": "Chocolate-Ice-Cream.gif" },
+    "Fresh Apple": { "img": "Fresh-Apple.gif" },
+    "Fighters Lunch": { "img": "Fighters-Lunch.gif" },
+    "Double-Double": { "img": "Double-Double.gif" },
+    "Bachelor Chow": { "img": "Bachelor-Chow.gif" },
+    "Smart Bread": { "img": "Smart-Bread.gif" },
+    "Day Old Coffee Naan": { "img": "Day-Old-Coffee-Naan.gif" },
+    "Half a Sandwich Naan": { "img": "Half-a-Sandwich-Naan.gif" },
+    "Discarded Taco Naan": { "img": "Discarded-Taco-Naan.gif" },
+    "Wonka Bar": { "img": "Wonka-Bar.gif" },
+    "Single-Single": { "img": "Single-Single.gif" },
+    "Wonka-stripe Candy Cane": { "img": "Wonka-stripe-Candy-Cane.gif" },
+    "Rainbow Drop": { "img": "Rainbow-Drop.gif" },
+    "Roast Beef": { "img": "Roast-Beef.gif" },
+    "Pre-Chewed Gum": { "img": "Pre-Chewed-Gum.gif" },
+    "Roast Beef Flavored Gum": { "img": "Roast-Beef-Flavored-Gum.gif" },
+    "Semi-Lasting Gobstopper": { "img": "Semi-Lasting-Gobstopper.gif" },
+    "Sweet Bomb": { "img": "Sweet-Bomb.gif" },
+    "Blueberry Blast Jelly Beans": { "img": "Blueberry-Blast-Jelly-Beans.gif" },
+    "Beef Mushroom Stew": { "img": "Beef-Mushroom-Stew.gif" },
+    "Texas Fajita Soup": { "img": "Texas-Fajita-Soup.gif" },
+    "Cream of Okra Soup": { "img": "Cream-of-Okra-Soup.gif" },
+    "Garlic Salmon Bisque": { "img": "Garlic-Salmon-Bisque.gif" },
+    "Beggars Bouillon": { "img": "Beggar%27s-Bouillon.gif" },
+    "Fizzy Lifting Soda": { "img": "Fizzy-Lifting-Soda.gif" },
+    "Wonkas Peppermint Spirits": { "img": "Wonka%27s-Peppermint-Spirits.gif" },
+    "Altoids": { "img": "Altoids.gif" },
+    "Junior Mints": { "img": "Junior-Mints.gif" },
+    "Red Hots": { "img": "Red-Hots.gif" },
+    "Crystal Pepsi": { "img": "Crystal-Pepsi.gif" },
+    "Chocolate Vanilla Swirl Ice Cream": { "img": "Chocolate-Vanilla-Swirl-Ice-Cream.gif" },
+    "Redder Hots": { "img": "Redder-Hots.gif" },
+    "Gas Soaked Red Hots": { "img": "Gas-Soaked-Red-Hots.gif" },
+    "Gummi Gorilla": { "img": "Gummi-Gorilla.gif" },
+    "Gummi Peregrine Falcon": { "img": "Gummi-Peregrine-Falcon.gif" },
+    "Gummi Raptor": { "img": "Gummi-Raptor.gif" },
+    "Quantum Candy": { "img": "Quantum-Candy.gif" },
+    "Gummi Spaghetti Monster": { "img": "Gummi-Spaghetti-Monster.gif" },
+    "Fruit by the Furlong": { "img": "Fruit-by-the-Furlong.gif" },
+    "Candy Cigarette": { "img": "Candy-Cigarette.gif" },
+    "Pack of Candy Cigarettes": { "img": "Pack-of-Candy-Cigarettes.gif" },
+    "Freeze-Packed Dippin Dots": { "img": "Freeze-Packed-Dippin-Dots.gif" },
+    "Dippin Dots": { "img": "Dippin-Dots.gif" },
+    "Military Rations": { "img": "Military-Rations.gif" },
+    "Can of Whipped Cream": { "img": "Can-of-Whipped-Cream.gif" },
+    "Faberge Cream Egg": { "img": "Faberge-Cream-Egg.gif" },
+    "Apple Flavored Gum": { "img": "Apple-Flavored-Gum.gif" },
+    "Cinnamon Flavored Gum": { "img": "Cinnamon-Flavored-Gum.gif" },
+    "Dark Chocolate Wonka Bar": { "img": "Dark-Chocolate-Wonka-Bar.gif" },
+    "Special Brownie": { "img": "Special-Brownie.gif" },
+    "Bacon Blast Jelly Beans": { "img": "Bacon-Blast-Jelly-Beans.gif" },
+    "Fizzy Falling Soda": { "img": "Fizzy-Falling-Soda.gif" },
+    "Caulipop": { "img": "Caulipop.gif" },
+    "Dalipop": { "img": "Dalipop.gif" },
+    "Volleypop": { "img": "Volleypop.gif" },
+    "Polypop": { "img": "Polypop.gif" },
+    "Mountain Honeydew Melon": { "img": "Mountain-Honeydew-Melon.gif" },
+    "Mountain Dew": { "img": "Mountain-Dew.gif" },
+    "Salmon": { "img": "Salmon.gif" },
+    "Catfish": { "img": "Catfish.gif" },
+    "Fish Sticks": { "img": "Fish-Sticks.gif" },
+    "Octopus": { "img": "Octopus.gif" },
+    "Blowfish": { "img": "Blowfish.gif" },
+    "Hobo Stew": { "img": "Hobo-Stew.gif" },
+    "Beggars Brunch": { "img": "Beggars-Brunch.gif" },
+    "Hangover Omelette": { "img": "Hangover-Omelette.gif" },
+    "Stomach Parasite": { "img": "Stomach-Parasite.gif" },
+    "Forest Shroom": { "img": "Forest-Shroom.gif" },
+    "Garlic Clove": { "img": "Garlic-Clove.gif" },
+    "Chili Pepper": { "img": "Chili-Pepper.gif" },
+    "Okra": { "img": "Okra.gif" },
+    "Gingerbread Bum": { "img": "Gingerbread-Bum.gif" },
+    "Bernard Burger": { "img": "Bernard-Burger.gif" },
+    "Flying Dutchman": { "img": "Flying-Dutchman.gif" },
+    "Animal Style Fries": { "img": "Animal-Style-Fries.gif" },
+    "Neapolitan Shake": { "img": "Neapolitan-Shake.gif" },
+    "SARS Bar": { "img": "SARS-Bar.gif" },
+    "Hobowarheads": { "img": "Hobowarheads.gif" },
+    "Mop Rocks": { "img": "Mop-Rocks.gif" },
+    "ICPeanut Butter Cup": { "img": "ICPeanut-Butter-Cup.gif" },
+    "Sugarfree Gum": { "img": "Sugarfree-Gum.gif" },
+    "Kit Rat Bar": { "img": "Kit-Rat-Bar.gif" },
+    "Butlerfinger": { "img": "Butlerfinger.gif" },
+    "Life Savers": { "img": "Life-Savers.gif" },
+    "Pay Day": { "img": "Pay-Day.gif" },
+    "Candycorn": { "img": "Candycorn.gif" },
+    "Sourpatch Bums": { "img": "Sourpatch-Bums.gif" },
+    "L&amp;Ls": { "img": "L&amp;Ls.gif" },
+    "Apple Surprise": { "img": "Apple-Surprise.gif" },
+    "Death Mints": { "img": "Death-Mints.gif" },
+    "Blow-Up Pop": { "img": "Blow-Up-Pop.gif" },
+    "Peppermint Burger Patties": { "img": "Peppermint-Burger-Patties.gif" },
+    "Rock Candy": { "img": "Rock-Candy.gif" },
+    "Walking Taco": { "img": "Walking-Taco.gif" },
+    "Freedom Fries": { "img": "Freedom-Fries.gif" },
+    "Jugger-Nut": { "img": "Jugger-Nut.gif" },
+    "Pizza Del Mare": { "img": "Pizza-Del-Mare.gif" },
+    "Bottle of Coke": { "img": "Bottle-of-Coke.gif" },
+    "Brains": { "img": "Brains.gif" },
+    "Death By Chocolate": { "img": "Death-By-Chocolate.gif" },
+    "Spooky Biscuit": { "img": "Spooky-Biscuit.gif" },
+    "Twozzlers": { "img": "Twozzlers.gif" },
+    "Red Hot Chili Pepper": { "img": "Red-Hot-Chili-Pepper.gif" },
+    "Longer-Lasting Gobstopper": { "img": "Longer-Lasting-Gobstopper.gif" },
+    "Double Gorillas": { "img": "Double-Gorillas.gif" },
+    "Double Falcons": { "img": "Double-Falcons.gif" },
+    "Double Raptors": { "img": "Double-Raptors.gif" },
+    "Triple Dipps": { "img": "Triple-Dipps.gif" },
+    "Rainbow Balls": { "img": "Rainbow-Balls.gif" },
+    "Wonka Quadra Candy Cane": { "img": "Wonka-Quadra-Candy-Cane.gif" },
+};
+
 const FoodHelper = {
     init: function() {
         const settings = Utils.getSettings();
@@ -828,6 +994,95 @@ const FoodHelper = {
     }
 };
 
+const FortSlugworthHelper = {
+    init: function() {
+        if (!window.location.search.includes('cmd=fort_slugworth')) return;
+
+        const settings = Utils.getSettings();
+        if (settings['FortSlugworthHelper'] === false) return;
+
+        if (window.location.search.includes('room=4')) {
+            this.initRipaparter();
+        }
+    },
+
+    initRipaparter: function() {
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+        
+        const form = contentArea.querySelector('form[action*="room=4"]');
+        if (!form) return;
+
+        const select = form.querySelector('select[name="ripapart"]');
+        if (!select) return;
+
+        // Container for tiles
+        const tilesContainer = document.createElement('div');
+        tilesContainer.style.display = 'flex';
+        tilesContainer.style.flexWrap = 'wrap';
+        tilesContainer.style.gap = '10px';
+        tilesContainer.style.justifyContent = 'center';
+        tilesContainer.style.marginBottom = '20px';
+        tilesContainer.style.maxWidth = '500px';
+
+        // Add tiles before the select
+        form.insertBefore(tilesContainer, select);
+
+        // For each option in select, create a tile
+        Array.from(select.options).forEach(opt => {
+            const val = opt.value;
+            let text = opt.textContent.trim(); // e.g. "Fighters Lunch (6)"
+            let imgName = 'unknown.gif';
+
+            const match = text.match(/^(.*?)\s*\((\d+)\)$/);
+            let rawName = text;
+            let qty = 1;
+            if(match) {
+                rawName = match[1].trim();
+                qty = match[2];
+            }
+
+            if(typeof FoodData !== 'undefined' && FoodData[rawName]) {
+                imgName = FoodData[rawName].img;
+            } else {
+                imgName = rawName.replace(/[']/g, '%27').replace(/\s+/g, '-') + '.gif';
+            }
+
+            const tile = document.createElement('div');
+            tile.style.border = '2px solid #ccc';
+            tile.style.borderRadius = '5px';
+            tile.style.padding = '8px';
+            tile.style.cursor = 'pointer';
+            tile.style.textAlign = 'center';
+            tile.style.width = '85px';
+            tile.style.backgroundColor = '#fff';
+            tile.className = 'rip-tile';
+            tile.dataset.val = val;
+
+            tile.innerHTML = `
+                <img src="/images/items/gifs/${imgName}" width="50" height="50" alt="${rawName}" onerror="this.src='/images/items/gifs/Trolly.gif'" title="${rawName}"><br>
+                <div style="font-size:11px; margin-top:6px; line-height:1.2; word-wrap:break-word;">${rawName}</div>
+                <div style="font-size:12px; font-weight:bold; color:#0b61a4; margin-top:3px;">(${qty})</div>
+            `;
+
+            tile.addEventListener('click', () => {
+                tilesContainer.querySelectorAll('.rip-tile').forEach(t => {
+                    t.style.borderColor = '#ccc';
+                    t.style.backgroundColor = '#fff';
+                });
+                tile.style.borderColor = '#2196F3';
+                tile.style.backgroundColor = '#e3f2fd';
+
+                select.value = val;
+            });
+
+            tilesContainer.appendChild(tile);
+        });
+
+        console.log('FortSlugworthHelper: Room 4 (The Ripaparter) loaded tiles.');
+    }
+};
+
 const GangLoansHelper = {
     init: function() {
         const isLoans = window.location.search.includes('cmd=gang2') && window.location.search.includes('do=loans');
@@ -881,7 +1136,6 @@ const GangLoansHelper = {
             }
         }
 
-        console.log('[Hobo Helper] Initializing GangLoansHelper');
         this.renderPanel(contentArea);
     },
 
@@ -927,11 +1181,21 @@ const GangLoansHelper = {
                 const safeTopicId = topic.replace(/[^a-zA-Z0-9]/g, '');
 
                 let exportBtnsHtml = '';
+                const isBulkAmtMissing = hobos.length > 0 && !savedBulkAmt.trim();
+                const disabledStyle = isBulkAmtMissing ? 'opacity: 0.5; cursor: not-allowed;' : 'cursor: pointer;';
+                const disabledAttr = isBulkAmtMissing ? 'disabled="disabled"' : '';
+
                 if (hobos.length > 0) {
-                    exportBtnsHtml += `<button class="hw-export-repliers" data-topic="${topic}" data-ctrl="${safeTopicId}" style="padding: 3px 8px; cursor: pointer; background: #e6f3ff; border: 1px solid #99c2ff; border-radius: 3px; font-size: 11px; color: #0055aa; margin-right: 5px;">Export Saved Repliers</button>`;
+                    exportBtnsHtml += `<button class="hw-export-repliers" data-topic="${topic}" data-ctrl="${safeTopicId}" ${disabledAttr} style="padding: 3px 8px; background: #e6f3ff; border: 1px solid #99c2ff; border-radius: 3px; font-size: 11px; color: #0055aa; margin-right: 5px; ${disabledStyle}">Export Saved Repliers</button>`;
                 }
                 if (payments.length > 0) {
                     exportBtnsHtml += `<button class="hw-export-payments" data-topic="${topic}" style="padding: 3px 8px; cursor: pointer; background: #e6f3ff; border: 1px solid #99c2ff; border-radius: 3px; font-size: 11px; color: #0055aa; margin-right: 5px;">Export Payments</button>`;
+                }
+                if (hobos.length > 0 || payments.length > 0) {
+                    const isTotalBulkMissing = hobos.length > 0 && !savedBulkAmt.trim();
+                    const totalDisabledStyle = isTotalBulkMissing ? 'opacity: 0.5; cursor: not-allowed;' : 'cursor: pointer;';
+                    const totalDisabledAttr = isTotalBulkMissing ? 'disabled="disabled"' : '';
+                    exportBtnsHtml += `<button class="hw-export-totals" data-topic="${topic}" data-ctrl="${safeTopicId}" ${totalDisabledAttr} style="padding: 3px 8px; background: #e6f3ff; border: 1px solid #99c2ff; border-radius: 3px; font-size: 11px; color: #0055aa; margin-right: 5px; ${totalDisabledStyle}">Export Totals</button>`;
                 }
 
                 const titleRow = document.createElement('div');
@@ -940,7 +1204,7 @@ const GangLoansHelper = {
                     <span style="font-size: 14px; color: #003366;">📝 Topic: ${topic}</span>
                     <div style="display:flex; align-items:center;">
                         ${exportBtnsHtml}
-                        <button class="hw-delete-topic" data-topic="${topic}" style="padding: 3px 8px; cursor: pointer; background: #ffe6e6; border: 1px solid #ff9999; border-radius: 3px; font-size: 11px; color: #cc0000;">Remove Topic</button>
+                        <button class="hw-delete-topic" data-topic="${topic}" style="padding: 3px 8px; cursor: pointer; background: #ffe6e6; border: 1px solid #ff9999; border-radius: 3px; font-size: 11px; color: #cc0000;">Remove</button>
                     </div>
                 `;
 
@@ -1087,6 +1351,27 @@ const GangLoansHelper = {
         container.insertBefore(panel, container.firstChild);
 
         // Bind events
+        panel.querySelectorAll('input[id^="amt-"]').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const ctrlId = e.target.id.replace('amt-', '');
+                const hasValue = e.target.value.trim() !== '';
+                
+                const exportRepliersBtn = panel.querySelector(`.hw-export-repliers[data-ctrl="${ctrlId}"]`);
+                if (exportRepliersBtn) {
+                    exportRepliersBtn.disabled = !hasValue;
+                    exportRepliersBtn.style.opacity = hasValue ? '1' : '0.5';
+                    exportRepliersBtn.style.cursor = hasValue ? 'pointer' : 'not-allowed';
+                }
+                
+                const exportTotalsBtn = panel.querySelector(`.hw-export-totals[data-ctrl="${ctrlId}"]`);
+                if (exportTotalsBtn) {
+                    exportTotalsBtn.disabled = !hasValue;
+                    exportTotalsBtn.style.opacity = hasValue ? '1' : '0.5';
+                    exportTotalsBtn.style.cursor = hasValue ? 'pointer' : 'not-allowed';
+                }
+            });
+        });
+
         const clearAllBtn = panel.querySelector('#hw-clear-all-gang-posts');
         if (clearAllBtn) {
             clearAllBtn.addEventListener('click', () => {
@@ -1198,7 +1483,7 @@ const GangLoansHelper = {
                 const memoField = document.querySelector('input[name="l_memo"]');
 
                 if (hoboField) hoboField.value = e.target.getAttribute('data-id');
-                if (amtField && bulkAmtInput) amtField.value = bulkAmtInput.value.replace(/[^0-9.]/g, ''); 
+                if (amtField && bulkAmtInput) amtField.value = bulkAmtInput.value.replace(/[^0-9]/g, '');
                 if (memoField && bulkMemoInput) memoField.value = bulkMemoInput.value.substring(0, 60);
 
                 e.target.innerText = 'Inserted';
@@ -1236,19 +1521,33 @@ const GangLoansHelper = {
 
         // BIND EXPORTS
         const copyToCb = (text, btn) => {
-            const ta = document.createElement('textarea');
-            ta.value = text;
-            document.body.appendChild(ta);
-            ta.select();
-            try {
-                document.execCommand('copy');
-                const oldText = btn.innerText;
-                btn.innerText = 'Copied!';
-                setTimeout(() => { btn.innerText = oldText; }, 2000);
-            } catch (e) {
-                alert("Clipboard export failed. Here is your text:\n\n" + text);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    const oldText = btn.innerText;
+                    btn.innerText = 'Copied!';
+                    setTimeout(() => { btn.innerText = oldText; }, 2000);
+                }).catch(err => {
+                    console.error("Clipboard export failed", err);
+                    alert("Clipboard export failed. Here is your text:\n\n" + text);
+                });
+            } else {
+                // Fallback for older browsers or insecure contexts
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                try {
+                    document.execCommand('copy');
+                    const oldText = btn.innerText;
+                    btn.innerText = 'Copied!';
+                    setTimeout(() => { btn.innerText = oldText; }, 2000);
+                } catch (e) {
+                    alert("Clipboard export failed. Here is your text:\n\n" + text);
+                }
+                document.body.removeChild(ta);
             }
-            document.body.removeChild(ta);
         };
 
         panel.querySelectorAll('.hw-export-repliers').forEach(btn => {
@@ -1263,13 +1562,25 @@ const GangLoansHelper = {
                 
                 const amtRaw = bulkInput ? bulkInput.value.replace(/[^0-9]/g, '') : '';
                 const bulkAmt = parseInt(amtRaw, 10) || 0;
-                const total = hobos.length * bulkAmt;
+                const formattedAmt = bulkAmt > 0 ? bulkAmt.toLocaleString() : '0';
                 
-                const memoPrefix = memoInput && memoInput.value.trim() ? `${memoInput.value.trim()} - ` : '';
-                const formatted = total > 0 ? total.toLocaleString() : '0';
-                const text = `${memoPrefix}Total: ${hobos.length} Hobos - $${formatted}`;
-                
-                copyToCb(text, e.target);
+                const memoStr = memoInput && memoInput.value.trim() ? memoInput.value.trim() : 'No description';
+
+                const dateStr = typeof Utils !== 'undefined' && Utils.getFormattedHoboDateTime ? Utils.getFormattedHoboDateTime() : 'Unknown Date';
+
+                let hoboTotals = {};
+                hobos.forEach(h => {
+                    if (!hoboTotals[h.id]) hoboTotals[h.id] = 0;
+                    hoboTotals[h.id] += bulkAmt;
+                });
+
+                let parts = Object.keys(hoboTotals).map(id => {
+                    const totalForHobo = hoboTotals[id];
+                    const formatted = totalForHobo > 0 ? totalForHobo.toLocaleString() : '0';
+                    return `${dateStr} - [hoboname=${id}] - ${memoStr} - $${formatted}`;
+                });
+
+                copyToCb(parts.join('\n'), e.target);
             });
         });
 
@@ -1279,14 +1590,46 @@ const GangLoansHelper = {
                 const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
                 const payments = d[topic]?.paymentsToHobos || [];
                 
+                const dateStr = typeof Utils !== 'undefined' && Utils.getFormattedHoboDateTime ? Utils.getFormattedHoboDateTime() : 'Unknown Date';
+
                 let parts = payments.map(p => {
                     const amtParts = String(p.amount || '').replace(/[^0-9]/g, '');
                     const amtInt = parseInt(amtParts, 10) || 0;
                     const formatted = amtInt > 0 ? amtInt.toLocaleString() : '0';
-                    return `[hoboname=${p.hoboId || p.id}] - ${p.description || 'No description'} - $${formatted}`;
+                    return `${dateStr} - [hoboname=${p.hoboId || p.id}] - ${p.description || 'No description'} - $${formatted}`;
                 });
                 
                 copyToCb(parts.join('\n'), e.target);
+            });
+        });
+
+        panel.querySelectorAll('.hw-export-totals').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const ctrlId = e.target.getAttribute('data-ctrl');
+                const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                const payments = d[topic]?.paymentsToHobos || [];
+                const hobos = d[topic]?.hobos || [];
+
+                const dateStr = typeof Utils !== 'undefined' && Utils.getFormattedHoboDateTime ? Utils.getFormattedHoboDateTime() : 'Unknown Date';
+
+                let totalAmt = 0;
+                payments.forEach(p => {
+                    const amtParts = String(p.amount || '').replace(/[^0-9]/g, '');
+                    totalAmt += parseInt(amtParts, 10) || 0;
+                });
+
+                if (hobos.length > 0) {
+                    const bulkInput = document.getElementById('amt-' + ctrlId);
+                    const amtRaw = bulkInput ? bulkInput.value.replace(/[^0-9]/g, '') : (d[topic]?.bulkAmount || '').replace(/[^0-9]/g, '');
+                    const bulkAmt = parseInt(amtRaw, 10) || 0;
+                    totalAmt += (hobos.length * bulkAmt);
+                }
+
+                const formatted = totalAmt > 0 ? totalAmt.toLocaleString() : '0';
+                const text = `${dateStr} - ${topic} - $${formatted}`;
+
+                copyToCb(text, e.target);
             });
         });
 
@@ -2213,8 +2556,14 @@ const MessageBoardHelper = {
 
                     let parsedAmount = '';
                     const messageText = secondTd.innerText || "";
-                    const amountRegex = /(?:\$([\d,]+(?:\.\d+)?)\s*(k|m|mil|mill|million)?\b)|(?:([\d,]+(?:\.\d+)?)\s*(k|m|mil|mill|million)\b)/i;
-                    const dollarMatch = messageText.match(amountRegex);
+                    const amountRegex = /(?:\$([\d,]+(?:\.\d+)?)\s*(k|m|mil|mill|million)?\b)|(?:([\d,]+(?:\.\d+)?)\s*(k|m|mil|mill|million)\b)/gi;
+
+                    let dollarMatch = null;
+                    let match;
+                    while ((match = amountRegex.exec(messageText)) !== null) {
+                        dollarMatch = match;
+                    }
+
                     if (dollarMatch) {
                         let amountStr = dollarMatch[1] || dollarMatch[3];
                         let multStr = (dollarMatch[2] || dollarMatch[4] || "").toLowerCase();
@@ -3091,14 +3440,13 @@ const SoupKitchenHelper = {
         const settings = Utils.getSettings();
         if (settings['SoupKitchenHelper'] === false) return;
 
-        this.initSoupLine();
-
-        return;
-
         const isSoupLine = window.location.search.includes('action=line') ||
                            Array.from(contentArea.querySelectorAll('a')).some(a => a.href.includes('action=bowl'));
 
         if (isSoupLine) {
+            this.initSoupLine();
+        }
+        else {
             this.initSoupLine();
         }
     },
@@ -3438,7 +3786,9 @@ const WellnessClinicHelper = {
         DisplayHelper,
         DrinksData,
         DrinksHelper,
+        FoodData,
         FoodHelper,
+        FortSlugworthHelper,
         GangLoansHelper,
         HitlistHelper,
         KurtzCampHelper,

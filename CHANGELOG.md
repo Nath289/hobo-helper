@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.84] - 2026-04-05
+### Changed
+- Updated the "Export Saved Repliers" button to output granular line-by-line payment details for each individual recipient instead of a single total summary string.
+
+## [7.83] - 2026-04-05
+### Added
+- Added an "Export Totals" button to the `GangLoansHelper` to automatically sum up all processed cash values from both individual actions and bulk replier lists into a single clipboard string.
+- Implemented dependent validation states for `GangLoansHelper` export buttons to explicitly disable interaction until missing dynamic elements (such as the bulk amount mapping field) are entered by operators.
+### Changed
+- Re-formatted the export text templates in the `GangLoansHelper` to utilize a centralized, true game-synced datestring generated via `Utils`.
+- Improved space usage by shortening the "Remove Topic" button simply to "Remove" directly within the `GangLoansHelper` UI.
+
 ## [7.82] - 2026-04-05
 ### Changed
 - Modified the `MessageBoardHelper` dollar matching logic to iteratively extract and map the final trailing dollar volume in instances where text strings list multiplier equations prior to a total summation format.

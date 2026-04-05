@@ -1,8 +1,42 @@
 const Utils = {
-        getHoboMinutes: function() {
+        getHoboDateTime: function() {
             const clockEl = document.getElementById('clock');
             if (!clockEl) return null;
-            const match = clockEl.textContent.trim().toLowerCase().match(/(\d+):(\d+):(\d+)\s*(am|pm)/);
+
+            let dateStr = '';
+            if (clockEl.parentElement) {
+                const dateEl = clockEl.parentElement.querySelector('i');
+                if (dateEl) {
+                    // Remove suffixes like st, nd, rd, th (e.g., "Apr 5th" -> "Apr 5")
+                    dateStr = dateEl.textContent.trim().replace(/(st|nd|rd|th),?/i, '');
+                }
+            }
+
+            const timeStr = clockEl.textContent.trim();
+            if (dateStr && timeStr) {
+                const currentYear = new Date().getFullYear();
+                const parsedDate = new Date(`${dateStr} ${currentYear} ${timeStr}`);
+                if (!isNaN(parsedDate.getTime())) {
+                    return parsedDate;
+                }
+            }
+
+            return null;
+        },
+        getFormattedHoboDateTime: function() {
+            const dateObj = this.getHoboDateTime() || new Date();
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return `${months[dateObj.getMonth()]} ${dateObj.getDate()} ${dateObj.getFullYear()}`;
+        },
+        getHoboTime: function() {
+            const clockEl = document.getElementById('clock');
+            if (!clockEl) return null;
+            return clockEl.textContent.trim().toLowerCase();
+        },
+        getHoboMinutes: function() {
+            const timeStr = this.getHoboTime();
+            if (!timeStr) return null;
+            const match = timeStr.match(/(\d+):(\d+):(\d+)\s*(am|pm)/);
             if (!match) return null;
             let hours = parseInt(match[1]);
             const minutes = parseInt(match[2]);

@@ -51,7 +51,6 @@ const GangLoansHelper = {
             }
         }
 
-        console.log('[Hobo Helper] Initializing GangLoansHelper');
         this.renderPanel(contentArea);
     },
 
@@ -97,11 +96,21 @@ const GangLoansHelper = {
                 const safeTopicId = topic.replace(/[^a-zA-Z0-9]/g, '');
 
                 let exportBtnsHtml = '';
+                const isBulkAmtMissing = hobos.length > 0 && !savedBulkAmt.trim();
+                const disabledStyle = isBulkAmtMissing ? 'opacity: 0.5; cursor: not-allowed;' : 'cursor: pointer;';
+                const disabledAttr = isBulkAmtMissing ? 'disabled="disabled"' : '';
+
                 if (hobos.length > 0) {
-                    exportBtnsHtml += `<button class="hw-export-repliers" data-topic="${topic}" data-ctrl="${safeTopicId}" style="padding: 3px 8px; cursor: pointer; background: #e6f3ff; border: 1px solid #99c2ff; border-radius: 3px; font-size: 11px; color: #0055aa; margin-right: 5px;">Export Saved Repliers</button>`;
+                    exportBtnsHtml += `<button class="hw-export-repliers" data-topic="${topic}" data-ctrl="${safeTopicId}" ${disabledAttr} style="padding: 3px 8px; background: #e6f3ff; border: 1px solid #99c2ff; border-radius: 3px; font-size: 11px; color: #0055aa; margin-right: 5px; ${disabledStyle}">Export Saved Repliers</button>`;
                 }
                 if (payments.length > 0) {
                     exportBtnsHtml += `<button class="hw-export-payments" data-topic="${topic}" style="padding: 3px 8px; cursor: pointer; background: #e6f3ff; border: 1px solid #99c2ff; border-radius: 3px; font-size: 11px; color: #0055aa; margin-right: 5px;">Export Payments</button>`;
+                }
+                if (hobos.length > 0 || payments.length > 0) {
+                    const isTotalBulkMissing = hobos.length > 0 && !savedBulkAmt.trim();
+                    const totalDisabledStyle = isTotalBulkMissing ? 'opacity: 0.5; cursor: not-allowed;' : 'cursor: pointer;';
+                    const totalDisabledAttr = isTotalBulkMissing ? 'disabled="disabled"' : '';
+                    exportBtnsHtml += `<button class="hw-export-totals" data-topic="${topic}" data-ctrl="${safeTopicId}" ${totalDisabledAttr} style="padding: 3px 8px; background: #e6f3ff; border: 1px solid #99c2ff; border-radius: 3px; font-size: 11px; color: #0055aa; margin-right: 5px; ${totalDisabledStyle}">Export Totals</button>`;
                 }
 
                 const titleRow = document.createElement('div');
@@ -110,7 +119,7 @@ const GangLoansHelper = {
                     <span style="font-size: 14px; color: #003366;">📝 Topic: ${topic}</span>
                     <div style="display:flex; align-items:center;">
                         ${exportBtnsHtml}
-                        <button class="hw-delete-topic" data-topic="${topic}" style="padding: 3px 8px; cursor: pointer; background: #ffe6e6; border: 1px solid #ff9999; border-radius: 3px; font-size: 11px; color: #cc0000;">Remove Topic</button>
+                        <button class="hw-delete-topic" data-topic="${topic}" style="padding: 3px 8px; cursor: pointer; background: #ffe6e6; border: 1px solid #ff9999; border-radius: 3px; font-size: 11px; color: #cc0000;">Remove</button>
                     </div>
                 `;
 
@@ -257,6 +266,27 @@ const GangLoansHelper = {
         container.insertBefore(panel, container.firstChild);
 
         // Bind events
+        panel.querySelectorAll('input[id^="amt-"]').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const ctrlId = e.target.id.replace('amt-', '');
+                const hasValue = e.target.value.trim() !== '';
+                
+                const exportRepliersBtn = panel.querySelector(`.hw-export-repliers[data-ctrl="${ctrlId}"]`);
+                if (exportRepliersBtn) {
+                    exportRepliersBtn.disabled = !hasValue;
+                    exportRepliersBtn.style.opacity = hasValue ? '1' : '0.5';
+                    exportRepliersBtn.style.cursor = hasValue ? 'pointer' : 'not-allowed';
+                }
+                
+                const exportTotalsBtn = panel.querySelector(`.hw-export-totals[data-ctrl="${ctrlId}"]`);
+                if (exportTotalsBtn) {
+                    exportTotalsBtn.disabled = !hasValue;
+                    exportTotalsBtn.style.opacity = hasValue ? '1' : '0.5';
+                    exportTotalsBtn.style.cursor = hasValue ? 'pointer' : 'not-allowed';
+                }
+            });
+        });
+
         const clearAllBtn = panel.querySelector('#hw-clear-all-gang-posts');
         if (clearAllBtn) {
             clearAllBtn.addEventListener('click', () => {
@@ -368,7 +398,7 @@ const GangLoansHelper = {
                 const memoField = document.querySelector('input[name="l_memo"]');
 
                 if (hoboField) hoboField.value = e.target.getAttribute('data-id');
-                if (amtField && bulkAmtInput) amtField.value = bulkAmtInput.value.replace(/[^0-9.]/g, ''); 
+                if (amtField && bulkAmtInput) amtField.value = bulkAmtInput.value.replace(/[^0-9]/g, '');
                 if (memoField && bulkMemoInput) memoField.value = bulkMemoInput.value.substring(0, 60);
 
                 e.target.innerText = 'Inserted';
@@ -406,19 +436,33 @@ const GangLoansHelper = {
 
         // BIND EXPORTS
         const copyToCb = (text, btn) => {
-            const ta = document.createElement('textarea');
-            ta.value = text;
-            document.body.appendChild(ta);
-            ta.select();
-            try {
-                document.execCommand('copy');
-                const oldText = btn.innerText;
-                btn.innerText = 'Copied!';
-                setTimeout(() => { btn.innerText = oldText; }, 2000);
-            } catch (e) {
-                alert("Clipboard export failed. Here is your text:\n\n" + text);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    const oldText = btn.innerText;
+                    btn.innerText = 'Copied!';
+                    setTimeout(() => { btn.innerText = oldText; }, 2000);
+                }).catch(err => {
+                    console.error("Clipboard export failed", err);
+                    alert("Clipboard export failed. Here is your text:\n\n" + text);
+                });
+            } else {
+                // Fallback for older browsers or insecure contexts
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                try {
+                    document.execCommand('copy');
+                    const oldText = btn.innerText;
+                    btn.innerText = 'Copied!';
+                    setTimeout(() => { btn.innerText = oldText; }, 2000);
+                } catch (e) {
+                    alert("Clipboard export failed. Here is your text:\n\n" + text);
+                }
+                document.body.removeChild(ta);
             }
-            document.body.removeChild(ta);
         };
 
         panel.querySelectorAll('.hw-export-repliers').forEach(btn => {
@@ -433,13 +477,25 @@ const GangLoansHelper = {
                 
                 const amtRaw = bulkInput ? bulkInput.value.replace(/[^0-9]/g, '') : '';
                 const bulkAmt = parseInt(amtRaw, 10) || 0;
-                const total = hobos.length * bulkAmt;
+                const formattedAmt = bulkAmt > 0 ? bulkAmt.toLocaleString() : '0';
                 
-                const memoPrefix = memoInput && memoInput.value.trim() ? `${memoInput.value.trim()} - ` : '';
-                const formatted = total > 0 ? total.toLocaleString() : '0';
-                const text = `${memoPrefix}Total: ${hobos.length} Hobos - $${formatted}`;
-                
-                copyToCb(text, e.target);
+                const memoStr = memoInput && memoInput.value.trim() ? memoInput.value.trim() : 'No description';
+
+                const dateStr = typeof Utils !== 'undefined' && Utils.getFormattedHoboDateTime ? Utils.getFormattedHoboDateTime() : 'Unknown Date';
+
+                let hoboTotals = {};
+                hobos.forEach(h => {
+                    if (!hoboTotals[h.id]) hoboTotals[h.id] = 0;
+                    hoboTotals[h.id] += bulkAmt;
+                });
+
+                let parts = Object.keys(hoboTotals).map(id => {
+                    const totalForHobo = hoboTotals[id];
+                    const formatted = totalForHobo > 0 ? totalForHobo.toLocaleString() : '0';
+                    return `${dateStr} - [hoboname=${id}] - ${memoStr} - $${formatted}`;
+                });
+
+                copyToCb(parts.join('\n'), e.target);
             });
         });
 
@@ -449,14 +505,46 @@ const GangLoansHelper = {
                 const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
                 const payments = d[topic]?.paymentsToHobos || [];
                 
+                const dateStr = typeof Utils !== 'undefined' && Utils.getFormattedHoboDateTime ? Utils.getFormattedHoboDateTime() : 'Unknown Date';
+
                 let parts = payments.map(p => {
                     const amtParts = String(p.amount || '').replace(/[^0-9]/g, '');
                     const amtInt = parseInt(amtParts, 10) || 0;
                     const formatted = amtInt > 0 ? amtInt.toLocaleString() : '0';
-                    return `[hoboname=${p.hoboId || p.id}] - ${p.description || 'No description'} - $${formatted}`;
+                    return `${dateStr} - [hoboname=${p.hoboId || p.id}] - ${p.description || 'No description'} - $${formatted}`;
                 });
                 
                 copyToCb(parts.join('\n'), e.target);
+            });
+        });
+
+        panel.querySelectorAll('.hw-export-totals').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                const ctrlId = e.target.getAttribute('data-ctrl');
+                const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                const payments = d[topic]?.paymentsToHobos || [];
+                const hobos = d[topic]?.hobos || [];
+
+                const dateStr = typeof Utils !== 'undefined' && Utils.getFormattedHoboDateTime ? Utils.getFormattedHoboDateTime() : 'Unknown Date';
+
+                let totalAmt = 0;
+                payments.forEach(p => {
+                    const amtParts = String(p.amount || '').replace(/[^0-9]/g, '');
+                    totalAmt += parseInt(amtParts, 10) || 0;
+                });
+
+                if (hobos.length > 0) {
+                    const bulkInput = document.getElementById('amt-' + ctrlId);
+                    const amtRaw = bulkInput ? bulkInput.value.replace(/[^0-9]/g, '') : (d[topic]?.bulkAmount || '').replace(/[^0-9]/g, '');
+                    const bulkAmt = parseInt(amtRaw, 10) || 0;
+                    totalAmt += (hobos.length * bulkAmt);
+                }
+
+                const formatted = totalAmt > 0 ? totalAmt.toLocaleString() : '0';
+                const text = `${dateStr} - ${topic} - $${formatted}`;
+
+                copyToCb(text, e.target);
             });
         });
 
@@ -553,6 +641,21 @@ const GangLoansHelper = {
         return match ? match[1] : '';
     }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
