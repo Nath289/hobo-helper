@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.89] - 2026-04-06
+### Added
+- Added the `GangHelper` module, initialized on the Gang page (`cmd=gang&do=enter`).
+- Added a "Save Event Payouts" UI to the "View last gang happening results" page (`w=lastsh`) specifically for the "Gangsters Sunday = Funday" event (visible only to Gang Staff). It automatically calculates and saves payouts per point based on custom rate and max payout inputs, pushing them directly to the `GangLoansHelper` dashboard.
+
 ## [7.88] - 2026-04-05
 ### Added
 - Added a "Version Display" to the `LivingAreaHelper` beneath the Mixer link to show the current Helper Tool version.
