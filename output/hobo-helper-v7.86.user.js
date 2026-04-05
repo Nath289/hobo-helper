@@ -222,7 +222,7 @@ const BackpackHelper = {
 
 const BankHelper = {
     settings: [
-        { key: 'BankHelper_5FightersLunches', label: '5 Fighter''s Lunches Goal' }
+        { key: 'BankHelper_5FightersLunches', label: "5 Fighter's Lunches Goal" }
     ],
             getBankGoals: function() {
                 try {
@@ -496,7 +496,9 @@ const ChangelogData = {
 const DisplayHelper = {
     settings: [
         { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' },
-        { key: 'DisplayHelper_FakeQwee', label: 'Enable the Fake Qwee' }
+        { key: 'DisplayHelper_FakeQwee', label: 'Enable the Fake Qwee' },
+        { key: 'DisplayHelper_WidenPage', label: 'Widen Content Area' },
+        { key: 'DisplayHelper_PageWidth', label: 'Page Width (px)', type: 'number', defaultValue: 660, parent: 'DisplayHelper_WidenPage' }
     ],
     init: function() {
         const settings = Utils.getSettings();
@@ -508,6 +510,20 @@ const DisplayHelper = {
         if (settings['DisplayHelper_FakeQwee'] !== false) {
             this.initFakeQwee();
         }
+        if (settings['DisplayHelper_WidenPage'] === true) {
+            const width = settings['DisplayHelper_PageWidth'] || 660;
+            this.initWidenPage(width);
+        }
+    },
+    initWidenPage: function(width) {
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .content-area {
+                max-width: ${width}px !important;
+                min-width: ${width}px !important;
+            }
+        `;
+        document.head.appendChild(style);
     },
     initFakeQwee: function() {
         const targetHoboId = "2924510";
@@ -2159,7 +2175,7 @@ const LivingAreaHelper = {
                         <input type="number" id="r_pwr" value="${config.power}" style="width:33%; box-sizing: border-box;">
                         <input type="number" id="r_str" value="${config.strength}" style="width:33%; box-sizing: border-box;">
                     </div>
-                    <button id="r_save" style="width:100%; cursor:pointer; background:#666; color:#fff; border:none; padding:5px; font-weight:bold;">Update Ratio</button>
+                    <button id="r_save" style="width:100%; cursor:pointer; background:#666; color:#fff; border:none; padding:5px; font-weight:bold;">Update Goals</button>
                 </div>
             `;
 
@@ -2215,6 +2231,8 @@ const LivingAreaHelper = {
                 config.speed = Utils.parseNumber(document.getElementById('r_spd').value);
                 config.power = Utils.parseNumber(document.getElementById('r_pwr').value);
                 config.strength = Utils.parseNumber(document.getElementById('r_str').value);
+                config.showSettings = false;
+                document.getElementById('settings_area').style.display = 'none';
                 config.lastUpdated = Date.now();
                 inMemoryLastUpdated = config.lastUpdated;
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
@@ -3408,6 +3426,53 @@ const SettingsHelper = {
             return container;
         };
 
+        const createInput = (key, labelText, inputType, defaultValue) => {
+            const container = document.createElement('div');
+            container.style.marginBottom = '8px';
+            container.style.paddingLeft = '5px';
+            container.style.display = 'flex';
+            container.style.alignItems = 'center';
+
+            const label = document.createElement('label');
+            label.htmlFor = `hw_helper_${key}`;
+            label.innerHTML = `${labelText}: `;
+            label.style.fontFamily = 'Arial, sans-serif';
+            label.style.fontSize = '14px';
+            label.style.marginRight = '8px';
+
+            const input = document.createElement('input');
+            input.type = inputType;
+            input.id = `hw_helper_${key}`;
+            input.style.width = inputType === 'number' ? '60px' : '150px';
+            input.value = savedSettings[key] !== undefined ? savedSettings[key] : defaultValue;
+            input.style.border = '1px solid #ccc';
+            input.style.borderRadius = '3px';
+            input.style.padding = '2px 5px';
+
+            const toast = document.createElement('span');
+            toast.innerText = ' (Saved! Reload to apply)';
+            toast.style.color = 'green';
+            toast.style.fontSize = '12px';
+            toast.style.display = 'none';
+            toast.style.marginLeft = '8px';
+
+            let toastTimeout;
+            input.addEventListener('input', (e) => {
+                const settings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+                settings[key] = e.target.value;
+                localStorage.setItem('hw_helper_settings', JSON.stringify(settings));
+                
+                toast.style.display = 'inline';
+                clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 2000);
+            });
+
+            container.appendChild(label);
+            container.appendChild(input);
+            container.appendChild(toast);
+            return container;
+        };
+
         const topDiv = document.createElement('div');
         topDiv.style.background = 'rgba(128, 128, 128, 0.05)';
         topDiv.style.border = '1px solid rgba(128, 128, 128, 0.2)';
@@ -3474,7 +3539,27 @@ const SettingsHelper = {
                     subContainer.style.marginTop = '8px';
                     subContainer.style.borderLeft = '2px solid #2196F3';
                     subFeatures[modName].forEach(feature => {
-                        subContainer.appendChild(createToggle(feature.key, feature.label));
+                        let el;
+                        if (feature.type === 'number' || feature.type === 'text') {
+                            el = createInput(feature.key, feature.label, feature.type, feature.defaultValue);
+                        } else {
+                            el = createToggle(feature.key, feature.label);
+                        }
+
+                        if (feature.parent) {
+                            const parentCheckbox = document.getElementById(`hw_helper_${feature.parent}`);
+                            if (parentCheckbox) {
+                                const containerDiv = el;
+                                const updateVisibility = () => {
+                                    containerDiv.style.opacity = parentCheckbox.checked ? '1' : '0.4';
+                                    containerDiv.style.pointerEvents = parentCheckbox.checked ? 'auto' : 'none';
+                                };
+                                parentCheckbox.addEventListener('change', updateVisibility);
+                                updateVisibility();
+                            }
+                        }
+
+                        subContainer.appendChild(el);
                     });
                     moduleBlock.appendChild(subContainer);
                 }

@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.88] - 2026-04-05
+### Added
+- Added a "Version Display" to the `LivingAreaHelper` beneath the Mixer link to show the current Helper Tool version.
+- Added an interactive "View Changelog" link in the `LivingAreaHelper` that opens a floating modal with the 5 most recent changelog updates without having to wait for the Lockout Screen. Administers settings via the `LivingAreaHelper_VersionDisplay` toggle.
+
+## [7.87] - 2026-04-05
+### Changed
+- Updated the `LivingAreaHelper` "Update Ratio" button to display "Update Goals" and configured it to automatically collapse the input window when settings are saved.
+
 ## [7.86] - 2026-04-05
 ### Added
 - Added an "Enable the Fake Qwee" setting to the `DisplayHelper` to allow toggling the "The Fake" prefix for user ID 2924510.

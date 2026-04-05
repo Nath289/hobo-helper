@@ -3,6 +3,7 @@ const LivingAreaHelper = {
         { key: 'LivingAreaHelper_StatRatioTracker', label: 'Stat Ratio Tracker' },
         { key: 'LivingAreaHelper_AlwaysShowSpecialItem', label: 'Always Show Special Item' },
         { key: 'LivingAreaHelper_MixerLink', label: 'Mixer Link' },
+        { key: 'LivingAreaHelper_VersionDisplay', label: 'Version Display' },
         { key: 'LivingAreaHelper_WinPercentageCalc', label: 'Win Percentage Calc' }
     ],
     init: function() {
@@ -21,6 +22,9 @@ const LivingAreaHelper = {
         }
         if (savedSettings['LivingAreaHelper_MixerLink'] !== false) {
             this.initMixerLink();
+        }
+        if (savedSettings['LivingAreaHelper_VersionDisplay'] !== false) {
+            this.initVersionDisplay();
         }
         if (savedSettings['LivingAreaHelper_WinPercentageCalc'] !== false) {
             this.initWinPercentageCalc();
@@ -61,6 +65,109 @@ const LivingAreaHelper = {
             
             appendTarget.insertAdjacentHTML('afterend', mixerLinkHtml);
         }
+    },
+
+    initVersionDisplay: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const cmd = urlParams.get('cmd');
+        if (cmd) return;
+
+        const gearInfo = document.getElementById('gearInfo');
+        if (!gearInfo) return;
+
+        let latestVersion = "Unknown";
+        if (typeof Modules !== 'undefined' && Modules.ChangelogData && Modules.ChangelogData.changes && Modules.ChangelogData.changes.length > 0) {
+            latestVersion = Modules.ChangelogData.changes[0].version;
+        }
+
+        const versionHtml = `
+            <div style="text-align: center; font-size: 11px; margin-top: 8px; color: #666; font-family: Tahoma, Arial, sans-serif; display: block; width: 100%;">
+                Hobo Helper v${latestVersion}<br>
+                <a href="#" id="hh_show_changelog" style="color: #0066cc; text-decoration: none;">View Changelog</a>
+            </div>
+        `;
+
+        const mixerLink = gearInfo.querySelector('img[title="Mixer"]');
+        if (mixerLink) {
+            let container = mixerLink.parentElement;
+            if (container.tagName !== 'A') container = mixerLink;
+            container.insertAdjacentHTML('afterend', versionHtml);
+        } else {
+            const icons = gearInfo.querySelectorAll('img[title="Hobo Grail"], img[title="Kings Kiddie Cup"], img[title="Golden Trolly"]');
+            if (icons.length > 0) {
+                let target = icons[icons.length - 1].parentElement;
+                target.insertAdjacentHTML('afterend', versionHtml);
+            } else {
+                const innerBox = gearInfo.querySelector('div');
+                if (innerBox) innerBox.insertAdjacentHTML('beforeend', versionHtml);
+            }
+        }
+
+        const link = document.getElementById('hh_show_changelog');
+        if (link) {
+            link.addEventListener('click', (e) => this.showChangelogModal(e));
+        }
+    },
+
+    showChangelogModal: function(e) {
+        if (e) e.preventDefault();
+
+        let existing = document.getElementById('hw-helper-changelog-modal');
+        if (existing) { existing.style.display = 'block'; return; }
+
+        if (typeof Modules === 'undefined' || typeof Modules.ChangelogData === 'undefined' || !Modules.ChangelogData.changes) {
+            alert("ChangelogData missing."); return;
+        }
+
+        const modal = document.createElement("div");
+        modal.id = 'hw-helper-changelog-modal';
+        modal.style.cssText = "position:fixed; top:10%; left:50%; transform:translateX(-50%); z-index:9999; max-width:600px; width:90%; background-color:#f9f9f9; border:1px dashed #777; border-radius:8px; text-align:left; font-family:Tahoma, Arial, sans-serif; color:#333; box-shadow:0px 4px 6px rgba(0,0,0,0.5); padding:15px; max-height:80vh; overflow-y:auto;";
+
+        const closeBtn = document.createElement('span');
+        closeBtn.innerHTML = '&#10006;';
+        closeBtn.style.cssText = "float:right; cursor:pointer; font-size:18px; font-weight:bold; color:#d9534f; user-select: none; -webkit-user-select: none;";
+        closeBtn.onclick = () => { modal.style.display = 'none'; };
+        modal.appendChild(closeBtn);
+
+        const title = document.createElement("h2");
+        title.innerText = "Hobo Helper - Recent Updates";
+        title.style.margin = "0 0 10px 0";
+        title.style.borderBottom = "1px solid #ccc";
+        title.style.paddingBottom = "5px";
+        title.style.fontSize = "16px";
+        modal.appendChild(title);
+
+        Modules.ChangelogData.changes.forEach(release => {
+            const releaseBlock = document.createElement("div");
+            releaseBlock.style.marginTop = "10px";
+
+            const versionHeader = document.createElement("div");
+            versionHeader.innerHTML = `<strong>v${release.version}</strong> <span style="font-size: 11px; color: #666;">(${release.date})</span>`;
+            versionHeader.style.fontSize = "14px";
+            releaseBlock.appendChild(versionHeader);
+
+            const changesList = document.createElement("ul");
+            changesList.style.margin = "5px 0 10px 20px";
+            changesList.style.padding = "0";
+            changesList.style.fontSize = "12px";
+            changesList.style.lineHeight = "1.4";
+
+            if (release.notes && Array.isArray(release.notes)) {
+                release.notes.forEach(noteText => {
+                    const li = document.createElement("li");
+                    li.style.marginBottom = "3px";
+                    let formattedChange = noteText.replace(/`([^`]+)`/g, '<code style="background-color: #eaeaea; padding: 1px 4px; border-radius: 3px; font-family: monospace;">$1</code>');
+                    formattedChange = `<strong>${release.type}:</strong> ` + formattedChange;
+                    li.innerHTML = formattedChange;
+                    changesList.appendChild(li);
+                });
+            }
+
+            releaseBlock.appendChild(changesList);
+            modal.appendChild(releaseBlock);
+        });
+
+        document.body.appendChild(modal);
     },
 
     initStatRatioTracker: function() {
@@ -187,7 +294,7 @@ const LivingAreaHelper = {
                         <input type="number" id="r_pwr" value="${config.power}" style="width:33%; box-sizing: border-box;">
                         <input type="number" id="r_str" value="${config.strength}" style="width:33%; box-sizing: border-box;">
                     </div>
-                    <button id="r_save" style="width:100%; cursor:pointer; background:#666; color:#fff; border:none; padding:5px; font-weight:bold;">Update Ratio</button>
+                    <button id="r_save" style="width:100%; cursor:pointer; background:#666; color:#fff; border:none; padding:5px; font-weight:bold;">Update Goals</button>
                 </div>
             `;
 
@@ -243,6 +350,8 @@ const LivingAreaHelper = {
                 config.speed = Utils.parseNumber(document.getElementById('r_spd').value);
                 config.power = Utils.parseNumber(document.getElementById('r_pwr').value);
                 config.strength = Utils.parseNumber(document.getElementById('r_str').value);
+                config.showSettings = false;
+                document.getElementById('settings_area').style.display = 'none';
                 config.lastUpdated = Date.now();
                 inMemoryLastUpdated = config.lastUpdated;
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
@@ -299,4 +408,3 @@ const LivingAreaHelper = {
         }
     }
 }
-

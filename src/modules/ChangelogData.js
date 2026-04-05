@@ -2,6 +2,23 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
+            version: "7.88",
+            date: "2026-04-05",
+            type: "Added",
+            notes: [
+                "Added a \"Version Display\" to the LivingAreaHelper beneath the Mixer link to show the current Helper Tool version.",
+                "Added an interactive \"View Changelog\" link in the LivingAreaHelper that opens a floating modal with the 5 most recent changelog updates without having to wait for the Lockout Screen."
+            ]
+        },
+        {
+            version: "7.87",
+            date: "2026-04-05",
+            type: "Changed",
+            notes: [
+                "Updated the LivingAreaHelper \"Update Ratio\" button to display \"Update Goals\" and configured it to automatically collapse the input window when settings are saved."
+            ]
+        },
+        {
             version: "7.86",
             date: "2026-04-05",
             type: "Added",
@@ -24,23 +41,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Updated the \"Export Saved Repliers\" button to output granular line-by-line payment details for each individual recipient instead of a single total summary string."
-            ]
-        },
-        {
-            version: "7.83",
-            date: "2026-04-05",
-            type: "Added",
-            notes: [
-                "Added an \"Export Totals\" button to the GangLoansHelper to automatically sum up all processed cash values from both individual actions and bulk replier lists into a single clipboard string.",
-                "Implemented dependent validation states for GangLoansHelper export buttons to explicitly disable interaction until missing dynamic elements are entered."
-            ]
-        },
-        {
-            version: "7.82",
-            date: "2026-04-05",
-            type: "Changed",
-            notes: [
-                "Modified the MessageBoardHelper dollar matching logic to iteratively extract and map the final trailing dollar volume in instances where text strings list multiplier equations prior to a total summation format."
             ]
         }
     ]

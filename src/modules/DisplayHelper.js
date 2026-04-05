@@ -1,7 +1,9 @@
 const DisplayHelper = {
     settings: [
         { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' },
-        { key: 'DisplayHelper_FakeQwee', label: 'Enable the Fake Qwee' }
+        { key: 'DisplayHelper_FakeQwee', label: 'Enable the Fake Qwee' },
+        { key: 'DisplayHelper_WidenPage', label: 'Widen Content Area' },
+        { key: 'DisplayHelper_PageWidth', label: 'Page Width (px)', type: 'number', defaultValue: 660, parent: 'DisplayHelper_WidenPage' }
     ],
     init: function() {
         const settings = Utils.getSettings();
@@ -13,6 +15,20 @@ const DisplayHelper = {
         if (settings['DisplayHelper_FakeQwee'] !== false) {
             this.initFakeQwee();
         }
+        if (settings['DisplayHelper_WidenPage'] === true) {
+            const width = settings['DisplayHelper_PageWidth'] || 660;
+            this.initWidenPage(width);
+        }
+    },
+    initWidenPage: function(width) {
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .content-area {
+                max-width: ${width}px !important;
+                min-width: ${width}px !important;
+            }
+        `;
+        document.head.appendChild(style);
     },
     initFakeQwee: function() {
         const targetHoboId = "2924510";

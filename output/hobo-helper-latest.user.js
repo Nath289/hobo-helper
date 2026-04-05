@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.86
+// @version      7.88
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -222,7 +222,7 @@ const BackpackHelper = {
 
 const BankHelper = {
     settings: [
-        { key: 'BankHelper_5FightersLunches', label: '5 Fighter''s Lunches Goal' }
+        { key: 'BankHelper_5FightersLunches', label: "5 Fighter's Lunches Goal" }
     ],
             getBankGoals: function() {
                 try {
@@ -449,6 +449,23 @@ const ChangelogData = {
     init: function() {} ,
     changes: [
         {
+            version: "7.88",
+            date: "2026-04-05",
+            type: "Added",
+            notes: [
+                "Added a \"Version Display\" to the LivingAreaHelper beneath the Mixer link to show the current Helper Tool version.",
+                "Added an interactive \"View Changelog\" link in the LivingAreaHelper that opens a floating modal with the 5 most recent changelog updates without having to wait for the Lockout Screen."
+            ]
+        },
+        {
+            version: "7.87",
+            date: "2026-04-05",
+            type: "Changed",
+            notes: [
+                "Updated the LivingAreaHelper \"Update Ratio\" button to display \"Update Goals\" and configured it to automatically collapse the input window when settings are saved."
+            ]
+        },
+        {
             version: "7.86",
             date: "2026-04-05",
             type: "Added",
@@ -472,23 +489,6 @@ const ChangelogData = {
             notes: [
                 "Updated the \"Export Saved Repliers\" button to output granular line-by-line payment details for each individual recipient instead of a single total summary string."
             ]
-        },
-        {
-            version: "7.83",
-            date: "2026-04-05",
-            type: "Added",
-            notes: [
-                "Added an \"Export Totals\" button to the GangLoansHelper to automatically sum up all processed cash values from both individual actions and bulk replier lists into a single clipboard string.",
-                "Implemented dependent validation states for GangLoansHelper export buttons to explicitly disable interaction until missing dynamic elements are entered."
-            ]
-        },
-        {
-            version: "7.82",
-            date: "2026-04-05",
-            type: "Changed",
-            notes: [
-                "Modified the MessageBoardHelper dollar matching logic to iteratively extract and map the final trailing dollar volume in instances where text strings list multiplier equations prior to a total summation format."
-            ]
         }
     ]
 };
@@ -496,7 +496,9 @@ const ChangelogData = {
 const DisplayHelper = {
     settings: [
         { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' },
-        { key: 'DisplayHelper_FakeQwee', label: 'Enable the Fake Qwee' }
+        { key: 'DisplayHelper_FakeQwee', label: 'Enable the Fake Qwee' },
+        { key: 'DisplayHelper_WidenPage', label: 'Widen Content Area' },
+        { key: 'DisplayHelper_PageWidth', label: 'Page Width (px)', type: 'number', defaultValue: 660, parent: 'DisplayHelper_WidenPage' }
     ],
     init: function() {
         const settings = Utils.getSettings();
@@ -508,6 +510,20 @@ const DisplayHelper = {
         if (settings['DisplayHelper_FakeQwee'] !== false) {
             this.initFakeQwee();
         }
+        if (settings['DisplayHelper_WidenPage'] === true) {
+            const width = settings['DisplayHelper_PageWidth'] || 660;
+            this.initWidenPage(width);
+        }
+    },
+    initWidenPage: function(width) {
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .content-area {
+                max-width: ${width}px !important;
+                min-width: ${width}px !important;
+            }
+        `;
+        document.head.appendChild(style);
     },
     initFakeQwee: function() {
         const targetHoboId = "2924510";
@@ -1975,6 +1991,7 @@ const LivingAreaHelper = {
         { key: 'LivingAreaHelper_StatRatioTracker', label: 'Stat Ratio Tracker' },
         { key: 'LivingAreaHelper_AlwaysShowSpecialItem', label: 'Always Show Special Item' },
         { key: 'LivingAreaHelper_MixerLink', label: 'Mixer Link' },
+        { key: 'LivingAreaHelper_VersionDisplay', label: 'Version Display' },
         { key: 'LivingAreaHelper_WinPercentageCalc', label: 'Win Percentage Calc' }
     ],
     init: function() {
@@ -1993,6 +2010,9 @@ const LivingAreaHelper = {
         }
         if (savedSettings['LivingAreaHelper_MixerLink'] !== false) {
             this.initMixerLink();
+        }
+        if (savedSettings['LivingAreaHelper_VersionDisplay'] !== false) {
+            this.initVersionDisplay();
         }
         if (savedSettings['LivingAreaHelper_WinPercentageCalc'] !== false) {
             this.initWinPercentageCalc();
@@ -2033,6 +2053,109 @@ const LivingAreaHelper = {
             
             appendTarget.insertAdjacentHTML('afterend', mixerLinkHtml);
         }
+    },
+
+    initVersionDisplay: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const cmd = urlParams.get('cmd');
+        if (cmd) return;
+
+        const gearInfo = document.getElementById('gearInfo');
+        if (!gearInfo) return;
+
+        let latestVersion = "Unknown";
+        if (typeof Modules !== 'undefined' && Modules.ChangelogData && Modules.ChangelogData.changes && Modules.ChangelogData.changes.length > 0) {
+            latestVersion = Modules.ChangelogData.changes[0].version;
+        }
+
+        const versionHtml = `
+            <div style="text-align: center; font-size: 11px; margin-top: 8px; color: #666; font-family: Tahoma, Arial, sans-serif; display: block; width: 100%;">
+                Hobo Helper v${latestVersion}<br>
+                <a href="#" id="hh_show_changelog" style="color: #0066cc; text-decoration: none;">View Changelog</a>
+            </div>
+        `;
+
+        const mixerLink = gearInfo.querySelector('img[title="Mixer"]');
+        if (mixerLink) {
+            let container = mixerLink.parentElement;
+            if (container.tagName !== 'A') container = mixerLink;
+            container.insertAdjacentHTML('afterend', versionHtml);
+        } else {
+            const icons = gearInfo.querySelectorAll('img[title="Hobo Grail"], img[title="Kings Kiddie Cup"], img[title="Golden Trolly"]');
+            if (icons.length > 0) {
+                let target = icons[icons.length - 1].parentElement;
+                target.insertAdjacentHTML('afterend', versionHtml);
+            } else {
+                const innerBox = gearInfo.querySelector('div');
+                if (innerBox) innerBox.insertAdjacentHTML('beforeend', versionHtml);
+            }
+        }
+
+        const link = document.getElementById('hh_show_changelog');
+        if (link) {
+            link.addEventListener('click', (e) => this.showChangelogModal(e));
+        }
+    },
+
+    showChangelogModal: function(e) {
+        if (e) e.preventDefault();
+
+        let existing = document.getElementById('hw-helper-changelog-modal');
+        if (existing) { existing.style.display = 'block'; return; }
+
+        if (typeof Modules === 'undefined' || typeof Modules.ChangelogData === 'undefined' || !Modules.ChangelogData.changes) {
+            alert("ChangelogData missing."); return;
+        }
+
+        const modal = document.createElement("div");
+        modal.id = 'hw-helper-changelog-modal';
+        modal.style.cssText = "position:fixed; top:10%; left:50%; transform:translateX(-50%); z-index:9999; max-width:600px; width:90%; background-color:#f9f9f9; border:1px dashed #777; border-radius:8px; text-align:left; font-family:Tahoma, Arial, sans-serif; color:#333; box-shadow:0px 4px 6px rgba(0,0,0,0.5); padding:15px; max-height:80vh; overflow-y:auto;";
+
+        const closeBtn = document.createElement('span');
+        closeBtn.innerHTML = '&#10006;';
+        closeBtn.style.cssText = "float:right; cursor:pointer; font-size:18px; font-weight:bold; color:#d9534f; user-select: none; -webkit-user-select: none;";
+        closeBtn.onclick = () => { modal.style.display = 'none'; };
+        modal.appendChild(closeBtn);
+
+        const title = document.createElement("h2");
+        title.innerText = "Hobo Helper - Recent Updates";
+        title.style.margin = "0 0 10px 0";
+        title.style.borderBottom = "1px solid #ccc";
+        title.style.paddingBottom = "5px";
+        title.style.fontSize = "16px";
+        modal.appendChild(title);
+
+        Modules.ChangelogData.changes.forEach(release => {
+            const releaseBlock = document.createElement("div");
+            releaseBlock.style.marginTop = "10px";
+
+            const versionHeader = document.createElement("div");
+            versionHeader.innerHTML = `<strong>v${release.version}</strong> <span style="font-size: 11px; color: #666;">(${release.date})</span>`;
+            versionHeader.style.fontSize = "14px";
+            releaseBlock.appendChild(versionHeader);
+
+            const changesList = document.createElement("ul");
+            changesList.style.margin = "5px 0 10px 20px";
+            changesList.style.padding = "0";
+            changesList.style.fontSize = "12px";
+            changesList.style.lineHeight = "1.4";
+
+            if (release.notes && Array.isArray(release.notes)) {
+                release.notes.forEach(noteText => {
+                    const li = document.createElement("li");
+                    li.style.marginBottom = "3px";
+                    let formattedChange = noteText.replace(/`([^`]+)`/g, '<code style="background-color: #eaeaea; padding: 1px 4px; border-radius: 3px; font-family: monospace;">$1</code>');
+                    formattedChange = `<strong>${release.type}:</strong> ` + formattedChange;
+                    li.innerHTML = formattedChange;
+                    changesList.appendChild(li);
+                });
+            }
+
+            releaseBlock.appendChild(changesList);
+            modal.appendChild(releaseBlock);
+        });
+
+        document.body.appendChild(modal);
     },
 
     initStatRatioTracker: function() {
@@ -2159,7 +2282,7 @@ const LivingAreaHelper = {
                         <input type="number" id="r_pwr" value="${config.power}" style="width:33%; box-sizing: border-box;">
                         <input type="number" id="r_str" value="${config.strength}" style="width:33%; box-sizing: border-box;">
                     </div>
-                    <button id="r_save" style="width:100%; cursor:pointer; background:#666; color:#fff; border:none; padding:5px; font-weight:bold;">Update Ratio</button>
+                    <button id="r_save" style="width:100%; cursor:pointer; background:#666; color:#fff; border:none; padding:5px; font-weight:bold;">Update Goals</button>
                 </div>
             `;
 
@@ -2215,6 +2338,8 @@ const LivingAreaHelper = {
                 config.speed = Utils.parseNumber(document.getElementById('r_spd').value);
                 config.power = Utils.parseNumber(document.getElementById('r_pwr').value);
                 config.strength = Utils.parseNumber(document.getElementById('r_str').value);
+                config.showSettings = false;
+                document.getElementById('settings_area').style.display = 'none';
                 config.lastUpdated = Date.now();
                 inMemoryLastUpdated = config.lastUpdated;
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
@@ -3408,6 +3533,53 @@ const SettingsHelper = {
             return container;
         };
 
+        const createInput = (key, labelText, inputType, defaultValue) => {
+            const container = document.createElement('div');
+            container.style.marginBottom = '8px';
+            container.style.paddingLeft = '5px';
+            container.style.display = 'flex';
+            container.style.alignItems = 'center';
+
+            const label = document.createElement('label');
+            label.htmlFor = `hw_helper_${key}`;
+            label.innerHTML = `${labelText}: `;
+            label.style.fontFamily = 'Arial, sans-serif';
+            label.style.fontSize = '14px';
+            label.style.marginRight = '8px';
+
+            const input = document.createElement('input');
+            input.type = inputType;
+            input.id = `hw_helper_${key}`;
+            input.style.width = inputType === 'number' ? '60px' : '150px';
+            input.value = savedSettings[key] !== undefined ? savedSettings[key] : defaultValue;
+            input.style.border = '1px solid #ccc';
+            input.style.borderRadius = '3px';
+            input.style.padding = '2px 5px';
+
+            const toast = document.createElement('span');
+            toast.innerText = ' (Saved! Reload to apply)';
+            toast.style.color = 'green';
+            toast.style.fontSize = '12px';
+            toast.style.display = 'none';
+            toast.style.marginLeft = '8px';
+
+            let toastTimeout;
+            input.addEventListener('input', (e) => {
+                const settings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+                settings[key] = e.target.value;
+                localStorage.setItem('hw_helper_settings', JSON.stringify(settings));
+                
+                toast.style.display = 'inline';
+                clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 2000);
+            });
+
+            container.appendChild(label);
+            container.appendChild(input);
+            container.appendChild(toast);
+            return container;
+        };
+
         const topDiv = document.createElement('div');
         topDiv.style.background = 'rgba(128, 128, 128, 0.05)';
         topDiv.style.border = '1px solid rgba(128, 128, 128, 0.2)';
@@ -3474,7 +3646,27 @@ const SettingsHelper = {
                     subContainer.style.marginTop = '8px';
                     subContainer.style.borderLeft = '2px solid #2196F3';
                     subFeatures[modName].forEach(feature => {
-                        subContainer.appendChild(createToggle(feature.key, feature.label));
+                        let el;
+                        if (feature.type === 'number' || feature.type === 'text') {
+                            el = createInput(feature.key, feature.label, feature.type, feature.defaultValue);
+                        } else {
+                            el = createToggle(feature.key, feature.label);
+                        }
+
+                        if (feature.parent) {
+                            const parentCheckbox = document.getElementById(`hw_helper_${feature.parent}`);
+                            if (parentCheckbox) {
+                                const containerDiv = el;
+                                const updateVisibility = () => {
+                                    containerDiv.style.opacity = parentCheckbox.checked ? '1' : '0.4';
+                                    containerDiv.style.pointerEvents = parentCheckbox.checked ? 'auto' : 'none';
+                                };
+                                parentCheckbox.addEventListener('change', updateVisibility);
+                                updateVisibility();
+                            }
+                        }
+
+                        subContainer.appendChild(el);
                     });
                     moduleBlock.appendChild(subContainer);
                 }
