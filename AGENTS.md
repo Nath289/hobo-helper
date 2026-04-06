@@ -6,7 +6,9 @@ Welcome to the `hobo-helper` project! Since this project uses a custom build pro
 - `src/` - The main source code directory.
   - `src/template.js` - The master template file containing the userscript header, initialization logic, and interpolation markers (`// {{HELPERS}}`, etc.).
   - `src/utils.js` - General helper functions.
-  - `src/modules/` - Contains individual module logic (e.g., `BankHelper.js`, `MixerHelper.js`) and static data objects (e.g., `DrinksData.js`).
+  - `src/modules/` - Contains individual module logic and static data objects.
+    - `global/` - Modules that load on every page (e.g., `DisplayHelper.js`, `SettingsHelper.js`, `DrinksData.js`).
+    - `page/` - Modules that only load on specific pages (e.g., `BankHelper.js`, `MixerHelper.js`). These modules must specify a `cmds` property indicating which pages they apply to.
 - `html/` - Contains offline HTML snapshots of game pages. **Crucial for AI agents:** Since you cannot log into the game, always read the relevant `.html` files in this directory to analyze the DOM structure and formulate accurate query selectors before creating or modifying helpers.
 - `tools/` - PowerShell scripts for extracting static game data (e.g., wiki data) into JSON format.
 - `output/` - The destination for compiled userscripts. The build script automatically manages this folder by keeping only the 5 most recent versioned files and the latest build.
@@ -14,12 +16,12 @@ Welcome to the `hobo-helper` project! Since this project uses a custom build pro
 ## Adding a New Module / Helper
 1. **Always ask the user** for the URL of the page they want to create the new helper for if they have not provided it. **Do not guess or try to determine the URL yourself.** You must ask the user for the URL in order to proceed with the change. When they provide it, the important part to match is after and including `cmd=`. For example, in `https://www.hobowars.com/game/game.php?sr=141&cmd=preferences`, the `sr` number changes, so it cannot be hardcoded (use `cmd=preferences` to identify the page).
 2. **Context Gathering:** Use PowerShell to search through the `html/` directory to find the specific layout file (e.g., `Select-String -Path "html\*.html" -Pattern "cmd=rats"` or search for unique text headers) to understand the DOM.
-3. Create your new module file in `src/modules/` (e.g., `src/modules/JobHelper.js`).
-4. Ensure the code inside is formatted as a valid constant variable allocation (e.g., `const JobHelper = { init: function() { ... } }`).
-5. **Settings Helper Integration:** Always add the ability to disable the new helper sub-features via the `SettingsHelper`. To do this, include a `settings` array directly inside the module object definition containing the toggle keys and labels (e.g., `const JobHelper = { settings: [{ key: 'JobHelper_EnableFeature', label: 'Enable Feature' }], init: ... }`). The `SettingsHelper` will automatically detect and render them in the preferences page.
+3. Create your new module file in `src/modules/page/` (e.g., `src/modules/page/JobHelper.js`). If the module needs to run on every single page, place it in `src/modules/global/`.
+4. Ensure the code inside is formatted as a valid constant variable allocation. For page modules, you **must include a `cmds` property** containing the string or array of strings matching the `cmd=` parameter of the URLs it applies to (e.g., `const JobHelper = { cmds: 'job', init: function() { ... } }` or `cmds: ['job', 'job2']`).
+5. **Settings Helper Integration:** Always add the ability to disable the new helper sub-features via the `SettingsHelper`. To do this, include a `settings` array directly inside the module object definition containing the toggle keys and labels (e.g., `const JobHelper = { cmds: 'job', settings: [{ key: 'JobHelper_EnableFeature', label: 'Enable Feature' }], init: ... }`). The `SettingsHelper` will automatically detect and render them in the preferences page.
 6. **UI Best Practices:** When creating custom interactive UI elements like buttons, toggle pills, or custom checkboxes, always add `user-select: none; -webkit-user-select: none;` to the CSS to prevent annoying text highlighting during rapid clicking.
 7. **Update Documentation:** Whenever you create a new module or add a new feature to an existing module, you must update the `FEATURES.md` file to reflect the new functionality.
-The build script automatically detects and includes all JavaScript files in the `src/modules/` directory.
+The build script automatically detects and includes all JavaScript files in the `src/modules/global/` and `src/modules/page/` directories, loading globals first.
 
 ## Supported Layouts
 HoboWars can be viewed in various layouts that significantly change how the UI is displayed, including: Simple, Original, Stripped, Darkened, Classic (v2), Modern (v3), Stylish (v4), SFW, and The Future.

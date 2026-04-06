@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.95] - 2026-04-06
+### Changed
+- **Performance Refactor:** Separated helper scripts into Global and Page-specific modules to prevent DOM visual jolts on unrelated pages.
+- **Page Routing:** Helpers now conditionally load strictly on the pages they affect via declarative URL routing.
+- Renamed Bernards Mansion Helper to Bernards Basement Helper to accurately reflect location endpoints.
+
 ## [7.94] - 2026-04-06
 ### Added
 - Added the `WeaponsHelper` module for the Weapons page (`cmd=wep`).

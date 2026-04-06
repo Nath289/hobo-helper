@@ -1,4 +1,5 @@
 const BankHelper = {
+    cmds: 'bank',
     settings: [
         { key: 'BankHelper_5FightersLunches', label: "5 Fighter's Lunches Goal" }
     ],
@@ -23,9 +24,6 @@ const BankHelper = {
                 }
             },
             init: function() {
-                const url = window.location.href;
-                if (!url.includes('cmd=bank')) return;
-
                 const settings = Utils.getSettings();
                 const withdrawInput = document.getElementById('w_money');
                 const withdrawForm = document.querySelector('form[name="with"]');
@@ -91,4 +89,3 @@ const BankHelper = {
                 });
             }
         }
-

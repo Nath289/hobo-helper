@@ -1,8 +1,6 @@
 const CanDepoHelper = {
+    cmds: 'depo',
     init: function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('cmd') !== 'depo') return;
-
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
 
         if (savedSettings['CanDepoHelper_TotalValue'] !== false) {

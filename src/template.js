@@ -18,17 +18,37 @@
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
     const globalEnabled = savedSettings['global_enabled'] !== false;
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentCmd = urlParams.get('cmd') || '';
 
     // Initialize all modules
     Object.keys(Modules).forEach(moduleName => {
-        if (typeof Modules[moduleName].alwaysInit === 'function') {
-            Modules[moduleName].alwaysInit();
+        const module = Modules[moduleName];
+
+        if (typeof module.alwaysInit === 'function') {
+            module.alwaysInit();
         }
 
-        if (typeof Modules[moduleName].init === 'function') {
+        if (typeof module.init === 'function') {
             const moduleEnabled = savedSettings[moduleName] !== false;
-            if (moduleName === 'SettingsHelper' || (globalEnabled && moduleEnabled)) {
-                Modules[moduleName].init();
+            
+            // Check if module specifies cmds constraint
+            const hasCmdRestriction = module.cmds !== undefined && module.cmds !== null;
+            let isCmdMatch = false;
+            
+            if (hasCmdRestriction) {
+                if (Array.isArray(module.cmds)) {
+                    isCmdMatch = module.cmds.includes(currentCmd);
+                } else if (typeof module.cmds === 'string') {
+                    isCmdMatch = module.cmds === currentCmd;
+                }
+            } else {
+                // If no cmds specified, assume it's a global module
+                isCmdMatch = true;
+            }
+
+            if (isCmdMatch && (moduleName === 'SettingsHelper' || (globalEnabled && moduleEnabled))) {
+                module.init();
             }
         }
     });

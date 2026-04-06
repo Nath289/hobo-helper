@@ -82,7 +82,9 @@ if ($Release) {
 $templateContent = Get-Content -Path "src/template.js" -Raw
 $helpersContent = Get-Content -Path "src/utils.js" -Raw
 
-$moduleFiles = Get-ChildItem -Path "src/modules/*.js"
+$globalModules = Get-ChildItem -Path "src/modules/global/*.js"
+$pageModules = Get-ChildItem -Path "src/modules/page/*.js"
+$moduleFiles = $globalModules + $pageModules
 
 $modulesContent = ""
 $moduleExportsContent = ""

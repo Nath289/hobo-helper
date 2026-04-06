@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      7.93.20260406.2128
+// @version      7.94.20260406.2326
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -217,231 +217,6 @@ const BackpackHelper = {
 
         // Initial run
         processItems();
-    }
-};
-
-const BankHelper = {
-    settings: [
-        { key: 'BankHelper_5FightersLunches', label: "5 Fighter's Lunches Goal" }
-    ],
-            getBankGoals: function() {
-                try {
-                    return JSON.parse(localStorage.getItem('hw_bank_goals') || '{}');
-                } catch(e) {
-                    return {};
-                }
-            },
-            addBankGoal: function(actionName, cost) {
-                const goals = this.getBankGoals();
-                if (cost === 0 || cost === null) {
-                    delete goals[actionName];
-                } else {
-                    goals[actionName] = cost;
-                }
-                if (Object.keys(goals).length === 0) {
-                    localStorage.removeItem('hw_bank_goals');
-                } else {
-                    localStorage.setItem('hw_bank_goals', JSON.stringify(goals));
-                }
-            },
-            init: function() {
-                const url = window.location.href;
-                if (!url.includes('cmd=bank')) return;
-
-                const settings = Utils.getSettings();
-                const withdrawInput = document.getElementById('w_money');
-                const withdrawForm = document.querySelector('form[name="with"]');
-                const nativeWithdrawBtn = withdrawForm ? withdrawForm.querySelector('input[type="submit"]') : null;
-
-                if (!withdrawInput || !nativeWithdrawBtn) return;
-
-                if (settings.BankHelper_5FightersLunches !== false) {
-                    const level = Utils.getHoboLevel();
-                    const lunchCost = Utils.getFightersLunchCost(level);
-                    const totalCost = lunchCost * 5;
-
-                    if (totalCost > 0) {
-                        let clickCount = 0;
-                        const lunchBtn = document.createElement('input');
-                        lunchBtn.type = 'button';
-                        lunchBtn.value = ` + Add 5 Fighter's Lunches ($${totalCost.toLocaleString()}) `;
-                        lunchBtn.style.marginLeft = '10px';
-                        lunchBtn.style.cursor = 'pointer';
-                        lunchBtn.style.backgroundColor = '#e6f7ff';
-                        lunchBtn.style.border = '1px solid #91d5ff';
-
-                        lunchBtn.onclick = function() {
-                            clickCount++;
-                            let currentVal = parseInt(withdrawInput.value.replace(/,/g, '')) || 0;
-                            withdrawInput.value = (currentVal + totalCost).toString();
-                            
-                            this.value = ` + Add 5 Fighter's Lunches ($${totalCost.toLocaleString()}) [Added ${clickCount * 5}] `;
-                        };
-
-                        nativeWithdrawBtn.parentNode.insertBefore(lunchBtn, nativeWithdrawBtn.nextSibling);
-                    }
-                }
-
-                const goals = this.getBankGoals();
-                if (Object.keys(goals).length === 0) return;
-
-                Object.keys(goals).forEach(goalName => {
-                    const goalVal = parseInt(goals[goalName]);
-                    if (isNaN(goalVal) || goalVal <= 0) return;
-
-                    const btn = document.createElement('input');
-                    btn.type = 'button';
-                    btn.value = ` + Add ${goalName} ($${goalVal.toLocaleString()}) `;
-                    btn.style.marginLeft = '10px';
-                    btn.style.cursor = 'pointer';
-                    btn.style.backgroundColor = '#e6f7ff';
-                    btn.style.border = '1px solid #91d5ff';
-
-                    btn.onclick = function() {
-                        let currentVal = parseInt(withdrawInput.value.replace(/,/g, '')) || 0;
-                        withdrawInput.value = (currentVal + goalVal).toString();
-
-                        Modules.BankHelper.addBankGoal(goalName, 0);
-
-                        this.value = "Added!";
-                        this.disabled = true;
-                        this.style.backgroundColor = '#f5f5f5';
-                        this.style.border = '1px solid #d9d9d9';
-                    };
-
-                    nativeWithdrawBtn.parentNode.insertBefore(btn, nativeWithdrawBtn.nextSibling);
-                });
-            }
-        }
-
-const BernardsMansionHelper = {
-    settings: [
-        { key: 'BernardsMansionHelper_BasementMap', label: 'Basement Map' }
-    ],
-    init: function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('cmd') !== 'bernards') return;
-
-        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
-        
-        if (savedSettings['BernardsMansionHelper_BasementMap'] !== false) {
-            this.initBasementMap();
-        }
-    },
-
-    initBasementMap: function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('room') !== 'basement') return;
-
-        const navForm = document.getElementById('nav_form');
-        if (!navForm) return;
-
-        // Traverse up to find the main layout table of the directional pad
-        const directionTable = navForm.closest('table');
-        if (!directionTable) return;
-
-        // Try to get current coordinates
-        let currentX = 0;
-        let currentY = 0;
-        const fontTags = directionTable.querySelectorAll('font');
-        fontTags.forEach(f => {
-            if (f.textContent.includes('X Y')) {
-                const match = f.textContent.match(/(\d+)\s*,\s*(\d+)/);
-                if (match) {
-                    currentX = parseInt(match[1], 10);
-                    currentY = parseInt(match[2], 10);
-                }
-            }
-        });
-
-        // Create map container
-        const mapHTML = `
-        <table cellspacing="0" cellpadding="0" bgcolor="#FFFFFF" style="border-collapse: collapse; border-style: ridge; border-color: black; border-width: 5px; table-layout: fixed;" align="center">
-            <tbody>
-                ${Array.from({ length: 20 }, (_, r) => {
-                    const y = 20 - r; // 20 to 1 (top to bottom)
-                    return `<tr>
-                        ${Array.from({ length: 20 }, (_, c) => {
-                            const x = c + 1; // 1 to 20 (left to right)
-                            return `<td class="bernards-map-cell" data-x="${x}" data-y="${y}" title="${x}, ${y}" bgcolor="#FFFFFF" style="border: 1px solid #ddd; width: 8px; height: 8px; min-width: 8px; min-height: 8px; max-width: 8px; max-height: 8px; padding: 0; box-sizing: border-box;"></td>`;
-                        }).join('')}
-                    </tr>`;
-                }).join('')}
-            </tbody>
-        </table>
-        `;
-
-        const mapContainer = document.createElement('div');
-        mapContainer.id = 'bernards_map_container';
-        mapContainer.style.cssText = 'position: absolute; left: 100%; top: 50%; transform: translateY(-50%); margin-left: 20px; text-align: center;';
-        mapContainer.innerHTML = mapHTML;
-
-        // Color cell for current position
-        const cells = mapContainer.querySelectorAll('.bernards-map-cell');
-        cells.forEach(cell => {
-            const cx = parseInt(cell.getAttribute('data-x'), 10);
-            const cy = parseInt(cell.getAttribute('data-y'), 10);
-
-            if (cx === currentX && cy === currentY) {
-                cell.setAttribute('bgcolor', '#880000'); // Current position
-                cell.title = "You!";
-            }
-        });
-
-        // Use a relative wrapper to prevent any layout shifts of the directional pad
-        const wrapper = document.createElement('div');
-        wrapper.style.cssText = 'position: relative; width: 250px; margin: 0 auto;';
-        
-        directionTable.parentNode.insertBefore(wrapper, directionTable);
-        wrapper.appendChild(directionTable);
-        wrapper.appendChild(mapContainer);
-    }
-};
-
-const CanDepoHelper = {
-    init: function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('cmd') !== 'depo') return;
-
-        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
-
-        if (savedSettings['CanDepoHelper_TotalValue'] !== false) {
-            this.initTotalValue();
-        }
-    },
-
-    initTotalValue: function() {
-        const contentArea = document.querySelector('.content-area');
-        if (!contentArea) return;
-
-        let cansCount = 0;
-        let price = 0;
-        let targetNode = null;
-
-        const walkDom = document.createTreeWalker(contentArea, NodeFilter.SHOW_TEXT, null, false);
-        let node;
-        while ((node = walkDom.nextNode())) {
-            const text = node.textContent;
-
-            const cansMatch = text.match(/You have:\s*([0-9,]+)\s*cans!/);
-            if (cansMatch) {
-                cansCount = Utils.parseNumber(cansMatch[1]);
-                targetNode = node;
-            }
-
-            const priceMatch = text.match(/for\s*\$?([0-9,]+)\s*each/);
-            if (priceMatch && !price) {
-                price = Utils.parseNumber(priceMatch[1]);
-            }
-        }
-
-        if (targetNode && cansCount > 0 && price > 0) {
-            const totalValue = cansCount * price;
-            const span = document.createElement('span');
-            span.innerHTML = ` <b>(Total Value: $${totalValue.toLocaleString()})</b>`;
-            span.style.color = 'green';
-            targetNode.parentNode.insertBefore(span, targetNode.nextSibling);
-        }
     }
 };
 
@@ -1035,10 +810,506 @@ const FoodHelper = {
     }
 };
 
-const FortSlugworthHelper = {
+const SettingsHelper = {
     init: function() {
-        if (!window.location.search.includes('cmd=fort_slugworth')) return;
+        if (!window.location.search.endsWith('cmd=preferences')) return;
 
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        console.log('Settings Helper loaded for preferences page');
+        
+        // Add divider and title
+        const headerContainer = document.createElement('div');
+        headerContainer.style.textAlign = 'center';
+        headerContainer.style.margin = '20px 0';
+        headerContainer.style.padding = '10px';
+        headerContainer.style.background = 'rgba(128, 128, 128, 0.1)';
+        headerContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
+        headerContainer.style.borderRadius = '5px';
+
+        const titleDiv = document.createElement('div');
+        titleDiv.innerHTML = "<h2 style='margin: 0; font-family: Arial, sans-serif; font-size: 20px; text-transform: uppercase; letter-spacing: 1px;'>Hobo Helper Settings</h2>";
+        headerContainer.appendChild(titleDiv);
+        contentArea.appendChild(headerContainer);
+
+        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        
+        // Helper function for toggles
+        const createToggle = (key, labelText, isGlobal = false, defaultValue = true) => {
+            const container = document.createElement('div');
+            container.style.marginBottom = '8px';
+            container.style.paddingLeft = isGlobal ? '0' : '5px';
+            container.style.display = 'flex';
+            container.style.alignItems = 'center';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = `hw_helper_${key}`;
+            // default to true if undefined
+            checkbox.checked = savedSettings[key] !== undefined ? savedSettings[key] : defaultValue;
+            checkbox.style.cursor = 'pointer';
+            checkbox.style.transform = 'scale(1.2)';
+            checkbox.style.marginRight = '8px';
+            checkbox.style.accentColor = '#2196F3';
+
+            const label = document.createElement('label');
+            label.htmlFor = `hw_helper_${key}`;
+            label.innerHTML = ` ${labelText}`;
+            label.style.cursor = 'pointer';
+            label.style.fontFamily = 'Arial, sans-serif';
+            label.style.fontSize = '14px';
+
+            const toast = document.createElement('span');
+            toast.innerText = ' (Saved! Reload to apply)';
+            toast.style.color = 'green';
+            toast.style.fontSize = '12px';
+            toast.style.display = 'none';
+            label.appendChild(toast);
+
+            let toastTimeout;
+            checkbox.addEventListener('change', (e) => {
+                const settings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+                settings[key] = e.target.checked;
+                localStorage.setItem('hw_helper_settings', JSON.stringify(settings));
+                
+                // Show saved toast or reload prompt
+                toast.style.display = 'inline';
+                clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 2000);
+            });
+
+            container.appendChild(checkbox);
+            container.appendChild(label);
+            return container;
+        };
+
+        const createInput = (key, labelText, inputType, defaultValue) => {
+            const container = document.createElement('div');
+            container.style.marginBottom = '8px';
+            container.style.paddingLeft = '5px';
+            container.style.display = 'flex';
+            container.style.alignItems = 'center';
+
+            const label = document.createElement('label');
+            label.htmlFor = `hw_helper_${key}`;
+            label.innerHTML = `${labelText}: `;
+            label.style.fontFamily = 'Arial, sans-serif';
+            label.style.fontSize = '14px';
+            label.style.marginRight = '8px';
+
+            const input = document.createElement('input');
+            input.type = inputType;
+            input.id = `hw_helper_${key}`;
+            input.style.width = inputType === 'number' ? '60px' : '150px';
+            input.value = savedSettings[key] !== undefined ? savedSettings[key] : defaultValue;
+            input.style.border = '1px solid #ccc';
+            input.style.borderRadius = '3px';
+            input.style.padding = '2px 5px';
+
+            const toast = document.createElement('span');
+            toast.innerText = ' (Saved! Reload to apply)';
+            toast.style.color = 'green';
+            toast.style.fontSize = '12px';
+            toast.style.display = 'none';
+            toast.style.marginLeft = '8px';
+
+            let toastTimeout;
+            input.addEventListener('input', (e) => {
+                const settings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+                settings[key] = e.target.value;
+                localStorage.setItem('hw_helper_settings', JSON.stringify(settings));
+                
+                toast.style.display = 'inline';
+                clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 2000);
+            });
+
+            container.appendChild(label);
+            container.appendChild(input);
+            container.appendChild(toast);
+            return container;
+        };
+
+        const topDiv = document.createElement('div');
+        topDiv.style.background = 'rgba(128, 128, 128, 0.05)';
+        topDiv.style.border = '1px solid rgba(128, 128, 128, 0.2)';
+        topDiv.style.borderRadius = '5px';
+        topDiv.style.padding = '10px';
+        topDiv.style.marginBottom = '20px';
+
+        // Add global toggle
+        topDiv.appendChild(createToggle('global_enabled', 'Enable Hobo Helper (Global)', true));
+        contentArea.appendChild(topDiv);
+
+        const modsLabel = document.createElement('div');
+        modsLabel.innerText = "Active Modules:";
+        modsLabel.style.fontWeight = 'bold';
+        modsLabel.style.fontSize = '16px';
+        modsLabel.style.marginBottom = '10px';
+        modsLabel.style.borderBottom = '2px solid rgba(128, 128, 128, 0.3)';
+        modsLabel.style.paddingBottom = '5px';
+        contentArea.appendChild(modsLabel);
+
+        const subFeatures = {};
+        if (typeof Modules !== 'undefined') {
+            Object.keys(Modules).forEach(modName => {
+                if (Modules[modName].settings) {
+                    subFeatures[modName] = Modules[modName].settings;
+                }
+            });
+        }
+
+        const gridContainer = document.createElement('div');
+        gridContainer.style.display = 'flex';
+        gridContainer.style.justifyContent = 'space-between';
+        gridContainer.style.alignItems = 'flex-start';
+        contentArea.appendChild(gridContainer);
+
+        const col1 = document.createElement('div');
+        col1.style.width = '48%';
+        gridContainer.appendChild(col1);
+
+        const col2 = document.createElement('div');
+        col2.style.width = '48%';
+        gridContainer.appendChild(col2);
+
+        if (typeof Modules !== 'undefined') {
+            const activeModules = Object.keys(Modules).filter(modName => {
+                return modName !== 'SettingsHelper' && typeof Modules[modName].init === 'function';
+            });
+
+            activeModules.sort().forEach((modName) => {
+                const moduleBlock = document.createElement('div');
+                moduleBlock.style.marginBottom = '12px';
+                moduleBlock.style.padding = '8px 10px';
+                moduleBlock.style.background = 'rgba(128, 128, 128, 0.05)';
+                moduleBlock.style.border = '1px solid rgba(128, 128, 128, 0.2)';
+                moduleBlock.style.borderRadius = '6px';
+                moduleBlock.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+
+                moduleBlock.appendChild(createToggle(modName, `<b>Enable ${modName}</b>`));
+
+                // Render sub-features if this module has them defined
+                if (subFeatures[modName]) {
+                    const subContainer = document.createElement('div');
+                    subContainer.style.paddingLeft = '25px';
+                    subContainer.style.marginTop = '8px';
+                    subContainer.style.borderLeft = '2px solid #2196F3';
+                    subFeatures[modName].forEach(feature => {
+                        let el;
+                        if (feature.type === 'number' || feature.type === 'text') {
+                            el = createInput(feature.key, feature.label, feature.type, feature.defaultValue);
+                        } else {
+                            el = createToggle(feature.key, feature.label, false, feature.defaultValue !== false);
+                        }
+
+                        if (feature.parent) {
+                            const parentCheckbox = document.getElementById(`hw_helper_${feature.parent}`);
+                            if (parentCheckbox) {
+                                const containerDiv = el;
+                                const updateVisibility = () => {
+                                    containerDiv.style.opacity = parentCheckbox.checked ? '1' : '0.4';
+                                    containerDiv.style.pointerEvents = parentCheckbox.checked ? 'auto' : 'none';
+                                };
+                                parentCheckbox.addEventListener('change', updateVisibility);
+                                updateVisibility();
+                            }
+                        }
+
+                        subContainer.appendChild(el);
+                    });
+                    moduleBlock.appendChild(subContainer);
+                }
+
+                // Custom settings for FoodHelper
+                if (modName === 'FoodHelper') {
+                    const foodContainer = document.createElement('div');
+                    foodContainer.style.paddingLeft = '25px';
+                    foodContainer.style.marginTop = '10px';
+
+                    const label = document.createElement('b');
+                    label.innerText = 'Crap Foods List:';
+                    label.style.display = 'block';
+                    label.style.marginBottom = '5px';
+                    foodContainer.appendChild(label);
+
+                    const listContainer = document.createElement('div');
+                    listContainer.style.background = 'rgba(0, 0, 0, 0.05)';
+                    listContainer.style.padding = '10px';
+                    listContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
+                    listContainer.style.borderRadius = '4px';
+                    listContainer.style.maxWidth = '100%';
+
+                    const crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
+                    if (crapList.length === 0) {
+                        listContainer.innerText = 'No foods marked as crap.';
+                    } else {
+                        const ul = document.createElement('ul');
+                        ul.style.margin = '0';
+                        ul.style.paddingLeft = '20px';
+                        crapList.forEach(food => {
+                            const li = document.createElement('li');
+                            const a = document.createElement('a');
+                            a.href = '#';
+                            a.innerText = '[x]';
+                            a.style.color = 'red';
+                            a.style.textDecoration = 'none';
+                            a.style.marginRight = '5px';
+                            a.title = 'Remove from Crap list';
+                            a.onclick = (e) => {
+                                e.preventDefault();
+                                let currentList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
+                                const updatedList = currentList.filter(f => f !== food);
+                                localStorage.setItem('hw_helper_food_crap', JSON.stringify(updatedList));
+                                li.remove();
+                                if (updatedList.length === 0) {
+                                    listContainer.innerText = 'No foods marked as crap.';
+                                }
+                            };
+                            li.appendChild(a);
+                            li.appendChild(document.createTextNode(food));
+                            ul.appendChild(li);
+                        });
+                        listContainer.appendChild(ul);
+                    }
+                    foodContainer.appendChild(listContainer);
+                    moduleBlock.appendChild(foodContainer);
+                }
+
+                // Manually balance columns: FoodHelper's large box goes left, the rest goes right.
+                if (modName <= 'FoodHelper') {
+                    col1.appendChild(moduleBlock);
+                } else {
+                    col2.appendChild(moduleBlock);
+                }
+            });
+        }
+    }
+}
+
+const BankHelper = {
+    cmds: 'bank',
+    settings: [
+        { key: 'BankHelper_5FightersLunches', label: "5 Fighter's Lunches Goal" }
+    ],
+            getBankGoals: function() {
+                try {
+                    return JSON.parse(localStorage.getItem('hw_bank_goals') || '{}');
+                } catch(e) {
+                    return {};
+                }
+            },
+            addBankGoal: function(actionName, cost) {
+                const goals = this.getBankGoals();
+                if (cost === 0 || cost === null) {
+                    delete goals[actionName];
+                } else {
+                    goals[actionName] = cost;
+                }
+                if (Object.keys(goals).length === 0) {
+                    localStorage.removeItem('hw_bank_goals');
+                } else {
+                    localStorage.setItem('hw_bank_goals', JSON.stringify(goals));
+                }
+            },
+            init: function() {
+                const settings = Utils.getSettings();
+                const withdrawInput = document.getElementById('w_money');
+                const withdrawForm = document.querySelector('form[name="with"]');
+                const nativeWithdrawBtn = withdrawForm ? withdrawForm.querySelector('input[type="submit"]') : null;
+
+                if (!withdrawInput || !nativeWithdrawBtn) return;
+
+                if (settings.BankHelper_5FightersLunches !== false) {
+                    const level = Utils.getHoboLevel();
+                    const lunchCost = Utils.getFightersLunchCost(level);
+                    const totalCost = lunchCost * 5;
+
+                    if (totalCost > 0) {
+                        let clickCount = 0;
+                        const lunchBtn = document.createElement('input');
+                        lunchBtn.type = 'button';
+                        lunchBtn.value = ` + Add 5 Fighter's Lunches ($${totalCost.toLocaleString()}) `;
+                        lunchBtn.style.marginLeft = '10px';
+                        lunchBtn.style.cursor = 'pointer';
+                        lunchBtn.style.backgroundColor = '#e6f7ff';
+                        lunchBtn.style.border = '1px solid #91d5ff';
+
+                        lunchBtn.onclick = function() {
+                            clickCount++;
+                            let currentVal = parseInt(withdrawInput.value.replace(/,/g, '')) || 0;
+                            withdrawInput.value = (currentVal + totalCost).toString();
+                            
+                            this.value = ` + Add 5 Fighter's Lunches ($${totalCost.toLocaleString()}) [Added ${clickCount * 5}] `;
+                        };
+
+                        nativeWithdrawBtn.parentNode.insertBefore(lunchBtn, nativeWithdrawBtn.nextSibling);
+                    }
+                }
+
+                const goals = this.getBankGoals();
+                if (Object.keys(goals).length === 0) return;
+
+                Object.keys(goals).forEach(goalName => {
+                    const goalVal = parseInt(goals[goalName]);
+                    if (isNaN(goalVal) || goalVal <= 0) return;
+
+                    const btn = document.createElement('input');
+                    btn.type = 'button';
+                    btn.value = ` + Add ${goalName} ($${goalVal.toLocaleString()}) `;
+                    btn.style.marginLeft = '10px';
+                    btn.style.cursor = 'pointer';
+                    btn.style.backgroundColor = '#e6f7ff';
+                    btn.style.border = '1px solid #91d5ff';
+
+                    btn.onclick = function() {
+                        let currentVal = parseInt(withdrawInput.value.replace(/,/g, '')) || 0;
+                        withdrawInput.value = (currentVal + goalVal).toString();
+
+                        Modules.BankHelper.addBankGoal(goalName, 0);
+
+                        this.value = "Added!";
+                        this.disabled = true;
+                        this.style.backgroundColor = '#f5f5f5';
+                        this.style.border = '1px solid #d9d9d9';
+                    };
+
+                    nativeWithdrawBtn.parentNode.insertBefore(btn, nativeWithdrawBtn.nextSibling);
+                });
+            }
+        }
+
+const BernardsBasementHelper = {
+    cmds: 'bernards',
+    settings: [
+        { key: 'BernardsBasementHelper_BasementMap', label: 'Basement Map' }
+    ],
+    init: function() {
+        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        
+        if (savedSettings['BernardsBasementHelper_BasementMap'] !== false) {
+            this.initBasementMap();
+        }
+    },
+
+    initBasementMap: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('room') !== 'basement') return;
+
+        const navForm = document.getElementById('nav_form');
+        if (!navForm) return;
+
+        // Traverse up to find the main layout table of the directional pad
+        const directionTable = navForm.closest('table');
+        if (!directionTable) return;
+
+        // Try to get current coordinates
+        let currentX = 0;
+        let currentY = 0;
+        const fontTags = directionTable.querySelectorAll('font');
+        fontTags.forEach(f => {
+            if (f.textContent.includes('X Y')) {
+                const match = f.textContent.match(/(\d+)\s*,\s*(\d+)/);
+                if (match) {
+                    currentX = parseInt(match[1], 10);
+                    currentY = parseInt(match[2], 10);
+                }
+            }
+        });
+
+        // Create map container
+        const mapHTML = `
+        <table cellspacing="0" cellpadding="0" bgcolor="#FFFFFF" style="border-collapse: collapse; border-style: ridge; border-color: black; border-width: 5px; table-layout: fixed;" align="center">
+            <tbody>
+                ${Array.from({ length: 20 }, (_, r) => {
+                    const y = 20 - r; // 20 to 1 (top to bottom)
+                    return `<tr>
+                        ${Array.from({ length: 20 }, (_, c) => {
+                            const x = c + 1; // 1 to 20 (left to right)
+                            return `<td class="bernards-map-cell" data-x="${x}" data-y="${y}" title="${x}, ${y}" bgcolor="#FFFFFF" style="border: 1px solid #ddd; width: 8px; height: 8px; min-width: 8px; min-height: 8px; max-width: 8px; max-height: 8px; padding: 0; box-sizing: border-box;"></td>`;
+                        }).join('')}
+                    </tr>`;
+                }).join('')}
+            </tbody>
+        </table>
+        `;
+
+        const mapContainer = document.createElement('div');
+        mapContainer.id = 'bernards_map_container';
+        mapContainer.style.cssText = 'position: absolute; left: 100%; top: 50%; transform: translateY(-50%); margin-left: 20px; text-align: center;';
+        mapContainer.innerHTML = mapHTML;
+
+        // Color cell for current position
+        const cells = mapContainer.querySelectorAll('.bernards-map-cell');
+        cells.forEach(cell => {
+            const cx = parseInt(cell.getAttribute('data-x'), 10);
+            const cy = parseInt(cell.getAttribute('data-y'), 10);
+
+            if (cx === currentX && cy === currentY) {
+                cell.setAttribute('bgcolor', '#880000'); // Current position
+                cell.title = "You!";
+            }
+        });
+
+        // Use a relative wrapper to prevent any layout shifts of the directional pad
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'position: relative; width: 250px; margin: 0 auto;';
+        
+        directionTable.parentNode.insertBefore(wrapper, directionTable);
+        wrapper.appendChild(directionTable);
+        wrapper.appendChild(mapContainer);
+    }
+};
+
+const CanDepoHelper = {
+    cmds: 'depo',
+    init: function() {
+        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+
+        if (savedSettings['CanDepoHelper_TotalValue'] !== false) {
+            this.initTotalValue();
+        }
+    },
+
+    initTotalValue: function() {
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        let cansCount = 0;
+        let price = 0;
+        let targetNode = null;
+
+        const walkDom = document.createTreeWalker(contentArea, NodeFilter.SHOW_TEXT, null, false);
+        let node;
+        while ((node = walkDom.nextNode())) {
+            const text = node.textContent;
+
+            const cansMatch = text.match(/You have:\s*([0-9,]+)\s*cans!/);
+            if (cansMatch) {
+                cansCount = Utils.parseNumber(cansMatch[1]);
+                targetNode = node;
+            }
+
+            const priceMatch = text.match(/for\s*\$?([0-9,]+)\s*each/);
+            if (priceMatch && !price) {
+                price = Utils.parseNumber(priceMatch[1]);
+            }
+        }
+
+        if (targetNode && cansCount > 0 && price > 0) {
+            const totalValue = cansCount * price;
+            const span = document.createElement('span');
+            span.innerHTML = ` <b>(Total Value: $${totalValue.toLocaleString()})</b>`;
+            span.style.color = 'green';
+            targetNode.parentNode.insertBefore(span, targetNode.nextSibling);
+        }
+    }
+};
+
+const FortSlugworthHelper = {
+    cmds: 'fort_slugworth',
+    init: function() {
         const settings = Utils.getSettings();
         if (settings['FortSlugworthHelper'] === false) return;
 
@@ -1901,11 +2172,12 @@ const GangLoansHelper = {
 };
 
 const HitlistHelper = {
+    cmds: 'battle',
     settings: [
         { key: 'HitlistHelper_HighlightOnline', label: 'Highlight Online Players' }
     ],
     init: function() {
-        if (!window.location.search.includes('cmd=battle') || !window.location.search.includes('do=phlist')) return;
+        if (!window.location.search.includes('do=phlist')) return;
 
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
@@ -1999,6 +2271,7 @@ const KurtzCampHelper = {
 };
 
 const LiquorStoreHelper = {
+    cmds: 'liquor_store',
             init: function() {
                 if (window.location.href.includes('cmd=liquor_store')) {
                     try {
@@ -2133,6 +2406,7 @@ const LiquorStoreHelper = {
         }
 
 const LivingAreaHelper = {
+    cmds: '',
     settings: [
         { key: 'LivingAreaHelper_StatRatioTracker', label: 'Stat Ratio Tracker' },
         { key: 'LivingAreaHelper_CopyStatsBtn', label: 'Copy Stats Button' },
@@ -2174,8 +2448,6 @@ const LivingAreaHelper = {
     },
 
     initWideShowAll: function(settings) {
-        if (window.location.href.includes('cmd=uni')) return;
-        
         // Only run if the user has specifically widened the page >= 850px through the display helper
         const isWiden = settings['DisplayHelper_WidenPage'];
         const pageWidth = parseInt(settings['DisplayHelper_PageWidth'] || 660, 10);
@@ -2243,8 +2515,6 @@ const LivingAreaHelper = {
     },
 
     initAlwaysShowSpecialItem: function() {
-        if (window.location.href.includes('cmd=uni')) return;
-        
         const statsDisplays = document.querySelectorAll('.more_info.statsDisplay');
         statsDisplays.forEach(display => {
             if (display.textContent.includes('Special Item')) {
@@ -2396,8 +2666,6 @@ const LivingAreaHelper = {
         let inMemoryLastUpdated = config.lastUpdated;
 
         function updateTracker() {
-            if (window.location.href.includes('cmd=uni')) return;
-
             const statsBlock = document.getElementById('combatStats');
             if (!statsBlock) return;
 
@@ -3517,6 +3785,7 @@ const MixerHelper = {
         }
 
 const NorthernFenceHelper = {
+    cmds: 'hill3',
             init: function() {
                 const urlParams = new URLSearchParams(window.location.search);
                 if (urlParams.get('cmd') === 'hill3') {
@@ -3758,284 +4027,6 @@ const RecyclingBinHelper = {
     }
 };
 
-const SettingsHelper = {
-    init: function() {
-        if (!window.location.search.endsWith('cmd=preferences')) return;
-
-        const contentArea = document.querySelector('.content-area');
-        if (!contentArea) return;
-
-        console.log('Settings Helper loaded for preferences page');
-        
-        // Add divider and title
-        const headerContainer = document.createElement('div');
-        headerContainer.style.textAlign = 'center';
-        headerContainer.style.margin = '20px 0';
-        headerContainer.style.padding = '10px';
-        headerContainer.style.background = 'rgba(128, 128, 128, 0.1)';
-        headerContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
-        headerContainer.style.borderRadius = '5px';
-
-        const titleDiv = document.createElement('div');
-        titleDiv.innerHTML = "<h2 style='margin: 0; font-family: Arial, sans-serif; font-size: 20px; text-transform: uppercase; letter-spacing: 1px;'>Hobo Helper Settings</h2>";
-        headerContainer.appendChild(titleDiv);
-        contentArea.appendChild(headerContainer);
-
-        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
-        
-        // Helper function for toggles
-        const createToggle = (key, labelText, isGlobal = false, defaultValue = true) => {
-            const container = document.createElement('div');
-            container.style.marginBottom = '8px';
-            container.style.paddingLeft = isGlobal ? '0' : '5px';
-            container.style.display = 'flex';
-            container.style.alignItems = 'center';
-
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.id = `hw_helper_${key}`;
-            // default to true if undefined
-            checkbox.checked = savedSettings[key] !== undefined ? savedSettings[key] : defaultValue;
-            checkbox.style.cursor = 'pointer';
-            checkbox.style.transform = 'scale(1.2)';
-            checkbox.style.marginRight = '8px';
-            checkbox.style.accentColor = '#2196F3';
-
-            const label = document.createElement('label');
-            label.htmlFor = `hw_helper_${key}`;
-            label.innerHTML = ` ${labelText}`;
-            label.style.cursor = 'pointer';
-            label.style.fontFamily = 'Arial, sans-serif';
-            label.style.fontSize = '14px';
-
-            const toast = document.createElement('span');
-            toast.innerText = ' (Saved! Reload to apply)';
-            toast.style.color = 'green';
-            toast.style.fontSize = '12px';
-            toast.style.display = 'none';
-            label.appendChild(toast);
-
-            let toastTimeout;
-            checkbox.addEventListener('change', (e) => {
-                const settings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
-                settings[key] = e.target.checked;
-                localStorage.setItem('hw_helper_settings', JSON.stringify(settings));
-                
-                // Show saved toast or reload prompt
-                toast.style.display = 'inline';
-                clearTimeout(toastTimeout);
-                toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 2000);
-            });
-
-            container.appendChild(checkbox);
-            container.appendChild(label);
-            return container;
-        };
-
-        const createInput = (key, labelText, inputType, defaultValue) => {
-            const container = document.createElement('div');
-            container.style.marginBottom = '8px';
-            container.style.paddingLeft = '5px';
-            container.style.display = 'flex';
-            container.style.alignItems = 'center';
-
-            const label = document.createElement('label');
-            label.htmlFor = `hw_helper_${key}`;
-            label.innerHTML = `${labelText}: `;
-            label.style.fontFamily = 'Arial, sans-serif';
-            label.style.fontSize = '14px';
-            label.style.marginRight = '8px';
-
-            const input = document.createElement('input');
-            input.type = inputType;
-            input.id = `hw_helper_${key}`;
-            input.style.width = inputType === 'number' ? '60px' : '150px';
-            input.value = savedSettings[key] !== undefined ? savedSettings[key] : defaultValue;
-            input.style.border = '1px solid #ccc';
-            input.style.borderRadius = '3px';
-            input.style.padding = '2px 5px';
-
-            const toast = document.createElement('span');
-            toast.innerText = ' (Saved! Reload to apply)';
-            toast.style.color = 'green';
-            toast.style.fontSize = '12px';
-            toast.style.display = 'none';
-            toast.style.marginLeft = '8px';
-
-            let toastTimeout;
-            input.addEventListener('input', (e) => {
-                const settings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
-                settings[key] = e.target.value;
-                localStorage.setItem('hw_helper_settings', JSON.stringify(settings));
-                
-                toast.style.display = 'inline';
-                clearTimeout(toastTimeout);
-                toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 2000);
-            });
-
-            container.appendChild(label);
-            container.appendChild(input);
-            container.appendChild(toast);
-            return container;
-        };
-
-        const topDiv = document.createElement('div');
-        topDiv.style.background = 'rgba(128, 128, 128, 0.05)';
-        topDiv.style.border = '1px solid rgba(128, 128, 128, 0.2)';
-        topDiv.style.borderRadius = '5px';
-        topDiv.style.padding = '10px';
-        topDiv.style.marginBottom = '20px';
-
-        // Add global toggle
-        topDiv.appendChild(createToggle('global_enabled', 'Enable Hobo Helper (Global)', true));
-        contentArea.appendChild(topDiv);
-
-        const modsLabel = document.createElement('div');
-        modsLabel.innerText = "Active Modules:";
-        modsLabel.style.fontWeight = 'bold';
-        modsLabel.style.fontSize = '16px';
-        modsLabel.style.marginBottom = '10px';
-        modsLabel.style.borderBottom = '2px solid rgba(128, 128, 128, 0.3)';
-        modsLabel.style.paddingBottom = '5px';
-        contentArea.appendChild(modsLabel);
-
-        const subFeatures = {};
-        if (typeof Modules !== 'undefined') {
-            Object.keys(Modules).forEach(modName => {
-                if (Modules[modName].settings) {
-                    subFeatures[modName] = Modules[modName].settings;
-                }
-            });
-        }
-
-        const gridContainer = document.createElement('div');
-        gridContainer.style.display = 'flex';
-        gridContainer.style.justifyContent = 'space-between';
-        gridContainer.style.alignItems = 'flex-start';
-        contentArea.appendChild(gridContainer);
-
-        const col1 = document.createElement('div');
-        col1.style.width = '48%';
-        gridContainer.appendChild(col1);
-
-        const col2 = document.createElement('div');
-        col2.style.width = '48%';
-        gridContainer.appendChild(col2);
-
-        if (typeof Modules !== 'undefined') {
-            const activeModules = Object.keys(Modules).filter(modName => {
-                return modName !== 'SettingsHelper' && typeof Modules[modName].init === 'function';
-            });
-
-            activeModules.sort().forEach((modName) => {
-                const moduleBlock = document.createElement('div');
-                moduleBlock.style.marginBottom = '12px';
-                moduleBlock.style.padding = '8px 10px';
-                moduleBlock.style.background = 'rgba(128, 128, 128, 0.05)';
-                moduleBlock.style.border = '1px solid rgba(128, 128, 128, 0.2)';
-                moduleBlock.style.borderRadius = '6px';
-                moduleBlock.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
-
-                moduleBlock.appendChild(createToggle(modName, `<b>Enable ${modName}</b>`));
-
-                // Render sub-features if this module has them defined
-                if (subFeatures[modName]) {
-                    const subContainer = document.createElement('div');
-                    subContainer.style.paddingLeft = '25px';
-                    subContainer.style.marginTop = '8px';
-                    subContainer.style.borderLeft = '2px solid #2196F3';
-                    subFeatures[modName].forEach(feature => {
-                        let el;
-                        if (feature.type === 'number' || feature.type === 'text') {
-                            el = createInput(feature.key, feature.label, feature.type, feature.defaultValue);
-                        } else {
-                            el = createToggle(feature.key, feature.label, false, feature.defaultValue !== false);
-                        }
-
-                        if (feature.parent) {
-                            const parentCheckbox = document.getElementById(`hw_helper_${feature.parent}`);
-                            if (parentCheckbox) {
-                                const containerDiv = el;
-                                const updateVisibility = () => {
-                                    containerDiv.style.opacity = parentCheckbox.checked ? '1' : '0.4';
-                                    containerDiv.style.pointerEvents = parentCheckbox.checked ? 'auto' : 'none';
-                                };
-                                parentCheckbox.addEventListener('change', updateVisibility);
-                                updateVisibility();
-                            }
-                        }
-
-                        subContainer.appendChild(el);
-                    });
-                    moduleBlock.appendChild(subContainer);
-                }
-
-                // Custom settings for FoodHelper
-                if (modName === 'FoodHelper') {
-                    const foodContainer = document.createElement('div');
-                    foodContainer.style.paddingLeft = '25px';
-                    foodContainer.style.marginTop = '10px';
-
-                    const label = document.createElement('b');
-                    label.innerText = 'Crap Foods List:';
-                    label.style.display = 'block';
-                    label.style.marginBottom = '5px';
-                    foodContainer.appendChild(label);
-
-                    const listContainer = document.createElement('div');
-                    listContainer.style.background = 'rgba(0, 0, 0, 0.05)';
-                    listContainer.style.padding = '10px';
-                    listContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
-                    listContainer.style.borderRadius = '4px';
-                    listContainer.style.maxWidth = '100%';
-
-                    const crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
-                    if (crapList.length === 0) {
-                        listContainer.innerText = 'No foods marked as crap.';
-                    } else {
-                        const ul = document.createElement('ul');
-                        ul.style.margin = '0';
-                        ul.style.paddingLeft = '20px';
-                        crapList.forEach(food => {
-                            const li = document.createElement('li');
-                            const a = document.createElement('a');
-                            a.href = '#';
-                            a.innerText = '[x]';
-                            a.style.color = 'red';
-                            a.style.textDecoration = 'none';
-                            a.style.marginRight = '5px';
-                            a.title = 'Remove from Crap list';
-                            a.onclick = (e) => {
-                                e.preventDefault();
-                                let currentList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
-                                const updatedList = currentList.filter(f => f !== food);
-                                localStorage.setItem('hw_helper_food_crap', JSON.stringify(updatedList));
-                                li.remove();
-                                if (updatedList.length === 0) {
-                                    listContainer.innerText = 'No foods marked as crap.';
-                                }
-                            };
-                            li.appendChild(a);
-                            li.appendChild(document.createTextNode(food));
-                            ul.appendChild(li);
-                        });
-                        listContainer.appendChild(ul);
-                    }
-                    foodContainer.appendChild(listContainer);
-                    moduleBlock.appendChild(foodContainer);
-                }
-
-                // Manually balance columns: FoodHelper's large box goes left, the rest goes right.
-                if (modName <= 'FoodHelper') {
-                    col1.appendChild(moduleBlock);
-                } else {
-                    col2.appendChild(moduleBlock);
-                }
-            });
-        }
-    }
-}
-
 const SoupKitchenHelper = {
     init: function() {
         if (!window.location.search.includes('cmd=soup_kitchen')) return;
@@ -4258,8 +4249,6 @@ const WeaponsHelper = {
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
 
-        console.log('[Hobo Helper] Initializing WeaponsHelper');
-
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
         const enableFeature = savedSettings['WeaponsHelper_EnableFeature'] !== false;
 
@@ -4449,6 +4438,16 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "7.94",
+            date: "2026-04-06",
+            type: "Added",
+            notes: [
+                "Added the `WeaponsHelper` module for the Weapons page (`cmd=wep`).",
+                "**Highlight Equipped Items**: Automatically highlights the container of weapons, armor, and rings you currently have equipped.",
+                "**Quick Equip/Unequip**: Item images are now hyperlinked to act as quick toggle buttons to equip or unequip that specific item."
+            ]
+        },
+        {
             version: "7.93",
             date: "2026-04-06",
             type: "Changed",
@@ -4485,28 +4484,20 @@ const ChangelogData = {
             notes: [
                 "Prevented `ChangelogData` from incorrectly displaying as an active module in the Preferences settings window."
             ]
-        },
-        {
-            version: "7.89",
-            date: "2026-04-06",
-            type: "Added",
-            notes: [
-                "Added the `GangHelper` module, initialized on the Gang page (`cmd=gang&do=enter`).",
-                "Added a \"Save Event Payouts\" UI to the \"View last gang happening results\" page (`w=lastsh`) specifically for the \"Gangsters Sunday = Funday\" event (visible only to Gang Staff). It automatically calculates and saves payouts per point based on custom rate and max payout inputs, pushing them directly to the `GangLoansHelper` dashboard."
-            ]
         }
     ]
 };
     const Modules = {
         BackpackHelper,
-        BankHelper,
-        BernardsMansionHelper,
-        CanDepoHelper,
         DisplayHelper,
         DrinksData,
         DrinksHelper,
         FoodData,
         FoodHelper,
+        SettingsHelper,
+        BankHelper,
+        BernardsBasementHelper,
+        CanDepoHelper,
         FortSlugworthHelper,
         GangHelper,
         GangLoansHelper,
@@ -4520,7 +4511,6 @@ const ChangelogData = {
         NorthernFenceHelper,
         RatsHelper,
         RecyclingBinHelper,
-        SettingsHelper,
         SoupKitchenHelper,
         TattooParlorHelper,
         UniversityHelper,
@@ -4531,17 +4521,37 @@ const ChangelogData = {
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
     const globalEnabled = savedSettings['global_enabled'] !== false;
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentCmd = urlParams.get('cmd') || '';
 
     // Initialize all modules
     Object.keys(Modules).forEach(moduleName => {
-        if (typeof Modules[moduleName].alwaysInit === 'function') {
-            Modules[moduleName].alwaysInit();
+        const module = Modules[moduleName];
+
+        if (typeof module.alwaysInit === 'function') {
+            module.alwaysInit();
         }
 
-        if (typeof Modules[moduleName].init === 'function') {
+        if (typeof module.init === 'function') {
             const moduleEnabled = savedSettings[moduleName] !== false;
-            if (moduleName === 'SettingsHelper' || (globalEnabled && moduleEnabled)) {
-                Modules[moduleName].init();
+            
+            // Check if module specifies cmds constraint
+            const hasCmdRestriction = module.cmds !== undefined && module.cmds !== null;
+            let isCmdMatch = false;
+            
+            if (hasCmdRestriction) {
+                if (Array.isArray(module.cmds)) {
+                    isCmdMatch = module.cmds.includes(currentCmd);
+                } else if (typeof module.cmds === 'string') {
+                    isCmdMatch = module.cmds === currentCmd;
+                }
+            } else {
+                // If no cmds specified, assume it's a global module
+                isCmdMatch = true;
+            }
+
+            if (isCmdMatch && (moduleName === 'SettingsHelper' || (globalEnabled && moduleEnabled))) {
+                module.init();
             }
         }
     });

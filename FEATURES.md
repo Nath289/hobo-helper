@@ -43,9 +43,9 @@ Provides functionality and quality-of-life improvements specifically on the Mess
 ### 11. Kurtz Camp Helper (`KurtzCampHelper.js`)
 Assists at Kurtz's Camp by keeping a running tally of Fire and Empty Bottles collected while lighting sticks. Retains this count across sessions using local storage, and includes a toggle to reset the counts at any time. Features dynamic display that only exhibits the empty bottle tally if any have been collected.
 
-### 12. Bernards Mansion Helper (`BernardsMansionHelper.js`)
-Provides tools and helpers when exploring Bernard's Mansion (`cmd=bernards`). 
-- **Basement Map**: Displays a map when venturing into Bernard's Basement (`cmd=bernards&room=basement`).
+### 12. Bernards Basement Helper (`BernardsBasementHelper.js`)
+Provides tools and helpers when exploring Bernard's Basement (`cmd=bernards&room=basement`). 
+- **Basement Map**: Displays a minimap of the coordinates you are currently standing on while inside the basement.
 
 ### 13. Can Depo Helper (`CanDepoHelper.js`)
 Assists when selling cans at the Can Depo (`cmd=depo`). 
@@ -84,7 +84,7 @@ A helper designed to operate on the Soup Kitchen page (`cmd=soup_kitchen`).
 A new helper designed to operate on the Rats page (`cmd=rats`).
 - Currently tracking and foundational logic setup. Future features will be added here.
 
-### 22. Weapons Helper (`WeaponsHelper.js`)
+s### 22. Weapons Helper (`WeaponsHelper.js`)
 A new helper designed to operate on the Weapons page (`cmd=wep`).
 - **Highlight Equipped Items**: Automatically highlights weapons, armor, and rings that you currently have equipped in your inventory list.
 - **Quick Equip/Unequip**: Converts item images into clickable links that will instantly equip or unequip the item based on its current state.

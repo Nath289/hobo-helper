@@ -1,4 +1,5 @@
 const LivingAreaHelper = {
+    cmds: '',
     settings: [
         { key: 'LivingAreaHelper_StatRatioTracker', label: 'Stat Ratio Tracker' },
         { key: 'LivingAreaHelper_CopyStatsBtn', label: 'Copy Stats Button' },
@@ -40,8 +41,6 @@ const LivingAreaHelper = {
     },
 
     initWideShowAll: function(settings) {
-        if (window.location.href.includes('cmd=uni')) return;
-        
         // Only run if the user has specifically widened the page >= 850px through the display helper
         const isWiden = settings['DisplayHelper_WidenPage'];
         const pageWidth = parseInt(settings['DisplayHelper_PageWidth'] || 660, 10);
@@ -109,8 +108,6 @@ const LivingAreaHelper = {
     },
 
     initAlwaysShowSpecialItem: function() {
-        if (window.location.href.includes('cmd=uni')) return;
-        
         const statsDisplays = document.querySelectorAll('.more_info.statsDisplay');
         statsDisplays.forEach(display => {
             if (display.textContent.includes('Special Item')) {
@@ -262,8 +259,6 @@ const LivingAreaHelper = {
         let inMemoryLastUpdated = config.lastUpdated;
 
         function updateTracker() {
-            if (window.location.href.includes('cmd=uni')) return;
-
             const statsBlock = document.getElementById('combatStats');
             if (!statsBlock) return;
 

@@ -1,14 +1,12 @@
-const BernardsMansionHelper = {
+const BernardsBasementHelper = {
+    cmds: 'bernards',
     settings: [
-        { key: 'BernardsMansionHelper_BasementMap', label: 'Basement Map' }
+        { key: 'BernardsBasementHelper_BasementMap', label: 'Basement Map' }
     ],
     init: function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('cmd') !== 'bernards') return;
-
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
         
-        if (savedSettings['BernardsMansionHelper_BasementMap'] !== false) {
+        if (savedSettings['BernardsBasementHelper_BasementMap'] !== false) {
             this.initBasementMap();
         }
     },
@@ -81,4 +79,3 @@ const BernardsMansionHelper = {
         wrapper.appendChild(mapContainer);
     }
 };
-

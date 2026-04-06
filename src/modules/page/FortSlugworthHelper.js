@@ -1,7 +1,6 @@
 const FortSlugworthHelper = {
+    cmds: 'fort_slugworth',
     init: function() {
-        if (!window.location.search.includes('cmd=fort_slugworth')) return;
-
         const settings = Utils.getSettings();
         if (settings['FortSlugworthHelper'] === false) return;
 
