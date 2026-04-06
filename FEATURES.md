@@ -84,21 +84,18 @@ A helper designed to operate on the Soup Kitchen page (`cmd=soup_kitchen`).
 A new helper designed to operate on the Rats page (`cmd=rats`).
 - Currently tracking and foundational logic setup. Future features will be added here.
 
-s### 22. Weapons Helper (`WeaponsHelper.js`)
+### 22. Weapons Helper (`WeaponsHelper.js`)
 A new helper designed to operate on the Weapons page (`cmd=wep`).
 - **Highlight Equipped Items**: Automatically highlights weapons, armor, and rings that you currently have equipped in your inventory list.
 - **Quick Equip/Unequip**: Converts item images into clickable links that will instantly equip or unequip the item based on its current state.
 
-### Drink Helpers
+### 23. Drink Helpers
 - [x] Automatically inject stat and effect data as tooltips to all drinks when hovering your mouse over them inside of your backpack and living area page.
 
-### Food Helpers
+### 24. Food Helpers
 - [x] Food Menu Management: Add a "Mark as Crap" button to mark selected foods as "crap". Unchecked foods will be removed from the list.
 - [x] Add a "Select Crap" button to automatically select all foods you have marked as crap, making it easy to throw them away.
 - [x] Works both in the main Food page and within the Living Area Food tab.
-
-### Gang Profile Helpers
-- [x] Display real-time count of currently active members in a gang that you belong to.
 
 ---
 *Note: We are constantly updating and tweaking these modules. If you encounter any bugs, please report them!*
