@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.93
+// @version      7.94
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -4248,6 +4248,68 @@ const UniversityHelper = {
     }
 };
 
+const WeaponsHelper = {
+    settings: [
+        { key: 'WeaponsHelper_EnableFeature', label: 'Enable Weapons Helper' }
+    ],
+    init: function() {
+        if (!window.location.search.includes('cmd=wep')) return;
+
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        console.log('[Hobo Helper] Initializing WeaponsHelper');
+
+        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        const enableFeature = savedSettings['WeaponsHelper_EnableFeature'] !== false;
+
+        if (enableFeature) {
+            this.initFeature(contentArea);
+        }
+    },
+
+    initFeature: function(contentArea) {
+        const itemCells = contentArea.querySelectorAll('td[width="33%"]');
+
+        itemCells.forEach(cell => {
+            const links = Array.from(cell.querySelectorAll('a'));
+            const actionLink = links.find(a => a.textContent.trim() === 'Equip' || a.textContent.trim() === 'Unequip');
+
+            if (actionLink) {
+                const isEquipped = actionLink.textContent.trim() === 'Unequip';
+
+                // Highlight if equipped
+                if (isEquipped) {
+                    const wrapper = document.createElement('div');
+                    wrapper.style.backgroundColor = 'rgba(128, 128, 128, 0.15)';
+                    wrapper.style.border = '1px solid #999';
+                    wrapper.style.borderRadius = '10px';
+                    wrapper.style.padding = '4px';
+                    wrapper.style.margin = '2px';
+                    wrapper.style.height = '100%';
+                    wrapper.style.boxSizing = 'border-box';
+
+                    while (cell.firstChild) {
+                        wrapper.appendChild(cell.firstChild);
+                    }
+                    cell.appendChild(wrapper);
+                }
+
+                // Make image a hyperlink
+                const img = cell.querySelector('img');
+                if (img && !img.closest('a')) {
+                    const aWrapper = document.createElement('a');
+                    aWrapper.href = actionLink.href;
+                    aWrapper.style.display = 'inline-block';
+                    // We only wrap the image, but maintain its position
+                    img.parentNode.insertBefore(aWrapper, img);
+                    aWrapper.appendChild(img);
+                }
+            }
+        });
+    }
+};
+
 const WellnessClinicHelper = {
             init: function() {
                 const url = window.location.href;
@@ -4387,6 +4449,16 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "7.94",
+            date: "2026-04-06",
+            type: "Added",
+            notes: [
+                "Added the `WeaponsHelper` module for the Weapons page (`cmd=wep`).",
+                "**Highlight Equipped Items**: Automatically highlights the container of weapons, armor, and rings you currently have equipped.",
+                "**Quick Equip/Unequip**: Item images are now hyperlinked to act as quick toggle buttons to equip or unequip that specific item."
+            ]
+        },
+        {
             version: "7.93",
             date: "2026-04-06",
             type: "Changed",
@@ -4423,15 +4495,6 @@ const ChangelogData = {
             notes: [
                 "Prevented `ChangelogData` from incorrectly displaying as an active module in the Preferences settings window."
             ]
-        },
-        {
-            version: "7.89",
-            date: "2026-04-06",
-            type: "Added",
-            notes: [
-                "Added the `GangHelper` module, initialized on the Gang page (`cmd=gang&do=enter`).",
-                "Added a \"Save Event Payouts\" UI to the \"View last gang happening results\" page (`w=lastsh`) specifically for the \"Gangsters Sunday = Funday\" event (visible only to Gang Staff). It automatically calculates and saves payouts per point based on custom rate and max payout inputs, pushing them directly to the `GangLoansHelper` dashboard."
-            ]
         }
     ]
 };
@@ -4462,6 +4525,7 @@ const ChangelogData = {
         SoupKitchenHelper,
         TattooParlorHelper,
         UniversityHelper,
+        WeaponsHelper,
         WellnessClinicHelper,
         ChangelogData
     };

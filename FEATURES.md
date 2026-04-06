@@ -84,6 +84,11 @@ A helper designed to operate on the Soup Kitchen page (`cmd=soup_kitchen`).
 A new helper designed to operate on the Rats page (`cmd=rats`).
 - Currently tracking and foundational logic setup. Future features will be added here.
 
+### 22. Weapons Helper (`WeaponsHelper.js`)
+A new helper designed to operate on the Weapons page (`cmd=wep`).
+- **Highlight Equipped Items**: Automatically highlights weapons, armor, and rings that you currently have equipped in your inventory list.
+- **Quick Equip/Unequip**: Converts item images into clickable links that will instantly equip or unequip the item based on its current state.
+
 ### Drink Helpers
 - [x] Automatically inject stat and effect data as tooltips to all drinks when hovering your mouse over them inside of your backpack and living area page.
 

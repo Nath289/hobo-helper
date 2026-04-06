@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.94] - 2026-04-06
+### Added
+- Added the `WeaponsHelper` module for the Weapons page (`cmd=wep`).
+- **Highlight Equipped Items**: Automatically highlights the container of weapons, armor, and rings you currently have equipped.
+- **Quick Equip/Unequip**: Item images are now hyperlinked to act as quick toggle buttons to equip or unequip that specific item.
+
 ## [7.93] - 2026-04-06
 ### Changed
 - Renamed Living Area Helper setting "Wide Lay: Show 3 Columns" to "Always Show More Info".

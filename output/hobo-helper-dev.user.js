@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      7.92.20260406.2035
+// @version      7.93.20260406.2128
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -4248,6 +4248,68 @@ const UniversityHelper = {
     }
 };
 
+const WeaponsHelper = {
+    settings: [
+        { key: 'WeaponsHelper_EnableFeature', label: 'Enable Weapons Helper' }
+    ],
+    init: function() {
+        if (!window.location.search.includes('cmd=wep')) return;
+
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        console.log('[Hobo Helper] Initializing WeaponsHelper');
+
+        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        const enableFeature = savedSettings['WeaponsHelper_EnableFeature'] !== false;
+
+        if (enableFeature) {
+            this.initFeature(contentArea);
+        }
+    },
+
+    initFeature: function(contentArea) {
+        const itemCells = contentArea.querySelectorAll('td[width="33%"]');
+
+        itemCells.forEach(cell => {
+            const links = Array.from(cell.querySelectorAll('a'));
+            const actionLink = links.find(a => a.textContent.trim() === 'Equip' || a.textContent.trim() === 'Unequip');
+
+            if (actionLink) {
+                const isEquipped = actionLink.textContent.trim() === 'Unequip';
+
+                // Highlight if equipped
+                if (isEquipped) {
+                    const wrapper = document.createElement('div');
+                    wrapper.style.backgroundColor = 'rgba(128, 128, 128, 0.15)';
+                    wrapper.style.border = '1px solid #999';
+                    wrapper.style.borderRadius = '10px';
+                    wrapper.style.padding = '4px';
+                    wrapper.style.margin = '2px';
+                    wrapper.style.height = '100%';
+                    wrapper.style.boxSizing = 'border-box';
+
+                    while (cell.firstChild) {
+                        wrapper.appendChild(cell.firstChild);
+                    }
+                    cell.appendChild(wrapper);
+                }
+
+                // Make image a hyperlink
+                const img = cell.querySelector('img');
+                if (img && !img.closest('a')) {
+                    const aWrapper = document.createElement('a');
+                    aWrapper.href = actionLink.href;
+                    aWrapper.style.display = 'inline-block';
+                    // We only wrap the image, but maintain its position
+                    img.parentNode.insertBefore(aWrapper, img);
+                    aWrapper.appendChild(img);
+                }
+            }
+        });
+    }
+};
+
 const WellnessClinicHelper = {
             init: function() {
                 const url = window.location.href;
@@ -4387,6 +4449,15 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "7.93",
+            date: "2026-04-06",
+            type: "Changed",
+            notes: [
+                "Renamed Living Area Helper setting \"Wide Lay: Show 3 Columns\" to \"Always Show More Info\".",
+                "Added clearer requirement text to Settings Helper for the \"Always Show More Info\" feature."
+            ]
+        },
+        {
             version: "7.92",
             date: "2026-04-06",
             type: "Added",
@@ -4423,15 +4494,6 @@ const ChangelogData = {
                 "Added the `GangHelper` module, initialized on the Gang page (`cmd=gang&do=enter`).",
                 "Added a \"Save Event Payouts\" UI to the \"View last gang happening results\" page (`w=lastsh`) specifically for the \"Gangsters Sunday = Funday\" event (visible only to Gang Staff). It automatically calculates and saves payouts per point based on custom rate and max payout inputs, pushing them directly to the `GangLoansHelper` dashboard."
             ]
-        },
-        {
-            version: "7.88",
-            date: "2026-04-05",
-            type: "Added",
-            notes: [
-                "Added a \"Version Display\" to the `LivingAreaHelper` beneath the Mixer link to show the current Helper Tool version.",
-                "Added an interactive \"View Changelog\" link in the `LivingAreaHelper` that opens a floating modal with the 5 most recent changelog updates without having to wait for the Lockout Screen. Administers settings via the `LivingAreaHelper_VersionDisplay` toggle."
-            ]
         }
     ]
 };
@@ -4462,6 +4524,7 @@ const ChangelogData = {
         SoupKitchenHelper,
         TattooParlorHelper,
         UniversityHelper,
+        WeaponsHelper,
         WellnessClinicHelper,
         ChangelogData
     };
