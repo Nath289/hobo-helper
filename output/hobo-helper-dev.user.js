@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      7.90.20260406.1551
+// @version      7.92.20260406.2035
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -2135,10 +2135,12 @@ const LiquorStoreHelper = {
 const LivingAreaHelper = {
     settings: [
         { key: 'LivingAreaHelper_StatRatioTracker', label: 'Stat Ratio Tracker' },
+        { key: 'LivingAreaHelper_CopyStatsBtn', label: 'Copy Stats Button' },
         { key: 'LivingAreaHelper_AlwaysShowSpecialItem', label: 'Always Show Special Item' },
         { key: 'LivingAreaHelper_MixerLink', label: 'Mixer Link' },
         { key: 'LivingAreaHelper_VersionDisplay', label: 'Version Display' },
-        { key: 'LivingAreaHelper_WinPercentageCalc', label: 'Win Percentage Calc' }
+        { key: 'LivingAreaHelper_WinPercentageCalc', label: 'Win Percentage Calc' },
+        { key: 'LivingAreaHelper_WideShowAll', label: 'Always Show More Info<br><span style="font-size: 11px; color: #555;">(Requires Display Helper Page Width >= 850px)</span>' }
     ],
     init: function() {
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
@@ -2151,6 +2153,9 @@ const LivingAreaHelper = {
         if (savedSettings['LivingAreaHelper_StatRatioTracker'] !== false) {
             this.initStatRatioTracker();
         }
+        if (savedSettings['LivingAreaHelper_CopyStatsBtn'] !== false) {
+            this.initCopyStatsBtn();
+        }
         if (savedSettings['LivingAreaHelper_AlwaysShowSpecialItem'] !== false) {
             this.initAlwaysShowSpecialItem();
         }
@@ -2162,6 +2167,78 @@ const LivingAreaHelper = {
         }
         if (savedSettings['LivingAreaHelper_WinPercentageCalc'] !== false) {
             this.initWinPercentageCalc();
+        }
+        if (savedSettings['LivingAreaHelper_WideShowAll'] !== false) {
+            this.initWideShowAll(savedSettings);
+        }
+    },
+
+    initWideShowAll: function(settings) {
+        if (window.location.href.includes('cmd=uni')) return;
+        
+        // Only run if the user has specifically widened the page >= 850px through the display helper
+        const isWiden = settings['DisplayHelper_WidenPage'];
+        const pageWidth = parseInt(settings['DisplayHelper_PageWidth'] || 660, 10);
+        
+        if (isWiden && pageWidth >= 850) {
+            // First we need to reveal everything that "show_more" normally would
+            const moreInfoItems = document.querySelectorAll('.more_info');
+            moreInfoItems.forEach(el => {
+                if (el.style) el.style.display = (el.tagName.toLowerCase() === 'span') ? 'inline' : 'block';
+            });
+            const lessInfoItems = document.querySelectorAll('.less_info');
+            lessInfoItems.forEach(el => {
+                if (el.style) el.style.display = 'none';
+            });
+            
+            // Keep the avatar column visible
+            const myHobo = document.getElementById('myhobo');
+            if (myHobo) {
+                myHobo.style.display = 'inline-block';
+            }
+            
+            // Hide the toggle buttons
+            const moreLink = document.getElementById('show_more_link');
+            const lessLink = document.getElementById('show_less_link');
+            if (moreLink) moreLink.style.display = 'none';
+            if (lessLink) lessLink.style.display = 'none';
+
+            // Expand the #tabContent to make room for all 3 columns
+            const tabContent = document.getElementById('tabContent');
+            if (tabContent) {
+                tabContent.style.width = 'calc(100% - 190px)';
+            }
+
+            // Force it with CSS so game JS can't overwrite it
+            const style = document.createElement('style');
+            style.innerHTML = `
+                #tabContent {
+                    width: calc(100% - 190px) !important;
+                    box-sizing: border-box !important;
+                    vertical-align: top !important;
+                }
+                .statsDisplay {
+                    white-space: nowrap !important;
+                }
+                .leftStats, .rightStats {
+                    white-space: normal !important;
+                    display: inline-block !important;
+                    vertical-align: top !important;
+                }
+            `;
+            document.head.appendChild(style);
+
+            // We must rewrite the game functions to do nothing, in case the user navigates backpack tabs
+            // and the game tries to hide or show myhobo automatically
+            if (typeof window.hide_myhobo !== 'undefined') {
+                const script = document.createElement('script');
+                script.textContent = `
+                    function hide_myhobo() {} 
+                    function show_more() {} 
+                    function show_less() {}
+                `;
+                document.body.appendChild(script);
+            }
         }
     },
 
@@ -2572,6 +2649,49 @@ const LivingAreaHelper = {
             calcHtml += `</div>`;
 
             battleBlock.insertAdjacentHTML('beforeend', calcHtml);
+        }
+    },
+
+    initCopyStatsBtn: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const cmd = urlParams.get('cmd');
+        if (cmd) return;
+
+        const statsBlock = document.getElementById('combatStats');
+        if (!statsBlock) return;
+
+        const lines = Array.from(statsBlock.querySelectorAll('.line'));
+        const headerLine = lines.find(l => l.textContent.includes('Combat Stats'));
+
+        if (headerLine) {
+            const copyBtn = document.createElement('button');
+            copyBtn.innerText = '📋 Copy';
+            copyBtn.title = "Copy Stats to Clipboard";
+            copyBtn.style.cssText = 'margin-left: 5px; cursor: pointer; font-size: 10px; padding: 1px 4px; border: 1px solid #ccc; background: #fff; border-radius: 3px; user-select: none; -webkit-user-select: none; width: 62px; text-align: left;';
+
+            copyBtn.onclick = (e) => {
+                e.preventDefault();
+                const getLineText = (label) => {
+                    const target = lines.find(l => l.innerText.startsWith(label));
+                    return target ? target.innerText.replace(/\s+/g, ' ').trim() : "";
+                };
+
+                const spdStr = getLineText('Speed:');
+                const pwrStr = getLineText('Power:');
+                const strStr = getLineText('Strength:');
+                const totStr = getLineText('Total:');
+
+                if (spdStr && pwrStr && strStr) {
+                    const copyText = `Combat Stats\n${spdStr}\n${pwrStr}\n${strStr}\n${totStr}`;
+                    navigator.clipboard.writeText(copyText).then(() => {
+                        const originalText = copyBtn.innerText;
+                        copyBtn.innerText = '✅ Copied';
+                        setTimeout(() => { copyBtn.innerText = originalText; }, 1500);
+                    });
+                }
+            };
+
+            headerLine.appendChild(copyBtn);
         }
     }
 }
@@ -4267,6 +4387,27 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "7.92",
+            date: "2026-04-06",
+            type: "Added",
+            notes: [
+                "Added a \"Copy Stats\" button to the `LivingAreaHelper` combat stats box to instantly copy the displayed battle stats + totals directly to the clipboard.",
+                "Added a \"Wide Lay: Show 3 Columns\" option in `LivingAreaHelper` which forces the Living Area layout to reveal all columns natively when `DisplayHelper` \"Widen Content Area\" is active (>= 850px), bypassing the toggle buttons entirely.",
+                "Enforced strict spacing logic on `LivingAreaHelper` wide layout implementation using dynamic calc grids and specific CSS whitespace overrides, preventing unexpected box line wrapping."
+            ]
+        },
+        {
+            version: "7.91",
+            date: "2026-04-06",
+            type: "Added",
+            notes: [
+                "Added an \"Awake Full Notification\" feature to `DisplayHelper` which automatically tracks offline awakeness regeneration and dispatches a desktop Tampermonkey notification when max awakeness is reached after a configurable period of inactivity. Disabled by default.",
+                "Fixed an issue in `SettingsHelper` where sub-features structured with a false default value were incorrectly defaulting to checked upon first initialization.",
+                "Enhanced the `LivingAreaHelper` \"Win Percentage Calc\" to calculate and display both the consecutive wins needed to reach the next bonus bracket, and the consecutive losses allowed before dropping a bracket.",
+                "Smoothed out the milestone threshold curve in the \"Win Percentage Calc\" using a dynamic 10-99% bracket system for more realistic and manageable short-term goal tracking."
+            ]
+        },
+        {
             version: "7.90",
             date: "2026-04-06",
             type: "Fixed",
@@ -4290,22 +4431,6 @@ const ChangelogData = {
             notes: [
                 "Added a \"Version Display\" to the `LivingAreaHelper` beneath the Mixer link to show the current Helper Tool version.",
                 "Added an interactive \"View Changelog\" link in the `LivingAreaHelper` that opens a floating modal with the 5 most recent changelog updates without having to wait for the Lockout Screen. Administers settings via the `LivingAreaHelper_VersionDisplay` toggle."
-            ]
-        },
-        {
-            version: "7.87",
-            date: "2026-04-05",
-            type: "Changed",
-            notes: [
-                "Updated the `LivingAreaHelper` \"Update Ratio\" button to display \"Update Goals\" and configured it to automatically collapse the input window when settings are saved."
-            ]
-        },
-        {
-            version: "7.86",
-            date: "2026-04-05",
-            type: "Added",
-            notes: [
-                "Added an \"Enable the Fake Qwee\" setting to the `DisplayHelper` to allow toggling the \"The Fake\" prefix for user ID 2924510."
             ]
         }
     ]

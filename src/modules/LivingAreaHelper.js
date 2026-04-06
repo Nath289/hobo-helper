@@ -1,10 +1,12 @@
 const LivingAreaHelper = {
     settings: [
         { key: 'LivingAreaHelper_StatRatioTracker', label: 'Stat Ratio Tracker' },
+        { key: 'LivingAreaHelper_CopyStatsBtn', label: 'Copy Stats Button' },
         { key: 'LivingAreaHelper_AlwaysShowSpecialItem', label: 'Always Show Special Item' },
         { key: 'LivingAreaHelper_MixerLink', label: 'Mixer Link' },
         { key: 'LivingAreaHelper_VersionDisplay', label: 'Version Display' },
-        { key: 'LivingAreaHelper_WinPercentageCalc', label: 'Win Percentage Calc' }
+        { key: 'LivingAreaHelper_WinPercentageCalc', label: 'Win Percentage Calc' },
+        { key: 'LivingAreaHelper_WideShowAll', label: 'Always Show More Info<br><span style="font-size: 11px; color: #555;">(Requires Display Helper Page Width >= 850px)</span>' }
     ],
     init: function() {
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
@@ -17,6 +19,9 @@ const LivingAreaHelper = {
         if (savedSettings['LivingAreaHelper_StatRatioTracker'] !== false) {
             this.initStatRatioTracker();
         }
+        if (savedSettings['LivingAreaHelper_CopyStatsBtn'] !== false) {
+            this.initCopyStatsBtn();
+        }
         if (savedSettings['LivingAreaHelper_AlwaysShowSpecialItem'] !== false) {
             this.initAlwaysShowSpecialItem();
         }
@@ -28,6 +33,78 @@ const LivingAreaHelper = {
         }
         if (savedSettings['LivingAreaHelper_WinPercentageCalc'] !== false) {
             this.initWinPercentageCalc();
+        }
+        if (savedSettings['LivingAreaHelper_WideShowAll'] !== false) {
+            this.initWideShowAll(savedSettings);
+        }
+    },
+
+    initWideShowAll: function(settings) {
+        if (window.location.href.includes('cmd=uni')) return;
+        
+        // Only run if the user has specifically widened the page >= 850px through the display helper
+        const isWiden = settings['DisplayHelper_WidenPage'];
+        const pageWidth = parseInt(settings['DisplayHelper_PageWidth'] || 660, 10);
+        
+        if (isWiden && pageWidth >= 850) {
+            // First we need to reveal everything that "show_more" normally would
+            const moreInfoItems = document.querySelectorAll('.more_info');
+            moreInfoItems.forEach(el => {
+                if (el.style) el.style.display = (el.tagName.toLowerCase() === 'span') ? 'inline' : 'block';
+            });
+            const lessInfoItems = document.querySelectorAll('.less_info');
+            lessInfoItems.forEach(el => {
+                if (el.style) el.style.display = 'none';
+            });
+            
+            // Keep the avatar column visible
+            const myHobo = document.getElementById('myhobo');
+            if (myHobo) {
+                myHobo.style.display = 'inline-block';
+            }
+            
+            // Hide the toggle buttons
+            const moreLink = document.getElementById('show_more_link');
+            const lessLink = document.getElementById('show_less_link');
+            if (moreLink) moreLink.style.display = 'none';
+            if (lessLink) lessLink.style.display = 'none';
+
+            // Expand the #tabContent to make room for all 3 columns
+            const tabContent = document.getElementById('tabContent');
+            if (tabContent) {
+                tabContent.style.width = 'calc(100% - 190px)';
+            }
+
+            // Force it with CSS so game JS can't overwrite it
+            const style = document.createElement('style');
+            style.innerHTML = `
+                #tabContent {
+                    width: calc(100% - 190px) !important;
+                    box-sizing: border-box !important;
+                    vertical-align: top !important;
+                }
+                .statsDisplay {
+                    white-space: nowrap !important;
+                }
+                .leftStats, .rightStats {
+                    white-space: normal !important;
+                    display: inline-block !important;
+                    vertical-align: top !important;
+                }
+            `;
+            document.head.appendChild(style);
+
+            // We must rewrite the game functions to do nothing, in case the user navigates backpack tabs
+            // and the game tries to hide or show myhobo automatically
+            if (typeof window.hide_myhobo !== 'undefined') {
+                const script = document.createElement('script');
+                script.textContent = `
+                    function hide_myhobo() {} 
+                    function show_more() {} 
+                    function show_less() {}
+                `;
+                document.body.appendChild(script);
+            }
         }
     },
 
@@ -438,6 +515,49 @@ const LivingAreaHelper = {
             calcHtml += `</div>`;
 
             battleBlock.insertAdjacentHTML('beforeend', calcHtml);
+        }
+    },
+
+    initCopyStatsBtn: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const cmd = urlParams.get('cmd');
+        if (cmd) return;
+
+        const statsBlock = document.getElementById('combatStats');
+        if (!statsBlock) return;
+
+        const lines = Array.from(statsBlock.querySelectorAll('.line'));
+        const headerLine = lines.find(l => l.textContent.includes('Combat Stats'));
+
+        if (headerLine) {
+            const copyBtn = document.createElement('button');
+            copyBtn.innerText = '📋 Copy';
+            copyBtn.title = "Copy Stats to Clipboard";
+            copyBtn.style.cssText = 'margin-left: 5px; cursor: pointer; font-size: 10px; padding: 1px 4px; border: 1px solid #ccc; background: #fff; border-radius: 3px; user-select: none; -webkit-user-select: none; width: 62px; text-align: left;';
+
+            copyBtn.onclick = (e) => {
+                e.preventDefault();
+                const getLineText = (label) => {
+                    const target = lines.find(l => l.innerText.startsWith(label));
+                    return target ? target.innerText.replace(/\s+/g, ' ').trim() : "";
+                };
+
+                const spdStr = getLineText('Speed:');
+                const pwrStr = getLineText('Power:');
+                const strStr = getLineText('Strength:');
+                const totStr = getLineText('Total:');
+
+                if (spdStr && pwrStr && strStr) {
+                    const copyText = `Combat Stats\n${spdStr}\n${pwrStr}\n${strStr}\n${totStr}`;
+                    navigator.clipboard.writeText(copyText).then(() => {
+                        const originalText = copyBtn.innerText;
+                        copyBtn.innerText = '✅ Copied';
+                        setTimeout(() => { copyBtn.innerText = originalText; }, 1500);
+                    });
+                }
+            };
+
+            headerLine.appendChild(copyBtn);
         }
     }
 }

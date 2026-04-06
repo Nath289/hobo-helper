@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.93] - 2026-04-06
+### Changed
+- Renamed Living Area Helper setting "Wide Lay: Show 3 Columns" to "Always Show More Info".
+- Added clearer requirement text to Settings Helper for the "Always Show More Info" feature.
+
+## [7.92] - 2026-04-06
+### Added
+- Added a "Copy Stats" button to the `LivingAreaHelper` combat stats box to instantly copy the displayed battle stats + totals directly to the clipboard.
+- Added a "Wide Lay: Show 3 Columns" option in `LivingAreaHelper` which forces the Living Area layout to reveal all columns natively when `DisplayHelper` "Widen Content Area" is active (>= 850px), bypassing the toggle buttons entirely.
+### Changed
+- Enforced strict spacing logic on `LivingAreaHelper` wide layout implementation using dynamic calc grids and specific CSS whitespace overrides, preventing unexpected box line wrapping.
+
 ## [7.91] - 2026-04-06
 ### Added
 - Added an "Awake Full Notification" feature to `DisplayHelper` which automatically tracks offline awakeness regeneration and dispatches a desktop Tampermonkey notification when max awakeness is reached after a configurable period of inactivity. Disabled by default.
