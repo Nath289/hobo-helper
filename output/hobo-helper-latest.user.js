@@ -2525,14 +2525,47 @@ const LivingAreaHelper = {
                 return Math.ceil((decimal * total - wins) / (1 - decimal));
             };
 
-            const targets = [75, 80, 85, 90];
-            let calcHtml = `<div id="winCalc" style="font-size: 0.85em; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #999; color: #333;">`;
-            calcHtml += `<strong style="color: black;">Wins to Target Ratio:</strong><br>`;
+            const getLossesNeeded = (target) => {
+                const decimal = target / 100;
+                if ((wins / total) < decimal) return 0;
+                return Math.floor(wins / decimal) - total + 1;
+            };
 
-            targets.forEach(t => {
-                const needed = getBattlesNeeded(t);
-                if (needed > 0) {
-                    calcHtml += `<span style="display:inline-block; width: 40px; color: black; font-weight: bold;">${t}%:</span> +<span style="color: black; font-weight: bold;">${needed.toLocaleString()}</span> consecutive wins<br>`;
+            if (total === 0) return;
+            const currDecimal = wins / total;
+            const allT = [10, 20, 30, 40, 50, 60, 70, 75, 80, 85, 90, 95, 98, 99];
+
+            let winGoals = allT.filter(t => (t / 100) > currDecimal).sort((a, b) => a - b);
+            let lossGoals = allT.filter(t => (t / 100) <= currDecimal).sort((a, b) => b - a);
+
+            if (winGoals.length === 0) winGoals = [95, 99].filter(t => (t / 100) > currDecimal);
+            if (lossGoals.length === 0) lossGoals = [5, 1].filter(t => (t / 100) <= currDecimal);
+
+            let rows = [];
+            if (winGoals[0]) rows.push({ type: 'win', t: winGoals[0] });
+            if (winGoals[1]) rows.push({ type: 'win', t: winGoals[1] });
+            if (lossGoals[0]) rows.push({ type: 'loss', t: lossGoals[0] });
+
+            if (rows.length < 3 && winGoals[2]) {
+                rows.push({ type: 'win', t: winGoals[2] });
+            }
+
+            rows = rows.slice(0, 3).sort((a, b) => b.t - a.t);
+
+            let calcHtml = `<div id="winCalc" style="font-size: 0.85em; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #999; color: #333;">`;
+            calcHtml += `<strong style="color: black;">Win Percentage Tracker:</strong><br>`;
+
+            rows.forEach(r => {
+                if (r.type === 'win') {
+                    const needed = getBattlesNeeded(r.t);
+                    if (needed > 0) {
+                        calcHtml += `<span style="display:inline-block; width: 45px; color: green; font-weight: bold;">${r.t}%:</span> +<span style="color: black; font-weight: bold;">${needed.toLocaleString()}</span> consecutive wins<br>`;
+                    }
+                } else {
+                    const needed = getLossesNeeded(r.t);
+                    if (needed > 0) {
+                        calcHtml += `<span style="display:inline-block; width: 45px; color: red; font-weight: bold;">&lt;${r.t}%:</span> +<span style="color: black; font-weight: bold;">${needed.toLocaleString()}</span> consecutive losses<br>`;
+                    }
                 }
             });
 
@@ -4239,7 +4272,9 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added an \"Awake Full Notification\" feature to `DisplayHelper` which automatically tracks offline awakeness regeneration and dispatches a desktop Tampermonkey notification when max awakeness is reached after a configurable period of inactivity. Disabled by default.",
-                "Fixed an issue in `SettingsHelper` where sub-features structured with a false default value were incorrectly defaulting to checked upon first initialization."
+                "Fixed an issue in `SettingsHelper` where sub-features structured with a false default value were incorrectly defaulting to checked upon first initialization.",
+                "Enhanced the `LivingAreaHelper` \"Win Percentage Calc\" to calculate and display both the consecutive wins needed to reach the next bonus bracket, and the consecutive losses allowed before dropping a bracket.",
+                "Smoothed out the milestone threshold curve in the \"Win Percentage Calc\" using a dynamic 10-99% bracket system for more realistic and manageable short-term goal tracking."
             ]
         },
         {

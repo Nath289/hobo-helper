@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.91] - 2026-04-06
+### Added
+- Added an "Awake Full Notification" feature to `DisplayHelper` which automatically tracks offline awakeness regeneration and dispatches a desktop Tampermonkey notification when max awakeness is reached after a configurable period of inactivity. Disabled by default.
+### Fixed
+- Fixed an issue in `SettingsHelper` where sub-features structured with a false default value were incorrectly defaulting to checked upon first initialization.
+### Changed
+- Enhanced the `LivingAreaHelper` "Win Percentage Calc" to calculate and display both the consecutive wins needed to reach the next bonus bracket, and the consecutive losses allowed before dropping a bracket.
+- Smoothed out the milestone threshold curve in the "Win Percentage Calc" using a dynamic 10-99% bracket system for more realistic and manageable short-term goal tracking.
+
 ## [7.90] - 2026-04-06
 ### Fixed
 - Prevented `ChangelogData` from incorrectly displaying as an active module in the Preferences settings window.

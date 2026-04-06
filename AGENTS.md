@@ -37,8 +37,8 @@ When a user requests a new feature or modification, you must ensure it does not 
 
 **CRITICAL - Proactive Dev Setup:** If the user is beginning development and the file `output/dev-proxy-local.user.js` does not exist, you should proactively generate it for the user. Read the template `output/dev-proxy.template.user.js`, modify the `@require` path on line 7 to point to the exact absolute path of `output/hobo-helper-dev.user.js` on the user's system, and save it as `output/dev-proxy-local.user.js`. After generating it, explicitly direct the user to read `LOCAL_DEV.md` so they can understand how to initialize their fast-iteration local environment.
 
-**CRITICAL:** Only update the changelog **when the change has been finalized and the user explicitly instructs you to do so**. 
-If you believe the change is final, **ask the user** if they want to finalize the change and document it. Otherwise, suggest additional functionality and improvements.
+**CRITICAL:** Only update the changelog and run the release build **after** the user has tested your changes via the dev build (`.\build.ps1`), and **specifically uses the exact word "finalise" or "finalize"**. 
+Do **NOT** assume a change is final just because it works or the request is completed. If you believe the change is final, you must **ask the user** if they want to finalize the change and document it. Never leap to executing `.\build.ps1 -Release` or editing `CHANGELOG.md` unless explicitly given the "finalise" command.
 
 When finalizing a change:
 1. Add an entry to the top of `CHANGELOG.md` under the newly bumped version, logging what was added, changed, or fixed. Format the version headers like `## [7.43] - YYYY-MM-DD`. Note: The build script automatically parses this file to extract the current version and automatically generates the in-game floating changelog popup UI for you.
