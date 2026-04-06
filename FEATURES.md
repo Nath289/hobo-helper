@@ -38,7 +38,11 @@ A tool designed to make stat training smoother at the University. It can help tr
 Enhances the Wellness Clinic by displaying real-time data on your health, hospitalizations, or relevant cooldown timers directly into the UI.
 
 ### 10. Message Board Helper (`MessageBoardHelper.js`)
-Provides functionality and quality-of-life improvements specifically on the Message Board gathering pages (`cmd=gathering`). Automatically adds an "Edit: Paid" button to the post editor that appends the current hobo name and a paid message statement. Automatically added structural support for future enhancements.
+Provides functionality and quality-of-life improvements specifically on the Message Board gathering pages (`cmd=gathering`). 
+- **Ctrl+Enter to Post**: Rapidly submit replies using the keyboard shortcut.
+- **Add Paid Message**: Adds a button to the post editor that appends your current hobo name and a paid message statement. 
+- **Gang Board Tools**: Allows Gang Staff to save topic replier lists and record manual payments per-post.
+- **Larger Vote Buttons**: Converts the tiny Up/Down vote links into larger, easy-to-click buttons while perfectly preserving the native vote info tooltips.
 
 ### 11. Kurtz Camp Helper (`KurtzCampHelper.js`)
 Assists at Kurtz's Camp by keeping a running tally of Fire and Empty Bottles collected while lighting sticks. Retains this count across sessions using local storage, and includes a toggle to reset the counts at any time. Features dynamic display that only exhibits the empty bottle tally if any have been collected.
