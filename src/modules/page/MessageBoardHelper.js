@@ -1,6 +1,7 @@
 const MessageBoardHelper = {
     settings: [
-        { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' }
+        { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
+        { key: 'MessageBoardHelper_VoteButtons', label: 'Larger Vote Buttons' }
     ],
     init: function() {
         if (!Utils.isCurrentPage('cmd=gathering')) return;
@@ -17,6 +18,97 @@ const MessageBoardHelper = {
 
     initMessageBoardFeatures: function(settings) {
         this.enhanceMessageEditor(settings);
+        
+        if (settings?.MessageBoardHelper_VoteButtons !== false) {
+            this.enhanceVoteButtons();
+            this.fixVoteTooltipBug();
+        }
+    },
+
+    enhanceVoteButtons: function() {
+        const voteSpans = document.querySelectorAll('span[id^="vote-"]');
+        voteSpans.forEach(span => {
+            const upLink = span.querySelector('a[title="Vote Up"]');
+            const downLink = span.querySelector('a[title="Vote Down"]');
+
+            if (upLink && !upLink.hasAttribute('data-enhanced')) {
+                this.convertVoteLinkToButton(upLink, 'Vote Up');
+            }
+            if (downLink && !downLink.hasAttribute('data-enhanced')) {
+                this.convertVoteLinkToButton(downLink, 'Vote Down');
+            }
+        });
+    },
+
+    fixVoteTooltipBug: function() {
+        // The game's original votelinker script permanently erases the tooltip class and hover bindings when you vote
+        // This injects a fixed version of that function to ensure the tooltip works after voting
+        const script = document.createElement('script');
+        script.textContent = `
+            if (typeof window.votelinker === 'function' && !window.votelinker_fixed) {
+                window.votelinker = function(id, post_id, type, curvote) {
+                    var link = window.ulink + "&post=" + post_id + "&do=vote&type=" + type;
+                    $.get(link, function() {
+                        $("#vote-" + id).html('');
+                        type = type * 1;
+                        if (type === 1) { curvote++; } else { curvote--; }
+                        $("#votecountwrapper-" + id).hide();
+                        
+                        let color = "gray";
+                        let displayVote = curvote > 0 ? "+" + curvote : curvote;
+                        if (curvote > 0) color = "green";
+                        else if (curvote < 0) color = "red";
+                        
+                        $("#votecountwrapper-" + id).html('<span class="tooltip" id="votecount-' + id + '" title="Loading..."><font color="' + color + '">' + displayVote + '</font></span>');
+                        $("#votecountwrapper-" + id).fadeIn();
+                        
+                        if (typeof $.fn.tipTip !== "undefined") {
+                            setTimeout(function() {
+                                // Initialize the new element immediately to absorb "Loading..." just like page load
+                                $("#votecount-" + id).tipTip({delay: 10, edgeOffset: 12, maxWidth: 400});
+                                
+                                // Re-bind the click/hover event that fetches the exact vote info
+                                $("#votecount-" + id).on("hover click", function() {
+                                    this.style.cursor = 'help';
+                                    var t_id = this.id.replace("votecount-", "");
+                                    $.get("../game/vote_info.php", { id: t_id, vc: "0" }, function(data) {
+                                        jQuery('#tiptip_content').html(data);
+                                        $("#votecount-" + t_id).tipTip({ delay: 10, edgeOffset: 12 });
+                                    });
+                                });
+                            }, 5);
+                        }
+                    });
+                };
+                window.votelinker_fixed = true;
+            }
+        `;
+        document.body.appendChild(script);
+    },
+
+    convertVoteLinkToButton: function(link, text) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.title = link.title || text;
+        btn.setAttribute('data-enhanced', 'true');
+        btn.style.cssText = 'cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 5px; margin: 0 4px; padding: 4px 8px; font-size: 11px; font-weight: bold; background: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; color: #333; user-select: none; -webkit-user-select: none; text-decoration: none;';
+        
+        if (link.hasAttribute('onclick')) {
+            btn.setAttribute('onclick', link.getAttribute('onclick'));
+        }
+        
+        const img = link.querySelector('img');
+        if (img) {
+            const imgClone = img.cloneNode(true);
+            imgClone.style.opacity = '1'; 
+            btn.appendChild(imgClone);
+        }
+        
+        const txtSpan = document.createElement('span');
+        txtSpan.textContent = text;
+        btn.appendChild(txtSpan);
+        
+        link.parentNode.replaceChild(btn, link);
     },
 
     enhanceMessageEditor: function(settings) {
@@ -333,4 +425,3 @@ const MessageBoardHelper = {
         });
     }
 };
-

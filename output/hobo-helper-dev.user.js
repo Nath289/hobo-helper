@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      7.94.20260406.2326
+// @version      7.95.20260407.0027
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -3064,7 +3064,8 @@ const LockoutHelper = {
 
 const MessageBoardHelper = {
     settings: [
-        { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' }
+        { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
+        { key: 'MessageBoardHelper_VoteButtons', label: 'Larger Vote Buttons' }
     ],
     init: function() {
         if (!Utils.isCurrentPage('cmd=gathering')) return;
@@ -3081,6 +3082,97 @@ const MessageBoardHelper = {
 
     initMessageBoardFeatures: function(settings) {
         this.enhanceMessageEditor(settings);
+        
+        if (settings?.MessageBoardHelper_VoteButtons !== false) {
+            this.enhanceVoteButtons();
+            this.fixVoteTooltipBug();
+        }
+    },
+
+    enhanceVoteButtons: function() {
+        const voteSpans = document.querySelectorAll('span[id^="vote-"]');
+        voteSpans.forEach(span => {
+            const upLink = span.querySelector('a[title="Vote Up"]');
+            const downLink = span.querySelector('a[title="Vote Down"]');
+
+            if (upLink && !upLink.hasAttribute('data-enhanced')) {
+                this.convertVoteLinkToButton(upLink, 'Vote Up');
+            }
+            if (downLink && !downLink.hasAttribute('data-enhanced')) {
+                this.convertVoteLinkToButton(downLink, 'Vote Down');
+            }
+        });
+    },
+
+    fixVoteTooltipBug: function() {
+        // The game's original votelinker script permanently erases the tooltip class and hover bindings when you vote
+        // This injects a fixed version of that function to ensure the tooltip works after voting
+        const script = document.createElement('script');
+        script.textContent = `
+            if (typeof window.votelinker === 'function' && !window.votelinker_fixed) {
+                window.votelinker = function(id, post_id, type, curvote) {
+                    var link = window.ulink + "&post=" + post_id + "&do=vote&type=" + type;
+                    $.get(link, function() {
+                        $("#vote-" + id).html('');
+                        type = type * 1;
+                        if (type === 1) { curvote++; } else { curvote--; }
+                        $("#votecountwrapper-" + id).hide();
+                        
+                        let color = "gray";
+                        let displayVote = curvote > 0 ? "+" + curvote : curvote;
+                        if (curvote > 0) color = "green";
+                        else if (curvote < 0) color = "red";
+                        
+                        $("#votecountwrapper-" + id).html('<span class="tooltip" id="votecount-' + id + '" title="Loading..."><font color="' + color + '">' + displayVote + '</font></span>');
+                        $("#votecountwrapper-" + id).fadeIn();
+                        
+                        if (typeof $.fn.tipTip !== "undefined") {
+                            setTimeout(function() {
+                                // Initialize the new element immediately to absorb "Loading..." just like page load
+                                $("#votecount-" + id).tipTip({delay: 10, edgeOffset: 12, maxWidth: 400});
+                                
+                                // Re-bind the click/hover event that fetches the exact vote info
+                                $("#votecount-" + id).on("hover click", function() {
+                                    this.style.cursor = 'help';
+                                    var t_id = this.id.replace("votecount-", "");
+                                    $.get("../game/vote_info.php", { id: t_id, vc: "0" }, function(data) {
+                                        jQuery('#tiptip_content').html(data);
+                                        $("#votecount-" + t_id).tipTip({ delay: 10, edgeOffset: 12 });
+                                    });
+                                });
+                            }, 5);
+                        }
+                    });
+                };
+                window.votelinker_fixed = true;
+            }
+        `;
+        document.body.appendChild(script);
+    },
+
+    convertVoteLinkToButton: function(link, text) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.title = link.title || text;
+        btn.setAttribute('data-enhanced', 'true');
+        btn.style.cssText = 'cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 5px; margin: 0 4px; padding: 4px 8px; font-size: 11px; font-weight: bold; background: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; color: #333; user-select: none; -webkit-user-select: none; text-decoration: none;';
+        
+        if (link.hasAttribute('onclick')) {
+            btn.setAttribute('onclick', link.getAttribute('onclick'));
+        }
+        
+        const img = link.querySelector('img');
+        if (img) {
+            const imgClone = img.cloneNode(true);
+            imgClone.style.opacity = '1'; 
+            btn.appendChild(imgClone);
+        }
+        
+        const txtSpan = document.createElement('span');
+        txtSpan.textContent = text;
+        btn.appendChild(txtSpan);
+        
+        link.parentNode.replaceChild(btn, link);
     },
 
     enhanceMessageEditor: function(settings) {
@@ -4438,6 +4530,16 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "7.95",
+            date: "2026-04-06",
+            type: "Changed",
+            notes: [
+                "**Performance Refactor:** Separated helper scripts into Global and Page-specific modules to prevent DOM visual jolts on unrelated pages.",
+                "**Page Routing:** Helpers now conditionally load strictly on the pages they affect via declarative URL routing.",
+                "Renamed Bernards Mansion Helper to Bernards Basement Helper to accurately reflect location endpoints."
+            ]
+        },
+        {
             version: "7.94",
             date: "2026-04-06",
             type: "Added",
@@ -4475,14 +4577,6 @@ const ChangelogData = {
                 "Fixed an issue in `SettingsHelper` where sub-features structured with a false default value were incorrectly defaulting to checked upon first initialization.",
                 "Enhanced the `LivingAreaHelper` \"Win Percentage Calc\" to calculate and display both the consecutive wins needed to reach the next bonus bracket, and the consecutive losses allowed before dropping a bracket.",
                 "Smoothed out the milestone threshold curve in the \"Win Percentage Calc\" using a dynamic 10-99% bracket system for more realistic and manageable short-term goal tracking."
-            ]
-        },
-        {
-            version: "7.90",
-            date: "2026-04-06",
-            type: "Fixed",
-            notes: [
-                "Prevented `ChangelogData` from incorrectly displaying as an active module in the Preferences settings window."
             ]
         }
     ]

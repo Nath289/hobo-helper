@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.96] - 2026-04-07
+### Added
+- **Larger Vote Buttons (Message Board):** The tiny Up/Down vote links on message board posts are now converted into larger, easy-to-click buttons. This feature can be toggled via settings.
+
+### Fixed
+- **Message Board Vote Tooltips:** Fixed a native game bug where the detailed vote count tooltip ("Loading...", followed by percentage breakdown) would permanently break after casting a vote without a page refresh.
+
 ## [7.95] - 2026-04-06
 ### Changed
 - **Performance Refactor:** Separated helper scripts into Global and Page-specific modules to prevent DOM visual jolts on unrelated pages.
