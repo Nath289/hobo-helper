@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.90] - 2026-04-06
+### Fixed
+- Prevented `ChangelogData` from incorrectly displaying as an active module in the Preferences settings window.
+
 ## [7.89] - 2026-04-06
 ### Added
 - Added the `GangHelper` module, initialized on the Gang page (`cmd=gang&do=enter`).

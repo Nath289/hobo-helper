@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      7.88.20260406.0111
+// @version      7.89.20260406.1119
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -4170,8 +4170,16 @@ const WellnessClinicHelper = {
         }
 
 const ChangelogData = {
-    init: function() {},
     changes: [
+        {
+            version: "7.89",
+            date: "2026-04-06",
+            type: "Added",
+            notes: [
+                "Added the `GangHelper` module, initialized on the Gang page (`cmd=gang&do=enter`).",
+                "Added a \"Save Event Payouts\" UI to the \"View last gang happening results\" page (`w=lastsh`) specifically for the \"Gangsters Sunday = Funday\" event (visible only to Gang Staff). It automatically calculates and saves payouts per point based on custom rate and max payout inputs, pushing them directly to the `GangLoansHelper` dashboard."
+            ]
+        },
         {
             version: "7.88",
             date: "2026-04-05",
@@ -4204,14 +4212,6 @@ const ChangelogData = {
             notes: [
                 "Added a `RatsHelper` for the Rat page (`cmd=rats`) that includes an interactive \"Rat News Filter\" using checkbox pills.",
                 "Refactored `SettingsHelper` architecture: all modules now export their own settings configurations, automatically populating the Preferences page dynamically."
-            ]
-        },
-        {
-            version: "7.84",
-            date: "2026-04-05",
-            type: "Changed",
-            notes: [
-                "Updated the \"Export Saved Repliers\" button to output granular line-by-line payment details for each individual recipient instead of a single total summary string."
             ]
         }
     ]

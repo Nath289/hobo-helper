@@ -55,7 +55,6 @@ foreach ($c in $changes) {
 $changesArrStr = $jsChanges -join ",`n"
 $changelogDataScript = @"
 const ChangelogData = {
-    init: function() {},
     changes: [
 $changesArrStr
     ]

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      7.89
+// @version      7.90
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -4170,8 +4170,15 @@ const WellnessClinicHelper = {
         }
 
 const ChangelogData = {
-    init: function() {},
     changes: [
+        {
+            version: "7.90",
+            date: "2026-04-06",
+            type: "Fixed",
+            notes: [
+                "Prevented `ChangelogData` from incorrectly displaying as an active module in the Preferences settings window."
+            ]
+        },
         {
             version: "7.89",
             date: "2026-04-06",
@@ -4204,15 +4211,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added an \"Enable the Fake Qwee\" setting to the `DisplayHelper` to allow toggling the \"The Fake\" prefix for user ID 2924510."
-            ]
-        },
-        {
-            version: "7.85",
-            date: "2026-04-05",
-            type: "Added",
-            notes: [
-                "Added a `RatsHelper` for the Rat page (`cmd=rats`) that includes an interactive \"Rat News Filter\" using checkbox pills.",
-                "Refactored `SettingsHelper` architecture: all modules now export their own settings configurations, automatically populating the Preferences page dynamically."
             ]
         }
     ]
