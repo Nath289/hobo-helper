@@ -3,7 +3,9 @@ const DisplayHelper = {
         { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' },
         { key: 'DisplayHelper_FakeQwee', label: 'Enable the Fake Qwee' },
         { key: 'DisplayHelper_WidenPage', label: 'Widen Content Area' },
-        { key: 'DisplayHelper_PageWidth', label: 'Page Width (px)', type: 'number', defaultValue: 660, parent: 'DisplayHelper_WidenPage' }
+        { key: 'DisplayHelper_PageWidth', label: 'Page Width (px)', type: 'number', defaultValue: 660, parent: 'DisplayHelper_WidenPage' },
+        { key: 'DisplayHelper_AwakeNotify', label: 'Awake Full Notification (Desktop)', defaultValue: false },
+        { key: 'DisplayHelper_AwakeNotifyInactive', label: 'Notify Only if Inactive (mins)', type: 'number', defaultValue: 30, parent: 'DisplayHelper_AwakeNotify' }
     ],
     init: function() {
         const settings = Utils.getSettings();
@@ -18,6 +20,10 @@ const DisplayHelper = {
         if (settings['DisplayHelper_WidenPage'] === true) {
             const width = settings['DisplayHelper_PageWidth'] || 660;
             this.initWidenPage(width);
+        }
+        if (settings['DisplayHelper_AwakeNotify'] === true) {
+            const waitMins = parseInt(settings['DisplayHelper_AwakeNotifyInactive'] || 30, 10);
+            this.initAwakeNotification(waitMins);
         }
     },
     initWidenPage: function(width) {
@@ -87,5 +93,61 @@ const DisplayHelper = {
             }
         `;
         document.head.appendChild(style);
+    },
+    initAwakeNotification: function(inactiveWaitMins) {
+        const awakeSpan = document.getElementById('awakeValue');
+        if (!awakeSpan) return;
+
+        const awakeMatch = awakeSpan.innerText.match(/(\d+)\/(\d+)/);
+        if (!awakeMatch) return;
+
+        const currentAwake = parseInt(awakeMatch[1], 10);
+        const maxAwake = parseInt(awakeMatch[2], 10);
+
+        let isDonator = false;
+        if (document.documentElement.innerHTML.match(/var\s+donator=(\d+);/)) {
+            const m = document.documentElement.innerHTML.match(/var\s+donator=(\d+);/);
+            if (m && parseInt(m[1], 10) > 0) isDonator = true;
+        } else if (document.documentElement.innerHTML.includes('Donator Days:')) {
+            isDonator = true;
+        }
+
+        const now = Date.now();
+        localStorage.setItem('hw_awake_last_active', now.toString());
+        localStorage.setItem('hw_awake_current', currentAwake.toString());
+        localStorage.setItem('hw_awake_max', maxAwake.toString());
+        localStorage.setItem('hw_awake_is_donator', isDonator.toString());
+        localStorage.removeItem('hw_awake_notified');
+
+        if (currentAwake < maxAwake) {
+            setInterval(() => {
+                const lastActive = parseInt(localStorage.getItem('hw_awake_last_active') || '0', 10);
+                const isNotified = localStorage.getItem('hw_awake_notified');
+                if (isNotified) return;
+
+                const inactiveMins = (Date.now() - lastActive) / 60000;
+                const savedCurrent = parseInt(localStorage.getItem('hw_awake_current') || '0', 10);
+                const savedMax = parseInt(localStorage.getItem('hw_awake_max') || '100', 10);
+                const savedDonator = localStorage.getItem('hw_awake_is_donator') === 'true';
+
+                const tickInterval = savedDonator ? 10 : 15;
+                const ticks = Math.floor(inactiveMins / tickInterval);
+                const estimatedAwake = Math.min(savedMax, savedCurrent + (ticks * 5));
+
+                if (estimatedAwake >= savedMax && inactiveMins >= inactiveWaitMins) {
+                    localStorage.setItem('hw_awake_notified', '1');
+                    if (typeof GM_notification !== 'undefined') {
+                        GM_notification({
+                            title: 'HoboWars Awake Full',
+                            text: 'Your Awakeness has reached its maximum. Time to play!',
+                            timeout: 10000,
+                            onclick: function() {
+                                window.focus();
+                            }
+                        });
+                    }
+                }
+            }, 60000);
+        }
     }
 };

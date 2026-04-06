@@ -5,7 +5,7 @@
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
-// @grant        none
+// @grant        GM_notification
 // ==/UserScript==
 
 (function() {

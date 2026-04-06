@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      7.89.20260406.1119
+// @version      7.90.20260406.1353
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
-// @grant        none
+// @grant        GM_notification
 // ==/UserScript==
 
 (function() {
@@ -450,7 +450,9 @@ const DisplayHelper = {
         { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' },
         { key: 'DisplayHelper_FakeQwee', label: 'Enable the Fake Qwee' },
         { key: 'DisplayHelper_WidenPage', label: 'Widen Content Area' },
-        { key: 'DisplayHelper_PageWidth', label: 'Page Width (px)', type: 'number', defaultValue: 660, parent: 'DisplayHelper_WidenPage' }
+        { key: 'DisplayHelper_PageWidth', label: 'Page Width (px)', type: 'number', defaultValue: 660, parent: 'DisplayHelper_WidenPage' },
+        { key: 'DisplayHelper_AwakeNotify', label: 'Awake Full Notification (Desktop)', defaultValue: false },
+        { key: 'DisplayHelper_AwakeNotifyInactive', label: 'Notify Only if Inactive (mins)', type: 'number', defaultValue: 30, parent: 'DisplayHelper_AwakeNotify' }
     ],
     init: function() {
         const settings = Utils.getSettings();
@@ -465,6 +467,10 @@ const DisplayHelper = {
         if (settings['DisplayHelper_WidenPage'] === true) {
             const width = settings['DisplayHelper_PageWidth'] || 660;
             this.initWidenPage(width);
+        }
+        if (settings['DisplayHelper_AwakeNotify'] === true) {
+            const waitMins = parseInt(settings['DisplayHelper_AwakeNotifyInactive'] || 30, 10);
+            this.initAwakeNotification(waitMins);
         }
     },
     initWidenPage: function(width) {
@@ -534,6 +540,62 @@ const DisplayHelper = {
             }
         `;
         document.head.appendChild(style);
+    },
+    initAwakeNotification: function(inactiveWaitMins) {
+        const awakeSpan = document.getElementById('awakeValue');
+        if (!awakeSpan) return;
+
+        const awakeMatch = awakeSpan.innerText.match(/(\d+)\/(\d+)/);
+        if (!awakeMatch) return;
+
+        const currentAwake = parseInt(awakeMatch[1], 10);
+        const maxAwake = parseInt(awakeMatch[2], 10);
+
+        let isDonator = false;
+        if (document.documentElement.innerHTML.match(/var\s+donator=(\d+);/)) {
+            const m = document.documentElement.innerHTML.match(/var\s+donator=(\d+);/);
+            if (m && parseInt(m[1], 10) > 0) isDonator = true;
+        } else if (document.documentElement.innerHTML.includes('Donator Days:')) {
+            isDonator = true;
+        }
+
+        const now = Date.now();
+        localStorage.setItem('hw_awake_last_active', now.toString());
+        localStorage.setItem('hw_awake_current', currentAwake.toString());
+        localStorage.setItem('hw_awake_max', maxAwake.toString());
+        localStorage.setItem('hw_awake_is_donator', isDonator.toString());
+        localStorage.removeItem('hw_awake_notified');
+
+        if (currentAwake < maxAwake) {
+            setInterval(() => {
+                const lastActive = parseInt(localStorage.getItem('hw_awake_last_active') || '0', 10);
+                const isNotified = localStorage.getItem('hw_awake_notified');
+                if (isNotified) return;
+
+                const inactiveMins = (Date.now() - lastActive) / 60000;
+                const savedCurrent = parseInt(localStorage.getItem('hw_awake_current') || '0', 10);
+                const savedMax = parseInt(localStorage.getItem('hw_awake_max') || '100', 10);
+                const savedDonator = localStorage.getItem('hw_awake_is_donator') === 'true';
+
+                const tickInterval = savedDonator ? 10 : 15;
+                const ticks = Math.floor(inactiveMins / tickInterval);
+                const estimatedAwake = Math.min(savedMax, savedCurrent + (ticks * 5));
+
+                if (estimatedAwake >= savedMax && inactiveMins >= inactiveWaitMins) {
+                    localStorage.setItem('hw_awake_notified', '1');
+                    if (typeof GM_notification !== 'undefined') {
+                        GM_notification({
+                            title: 'HoboWars Awake Full',
+                            text: 'Your Awakeness has reached its maximum. Time to play!',
+                            timeout: 10000,
+                            onclick: function() {
+                                window.focus();
+                            }
+                        });
+                    }
+                }
+            }, 60000);
+        }
     }
 };
 
@@ -3569,7 +3631,7 @@ const SettingsHelper = {
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
         
         // Helper function for toggles
-        const createToggle = (key, labelText, isGlobal = false) => {
+        const createToggle = (key, labelText, isGlobal = false, defaultValue = true) => {
             const container = document.createElement('div');
             container.style.marginBottom = '8px';
             container.style.paddingLeft = isGlobal ? '0' : '5px';
@@ -3580,7 +3642,7 @@ const SettingsHelper = {
             checkbox.type = 'checkbox';
             checkbox.id = `hw_helper_${key}`;
             // default to true if undefined
-            checkbox.checked = savedSettings[key] !== false;
+            checkbox.checked = savedSettings[key] !== undefined ? savedSettings[key] : defaultValue;
             checkbox.style.cursor = 'pointer';
             checkbox.style.transform = 'scale(1.2)';
             checkbox.style.marginRight = '8px';
@@ -3734,7 +3796,7 @@ const SettingsHelper = {
                         if (feature.type === 'number' || feature.type === 'text') {
                             el = createInput(feature.key, feature.label, feature.type, feature.defaultValue);
                         } else {
-                            el = createToggle(feature.key, feature.label);
+                            el = createToggle(feature.key, feature.label, false, feature.defaultValue !== false);
                         }
 
                         if (feature.parent) {
@@ -4172,6 +4234,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "7.90",
+            date: "2026-04-06",
+            type: "Fixed",
+            notes: [
+                "Prevented `ChangelogData` from incorrectly displaying as an active module in the Preferences settings window."
+            ]
+        },
+        {
             version: "7.89",
             date: "2026-04-06",
             type: "Added",
@@ -4203,15 +4273,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added an \"Enable the Fake Qwee\" setting to the `DisplayHelper` to allow toggling the \"The Fake\" prefix for user ID 2924510."
-            ]
-        },
-        {
-            version: "7.85",
-            date: "2026-04-05",
-            type: "Added",
-            notes: [
-                "Added a `RatsHelper` for the Rat page (`cmd=rats`) that includes an interactive \"Rat News Filter\" using checkbox pills.",
-                "Refactored `SettingsHelper` architecture: all modules now export their own settings configurations, automatically populating the Preferences page dynamically."
             ]
         }
     ]

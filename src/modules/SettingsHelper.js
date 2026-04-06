@@ -24,7 +24,7 @@ const SettingsHelper = {
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
         
         // Helper function for toggles
-        const createToggle = (key, labelText, isGlobal = false) => {
+        const createToggle = (key, labelText, isGlobal = false, defaultValue = true) => {
             const container = document.createElement('div');
             container.style.marginBottom = '8px';
             container.style.paddingLeft = isGlobal ? '0' : '5px';
@@ -35,7 +35,7 @@ const SettingsHelper = {
             checkbox.type = 'checkbox';
             checkbox.id = `hw_helper_${key}`;
             // default to true if undefined
-            checkbox.checked = savedSettings[key] !== false;
+            checkbox.checked = savedSettings[key] !== undefined ? savedSettings[key] : defaultValue;
             checkbox.style.cursor = 'pointer';
             checkbox.style.transform = 'scale(1.2)';
             checkbox.style.marginRight = '8px';
@@ -189,7 +189,7 @@ const SettingsHelper = {
                         if (feature.type === 'number' || feature.type === 'text') {
                             el = createInput(feature.key, feature.label, feature.type, feature.defaultValue);
                         } else {
-                            el = createToggle(feature.key, feature.label);
+                            el = createToggle(feature.key, feature.label, false, feature.defaultValue !== false);
                         }
 
                         if (feature.parent) {

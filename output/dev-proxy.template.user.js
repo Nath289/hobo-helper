@@ -5,5 +5,5 @@
 // @description  Proxy script that always loads the latest local build automatically.
 // @match        *://www.hobowars.com/game/game.php?*
 // @require      file:///C:/PATH/TO/YOUR/hobo-helper/output/hobo-helper-dev.user.js
-// @grant        none
+// @grant        GM_notification
 // ==/UserScript==
