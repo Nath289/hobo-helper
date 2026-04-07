@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.00
+// @version      8.01
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -143,15 +143,57 @@ const BackpackHelper = {
     init: function() {
         const settings = Utils.getSettings();
         if (settings?.BackpackHelper?.enabled === false) return;
-
-
+        
+        this.initDrinkStats();
         this.observeBackpack();
+    },
+
+    initDrinkStats: function() {
+        if (!localStorage.getItem('bh_drink_stats')) {
+            localStorage.setItem('bh_drink_stats', JSON.stringify({}));
+        }
+
+        document.removeEventListener('click', this.handleDrinkClick);
+        this.handleDrinkClick = (e) => {
+            const a = e.target.closest('a');
+            if (!a) return;
+            const href = a.getAttribute('href') || '';
+            const onclick = a.getAttribute('onclick') || '';
+            const isDrink = href.includes('do=drink') || onclick.includes('do=drink');
+            if (isDrink) {
+                const img = a.querySelector('img');
+                const name = img ? (img.getAttribute('alt') || img.title).trim() : a.textContent.trim();
+                const src = img ? img.getAttribute('src') : '';
+                if (name) {
+                    let stats = JSON.parse(localStorage.getItem('bh_drink_stats') || '{}');
+                    let current = stats[name];
+                    if (typeof current === 'number') {
+                        current = { count: current, src: src };
+                    } else if (!current) {
+                        current = { count: 0, src: src };
+                    } else if (src && (!current.src || current.src.startsWith('data:'))) {
+                        current.src = src;
+                    }
+                    current.count++;
+                    stats[name] = current;
+                    localStorage.setItem('bh_drink_stats', JSON.stringify(stats));
+                }
+            }
+        };
+        document.addEventListener('click', this.handleDrinkClick);
     },
 
     observeBackpack: function() {
         let drinkMap = null;
+        let lastInjected = 0;
 
         const processItems = () => {
+            const now = Date.now();
+            if (now - lastInjected > 1000) {
+                this.injectFavourites();
+                lastInjected = now;
+            }
+
             const items = document.querySelectorAll('.bp-itm:not([data-bh-tooltip-processed])');
             if (items.length === 0) return;
 
@@ -173,7 +215,7 @@ const BackpackHelper = {
                 const img = item.querySelector('img');
                 if (!img) return;
 
-                const name = img.title.trim();
+                const name = (img.getAttribute('alt') || img.title || '').trim();
                 const drinkInfo = drinkMap[name];
 
                 if (drinkInfo) {
@@ -217,6 +259,138 @@ const BackpackHelper = {
 
         // Initial run
         processItems();
+    },
+
+    injectFavourites: function() {
+        let bpTable = null;
+        const headers = Array.from(document.querySelectorAll('td[bgcolor="#CCCCCC"] b'));
+        const usable = headers.find(el => el.textContent.includes('Usable'));
+        if (usable) bpTable = usable.closest('table');
+
+        if (!bpTable || bpTable.hasAttribute('data-bh-favorites-added')) return;
+        
+        bpTable.setAttribute('data-bh-favorites-added', 'true');
+
+        let stats = JSON.parse(localStorage.getItem('bh_drink_stats') || '{}');
+        const getCount = (val) => typeof val === 'number' ? val : (val ? val.count : 0);
+        const sortedDrinks = Object.keys(stats).sort((a,b) => getCount(stats[b]) - getCount(stats[a])).slice(0, 5);
+
+        if (sortedDrinks.length === 0) return;
+
+        // we need to find the drink elements in the table
+        const favRow = document.createElement('tr');
+        favRow.innerHTML = `<td colspan="9" bgcolor="#CCCCCC"><div style="padding:3px;font-size:10pt; display:flex; justify-content:space-between;"><b>Favourite Drinks</b> <button id="bh_view_drink_stats" style="font-size:10px; cursor:pointer;" onclick="return false;">View Stats</button></div></td>`;
+
+        const usableRow = Array.from(bpTable.querySelectorAll('tr')).find(tr => tr.querySelector('b') && tr.querySelector('b').textContent.includes('Usable'));
+        if (!usableRow) return;
+
+        usableRow.parentNode.insertBefore(favRow, usableRow);
+
+        let tr = document.createElement('tr');
+        let count = 0;
+
+        sortedDrinks.forEach(drinkName => {
+            // try to find the item link
+            const titleImgs = Array.from(bpTable.querySelectorAll('img')).filter(img => {
+                const searchName = (img.getAttribute('alt') || img.title || '').trim();
+                return searchName === drinkName;
+            });
+            if (titleImgs.length === 0) return;
+            const img = titleImgs[0];
+            const a = img.closest('a');
+            if (!a) return;
+
+            const isDrink = (a.getAttribute('href') || '').includes('do=drink') || (a.getAttribute('onclick') || '').includes('do=drink');
+            if (!isDrink) return;
+
+            const clonedA = a.cloneNode(true);
+            const clonedImg = clonedA.querySelector('img');
+            if (clonedImg) {
+                clonedImg.width = 35;
+                clonedImg.height = 35;
+            }
+            
+            let td = document.createElement('td');
+            td.onmouseover = function() { this.style.backgroundColor='#F3F3F3'; };
+            td.onmouseout = function() { this.style.backgroundColor=''; };
+            td.innerHTML = `<div align="left" class="bp-itm"></div>`;
+            td.querySelector('.bp-itm').appendChild(clonedA);
+            
+            tr.appendChild(td);
+            count++;
+
+            if (count % 3 === 0) {
+                usableRow.parentNode.insertBefore(tr, usableRow);
+                tr = document.createElement('tr');
+            }
+        });
+
+        if (count > 0 && count % 3 !== 0) {
+            while (count % 3 !== 0) {
+                const td = document.createElement('td');
+                tr.appendChild(td);
+                count++;
+            }
+            usableRow.parentNode.insertBefore(tr, usableRow);
+        } else if (count === 0) {
+            favRow.remove();
+        }
+
+        const statsBtn = document.getElementById('bh_view_drink_stats');
+        if (statsBtn) {
+            statsBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.showStatsModal();
+            });
+        }
+    },
+
+    showStatsModal: function() {
+        let modal = document.getElementById('bh_drink_stats_modal');
+        if (modal) {
+            modal.remove();
+        }
+
+        let stats = JSON.parse(localStorage.getItem('bh_drink_stats') || '{}');
+        const getCount = (val) => typeof val === 'number' ? val : (val ? val.count : 0);
+        const getSrc = (name, val) => {
+            if (val && val.src && !val.src.startsWith('data:')) return val.src;
+            return `/images/items/gifs/${name.replace(/'/g, '').replace(/ /g, '-')}.gif`;
+        };
+        const sortedDrinks = Object.keys(stats).sort((a,b) => {
+            const diff = getCount(stats[b]) - getCount(stats[a]);
+            if (diff === 0) return a.localeCompare(b);
+            return diff;
+        });
+
+        let html = `<div id="bh_drink_stats_modal" style="position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#fff; color:#000; border:1px solid #ccc; padding:20px; z-index:9999; max-height:80%; overflow-y:auto; box-shadow:0 0 10px rgba(0,0,0,0.5); min-width: 250px;">
+            <h3 style="margin-top: 0; padding-bottom: 10px; border-bottom: 1px solid #ddd;">Drink Stats</h3>
+            <table width="100%" style="border-collapse: collapse; text-align: left;">
+            ${sortedDrinks.map(d => `
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 5px; width: 30px;"><img src="${getSrc(d, stats[d])}" alt="${d}" width="25" height="25" onerror="this.style.display='none'"></td>
+                    <td style="padding: 5px; font-weight: bold;">${d}</td>
+                    <td style="padding: 5px; text-align: right;">${getCount(stats[d])}</td>
+                </tr>`).join('')}
+            </table>
+            <br>
+            <div style="text-align: center;">
+                <button style="padding: 5px 15px; cursor: pointer; margin-right: 10px;" id="bh_drink_stats_reset">Reset</button>
+                <button style="padding: 5px 15px; cursor: pointer;" onclick="document.getElementById('bh_drink_stats_modal').remove()">Close</button>
+            </div>
+        </div>`;
+
+        document.body.insertAdjacentHTML('beforeend', html);
+
+        const resetBtn = document.getElementById('bh_drink_stats_reset');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to reset all your drink stats?')) {
+                    localStorage.setItem('bh_drink_stats', JSON.stringify({}));
+                    this.showStatsModal();
+                }
+            });
+        }
     }
 };
 
@@ -4837,6 +5011,16 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.01",
+            date: "2026-04-08",
+            type: "Added",
+            notes: [
+                "Added a \"Favourite Drinks\" section that automatically displays your top 5 consumed drinks in the backpack and living area modes, increasing image sizes for quick tapping.",
+                "Drink consumption is now successfully tracked automatically when drank directly from backpack/living area locations.",
+                "Included an interactive \"View Stats\" table modal showing lifetime consumption stats, fully populated with images and sorted highest to lowest. Also features a handy Reset button."
+            ]
+        },
+        {
             version: "8.00",
             date: "2026-04-08",
             type: "Added",
@@ -4872,15 +5056,6 @@ const ChangelogData = {
             notes: [
                 "Added a \"Bank Account\" dropdown to the `GangLoansHelper` dashboard, allowing operators to select and save the applicable bank account per topic. This securely syncs natively with the site's default input forms.",
                 "Added an inline dynamic \"Total\" amount readout next to the Bank Account selector in every topic panel to continuously display the precise sum of all individual payments and calculated bulk repliers."
-            ]
-        },
-        {
-            version: "7.96",
-            date: "2026-04-07",
-            type: "Added",
-            notes: [
-                "**Larger Vote Buttons (Message Board):** The tiny Up/Down vote links on message board posts are now converted into larger, easy-to-click buttons. This feature can be toggled via settings.",
-                "**Message Board Vote Tooltips:** Fixed a native game bug where the detailed vote count tooltip (\"Loading...\", followed by percentage breakdown) would permanently break after casting a vote without a page refresh."
             ]
         }
     ]

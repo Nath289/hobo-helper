@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.01] - 2026-04-08
+### Added
+- Added a "Favourite Drinks" section that automatically displays your top 5 consumed drinks in the backpack and living area modes, increasing image sizes for quick tapping.
+- Drink consumption is now successfully tracked automatically when drank directly from backpack/living area locations.
+- Included an interactive "View Stats" table modal showing lifetime consumption stats, fully populated with images and sorted highest to lowest. Also features a handy Reset button.
+
 ## [8.00] - 2026-04-08
 ### Added
 - Added a "Swipeable Topbar Menu" feature to `DisplayHelper` that automatically makes the natively wide topbar menu (Dirt Road, Recycling Bin, etc.) horizontally scrollable (swipeable) on mobile devices to prevent it from clipping off-screen. Can be disabled via settings.
