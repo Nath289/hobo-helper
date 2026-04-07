@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.99] - 2026-04-08
+### Changed
+- Improved layout and styling of "Give a Loan" and "Clear a Loan" forms in the Gang Loans helper.
+
 ## [7.98] - 2026-04-08
 ### Added
 - Added a "Remove" button to the `MessageBoardHelper` "Add Payment" panel to cleanly delete previously saved payments.

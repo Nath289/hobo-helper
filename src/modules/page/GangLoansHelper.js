@@ -51,7 +51,82 @@ const GangLoansHelper = {
             }
         }
 
+        this.styleForms();
         this.renderPanel(contentArea);
+    },
+
+    styleForms: function() {
+        const addForm = document.querySelector('form[action*="do=loan_add"]');
+        if (addForm) {
+            addForm.style.cssText = 'padding: 10px 0; display: grid; grid-template-columns: 120px 1fr; gap: 10px; align-items: center; max-width: 600px; margin-bottom: 20px;';
+
+            // Clean up direct text nodes and <br>s
+            addForm.querySelectorAll('br').forEach(br => br.remove());
+            Array.from(addForm.childNodes).forEach(node => {
+                if (node.nodeType === 3 && node.textContent.trim().includes('(optional)')) {
+                    node.remove();
+                }
+            });
+
+            // Style labels (strong tags)
+            addForm.querySelectorAll('strong').forEach(s => {
+                s.style.cssText = 'font-weight: bold; text-align: right; padding-right: 10px;';
+            });
+
+            // Make the 'To (Hobo ID):' and 'Amount:' inputs look nice
+            const inputs = addForm.querySelectorAll('input:not([type="submit"]), select');
+            inputs.forEach(input => {
+                input.style.cssText = 'padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; font-size: 13px;';
+            });
+
+            const hoboInput = addForm.querySelector('#hobo');
+            const memsSelect = addForm.querySelector('#money-mems');
+            if (hoboInput && memsSelect) {
+                const wrapper = document.createElement('div');
+                wrapper.style.cssText = 'display: flex; gap: 10px; width: 100%;';
+                hoboInput.parentNode.insertBefore(wrapper, hoboInput);
+                wrapper.appendChild(hoboInput);
+                wrapper.appendChild(memsSelect);
+                hoboInput.style.flex = '1';
+                memsSelect.style.flex = '2';
+            }
+
+            const memoInput = addForm.querySelector('input[name="l_memo"]');
+            if (memoInput) {
+                memoInput.placeholder = '(optional)';
+            }
+
+            // Submit button styling
+            const submitBtn = addForm.querySelector('input[type="submit"]');
+            if (submitBtn) {
+                submitBtn.style.cssText = 'grid-column: 2; padding: 8px 20px; background: #0055aa; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: fit-content; text-transform: uppercase; letter-spacing: 0.5px;';
+                submitBtn.addEventListener('mouseover', () => submitBtn.style.background = '#004488');
+                submitBtn.addEventListener('mouseout', () => submitBtn.style.background = '#0055aa');
+            }
+        }
+
+        const clearForm = document.querySelector('form[action*="do=loan_del"]');
+        if (clearForm) {
+            clearForm.style.cssText = 'padding: 10px 0; display: grid; grid-template-columns: 120px 1fr; gap: 10px; align-items: center; max-width: 600px; margin-bottom: 20px;';
+
+            clearForm.querySelectorAll('br').forEach(br => br.remove());
+
+            clearForm.querySelectorAll('strong').forEach(s => {
+                s.style.cssText = 'font-weight: bold; text-align: right; padding-right: 10px;';
+            });
+
+            const clearSelect = clearForm.querySelector('select[name="ID"]');
+            if (clearSelect) {
+                clearSelect.style.cssText = 'padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; font-size: 13px;';
+            }
+
+            const clearSubmit = clearForm.querySelector('input[type="submit"]');
+            if (clearSubmit) {
+                clearSubmit.style.cssText = 'grid-column: 2; padding: 8px 20px; background: #cc0000; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: fit-content; text-transform: uppercase; letter-spacing: 0.5px;';
+                clearSubmit.addEventListener('mouseover', () => clearSubmit.style.background = '#aa0000');
+                clearSubmit.addEventListener('mouseout', () => clearSubmit.style.background = '#cc0000');
+            }
+        }
     },
 
     renderPanel: function(container) {
@@ -721,6 +796,8 @@ const GangLoansHelper = {
         return match ? match[1] : '';
     }
 };
+
+
 
 
 
