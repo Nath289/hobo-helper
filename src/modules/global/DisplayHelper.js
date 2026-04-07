@@ -2,6 +2,7 @@ const DisplayHelper = {
     settings: [
         { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' },
         { key: 'DisplayHelper_FakeQwee', label: 'Enable the Fake Qwee' },
+        { key: 'DisplayHelper_ScrollableTopbar', label: 'Swipeable Topbar Menu (Mobile)', defaultValue: true },
         { key: 'DisplayHelper_WidenPage', label: 'Widen Content Area' },
         { key: 'DisplayHelper_PageWidth', label: 'Page Width (px)', type: 'number', defaultValue: 660, parent: 'DisplayHelper_WidenPage' },
         { key: 'DisplayHelper_AwakeNotify', label: 'Awake Full Notification (Desktop)', defaultValue: false },
@@ -16,6 +17,9 @@ const DisplayHelper = {
         }
         if (settings['DisplayHelper_FakeQwee'] !== false) {
             this.initFakeQwee();
+        }
+        if (settings['DisplayHelper_ScrollableTopbar'] !== false) {
+            this.initScrollableTopbar();
         }
         if (settings['DisplayHelper_WidenPage'] === true) {
             const width = settings['DisplayHelper_PageWidth'] || 660;
@@ -35,6 +39,50 @@ const DisplayHelper = {
             }
         `;
         document.head.appendChild(style);
+    },
+    initScrollableTopbar: function() {
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .topbar-menu, .topbar {
+                overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+            }
+            .topbar-menu::-webkit-scrollbar, .topbar::-webkit-scrollbar {
+                display: none;
+            }
+            .topbar-menu, .topbar {
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+            .topbar-menu > li, .topbar-menu > div, .topbar-menu > a {
+                display: inline-block;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Optional mouse drag-to-scroll support for desktop testing
+        const topbar = document.querySelector('.topbar-menu') || document.querySelector('.topbar');
+        if (topbar) {
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+
+            topbar.addEventListener('mousedown', (e) => {
+                isDown = true;
+                startX = e.pageX - topbar.offsetLeft;
+                scrollLeft = topbar.scrollLeft;
+            });
+            topbar.addEventListener('mouseleave', () => { isDown = false; });
+            topbar.addEventListener('mouseup', () => { isDown = false; });
+            topbar.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - topbar.offsetLeft;
+                const walk = (x - startX) * 2; // Scroll speed multiplier
+                topbar.scrollLeft = scrollLeft - walk;
+            });
+        }
     },
     initFakeQwee: function() {
         const targetHoboId = "2924510";

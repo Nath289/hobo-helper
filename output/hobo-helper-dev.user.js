@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      7.98.20260408.0327
+// @version      7.99.20260408.0336
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -224,6 +224,7 @@ const DisplayHelper = {
     settings: [
         { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' },
         { key: 'DisplayHelper_FakeQwee', label: 'Enable the Fake Qwee' },
+        { key: 'DisplayHelper_ScrollableTopbar', label: 'Swipeable Topbar Menu (Mobile)', defaultValue: true },
         { key: 'DisplayHelper_WidenPage', label: 'Widen Content Area' },
         { key: 'DisplayHelper_PageWidth', label: 'Page Width (px)', type: 'number', defaultValue: 660, parent: 'DisplayHelper_WidenPage' },
         { key: 'DisplayHelper_AwakeNotify', label: 'Awake Full Notification (Desktop)', defaultValue: false },
@@ -238,6 +239,9 @@ const DisplayHelper = {
         }
         if (settings['DisplayHelper_FakeQwee'] !== false) {
             this.initFakeQwee();
+        }
+        if (settings['DisplayHelper_ScrollableTopbar'] !== false) {
+            this.initScrollableTopbar();
         }
         if (settings['DisplayHelper_WidenPage'] === true) {
             const width = settings['DisplayHelper_PageWidth'] || 660;
@@ -257,6 +261,50 @@ const DisplayHelper = {
             }
         `;
         document.head.appendChild(style);
+    },
+    initScrollableTopbar: function() {
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .topbar-menu, .topbar {
+                overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+            }
+            .topbar-menu::-webkit-scrollbar, .topbar::-webkit-scrollbar {
+                display: none;
+            }
+            .topbar-menu, .topbar {
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+            .topbar-menu > li, .topbar-menu > div, .topbar-menu > a {
+                display: inline-block;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Optional mouse drag-to-scroll support for desktop testing
+        const topbar = document.querySelector('.topbar-menu') || document.querySelector('.topbar');
+        if (topbar) {
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+
+            topbar.addEventListener('mousedown', (e) => {
+                isDown = true;
+                startX = e.pageX - topbar.offsetLeft;
+                scrollLeft = topbar.scrollLeft;
+            });
+            topbar.addEventListener('mouseleave', () => { isDown = false; });
+            topbar.addEventListener('mouseup', () => { isDown = false; });
+            topbar.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - topbar.offsetLeft;
+                const walk = (x - startX) * 2; // Scroll speed multiplier
+                topbar.scrollLeft = scrollLeft - walk;
+            });
+        }
     },
     initFakeQwee: function() {
         const targetHoboId = "2924510";
@@ -4746,6 +4794,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "7.99",
+            date: "2026-04-08",
+            type: "Changed",
+            notes: [
+                "Improved layout and styling of \"Give a Loan\" and \"Clear a Loan\" forms in the Gang Loans helper."
+            ]
+        },
+        {
             version: "7.98",
             date: "2026-04-08",
             type: "Added",
@@ -4782,16 +4838,6 @@ const ChangelogData = {
                 "**Performance Refactor:** Separated helper scripts into Global and Page-specific modules to prevent DOM visual jolts on unrelated pages.",
                 "**Page Routing:** Helpers now conditionally load strictly on the pages they affect via declarative URL routing.",
                 "Renamed Bernards Mansion Helper to Bernards Basement Helper to accurately reflect location endpoints."
-            ]
-        },
-        {
-            version: "7.94",
-            date: "2026-04-06",
-            type: "Added",
-            notes: [
-                "Added the `WeaponsHelper` module for the Weapons page (`cmd=wep`).",
-                "**Highlight Equipped Items**: Automatically highlights the container of weapons, armor, and rings you currently have equipped.",
-                "**Quick Equip/Unequip**: Item images are now hyperlinked to act as quick toggle buttons to equip or unequip that specific item."
             ]
         }
     ]

@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.00] - 2026-04-08
+### Added
+- Added a "Swipeable Topbar Menu" feature to `DisplayHelper` that automatically makes the natively wide topbar menu (Dirt Road, Recycling Bin, etc.) horizontally scrollable (swipeable) on mobile devices to prevent it from clipping off-screen. Can be disabled via settings.
+- Desktop users also gain an invisible drag-to-scroll interactivity across the topbar menu for testing and accessibility.
+
 ## [7.99] - 2026-04-08
 ### Changed
 - Improved layout and styling of "Give a Loan" and "Clear a Loan" forms in the Gang Loans helper.
