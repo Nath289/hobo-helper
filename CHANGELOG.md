@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added a "Swipeable Topbar Menu" feature to `DisplayHelper` that automatically makes the natively wide topbar menu (Dirt Road, Recycling Bin, etc.) horizontally scrollable (swipeable) on mobile devices to prevent it from clipping off-screen. Can be disabled via settings.
 - Desktop users also gain an invisible drag-to-scroll interactivity across the topbar menu for testing and accessibility.
+### Changed
+- Improved the styling of "Race" and "Pikies" action buttons in the Northern Fence racing page for a cleaner layout.
 
 ## [7.99] - 2026-04-08
 ### Changed

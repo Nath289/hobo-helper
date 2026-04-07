@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      7.99.20260408.0336
+// @version      8.00.20260408.0351
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -4172,7 +4172,50 @@ const NorthernFenceHelper = {
                                     const name = cells[0].textContent.trim();
 
                                     const actionCell = cells[5];
+
+                                    // Parse original race link
+                                    const raceLink = actionCell.querySelector('a');
+                                    let raceHref = '';
+                                    if (raceLink) {
+                                        raceHref = raceLink.getAttribute('href');
+                                    }
+
+                                    // Replace inner text with clear flex layout for buttons
+                                    actionCell.innerHTML = '';
+                                    actionCell.style.display = 'flex';
+                                    actionCell.style.alignItems = 'center';
+                                    actionCell.style.justifyContent = 'center';
+
+                                    const commonBtnStyle = '-webkit-font-smoothing: antialiased; color: #636363; background: #ddd; font-weight: bold; text-decoration: none; padding: 0; width: 80px; height: 26px; line-height: 26px; text-align: center; border-radius: 3px; border: none; cursor: pointer; margin: 3px 2px; -webkit-appearance: none; display: inline-block; user-select: none; -webkit-user-select: none; font-family: inherit; font-size: 13px; box-sizing: border-box; vertical-align: middle;';
+
+                                    if (raceHref) {
+                                        const raceBtn = document.createElement('a');
+                                        raceBtn.href = raceHref;
+                                        raceBtn.textContent = 'Race';
+
+                                        raceBtn.className = 'btn';
+                                        raceBtn.style.cssText = commonBtnStyle;
+
+                                        raceBtn.addEventListener('mouseover', () => raceBtn.style.background = '#ccc');
+                                        raceBtn.addEventListener('mouseout', () => raceBtn.style.background = '#ddd');
+
+                                        actionCell.appendChild(raceBtn);
+                                    }
+
                                     const btn = Utils.createBankButton(`Pikies (${name})`, totalCost);
+                                    btn.className = 'btn';
+                                    btn.style.cssText = commonBtnStyle;
+
+                                    btn.addEventListener('mouseover', () => { if (!btn.disabled) btn.style.background = '#ccc'; });
+                                    btn.addEventListener('mouseout', () => { if (!btn.disabled) btn.style.background = '#ddd'; });
+                                    // Make sure disabled state looks reasonable when clicked
+                                    const originalOnclick = btn.onclick;
+                                    btn.onclick = function(e) {
+                                        if (originalOnclick) originalOnclick.call(this, e);
+                                        this.style.background = '#eee';
+                                        this.style.color = '#aaa';
+                                        this.style.cursor = 'not-allowed';
+                                    };
 
                                     actionCell.appendChild(btn);
                                 }
@@ -4794,6 +4837,15 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.00",
+            date: "2026-04-08",
+            type: "Added",
+            notes: [
+                "Added a \"Swipeable Topbar Menu\" feature to `DisplayHelper` that automatically makes the natively wide topbar menu (Dirt Road, Recycling Bin, etc.) horizontally scrollable (swipeable) on mobile devices to prevent it from clipping off-screen. Can be disabled via settings.",
+                "Desktop users also gain an invisible drag-to-scroll interactivity across the topbar menu for testing and accessibility."
+            ]
+        },
+        {
             version: "7.99",
             date: "2026-04-08",
             type: "Changed",
@@ -4828,16 +4880,6 @@ const ChangelogData = {
             notes: [
                 "**Larger Vote Buttons (Message Board):** The tiny Up/Down vote links on message board posts are now converted into larger, easy-to-click buttons. This feature can be toggled via settings.",
                 "**Message Board Vote Tooltips:** Fixed a native game bug where the detailed vote count tooltip (\"Loading...\", followed by percentage breakdown) would permanently break after casting a vote without a page refresh."
-            ]
-        },
-        {
-            version: "7.95",
-            date: "2026-04-06",
-            type: "Changed",
-            notes: [
-                "**Performance Refactor:** Separated helper scripts into Global and Page-specific modules to prevent DOM visual jolts on unrelated pages.",
-                "**Page Routing:** Helpers now conditionally load strictly on the pages they affect via declarative URL routing.",
-                "Renamed Bernards Mansion Helper to Bernards Basement Helper to accurately reflect location endpoints."
             ]
         }
     ]

@@ -4172,7 +4172,50 @@ const NorthernFenceHelper = {
                                     const name = cells[0].textContent.trim();
 
                                     const actionCell = cells[5];
+
+                                    // Parse original race link
+                                    const raceLink = actionCell.querySelector('a');
+                                    let raceHref = '';
+                                    if (raceLink) {
+                                        raceHref = raceLink.getAttribute('href');
+                                    }
+
+                                    // Replace inner text with clear flex layout for buttons
+                                    actionCell.innerHTML = '';
+                                    actionCell.style.display = 'flex';
+                                    actionCell.style.alignItems = 'center';
+                                    actionCell.style.justifyContent = 'center';
+
+                                    const commonBtnStyle = '-webkit-font-smoothing: antialiased; color: #636363; background: #ddd; font-weight: bold; text-decoration: none; padding: 0; width: 80px; height: 26px; line-height: 26px; text-align: center; border-radius: 3px; border: none; cursor: pointer; margin: 3px 2px; -webkit-appearance: none; display: inline-block; user-select: none; -webkit-user-select: none; font-family: inherit; font-size: 13px; box-sizing: border-box; vertical-align: middle;';
+
+                                    if (raceHref) {
+                                        const raceBtn = document.createElement('a');
+                                        raceBtn.href = raceHref;
+                                        raceBtn.textContent = 'Race';
+
+                                        raceBtn.className = 'btn';
+                                        raceBtn.style.cssText = commonBtnStyle;
+
+                                        raceBtn.addEventListener('mouseover', () => raceBtn.style.background = '#ccc');
+                                        raceBtn.addEventListener('mouseout', () => raceBtn.style.background = '#ddd');
+
+                                        actionCell.appendChild(raceBtn);
+                                    }
+
                                     const btn = Utils.createBankButton(`Pikies (${name})`, totalCost);
+                                    btn.className = 'btn';
+                                    btn.style.cssText = commonBtnStyle;
+
+                                    btn.addEventListener('mouseover', () => { if (!btn.disabled) btn.style.background = '#ccc'; });
+                                    btn.addEventListener('mouseout', () => { if (!btn.disabled) btn.style.background = '#ddd'; });
+                                    // Make sure disabled state looks reasonable when clicked
+                                    const originalOnclick = btn.onclick;
+                                    btn.onclick = function(e) {
+                                        if (originalOnclick) originalOnclick.call(this, e);
+                                        this.style.background = '#eee';
+                                        this.style.color = '#aaa';
+                                        this.style.cursor = 'not-allowed';
+                                    };
 
                                     actionCell.appendChild(btn);
                                 }
@@ -4799,7 +4842,8 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added a \"Swipeable Topbar Menu\" feature to `DisplayHelper` that automatically makes the natively wide topbar menu (Dirt Road, Recycling Bin, etc.) horizontally scrollable (swipeable) on mobile devices to prevent it from clipping off-screen. Can be disabled via settings.",
-                "Desktop users also gain an invisible drag-to-scroll interactivity across the topbar menu for testing and accessibility."
+                "Desktop users also gain an invisible drag-to-scroll interactivity across the topbar menu for testing and accessibility.",
+                "Improved the styling of \"Race\" and \"Pikies\" action buttons in the Northern Fence racing page for a cleaner layout."
             ]
         },
         {
