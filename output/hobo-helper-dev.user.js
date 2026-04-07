@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      7.95.20260407.0027
+// @version      7.97.20260408.0300
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -1587,6 +1587,9 @@ const GangLoansHelper = {
         const savedPosts = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
         const postKeys = Object.keys(savedPosts);
 
+        const banksEl = document.getElementById('banks');
+        const banksSelectHtml = banksEl ? banksEl.innerHTML : '';
+
         const panel = document.createElement('div');
         panel.style.cssText = 'border: 2px solid #336699; background: #eef5ff; padding: 15px; margin-bottom: 20px; border-radius: 5px; color: black; font-size: 13px; line-height: 1.4;';
 
@@ -1653,6 +1656,34 @@ const GangLoansHelper = {
                 `;
 
                 item.appendChild(titleRow);
+
+                const savedBank = data.bankAccount || '';
+                let bankOptions = banksSelectHtml;
+                if (savedBank && bankOptions) {
+                    // Replace the generic selected attribute if found, then set the correct one
+                    bankOptions = bankOptions.replace(/selected(="selected"|="")?/g, '');
+                    bankOptions = bankOptions.replace(`value="${savedBank}"`, `value="${savedBank}" selected`);
+                }
+
+                let dynamicTotalAmt = 0;
+                payments.forEach(p => {
+                    const amtParts = String(p.amount || '').replace(/[^0-9]/g, '');
+                    dynamicTotalAmt += parseInt(amtParts, 10) || 0;
+                });
+                if (hobos.length > 0) {
+                    const amtRaw = String(savedBulkAmt || '').replace(/[^0-9]/g, '');
+                    const bulkAmt = parseInt(amtRaw, 10) || 0;
+                    dynamicTotalAmt += (hobos.length * bulkAmt);
+                }
+                const formattedTotalInit = dynamicTotalAmt > 0 ? '$' + dynamicTotalAmt.toLocaleString() : '$0';
+
+                const settingsRow = document.createElement('div');
+                settingsRow.style.cssText = 'padding: 5px 8px; margin-bottom: 8px; background: #eef5ff; border: 1px solid #b3d4fc; border-radius: 3px; display: flex; align-items: center; justify-content: space-between; font-size: 13px;';
+                settingsRow.innerHTML = `
+                    <span><strong>Bank Account:</strong> <select class="hw-topic-bank" data-topic="${topic}" style="max-width: 250px; font-size: 13px; padding: 4px; margin-left: 5px;">${bankOptions}</select></span>
+                    <span style="font-weight: bold; color: #0055aa; margin-left: 15px;">Total: <span id="total-amt-${safeTopicId}">${formattedTotalInit}</span></span>
+                `;
+                item.appendChild(settingsRow);
 
                 if (hobos.length === 0 && payments.length === 0) {
                     const emptyRecord = document.createElement('div');
@@ -1813,6 +1844,32 @@ const GangLoansHelper = {
                     exportTotalsBtn.style.opacity = hasValue ? '1' : '0.5';
                     exportTotalsBtn.style.cursor = hasValue ? 'pointer' : 'not-allowed';
                 }
+
+                // Update dynamic total
+                const topicSpan = panel.querySelector('#total-amt-' + ctrlId);
+                if (topicSpan) {
+                    const topicBtn = exportTotalsBtn || exportRepliersBtn;
+                    if (topicBtn) {
+                        const topicStr = topicBtn.getAttribute('data-topic');
+                        const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                        const topicPayments = d[topicStr]?.paymentsToHobos || [];
+                        const topicHobos = d[topicStr]?.hobos || [];
+
+                        let totalNow = 0;
+                        topicPayments.forEach(p => {
+                            const amtParts = String(p.amount || '').replace(/[^0-9]/g, '');
+                            totalNow += parseInt(amtParts, 10) || 0;
+                        });
+
+                        if (topicHobos.length > 0) {
+                            const newBulkVal = e.target.value.replace(/[^0-9]/g, '');
+                            const parsedBulk = parseInt(newBulkVal, 10) || 0;
+                            totalNow += (topicHobos.length * parsedBulk);
+                        }
+
+                        topicSpan.innerText = totalNow > 0 ? '$' + totalNow.toLocaleString() : '$0';
+                    }
+                }
             });
         });
 
@@ -1837,6 +1894,17 @@ const GangLoansHelper = {
 
                     // re-render by reloading
                     window.location.reload();
+                }
+            });
+        });
+
+        panel.querySelectorAll('.hw-topic-bank').forEach(sel => {
+            sel.addEventListener('change', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                if (d[topic]) {
+                    d[topic].bankAccount = e.target.value;
+                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
                 }
             });
         });
@@ -1871,10 +1939,16 @@ const GangLoansHelper = {
                 const hoboField = document.getElementById('hobo');
                 const amtField = document.getElementById('addAmt');
                 const memoField = document.querySelector('input[name="l_memo"]');
+                const bankField = document.getElementById('banks');
 
                 if (hoboField) hoboField.value = e.target.getAttribute('data-id');
                 if (amtField) amtField.value = e.target.getAttribute('data-amount').replace(/[^0-9.]/g, ''); // strip non-numeric just in case
                 if (memoField) memoField.value = e.target.getAttribute('data-desc').substring(0, 60);
+
+                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                if (bankField && d[topic] && d[topic].bankAccount) {
+                    bankField.value = d[topic].bankAccount;
+                }
 
                 e.target.innerText = 'Inserted';
                 window.scrollTo(0, document.body.scrollHeight);
@@ -1925,10 +1999,16 @@ const GangLoansHelper = {
                 const hoboField = document.getElementById('hobo');
                 const amtField = document.getElementById('addAmt');
                 const memoField = document.querySelector('input[name="l_memo"]');
+                const bankField = document.getElementById('banks');
 
                 if (hoboField) hoboField.value = e.target.getAttribute('data-id');
                 if (amtField && bulkAmtInput) amtField.value = bulkAmtInput.value.replace(/[^0-9]/g, '');
                 if (memoField && bulkMemoInput) memoField.value = bulkMemoInput.value.substring(0, 60);
+
+                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                if (bankField && d[topic] && d[topic].bankAccount) {
+                    bankField.value = d[topic].bankAccount;
+                }
 
                 e.target.innerText = 'Inserted';
                 window.scrollTo(0, document.body.scrollHeight);
@@ -3349,6 +3429,17 @@ const MessageBoardHelper = {
                 btn.style.cursor = 'pointer';
                 btn.setAttribute('data-post-id', postId);
 
+                const initSaved = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                const isAlreadyAdded = (initSaved[topicName] && initSaved[topicName].paymentsToHobos)
+                    ? initSaved[topicName].paymentsToHobos.some(p => String(p.postId) === String(postId))
+                    : false;
+
+                if (isAlreadyAdded) {
+                    btn.value = 'Added ✅';
+                    btn.style.backgroundColor = '#d4edda';
+                    btn.style.borderColor = '#c3e6cb';
+                }
+
                 btn.addEventListener('click', () => {
                     const nameNode = firstTd.querySelector('.player-name') || firstTd.querySelector('a[href*="cmd=player"]');
                     const hoboName = nameNode ? nameNode.textContent.trim() : '';
@@ -3386,13 +3477,28 @@ const MessageBoardHelper = {
                         parsedAmount = '$' + Math.round(num).toLocaleString();
                     }
 
+                    const savedPostsCheck = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                    const existingPayments = (savedPostsCheck[topicName] && savedPostsCheck[topicName].paymentsToHobos) ? savedPostsCheck[topicName].paymentsToHobos : [];
+                    const existingPayment = existingPayments.find(p => String(p.postId) === String(postId));
+
                     let panel = document.getElementById('payment-panel-' + postId);
                     if (panel) {
                         panel.style.display = 'block';
+                        document.getElementById(`pay-name-${postId}`).value = existingPayment ? existingPayment.hoboName : hoboName;
+                        document.getElementById(`pay-id-${postId}`).value = existingPayment ? existingPayment.hoboId : hoboId;
+                        document.getElementById(`pay-desc-${postId}`).value = existingPayment ? existingPayment.description : '';
+                        document.getElementById(`pay-amt-${postId}`).value = existingPayment ? existingPayment.amount : parsedAmount;
+                        document.getElementById(`pay-remove-${postId}`).style.display = existingPayment ? 'inline-block' : 'none';
+                        document.getElementById(`pay-save-${postId}`).innerText = existingPayment ? 'Update' : 'Save';
                         return;
                     }
 
                     secondTd.style.position = 'relative';
+
+                    const initName = existingPayment ? existingPayment.hoboName : hoboName;
+                    const initId = existingPayment ? existingPayment.hoboId : hoboId;
+                    const initDesc = existingPayment ? existingPayment.description : '';
+                    const initAmt = existingPayment ? existingPayment.amount : parsedAmount;
 
                     panel = document.createElement('div');
                     panel.id = 'payment-panel-' + postId;
@@ -3413,22 +3519,23 @@ const MessageBoardHelper = {
                         <div style="font-weight:bold; margin-bottom:10px; border-bottom:1px solid #ccc; padding-bottom:5px;">Add Payment</div>
                         <div style="margin-bottom:5px;">
                             <label style="display:inline-block; width:80px; font-weight:bold;">Hobo Name:</label>
-                            <input type="text" id="pay-name-${postId}" value="${hoboName}" style="width:140px; font-size:11px;" />
+                            <input type="text" id="pay-name-${postId}" value="${initName}" style="width:140px; font-size:11px;" />
                         </div>
                         <div style="margin-bottom:5px;">
                             <label style="display:inline-block; width:80px; font-weight:bold;">Hobo ID:</label>
-                            <input type="text" id="pay-id-${postId}" value="${hoboId}" style="width:140px; font-size:11px;" />
+                            <input type="text" id="pay-id-${postId}" value="${initId}" style="width:140px; font-size:11px;" />
                         </div>
                         <div style="margin-bottom:5px;">
                             <label style="display:inline-block; width:80px; font-weight:bold;">Description:</label>
-                            <input type="text" id="pay-desc-${postId}" style="width:140px; font-size:11px;" />
+                            <input type="text" id="pay-desc-${postId}" value="${initDesc}" style="width:140px; font-size:11px;" />
                         </div>
                         <div style="margin-bottom:10px;">
                             <label style="display:inline-block; width:80px; font-weight:bold;">Amount:</label>
-                            <input type="text" id="pay-amt-${postId}" value="${parsedAmount}" style="width:140px; font-size:11px;" />
+                            <input type="text" id="pay-amt-${postId}" value="${initAmt}" style="width:140px; font-size:11px;" />
                         </div>
                         <div style="text-align:right;">
-                            <button type="button" id="pay-save-${postId}" style="cursor:pointer; font-weight:bold; margin-right:5px; padding:2px 8px; background:#eee; border:1px solid #aaa; border-radius:3px;">Save</button>
+                            <button type="button" id="pay-remove-${postId}" style="cursor:pointer; font-weight:bold; margin-right:5px; padding:2px 8px; background:#fcc; border:1px solid #c88; border-radius:3px; display:${existingPayment ? 'inline-block' : 'none'};">Remove</button>
+                            <button type="button" id="pay-save-${postId}" style="cursor:pointer; font-weight:bold; margin-right:5px; padding:2px 8px; background:#eee; border:1px solid #aaa; border-radius:3px;">${existingPayment ? 'Update' : 'Save'}</button>
                             <button type="button" id="pay-cancel-${postId}" style="cursor:pointer; padding:2px 8px; background:#eee; border:1px solid #aaa; border-radius:3px;">Cancel</button>
                         </div>
                     `;
@@ -3455,21 +3562,55 @@ const MessageBoardHelper = {
                             savedPosts[topicName].paymentsToHobos = [];
                         }
 
-                        savedPosts[topicName].paymentsToHobos.push({
+                        const existingIdx = savedPosts[topicName].paymentsToHobos.findIndex(p => String(p.postId) === String(postId));
+                        const newPaymentObj = {
                             postId: postId,
                             hoboName: hoboNameVal,
                             hoboId: hoboIdVal,
                             description: descVal,
                             amount: amtVal,
                             timestamp: Date.now()
-                        });
+                        };
+
+                        if (existingIdx !== -1) {
+                            const prev = savedPosts[topicName].paymentsToHobos[existingIdx];
+                            newPaymentObj.completed = prev.completed;
+                            newPaymentObj.cleared = prev.cleared;
+                            savedPosts[topicName].paymentsToHobos[existingIdx] = newPaymentObj;
+                        } else {
+                            savedPosts[topicName].paymentsToHobos.push(newPaymentObj);
+                        }
 
                         localStorage.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
+
+                        document.getElementById(`pay-remove-${postId}`).style.display = 'inline-block';
 
                         // Visual feedback
                         btn.value = 'Added ✅';
                         btn.style.backgroundColor = '#d4edda';
                         btn.style.borderColor = '#c3e6cb';
+
+                        panel.style.display = 'none';
+                    });
+
+                    document.getElementById('pay-remove-' + postId).addEventListener('click', () => {
+                        const savedPosts = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                        if (savedPosts[topicName] && savedPosts[topicName].paymentsToHobos) {
+                            const existingIdx = savedPosts[topicName].paymentsToHobos.findIndex(p => String(p.postId) === String(postId));
+                            if (existingIdx !== -1) {
+                                savedPosts[topicName].paymentsToHobos.splice(existingIdx, 1);
+                                localStorage.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
+                            }
+                        }
+
+                        btn.value = 'Add Payment';
+                        btn.style.backgroundColor = '';
+                        btn.style.borderColor = '';
+                        document.getElementById(`pay-name-${postId}`).value = hoboName;
+                        document.getElementById(`pay-id-${postId}`).value = hoboId;
+                        document.getElementById(`pay-desc-${postId}`).value = '';
+                        document.getElementById(`pay-amt-${postId}`).value = parsedAmount;
+                        document.getElementById(`pay-remove-${postId}`).style.display = 'none';
 
                         panel.style.display = 'none';
                     });
@@ -4530,6 +4671,24 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "7.97",
+            date: "2026-04-08",
+            type: "Added",
+            notes: [
+                "Added a \"Bank Account\" dropdown to the `GangLoansHelper` dashboard, allowing operators to select and save the applicable bank account per topic. This securely syncs natively with the site's default input forms.",
+                "Added an inline dynamic \"Total\" amount readout next to the Bank Account selector in every topic panel to continuously display the precise sum of all individual payments and calculated bulk repliers."
+            ]
+        },
+        {
+            version: "7.96",
+            date: "2026-04-07",
+            type: "Added",
+            notes: [
+                "**Larger Vote Buttons (Message Board):** The tiny Up/Down vote links on message board posts are now converted into larger, easy-to-click buttons. This feature can be toggled via settings.",
+                "**Message Board Vote Tooltips:** Fixed a native game bug where the detailed vote count tooltip (\"Loading...\", followed by percentage breakdown) would permanently break after casting a vote without a page refresh."
+            ]
+        },
+        {
             version: "7.95",
             date: "2026-04-06",
             type: "Changed",
@@ -4556,27 +4715,6 @@ const ChangelogData = {
             notes: [
                 "Renamed Living Area Helper setting \"Wide Lay: Show 3 Columns\" to \"Always Show More Info\".",
                 "Added clearer requirement text to Settings Helper for the \"Always Show More Info\" feature."
-            ]
-        },
-        {
-            version: "7.92",
-            date: "2026-04-06",
-            type: "Added",
-            notes: [
-                "Added a \"Copy Stats\" button to the `LivingAreaHelper` combat stats box to instantly copy the displayed battle stats + totals directly to the clipboard.",
-                "Added a \"Wide Lay: Show 3 Columns\" option in `LivingAreaHelper` which forces the Living Area layout to reveal all columns natively when `DisplayHelper` \"Widen Content Area\" is active (>= 850px), bypassing the toggle buttons entirely.",
-                "Enforced strict spacing logic on `LivingAreaHelper` wide layout implementation using dynamic calc grids and specific CSS whitespace overrides, preventing unexpected box line wrapping."
-            ]
-        },
-        {
-            version: "7.91",
-            date: "2026-04-06",
-            type: "Added",
-            notes: [
-                "Added an \"Awake Full Notification\" feature to `DisplayHelper` which automatically tracks offline awakeness regeneration and dispatches a desktop Tampermonkey notification when max awakeness is reached after a configurable period of inactivity. Disabled by default.",
-                "Fixed an issue in `SettingsHelper` where sub-features structured with a false default value were incorrectly defaulting to checked upon first initialization.",
-                "Enhanced the `LivingAreaHelper` \"Win Percentage Calc\" to calculate and display both the consecutive wins needed to reach the next bonus bracket, and the consecutive losses allowed before dropping a bracket.",
-                "Smoothed out the milestone threshold curve in the \"Win Percentage Calc\" using a dynamic 10-99% bracket system for more realistic and manageable short-term goal tracking."
             ]
         }
     ]

@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.98] - 2026-04-08
+### Added
+- Added a "Remove" button to the `MessageBoardHelper` "Add Payment" panel to cleanly delete previously saved payments.
+- Added a "Cancel" button to easily dismiss the "Add Payment" panel without saving changes.
+### Changed
+- The `MessageBoardHelper` "Add Payment" logic has been refactored to act as an update for existing payments instead of creating duplicate records. The submit button now dynamically displays "Update" or "Save" based on the payment's saved status.
+### Fixed
+- Fixed an issue where saving an already tracked post payment would endlessly duplicate the row within the `GangLoansHelper` dashboard instead of replacing the old record.
+
+## [7.97] - 2026-04-08
+### Added
+- Added a "Bank Account" dropdown to the `GangLoansHelper` dashboard, allowing operators to select and save the applicable bank account per topic. This securely syncs natively with the site's default input forms.
+- Added an inline dynamic "Total" amount readout next to the Bank Account selector in every topic panel to continuously display the precise sum of all individual payments and calculated bulk repliers.
+
 ## [7.96] - 2026-04-07
 ### Added
 - **Larger Vote Buttons (Message Board):** The tiny Up/Down vote links on message board posts are now converted into larger, easy-to-click buttons. This feature can be toggled via settings.

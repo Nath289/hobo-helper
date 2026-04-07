@@ -285,6 +285,17 @@ const MessageBoardHelper = {
                 btn.style.cursor = 'pointer';
                 btn.setAttribute('data-post-id', postId);
 
+                const initSaved = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                const isAlreadyAdded = (initSaved[topicName] && initSaved[topicName].paymentsToHobos)
+                    ? initSaved[topicName].paymentsToHobos.some(p => String(p.postId) === String(postId))
+                    : false;
+
+                if (isAlreadyAdded) {
+                    btn.value = 'Added ✅';
+                    btn.style.backgroundColor = '#d4edda';
+                    btn.style.borderColor = '#c3e6cb';
+                }
+
                 btn.addEventListener('click', () => {
                     const nameNode = firstTd.querySelector('.player-name') || firstTd.querySelector('a[href*="cmd=player"]');
                     const hoboName = nameNode ? nameNode.textContent.trim() : '';
@@ -322,13 +333,28 @@ const MessageBoardHelper = {
                         parsedAmount = '$' + Math.round(num).toLocaleString();
                     }
 
+                    const savedPostsCheck = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                    const existingPayments = (savedPostsCheck[topicName] && savedPostsCheck[topicName].paymentsToHobos) ? savedPostsCheck[topicName].paymentsToHobos : [];
+                    const existingPayment = existingPayments.find(p => String(p.postId) === String(postId));
+
                     let panel = document.getElementById('payment-panel-' + postId);
                     if (panel) {
                         panel.style.display = 'block';
+                        document.getElementById(`pay-name-${postId}`).value = existingPayment ? existingPayment.hoboName : hoboName;
+                        document.getElementById(`pay-id-${postId}`).value = existingPayment ? existingPayment.hoboId : hoboId;
+                        document.getElementById(`pay-desc-${postId}`).value = existingPayment ? existingPayment.description : '';
+                        document.getElementById(`pay-amt-${postId}`).value = existingPayment ? existingPayment.amount : parsedAmount;
+                        document.getElementById(`pay-remove-${postId}`).style.display = existingPayment ? 'inline-block' : 'none';
+                        document.getElementById(`pay-save-${postId}`).innerText = existingPayment ? 'Update' : 'Save';
                         return;
                     }
 
                     secondTd.style.position = 'relative';
+
+                    const initName = existingPayment ? existingPayment.hoboName : hoboName;
+                    const initId = existingPayment ? existingPayment.hoboId : hoboId;
+                    const initDesc = existingPayment ? existingPayment.description : '';
+                    const initAmt = existingPayment ? existingPayment.amount : parsedAmount;
 
                     panel = document.createElement('div');
                     panel.id = 'payment-panel-' + postId;
@@ -349,22 +375,23 @@ const MessageBoardHelper = {
                         <div style="font-weight:bold; margin-bottom:10px; border-bottom:1px solid #ccc; padding-bottom:5px;">Add Payment</div>
                         <div style="margin-bottom:5px;">
                             <label style="display:inline-block; width:80px; font-weight:bold;">Hobo Name:</label>
-                            <input type="text" id="pay-name-${postId}" value="${hoboName}" style="width:140px; font-size:11px;" />
+                            <input type="text" id="pay-name-${postId}" value="${initName}" style="width:140px; font-size:11px;" />
                         </div>
                         <div style="margin-bottom:5px;">
                             <label style="display:inline-block; width:80px; font-weight:bold;">Hobo ID:</label>
-                            <input type="text" id="pay-id-${postId}" value="${hoboId}" style="width:140px; font-size:11px;" />
+                            <input type="text" id="pay-id-${postId}" value="${initId}" style="width:140px; font-size:11px;" />
                         </div>
                         <div style="margin-bottom:5px;">
                             <label style="display:inline-block; width:80px; font-weight:bold;">Description:</label>
-                            <input type="text" id="pay-desc-${postId}" style="width:140px; font-size:11px;" />
+                            <input type="text" id="pay-desc-${postId}" value="${initDesc}" style="width:140px; font-size:11px;" />
                         </div>
                         <div style="margin-bottom:10px;">
                             <label style="display:inline-block; width:80px; font-weight:bold;">Amount:</label>
-                            <input type="text" id="pay-amt-${postId}" value="${parsedAmount}" style="width:140px; font-size:11px;" />
+                            <input type="text" id="pay-amt-${postId}" value="${initAmt}" style="width:140px; font-size:11px;" />
                         </div>
                         <div style="text-align:right;">
-                            <button type="button" id="pay-save-${postId}" style="cursor:pointer; font-weight:bold; margin-right:5px; padding:2px 8px; background:#eee; border:1px solid #aaa; border-radius:3px;">Save</button>
+                            <button type="button" id="pay-remove-${postId}" style="cursor:pointer; font-weight:bold; margin-right:5px; padding:2px 8px; background:#fcc; border:1px solid #c88; border-radius:3px; display:${existingPayment ? 'inline-block' : 'none'};">Remove</button>
+                            <button type="button" id="pay-save-${postId}" style="cursor:pointer; font-weight:bold; margin-right:5px; padding:2px 8px; background:#eee; border:1px solid #aaa; border-radius:3px;">${existingPayment ? 'Update' : 'Save'}</button>
                             <button type="button" id="pay-cancel-${postId}" style="cursor:pointer; padding:2px 8px; background:#eee; border:1px solid #aaa; border-radius:3px;">Cancel</button>
                         </div>
                     `;
@@ -391,21 +418,55 @@ const MessageBoardHelper = {
                             savedPosts[topicName].paymentsToHobos = [];
                         }
 
-                        savedPosts[topicName].paymentsToHobos.push({
+                        const existingIdx = savedPosts[topicName].paymentsToHobos.findIndex(p => String(p.postId) === String(postId));
+                        const newPaymentObj = {
                             postId: postId,
                             hoboName: hoboNameVal,
                             hoboId: hoboIdVal,
                             description: descVal,
                             amount: amtVal,
                             timestamp: Date.now()
-                        });
+                        };
+
+                        if (existingIdx !== -1) {
+                            const prev = savedPosts[topicName].paymentsToHobos[existingIdx];
+                            newPaymentObj.completed = prev.completed;
+                            newPaymentObj.cleared = prev.cleared;
+                            savedPosts[topicName].paymentsToHobos[existingIdx] = newPaymentObj;
+                        } else {
+                            savedPosts[topicName].paymentsToHobos.push(newPaymentObj);
+                        }
 
                         localStorage.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
+
+                        document.getElementById(`pay-remove-${postId}`).style.display = 'inline-block';
 
                         // Visual feedback
                         btn.value = 'Added ✅';
                         btn.style.backgroundColor = '#d4edda';
                         btn.style.borderColor = '#c3e6cb';
+
+                        panel.style.display = 'none';
+                    });
+
+                    document.getElementById('pay-remove-' + postId).addEventListener('click', () => {
+                        const savedPosts = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                        if (savedPosts[topicName] && savedPosts[topicName].paymentsToHobos) {
+                            const existingIdx = savedPosts[topicName].paymentsToHobos.findIndex(p => String(p.postId) === String(postId));
+                            if (existingIdx !== -1) {
+                                savedPosts[topicName].paymentsToHobos.splice(existingIdx, 1);
+                                localStorage.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
+                            }
+                        }
+
+                        btn.value = 'Add Payment';
+                        btn.style.backgroundColor = '';
+                        btn.style.borderColor = '';
+                        document.getElementById(`pay-name-${postId}`).value = hoboName;
+                        document.getElementById(`pay-id-${postId}`).value = hoboId;
+                        document.getElementById(`pay-desc-${postId}`).value = '';
+                        document.getElementById(`pay-amt-${postId}`).value = parsedAmount;
+                        document.getElementById(`pay-remove-${postId}`).style.display = 'none';
 
                         panel.style.display = 'none';
                     });

@@ -58,6 +58,9 @@ const GangLoansHelper = {
         const savedPosts = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
         const postKeys = Object.keys(savedPosts);
 
+        const banksEl = document.getElementById('banks');
+        const banksSelectHtml = banksEl ? banksEl.innerHTML : '';
+
         const panel = document.createElement('div');
         panel.style.cssText = 'border: 2px solid #336699; background: #eef5ff; padding: 15px; margin-bottom: 20px; border-radius: 5px; color: black; font-size: 13px; line-height: 1.4;';
 
@@ -124,6 +127,34 @@ const GangLoansHelper = {
                 `;
 
                 item.appendChild(titleRow);
+
+                const savedBank = data.bankAccount || '';
+                let bankOptions = banksSelectHtml;
+                if (savedBank && bankOptions) {
+                    // Replace the generic selected attribute if found, then set the correct one
+                    bankOptions = bankOptions.replace(/selected(="selected"|="")?/g, '');
+                    bankOptions = bankOptions.replace(`value="${savedBank}"`, `value="${savedBank}" selected`);
+                }
+
+                let dynamicTotalAmt = 0;
+                payments.forEach(p => {
+                    const amtParts = String(p.amount || '').replace(/[^0-9]/g, '');
+                    dynamicTotalAmt += parseInt(amtParts, 10) || 0;
+                });
+                if (hobos.length > 0) {
+                    const amtRaw = String(savedBulkAmt || '').replace(/[^0-9]/g, '');
+                    const bulkAmt = parseInt(amtRaw, 10) || 0;
+                    dynamicTotalAmt += (hobos.length * bulkAmt);
+                }
+                const formattedTotalInit = dynamicTotalAmt > 0 ? '$' + dynamicTotalAmt.toLocaleString() : '$0';
+
+                const settingsRow = document.createElement('div');
+                settingsRow.style.cssText = 'padding: 5px 8px; margin-bottom: 8px; background: #eef5ff; border: 1px solid #b3d4fc; border-radius: 3px; display: flex; align-items: center; justify-content: space-between; font-size: 13px;';
+                settingsRow.innerHTML = `
+                    <span><strong>Bank Account:</strong> <select class="hw-topic-bank" data-topic="${topic}" style="max-width: 250px; font-size: 13px; padding: 4px; margin-left: 5px;">${bankOptions}</select></span>
+                    <span style="font-weight: bold; color: #0055aa; margin-left: 15px;">Total: <span id="total-amt-${safeTopicId}">${formattedTotalInit}</span></span>
+                `;
+                item.appendChild(settingsRow);
 
                 if (hobos.length === 0 && payments.length === 0) {
                     const emptyRecord = document.createElement('div');
@@ -284,6 +315,32 @@ const GangLoansHelper = {
                     exportTotalsBtn.style.opacity = hasValue ? '1' : '0.5';
                     exportTotalsBtn.style.cursor = hasValue ? 'pointer' : 'not-allowed';
                 }
+
+                // Update dynamic total
+                const topicSpan = panel.querySelector('#total-amt-' + ctrlId);
+                if (topicSpan) {
+                    const topicBtn = exportTotalsBtn || exportRepliersBtn;
+                    if (topicBtn) {
+                        const topicStr = topicBtn.getAttribute('data-topic');
+                        const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                        const topicPayments = d[topicStr]?.paymentsToHobos || [];
+                        const topicHobos = d[topicStr]?.hobos || [];
+
+                        let totalNow = 0;
+                        topicPayments.forEach(p => {
+                            const amtParts = String(p.amount || '').replace(/[^0-9]/g, '');
+                            totalNow += parseInt(amtParts, 10) || 0;
+                        });
+
+                        if (topicHobos.length > 0) {
+                            const newBulkVal = e.target.value.replace(/[^0-9]/g, '');
+                            const parsedBulk = parseInt(newBulkVal, 10) || 0;
+                            totalNow += (topicHobos.length * parsedBulk);
+                        }
+
+                        topicSpan.innerText = totalNow > 0 ? '$' + totalNow.toLocaleString() : '$0';
+                    }
+                }
             });
         });
 
@@ -308,6 +365,17 @@ const GangLoansHelper = {
 
                     // re-render by reloading
                     window.location.reload();
+                }
+            });
+        });
+
+        panel.querySelectorAll('.hw-topic-bank').forEach(sel => {
+            sel.addEventListener('change', (e) => {
+                const topic = e.target.getAttribute('data-topic');
+                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                if (d[topic]) {
+                    d[topic].bankAccount = e.target.value;
+                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
                 }
             });
         });
@@ -342,10 +410,16 @@ const GangLoansHelper = {
                 const hoboField = document.getElementById('hobo');
                 const amtField = document.getElementById('addAmt');
                 const memoField = document.querySelector('input[name="l_memo"]');
+                const bankField = document.getElementById('banks');
 
                 if (hoboField) hoboField.value = e.target.getAttribute('data-id');
                 if (amtField) amtField.value = e.target.getAttribute('data-amount').replace(/[^0-9.]/g, ''); // strip non-numeric just in case
                 if (memoField) memoField.value = e.target.getAttribute('data-desc').substring(0, 60);
+
+                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                if (bankField && d[topic] && d[topic].bankAccount) {
+                    bankField.value = d[topic].bankAccount;
+                }
 
                 e.target.innerText = 'Inserted';
                 window.scrollTo(0, document.body.scrollHeight);
@@ -396,10 +470,16 @@ const GangLoansHelper = {
                 const hoboField = document.getElementById('hobo');
                 const amtField = document.getElementById('addAmt');
                 const memoField = document.querySelector('input[name="l_memo"]');
+                const bankField = document.getElementById('banks');
 
                 if (hoboField) hoboField.value = e.target.getAttribute('data-id');
                 if (amtField && bulkAmtInput) amtField.value = bulkAmtInput.value.replace(/[^0-9]/g, '');
                 if (memoField && bulkMemoInput) memoField.value = bulkMemoInput.value.substring(0, 60);
+
+                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                if (bankField && d[topic] && d[topic].bankAccount) {
+                    bankField.value = d[topic].bankAccount;
+                }
 
                 e.target.innerText = 'Inserted';
                 window.scrollTo(0, document.body.scrollHeight);
@@ -641,6 +721,11 @@ const GangLoansHelper = {
         return match ? match[1] : '';
     }
 };
+
+
+
+
+
 
 
 
