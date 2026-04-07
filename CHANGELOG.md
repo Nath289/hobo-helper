@@ -2,11 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.02] - 2026-04-08
+### Changed
+- Refactored `BackpackHelper`'s Favourite Drinks logic to build a single DOM node map instead of relying on recursive query loops. This severely limits browser memory usage and prevents lag/stutters on accounts with massive inventories.
+
 ## [8.01] - 2026-04-08
 ### Added
 - Added a "Favourite Drinks" section that automatically displays your top 5 consumed drinks in the backpack and living area modes, increasing image sizes for quick tapping.
 - Drink consumption is now successfully tracked automatically when drank directly from backpack/living area locations.
-- Included an interactive "View Stats" table modal showing lifetime consumption stats, fully populated with images and sorted highest to lowest. Also features a handy Reset button.
+m- Included an interactive "View Stats" table modal showing lifetime consumption stats, fully populated with images and sorted highest to lowest. Also features a handy Reset button.
 
 ## [8.00] - 2026-04-08
 ### Added

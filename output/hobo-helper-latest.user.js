@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.01
+// @version      8.02
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -289,21 +289,23 @@ const BackpackHelper = {
         let tr = document.createElement('tr');
         let count = 0;
 
+        // Build a map of drink names to their anchor elements to avoid nested DOM querying
+        const drinkNodeMap = {};
+        bpTable.querySelectorAll('img').forEach(img => {
+            const name = (img.getAttribute('alt') || img.title || '').trim();
+            if (name && !drinkNodeMap[name]) {
+                const a = img.closest('a');
+                if (a && ((a.getAttribute('href') || '').includes('do=drink') || (a.getAttribute('onclick') || '').includes('do=drink'))) {
+                    drinkNodeMap[name] = { a, img };
+                }
+            }
+        });
+
         sortedDrinks.forEach(drinkName => {
-            // try to find the item link
-            const titleImgs = Array.from(bpTable.querySelectorAll('img')).filter(img => {
-                const searchName = (img.getAttribute('alt') || img.title || '').trim();
-                return searchName === drinkName;
-            });
-            if (titleImgs.length === 0) return;
-            const img = titleImgs[0];
-            const a = img.closest('a');
-            if (!a) return;
+            const match = drinkNodeMap[drinkName];
+            if (!match) return;
 
-            const isDrink = (a.getAttribute('href') || '').includes('do=drink') || (a.getAttribute('onclick') || '').includes('do=drink');
-            if (!isDrink) return;
-
-            const clonedA = a.cloneNode(true);
+            const clonedA = match.a.cloneNode(true);
             const clonedImg = clonedA.querySelector('img');
             if (clonedImg) {
                 clonedImg.width = 35;
@@ -5011,13 +5013,20 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.02",
+            date: "2026-04-08",
+            type: "Changed",
+            notes: [
+                "Refactored `BackpackHelper`'s Favourite Drinks logic to build a single DOM node map instead of relying on recursive query loops. This severely limits browser memory usage and prevents lag/stutters on accounts with massive inventories."
+            ]
+        },
+        {
             version: "8.01",
             date: "2026-04-08",
             type: "Added",
             notes: [
                 "Added a \"Favourite Drinks\" section that automatically displays your top 5 consumed drinks in the backpack and living area modes, increasing image sizes for quick tapping.",
-                "Drink consumption is now successfully tracked automatically when drank directly from backpack/living area locations.",
-                "Included an interactive \"View Stats\" table modal showing lifetime consumption stats, fully populated with images and sorted highest to lowest. Also features a handy Reset button."
+                "Drink consumption is now successfully tracked automatically when drank directly from backpack/living area locations."
             ]
         },
         {
@@ -5047,15 +5056,6 @@ const ChangelogData = {
                 "Added a \"Cancel\" button to easily dismiss the \"Add Payment\" panel without saving changes.",
                 "The `MessageBoardHelper` \"Add Payment\" logic has been refactored to act as an update for existing payments instead of creating duplicate records. The submit button now dynamically displays \"Update\" or \"Save\" based on the payment's saved status.",
                 "Fixed an issue where saving an already tracked post payment would endlessly duplicate the row within the `GangLoansHelper` dashboard instead of replacing the old record."
-            ]
-        },
-        {
-            version: "7.97",
-            date: "2026-04-08",
-            type: "Added",
-            notes: [
-                "Added a \"Bank Account\" dropdown to the `GangLoansHelper` dashboard, allowing operators to select and save the applicable bank account per topic. This securely syncs natively with the site's default input forms.",
-                "Added an inline dynamic \"Total\" amount readout next to the Bank Account selector in every topic panel to continuously display the precise sum of all individual payments and calculated bulk repliers."
             ]
         }
     ]

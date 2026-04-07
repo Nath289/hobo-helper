@@ -148,21 +148,23 @@ const BackpackHelper = {
         let tr = document.createElement('tr');
         let count = 0;
 
+        // Build a map of drink names to their anchor elements to avoid nested DOM querying
+        const drinkNodeMap = {};
+        bpTable.querySelectorAll('img').forEach(img => {
+            const name = (img.getAttribute('alt') || img.title || '').trim();
+            if (name && !drinkNodeMap[name]) {
+                const a = img.closest('a');
+                if (a && ((a.getAttribute('href') || '').includes('do=drink') || (a.getAttribute('onclick') || '').includes('do=drink'))) {
+                    drinkNodeMap[name] = { a, img };
+                }
+            }
+        });
+
         sortedDrinks.forEach(drinkName => {
-            // try to find the item link
-            const titleImgs = Array.from(bpTable.querySelectorAll('img')).filter(img => {
-                const searchName = (img.getAttribute('alt') || img.title || '').trim();
-                return searchName === drinkName;
-            });
-            if (titleImgs.length === 0) return;
-            const img = titleImgs[0];
-            const a = img.closest('a');
-            if (!a) return;
+            const match = drinkNodeMap[drinkName];
+            if (!match) return;
 
-            const isDrink = (a.getAttribute('href') || '').includes('do=drink') || (a.getAttribute('onclick') || '').includes('do=drink');
-            if (!isDrink) return;
-
-            const clonedA = a.cloneNode(true);
+            const clonedA = match.a.cloneNode(true);
             const clonedImg = clonedA.querySelector('img');
             if (clonedImg) {
                 clonedImg.width = 35;

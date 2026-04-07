@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.00.20260408.0416
+// @version      8.01.20260408.0434
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -289,21 +289,23 @@ const BackpackHelper = {
         let tr = document.createElement('tr');
         let count = 0;
 
+        // Build a map of drink names to their anchor elements to avoid nested DOM querying
+        const drinkNodeMap = {};
+        bpTable.querySelectorAll('img').forEach(img => {
+            const name = (img.getAttribute('alt') || img.title || '').trim();
+            if (name && !drinkNodeMap[name]) {
+                const a = img.closest('a');
+                if (a && ((a.getAttribute('href') || '').includes('do=drink') || (a.getAttribute('onclick') || '').includes('do=drink'))) {
+                    drinkNodeMap[name] = { a, img };
+                }
+            }
+        });
+
         sortedDrinks.forEach(drinkName => {
-            // try to find the item link
-            const titleImgs = Array.from(bpTable.querySelectorAll('img')).filter(img => {
-                const searchName = (img.getAttribute('alt') || img.title || '').trim();
-                return searchName === drinkName;
-            });
-            if (titleImgs.length === 0) return;
-            const img = titleImgs[0];
-            const a = img.closest('a');
-            if (!a) return;
+            const match = drinkNodeMap[drinkName];
+            if (!match) return;
 
-            const isDrink = (a.getAttribute('href') || '').includes('do=drink') || (a.getAttribute('onclick') || '').includes('do=drink');
-            if (!isDrink) return;
-
-            const clonedA = a.cloneNode(true);
+            const clonedA = match.a.cloneNode(true);
             const clonedImg = clonedA.querySelector('img');
             if (clonedImg) {
                 clonedImg.width = 35;
@@ -357,7 +359,11 @@ const BackpackHelper = {
             if (val && val.src && !val.src.startsWith('data:')) return val.src;
             return `/images/items/gifs/${name.replace(/'/g, '').replace(/ /g, '-')}.gif`;
         };
-        const sortedDrinks = Object.keys(stats).sort((a,b) => getCount(stats[b]) - getCount(stats[a]));
+        const sortedDrinks = Object.keys(stats).sort((a,b) => {
+            const diff = getCount(stats[b]) - getCount(stats[a]);
+            if (diff === 0) return a.localeCompare(b);
+            return diff;
+        });
 
         let html = `<div id="bh_drink_stats_modal" style="position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#fff; color:#000; border:1px solid #ccc; padding:20px; z-index:9999; max-height:80%; overflow-y:auto; box-shadow:0 0 10px rgba(0,0,0,0.5); min-width: 250px;">
             <h3 style="margin-top: 0; padding-bottom: 10px; border-bottom: 1px solid #ddd;">Drink Stats</h3>
@@ -5007,6 +5013,16 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.01",
+            date: "2026-04-08",
+            type: "Added",
+            notes: [
+                "Added a \"Favourite Drinks\" section that automatically displays your top 5 consumed drinks in the backpack and living area modes, increasing image sizes for quick tapping.",
+                "Drink consumption is now successfully tracked automatically when drank directly from backpack/living area locations.",
+                "Included an interactive \"View Stats\" table modal showing lifetime consumption stats, fully populated with images and sorted highest to lowest. Also features a handy Reset button."
+            ]
+        },
+        {
             version: "8.00",
             date: "2026-04-08",
             type: "Added",
@@ -5042,15 +5058,6 @@ const ChangelogData = {
             notes: [
                 "Added a \"Bank Account\" dropdown to the `GangLoansHelper` dashboard, allowing operators to select and save the applicable bank account per topic. This securely syncs natively with the site's default input forms.",
                 "Added an inline dynamic \"Total\" amount readout next to the Bank Account selector in every topic panel to continuously display the precise sum of all individual payments and calculated bulk repliers."
-            ]
-        },
-        {
-            version: "7.96",
-            date: "2026-04-07",
-            type: "Added",
-            notes: [
-                "**Larger Vote Buttons (Message Board):** The tiny Up/Down vote links on message board posts are now converted into larger, easy-to-click buttons. This feature can be toggled via settings.",
-                "**Message Board Vote Tooltips:** Fixed a native game bug where the detailed vote count tooltip (\"Loading...\", followed by percentage breakdown) would permanently break after casting a vote without a page refresh."
             ]
         }
     ]
