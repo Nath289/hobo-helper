@@ -38,6 +38,25 @@ const LivingAreaHelper = {
         if (savedSettings['LivingAreaHelper_WideShowAll'] !== false) {
             this.initWideShowAll(savedSettings);
         }
+
+        this.initInactiveSpecialItemBg();
+    },
+
+    initInactiveSpecialItemBg: function() {
+        const statsDisplays = document.querySelectorAll('.statsDisplay');
+        statsDisplays.forEach(display => {
+            if (display.textContent.includes('Special Item')) {
+                // Check if it does not contain 'Active' (case-sensitive) or if it explicitly says 'Inactive'
+                if (!display.textContent.includes('Active') || display.textContent.includes('Inactive')) {
+                    const innerBox = display.querySelector('div');
+                    if (innerBox) {
+                        // Override existing inline background
+                        innerBox.style.backgroundColor = '#ffdddd';
+                        innerBox.style.setProperty('background', '#ffdddd', 'important');
+                    }
+                }
+            }
+        });
     },
 
     initWideShowAll: function(settings) {

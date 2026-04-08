@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.02
+// @version      8.03
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -2824,6 +2824,25 @@ const LivingAreaHelper = {
         if (savedSettings['LivingAreaHelper_WideShowAll'] !== false) {
             this.initWideShowAll(savedSettings);
         }
+
+        this.initInactiveSpecialItemBg();
+    },
+
+    initInactiveSpecialItemBg: function() {
+        const statsDisplays = document.querySelectorAll('.statsDisplay');
+        statsDisplays.forEach(display => {
+            if (display.textContent.includes('Special Item')) {
+                // Check if it does not contain 'Active' (case-sensitive) or if it explicitly says 'Inactive'
+                if (!display.textContent.includes('Active') || display.textContent.includes('Inactive')) {
+                    const innerBox = display.querySelector('div');
+                    if (innerBox) {
+                        // Override existing inline background
+                        innerBox.style.backgroundColor = '#ffdddd';
+                        innerBox.style.setProperty('background', '#ffdddd', 'important');
+                    }
+                }
+            }
+        });
     },
 
     initWideShowAll: function(settings) {
@@ -5013,6 +5032,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.03",
+            date: "2026-04-08",
+            type: "Added",
+            notes: [
+                "Added a visual indicator to the Living Area that applies a pale red background to the Special Item container when the item is inactive."
+            ]
+        },
+        {
             version: "8.02",
             date: "2026-04-08",
             type: "Changed",
@@ -5045,17 +5072,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Improved layout and styling of \"Give a Loan\" and \"Clear a Loan\" forms in the Gang Loans helper."
-            ]
-        },
-        {
-            version: "7.98",
-            date: "2026-04-08",
-            type: "Added",
-            notes: [
-                "Added a \"Remove\" button to the `MessageBoardHelper` \"Add Payment\" panel to cleanly delete previously saved payments.",
-                "Added a \"Cancel\" button to easily dismiss the \"Add Payment\" panel without saving changes.",
-                "The `MessageBoardHelper` \"Add Payment\" logic has been refactored to act as an update for existing payments instead of creating duplicate records. The submit button now dynamically displays \"Update\" or \"Save\" based on the payment's saved status.",
-                "Fixed an issue where saving an already tracked post payment would endlessly duplicate the row within the `GangLoansHelper` dashboard instead of replacing the old record."
             ]
         }
     ]

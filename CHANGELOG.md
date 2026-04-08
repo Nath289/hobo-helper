@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.03] - 2026-04-08
+### Added
+- Added a visual indicator to the Living Area that applies a pale red background to the Special Item container when the item is inactive.
+
 ## [8.02] - 2026-04-08
 ### Changed
 - Refactored `BackpackHelper`'s Favourite Drinks logic to build a single DOM node map instead of relying on recursive query loops. This severely limits browser memory usage and prevents lag/stutters on accounts with massive inventories.

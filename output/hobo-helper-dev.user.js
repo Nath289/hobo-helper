@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.01.20260408.0434
+// @version      8.02.20260408.2152
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -2824,6 +2824,25 @@ const LivingAreaHelper = {
         if (savedSettings['LivingAreaHelper_WideShowAll'] !== false) {
             this.initWideShowAll(savedSettings);
         }
+
+        this.initInactiveSpecialItemBg();
+    },
+
+    initInactiveSpecialItemBg: function() {
+        const statsDisplays = document.querySelectorAll('.statsDisplay');
+        statsDisplays.forEach(display => {
+            if (display.textContent.includes('Special Item')) {
+                // Check if it does not contain 'Active' (case-sensitive) or if it explicitly says 'Inactive'
+                if (!display.textContent.includes('Active') || display.textContent.includes('Inactive')) {
+                    const innerBox = display.querySelector('div');
+                    if (innerBox) {
+                        // Override existing inline background
+                        innerBox.style.backgroundColor = '#ffdddd';
+                        innerBox.style.setProperty('background', '#ffdddd', 'important');
+                    }
+                }
+            }
+        });
     },
 
     initWideShowAll: function(settings) {
@@ -5013,13 +5032,20 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.02",
+            date: "2026-04-08",
+            type: "Changed",
+            notes: [
+                "Refactored `BackpackHelper`'s Favourite Drinks logic to build a single DOM node map instead of relying on recursive query loops. This severely limits browser memory usage and prevents lag/stutters on accounts with massive inventories."
+            ]
+        },
+        {
             version: "8.01",
             date: "2026-04-08",
             type: "Added",
             notes: [
                 "Added a \"Favourite Drinks\" section that automatically displays your top 5 consumed drinks in the backpack and living area modes, increasing image sizes for quick tapping.",
-                "Drink consumption is now successfully tracked automatically when drank directly from backpack/living area locations.",
-                "Included an interactive \"View Stats\" table modal showing lifetime consumption stats, fully populated with images and sorted highest to lowest. Also features a handy Reset button."
+                "Drink consumption is now successfully tracked automatically when drank directly from backpack/living area locations."
             ]
         },
         {
@@ -5049,15 +5075,6 @@ const ChangelogData = {
                 "Added a \"Cancel\" button to easily dismiss the \"Add Payment\" panel without saving changes.",
                 "The `MessageBoardHelper` \"Add Payment\" logic has been refactored to act as an update for existing payments instead of creating duplicate records. The submit button now dynamically displays \"Update\" or \"Save\" based on the payment's saved status.",
                 "Fixed an issue where saving an already tracked post payment would endlessly duplicate the row within the `GangLoansHelper` dashboard instead of replacing the old record."
-            ]
-        },
-        {
-            version: "7.97",
-            date: "2026-04-08",
-            type: "Added",
-            notes: [
-                "Added a \"Bank Account\" dropdown to the `GangLoansHelper` dashboard, allowing operators to select and save the applicable bank account per topic. This securely syncs natively with the site's default input forms.",
-                "Added an inline dynamic \"Total\" amount readout next to the Bank Account selector in every topic panel to continuously display the precise sum of all individual payments and calculated bulk repliers."
             ]
         }
     ]
