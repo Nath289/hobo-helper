@@ -1,15 +1,15 @@
 const GangHelper = {
+    cmds: 'gang',
     settings: [
         { key: 'GangHelper_EnableFeature', label: 'Enable Gang Helper' }
     ],
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
-        const cmd = urlParams.get('cmd');
         const doParam = urlParams.get('do');
         const wParam = urlParams.get('w');
         
-        // Ensure we are on the Gang page
-        if (cmd !== 'gang' || doParam !== 'enter') return;
+        // Ensure we are on the Gang do=enter page
+        if (doParam !== 'enter') return;
 
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
 
@@ -129,3 +129,4 @@ const GangHelper = {
         });
     }
 };
+

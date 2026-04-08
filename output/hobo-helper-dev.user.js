@@ -1,11 +1,13 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.03.20260408.2210
+// @version      8.04.20260409.0018
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
 // @grant        GM_notification
+// @noframes
+// @run-at       document-start
 // ==/UserScript==
 
 (function() {
@@ -139,6 +141,226 @@ const Utils = {
         }
 
 };
+const DrinksData = {
+            // Data structure containing all drinks in the game
+            drinks: {
+                alcoholic: [
+                    { name: "Crudweiser", cost: { type: "cw_multiplier", value: 1 }, location: "Liquor Store", base_stat_gain: "", effect: "" },
+                    { name: "Goon Sack", cost: { type: "cw_multiplier", value: 4 }, location: "Liquor Store", base_stat_gain: "+0.050 Power", effect: "" },
+                    { name: "Albino Ale", cost: { type: "cw_multiplier", value: 4 }, location: "Liquor Store", base_stat_gain: "+0.050 Strength", effect: "" },
+                    { name: "Purple Pigeon Vodka", cost: { type: "cw_multiplier", value: 6 }, location: "Liquor Store", base_stat_gain: "+0.050 Speed +0.050 Power", effect: "" },
+                    { name: "John Cuervo Tequila", cost: { type: "cw_multiplier", value: 6 }, location: "Liquor Store", base_stat_gain: "+0.050 Power +0.050 Strength", effect: "" },
+                    { name: "Birdbath Gin", cost: { type: "cw_multiplier", value: 6 }, location: "Liquor Store", base_stat_gain: "+0.050 Speed +0.050 Strength", effect: "" },
+                    { name: "Rev's Rum", cost: { type: "cw_multiplier", value: 8 }, location: "Liquor Store", base_stat_gain: "+0.100 Strength", effect: "" },
+                    { name: "Ruiner's Rum", cost: { type: "cw_multiplier", value: 8 }, location: "Liquor Store", base_stat_gain: "+0.100 Power", effect: "" },
+                    { name: "Wild Terrier Whiskey", cost: { type: "cw_multiplier", value: 8 }, location: "Liquor Store", base_stat_gain: "+0.100 Speed", effect: "" },
+                    { name: "Zima Light", cost: { type: "cw_multiplier", value: 10 }, location: "Liquor Store", base_stat_gain: "-0.025 Strength", effect: "" },
+                    { name: "Portly Stout", cost: { type: "cw_multiplier", value: 10 }, location: "Liquor Store", base_stat_gain: "+0.100 Strength", effect: "" },
+                    { name: "Boxcar Boxed Wine", cost: { type: "cw_multiplier", value: 10 }, location: "Liquor Store", base_stat_gain: "+0.075 Power", effect: "" },
+                    { name: "Octuple Sec", cost: { type: "cw_multiplier", value: 12 }, location: "Liquor Store", base_stat_gain: "+0.125 Power", effect: "" },
+                    { name: "Montreal Bourbon", cost: { type: "cw_multiplier", value: 12 }, location: "Liquor Store", base_stat_gain: "+0.125 Strength", effect: "" },
+                    { name: "Brandy Brand Brandy", cost: { type: "cw_multiplier", value: 12 }, location: "Liquor Store", base_stat_gain: "+0.125 Speed", effect: "" },
+                    { name: "Aunt Flo Amaretto", cost: { type: "cw_multiplier", value: 14 }, location: "Liquor Store", base_stat_gain: "+0.150 Speed", effect: "" },
+                    { name: "Mutton Chop Scotch", cost: { type: "cw_multiplier", value: 16 }, location: "Liquor Store", base_stat_gain: "+0.075 Power +0.100 Strength", effect: "" },
+                    { name: "Homeless Hennessy", cost: { type: "cw_multiplier", value: 20 }, location: "Liquor Store", base_stat_gain: "+0.050 Speed +0.050 Power +0.075 Strength", effect: "" },
+                    { name: "Lemon Drop", cost: { type: "cw_multiplier", value: 4 }, location: "Dive Bar", base_stat_gain: "+0.050 Speed", effect: "" },
+                    { name: "Buttery Nipple", cost: { type: "cw_multiplier", value: 8 }, location: "Dive Bar", base_stat_gain: "+0.050 Speed", effect: "" },
+                    { name: "Canadian Flag", cost: { type: "cw_multiplier", value: 12 }, location: "Dive Bar", base_stat_gain: "+0.075 Speed", effect: "" },
+                    { name: "The CMYK", cost: { type: "cw_multiplier", value: 16 }, location: "Dive Bar", base_stat_gain: "+0.075 Speed", effect: "" },
+                    { name: "Five Star General", cost: { type: "cw_multiplier", value: 20 }, location: "Dive Bar", base_stat_gain: "+0.100 Speed", effect: "" },
+                    { name: "Rainbow Road", cost: { type: "cw_multiplier", value: 24 }, location: "Dive Bar", base_stat_gain: "+0.100 Speed", effect: "" },
+                    { name: "Shot of Whiskey", cost: { type: "fixed", value: 3000 }, location: "Alcoholic Rat / Shakedown Saloon", base_stat_gain: "+0.050 Speed", effect: "" },
+                    { name: "Shot of Ruiner's Rum", cost: { type: "fixed", value: 3000 }, location: "Alcoholic Rat / Shakedown Saloon", base_stat_gain: "+0.050 Speed +0.050 Power", effect: "" },
+                    { name: "Shot of Tequila", cost: { type: "fixed", value: 3000 }, location: "Alcoholic Rat / Shakedown Saloon", base_stat_gain: "+0.050 Speed +0.050 Strength", effect: "" },
+                    { name: "Bottle of Bernard's Barbaresco", cost: { type: "fixed", value: "50 RP" }, location: "Recycling Bin" },
+                    { name: "Bottle of Two Buck Chuck", cost: { type: "fixed", value: 100000 }, location: "Matching Game / Dive Bar (Tip Jar)" },
+                    { name: "Decaf Kahlua", cost: { type: "tiredness", value: 5 }, location: "Sailing" },
+                    { name: "Everclear", cost: { type: "tiredness", value: 5 }, location: "Sailing" },
+                    { name: "Irish Cream", cost: { type: "tiredness", value: 5 }, location: "Sailing" },
+                    { name: "Jack Daniel's", cost: { type: "tiredness", value: 5 }, location: "Sailing" },
+                    { name: "Jagermeister", cost: { type: "tiredness", value: 5 }, location: "Sailing" },
+                    { name: "Tapped Keg", cost: { type: "tiredness", value: 5 }, location: "Alcoholic Rat / 7/11 Dumpster" },
+                    { name: "Fotey", cost: { type: "tiredness", value: 5 }, location: "Sailing" }
+                ],
+                mixed: [
+                    { name: "Amish Highball", cost: { type: "mixed", text: "10CW+$200" }, location: "Mixer", ingredients: ["Boxcar Boxed Wine", "Cola"], base_stat_gain: "+0.025 Speed +0.050 Strength", effect: "Amish" },
+                    { name: "Angry Mother", cost: { type: "mixed", text: "14CW+$400" }, location: "Mixer", ingredients: ["Aunt Flo Amaretto", "Sweet & Sour"], base_stat_gain: "+0.075 Power", effect: "Angry" },
+                    { name: "Bawling Baby", cost: { type: "mixed", text: "Awake+6CW+$250" }, location: "Mixer", ingredients: ["Decaf Kahlua", "Purple Pigeon Vodka", "Milk"], base_stat_gain: "+0.007 Begging", effect: "Bawling like a baby" },
+                    { name: "Bloody Murray", cost: { type: "mixed", text: "Awake+6CW+10Cans+$50,000+200PP" }, location: "Mixer", ingredients: ["Purple Pigeon Vodka", "Celery", "Hair of the Dog", "Tabasco"], base_stat_gain: "+0.075 Power +0.075 Strength", effect: "Chance to decrease BAC by 0.12%." },
+                    { name: "Centrifuge", cost: { type: "mixed", text: "38CW+$600" }, location: "Mixer", ingredients: ["Birdbath Gin", "John Cuervo Tequila", "Octuple Sec", "Purple Pigeon Vodka", "Rev's Rum", "Sweet & Sour", "Cola"], base_stat_gain: "", effect: "Uranium Enriched" },
+                    { name: "Dead Man Walking", cost: { type: "mixed", text: "Awake+28CW+$400" }, location: "Mixer", ingredients: ["Octuple Sec", "Orange Juice", "Rev's Rum", "Ruiner's Rum", "Sweet & Sour"], base_stat_gain: "", effect: "Zombified" },
+                    { name: "Eggnog", cost: { type: "mixed", text: "Orange Gift (Awake)" }, location: "Mixer", ingredients: ["Orange Gift"], base_stat_gain: "+0.075 Speed +0.075 Power +0.075 Strength +0.025 Intelligence +0.004 Begging", effect: "" },
+                    { name: "Egyptini", cost: { type: "mixed", text: "Awake+6CW+$50" }, location: "Mixer", ingredients: ["Birdbath Gin", "Olive", "Wonka Bar Wrapper", "Bath Salts", "Ice"], base_stat_gain: "-0.250 Speed +0.250 Power +0.250 Strength", effect: "Mummified" },
+                    { name: "Erupting Volcano", cost: { type: "mixed", text: "Awake+20CW+$800" }, location: "Mixer", ingredients: ["Homeless Hennessy", "Dry Ice", "Fire", "Red Bull"], base_stat_gain: "+0.100 Power +0.100 Strength", effect: "Enraged" },
+                    { name: "Eye Gouger", cost: { type: "mixed", text: "6CW+$200" }, location: "Mixer", ingredients: ["Purple Pigeon Vodka", "Soda Water"], base_stat_gain: "", effect: "Blind" },
+                    { name: "Filthy Leprechaun", cost: { type: "mixed", text: "Awake+16CW" }, location: "Mixer", ingredients: ["Irish Cream", "Mutton Chop Scotch"], base_stat_gain: "+0.075 Speed", effect: "Green Noser" },
+                    { name: "Flaming Hedgehog", cost: { type: "mixed", text: "Awake+$300" }, location: "Mixer", ingredients: ["Jagermeister", "Fire", "Red Bull"], base_stat_gain: "+0.125 Power", effect: "Flame-tipped Spiked Hair" },
+                    { name: "Full Moon", cost: { type: "mixed", text: "Awake+$50" }, location: "Mixer", ingredients: ["Irish Cream", "Jack Daniel's", "Bath Salts", "Ice"], base_stat_gain: "+0.125 Power +0.125 Strength", effect: "Warwolf" },
+                    { name: "Gin & Juice", cost: { type: "mixed", text: "Awake+6CW" }, location: "Mixer", ingredients: ["Birdbath Gin", "Orange Juice"], base_stat_gain: "+0.050 Intel", effect: "Laid Back" },
+                    { name: "Happy Puppy", cost: { type: "mixed", text: "8CW+$200" }, location: "Mixer", ingredients: ["Wild Terrier Whiskey", "Cola"], base_stat_gain: "+0.100 Power", effect: "Puppy Power" },
+                    { name: "Hedgehog", cost: { type: "mixed", text: "Awake+$300" }, location: "Mixer", ingredients: ["Jagermeister", "Red Bull"], base_stat_gain: "+0.100 Power", effect: "Spiked Hair" },
+                    { name: "Hungry Hippo", cost: { type: "mixed", text: "Awake+6CW+$250" }, location: "Mixer", ingredients: ["Decaf Kahlua", "Irish Cream", "Purple Pigeon Vodka", "Milk"], base_stat_gain: "", effect: "You can eat another meal." },
+                    { name: "Jolly Gentleman", cost: { type: "mixed", text: "Awake+6CW" }, location: "Mixer", ingredients: ["Birdbath Gin", "Olive"], base_stat_gain: "+0.100 Power", effect: "Classy as Hell" },
+                    { name: "Lemonade", cost: { type: "mixed", text: "April Fool's Mini Adventure" }, location: "Mixer", ingredients: ["April Fool's Mini Adventure"], base_stat_gain: "+1.250 Speed +1.250 Power +1.250 Strength", effect: "Requires the Open Packet of Sugar to drink." },
+                    { name: "Prison Hooch", cost: { type: "mixed", text: "HoboArena Reward" }, location: "Mixer", ingredients: ["HoboArena Reward"], base_stat_gain: "+0.150 Speed +0.150 Power +0.150 Strength", effect: "Meleeria" },
+                    { name: "Purring Kitty", cost: { type: "mixed", text: "6CW+$200" }, location: "Mixer", ingredients: ["Birdbath Gin", "Soda Water"], base_stat_gain: "+0.100 Speed", effect: "Kitten Pox" },
+                    { name: "Rocket Juice", cost: { type: "mixed", text: "HoboArena Reward" }, location: "Mixer", ingredients: ["HoboArena Reward"], base_stat_gain: "+0.075 Speed +0.075 Power +0.075 Strength +2 Intelligence +2 Begging 100,000 Respect +1 Level", effect: "" },
+                    { name: "Self Immolation", cost: { type: "mixed", text: "Awake+15CW" }, location: "Mixer", ingredients: ["Aunt Flo Amaretto", "Crudweiser", "Everclear", "Fire"], base_stat_gain: "+0.200 Power +0.075 Strength", effect: "On Fire" },
+                    { name: "Sludge", cost: { type: "mixed", text: "Made from mixing drinks that do not form a proper mixed drink" }, location: "Mixer", ingredients: ["Made from mixing drinks that do not form a proper mixed drink"], base_stat_gain: "", effect: "Collect 1000 to unlock a new wish" },
+                    { name: "Sorrowful Penguin", cost: { type: "mixed", text: "Awake+10CW+$50" }, location: "Mixer", ingredients: ["Ice", "Jolly Rancher", "Zima Light"], base_stat_gain: "", effect: "Sorrowful" },
+                    { name: "Ten Foot Drop", cost: { type: "mixed", text: "18CW+$400" }, location: "Mixer", ingredients: ["Octuple Sec", "Purple Pigeon Vodka", "Sweet & Sour"], base_stat_gain: "", effect: "You lose all your life." },
+                    { name: "The Long Walk", cost: { type: "mixed", text: "36CW" }, location: "Mixer", ingredients: ["Montreal Bourbon", "Mutton Chop Scotch", "Wild Terrier Whiskey"], base_stat_gain: "", effect: "Shoegazer" },
+                    { name: "Time Traveler", cost: { type: "mixed", text: "Awake+12CW+$500" }, location: "Mixer", ingredients: ["Brandy Brand Brandy", "Dry Ice", "Jolly Rancher", "Orange Juice"], base_stat_gain: "+0.250 Speed", effect: "Time Displacement" },
+                    { name: "Transylvania Slammer", cost: { type: "mixed", text: "Awake+18CW+$50" }, location: "Mixer", ingredients: ["Albino Ale", "Aunt Flo Amaretto", "Jagermeister", "Bath Salts", "Ice"], base_stat_gain: "+0.125 Speed +0.125 Power", effect: "Glampire" }
+                ],
+                non_alcoholic: [
+                    { name: "Cola", cost: { type: "fixed", value: 200 }, location: "Liquor Store" },
+                    { name: "Sweet & Sour", cost: { type: "fixed", value: 400 }, location: "Liquor Store" },
+                    { name: "Milk", cost: { type: "fixed", value: 250 }, location: "Liquor Store" },
+                    { name: "Celery", cost: { type: "unknown", value: 0 }, location: "Food Store" },
+                    { name: "Tabasco", cost: { type: "unknown", value: 0 }, location: "Food Store" },
+                    { name: "Orange Juice", cost: { type: "unknown", value: 0 }, location: "Liquor Store" },
+                    { name: "Soda Water", cost: { type: "fixed", value: 200 }, location: "Liquor Store" },
+                    { name: "Dry Ice", cost: { type: "unknown", value: 0 }, location: "Liquor Store" },
+                    { name: "Ice", cost: { type: "fixed", value: 50 }, location: "Liquor Store" },
+                    { name: "Red Bull", cost: { type: "fixed", value: 300 }, location: "Convenience Store" },
+                    { name: "Olive", cost: { type: "unknown", value: 0 }, location: "Food Store" }
+                ]
+            }
+        }
+
+const FoodData = {
+    "Apple Core": { "img": "Apple-Core.gif" },
+    "Half a Donut": { "img": "Half-a-Donut.gif" },
+    "Piece of Bread": { "img": "Piece-of-Bread.gif" },
+    "Can of Coke": { "img": "Can-of-Coke.gif" },
+    "Piece of Pizza": { "img": "Piece-of-Pizza.gif" },
+    "Meat Pie": { "img": "Meat-Pie.gif" },
+    "Can of Pepsi": { "img": "Can-of-Pepsi.gif" },
+    "Rotten Fish": { "img": "Rotten-Fish.gif" },
+    "Half Eaten Burger": { "img": "Half-Eaten-Burger.gif" },
+    "Packet of Fries": { "img": "Packet-of-Fries.gif" },
+    "New Pizza": { "img": "New-Pizza.gif" },
+    "Chewed Chicken Leg": { "img": "Chewed-Chicken-Leg.gif" },
+    "Raw Chicken Leg": { "img": "Raw-Chicken-Leg.gif" },
+    "Cooked Chicken": { "img": "Cooked-Chicken.gif" },
+    "Half a HotDog": { "img": "Half-a-HotDog.gif" },
+    "HotDog": { "img": "HotDog.gif" },
+    "KFC Meal": { "img": "KFC-Meal.gif" },
+    "Raw Potato": { "img": "Raw-Potato.gif" },
+    "Vanilla Ice Cream": { "img": "Vanilla-Ice-Cream.gif" },
+    "Chocolate Ice Cream": { "img": "Chocolate-Ice-Cream.gif" },
+    "Fresh Apple": { "img": "Fresh-Apple.gif" },
+    "Fighters Lunch": { "img": "Fighters-Lunch.gif" },
+    "Double-Double": { "img": "Double-Double.gif" },
+    "Bachelor Chow": { "img": "Bachelor-Chow.gif" },
+    "Smart Bread": { "img": "Smart-Bread.gif" },
+    "Day Old Coffee Naan": { "img": "Day-Old-Coffee-Naan.gif" },
+    "Half a Sandwich Naan": { "img": "Half-a-Sandwich-Naan.gif" },
+    "Discarded Taco Naan": { "img": "Discarded-Taco-Naan.gif" },
+    "Wonka Bar": { "img": "Wonka-Bar.gif" },
+    "Single-Single": { "img": "Single-Single.gif" },
+    "Wonka-stripe Candy Cane": { "img": "Wonka-stripe-Candy-Cane.gif" },
+    "Rainbow Drop": { "img": "Rainbow-Drop.gif" },
+    "Roast Beef": { "img": "Roast-Beef.gif" },
+    "Pre-Chewed Gum": { "img": "Pre-Chewed-Gum.gif" },
+    "Roast Beef Flavored Gum": { "img": "Roast-Beef-Flavored-Gum.gif" },
+    "Semi-Lasting Gobstopper": { "img": "Semi-Lasting-Gobstopper.gif" },
+    "Sweet Bomb": { "img": "Sweet-Bomb.gif" },
+    "Blueberry Blast Jelly Beans": { "img": "Blueberry-Blast-Jelly-Beans.gif" },
+    "Beef Mushroom Stew": { "img": "Beef-Mushroom-Stew.gif" },
+    "Texas Fajita Soup": { "img": "Texas-Fajita-Soup.gif" },
+    "Cream of Okra Soup": { "img": "Cream-of-Okra-Soup.gif" },
+    "Garlic Salmon Bisque": { "img": "Garlic-Salmon-Bisque.gif" },
+    "Beggars Bouillon": { "img": "Beggar%27s-Bouillon.gif" },
+    "Fizzy Lifting Soda": { "img": "Fizzy-Lifting-Soda.gif" },
+    "Wonkas Peppermint Spirits": { "img": "Wonka%27s-Peppermint-Spirits.gif" },
+    "Altoids": { "img": "Altoids.gif" },
+    "Junior Mints": { "img": "Junior-Mints.gif" },
+    "Red Hots": { "img": "Red-Hots.gif" },
+    "Crystal Pepsi": { "img": "Crystal-Pepsi.gif" },
+    "Chocolate Vanilla Swirl Ice Cream": { "img": "Chocolate-Vanilla-Swirl-Ice-Cream.gif" },
+    "Redder Hots": { "img": "Redder-Hots.gif" },
+    "Gas Soaked Red Hots": { "img": "Gas-Soaked-Red-Hots.gif" },
+    "Gummi Gorilla": { "img": "Gummi-Gorilla.gif" },
+    "Gummi Peregrine Falcon": { "img": "Gummi-Peregrine-Falcon.gif" },
+    "Gummi Raptor": { "img": "Gummi-Raptor.gif" },
+    "Quantum Candy": { "img": "Quantum-Candy.gif" },
+    "Gummi Spaghetti Monster": { "img": "Gummi-Spaghetti-Monster.gif" },
+    "Fruit by the Furlong": { "img": "Fruit-by-the-Furlong.gif" },
+    "Candy Cigarette": { "img": "Candy-Cigarette.gif" },
+    "Pack of Candy Cigarettes": { "img": "Pack-of-Candy-Cigarettes.gif" },
+    "Freeze-Packed Dippin Dots": { "img": "Freeze-Packed-Dippin-Dots.gif" },
+    "Dippin Dots": { "img": "Dippin-Dots.gif" },
+    "Military Rations": { "img": "Military-Rations.gif" },
+    "Can of Whipped Cream": { "img": "Can-of-Whipped-Cream.gif" },
+    "Faberge Cream Egg": { "img": "Faberge-Cream-Egg.gif" },
+    "Apple Flavored Gum": { "img": "Apple-Flavored-Gum.gif" },
+    "Cinnamon Flavored Gum": { "img": "Cinnamon-Flavored-Gum.gif" },
+    "Dark Chocolate Wonka Bar": { "img": "Dark-Chocolate-Wonka-Bar.gif" },
+    "Special Brownie": { "img": "Special-Brownie.gif" },
+    "Bacon Blast Jelly Beans": { "img": "Bacon-Blast-Jelly-Beans.gif" },
+    "Fizzy Falling Soda": { "img": "Fizzy-Falling-Soda.gif" },
+    "Caulipop": { "img": "Caulipop.gif" },
+    "Dalipop": { "img": "Dalipop.gif" },
+    "Volleypop": { "img": "Volleypop.gif" },
+    "Polypop": { "img": "Polypop.gif" },
+    "Mountain Honeydew Melon": { "img": "Mountain-Honeydew-Melon.gif" },
+    "Mountain Dew": { "img": "Mountain-Dew.gif" },
+    "Salmon": { "img": "Salmon.gif" },
+    "Catfish": { "img": "Catfish.gif" },
+    "Fish Sticks": { "img": "Fish-Sticks.gif" },
+    "Octopus": { "img": "Octopus.gif" },
+    "Blowfish": { "img": "Blowfish.gif" },
+    "Hobo Stew": { "img": "Hobo-Stew.gif" },
+    "Beggars Brunch": { "img": "Beggars-Brunch.gif" },
+    "Hangover Omelette": { "img": "Hangover-Omelette.gif" },
+    "Stomach Parasite": { "img": "Stomach-Parasite.gif" },
+    "Forest Shroom": { "img": "Forest-Shroom.gif" },
+    "Garlic Clove": { "img": "Garlic-Clove.gif" },
+    "Chili Pepper": { "img": "Chili-Pepper.gif" },
+    "Okra": { "img": "Okra.gif" },
+    "Gingerbread Bum": { "img": "Gingerbread-Bum.gif" },
+    "Bernard Burger": { "img": "Bernard-Burger.gif" },
+    "Flying Dutchman": { "img": "Flying-Dutchman.gif" },
+    "Animal Style Fries": { "img": "Animal-Style-Fries.gif" },
+    "Neapolitan Shake": { "img": "Neapolitan-Shake.gif" },
+    "SARS Bar": { "img": "SARS-Bar.gif" },
+    "Hobowarheads": { "img": "Hobowarheads.gif" },
+    "Mop Rocks": { "img": "Mop-Rocks.gif" },
+    "ICPeanut Butter Cup": { "img": "ICPeanut-Butter-Cup.gif" },
+    "Sugarfree Gum": { "img": "Sugarfree-Gum.gif" },
+    "Kit Rat Bar": { "img": "Kit-Rat-Bar.gif" },
+    "Butlerfinger": { "img": "Butlerfinger.gif" },
+    "Life Savers": { "img": "Life-Savers.gif" },
+    "Pay Day": { "img": "Pay-Day.gif" },
+    "Candycorn": { "img": "Candycorn.gif" },
+    "Sourpatch Bums": { "img": "Sourpatch-Bums.gif" },
+    "L&amp;Ls": { "img": "L&amp;Ls.gif" },
+    "Apple Surprise": { "img": "Apple-Surprise.gif" },
+    "Death Mints": { "img": "Death-Mints.gif" },
+    "Blow-Up Pop": { "img": "Blow-Up-Pop.gif" },
+    "Peppermint Burger Patties": { "img": "Peppermint-Burger-Patties.gif" },
+    "Rock Candy": { "img": "Rock-Candy.gif" },
+    "Walking Taco": { "img": "Walking-Taco.gif" },
+    "Freedom Fries": { "img": "Freedom-Fries.gif" },
+    "Jugger-Nut": { "img": "Jugger-Nut.gif" },
+    "Pizza Del Mare": { "img": "Pizza-Del-Mare.gif" },
+    "Bottle of Coke": { "img": "Bottle-of-Coke.gif" },
+    "Brains": { "img": "Brains.gif" },
+    "Death By Chocolate": { "img": "Death-By-Chocolate.gif" },
+    "Spooky Biscuit": { "img": "Spooky-Biscuit.gif" },
+    "Twozzlers": { "img": "Twozzlers.gif" },
+    "Red Hot Chili Pepper": { "img": "Red-Hot-Chili-Pepper.gif" },
+    "Longer-Lasting Gobstopper": { "img": "Longer-Lasting-Gobstopper.gif" },
+    "Double Gorillas": { "img": "Double-Gorillas.gif" },
+    "Double Falcons": { "img": "Double-Falcons.gif" },
+    "Double Raptors": { "img": "Double-Raptors.gif" },
+    "Triple Dipps": { "img": "Triple-Dipps.gif" },
+    "Rainbow Balls": { "img": "Rainbow-Balls.gif" },
+    "Wonka Quadra Candy Cane": { "img": "Wonka-Quadra-Candy-Cane.gif" },
+};
+
 const BackpackHelper = {
     init: function() {
         const settings = Utils.getSettings();
@@ -598,96 +820,9 @@ const DisplayHelper = {
     }
 };
 
-const DrinksData = {
-            // Data structure containing all drinks in the game
-            drinks: {
-                alcoholic: [
-                    { name: "Crudweiser", cost: { type: "cw_multiplier", value: 1 }, location: "Liquor Store", base_stat_gain: "", effect: "" },
-                    { name: "Goon Sack", cost: { type: "cw_multiplier", value: 4 }, location: "Liquor Store", base_stat_gain: "+0.050 Power", effect: "" },
-                    { name: "Albino Ale", cost: { type: "cw_multiplier", value: 4 }, location: "Liquor Store", base_stat_gain: "+0.050 Strength", effect: "" },
-                    { name: "Purple Pigeon Vodka", cost: { type: "cw_multiplier", value: 6 }, location: "Liquor Store", base_stat_gain: "+0.050 Speed +0.050 Power", effect: "" },
-                    { name: "John Cuervo Tequila", cost: { type: "cw_multiplier", value: 6 }, location: "Liquor Store", base_stat_gain: "+0.050 Power +0.050 Strength", effect: "" },
-                    { name: "Birdbath Gin", cost: { type: "cw_multiplier", value: 6 }, location: "Liquor Store", base_stat_gain: "+0.050 Speed +0.050 Strength", effect: "" },
-                    { name: "Rev's Rum", cost: { type: "cw_multiplier", value: 8 }, location: "Liquor Store", base_stat_gain: "+0.100 Strength", effect: "" },
-                    { name: "Ruiner's Rum", cost: { type: "cw_multiplier", value: 8 }, location: "Liquor Store", base_stat_gain: "+0.100 Power", effect: "" },
-                    { name: "Wild Terrier Whiskey", cost: { type: "cw_multiplier", value: 8 }, location: "Liquor Store", base_stat_gain: "+0.100 Speed", effect: "" },
-                    { name: "Zima Light", cost: { type: "cw_multiplier", value: 10 }, location: "Liquor Store", base_stat_gain: "-0.025 Strength", effect: "" },
-                    { name: "Portly Stout", cost: { type: "cw_multiplier", value: 10 }, location: "Liquor Store", base_stat_gain: "+0.100 Strength", effect: "" },
-                    { name: "Boxcar Boxed Wine", cost: { type: "cw_multiplier", value: 10 }, location: "Liquor Store", base_stat_gain: "+0.075 Power", effect: "" },
-                    { name: "Octuple Sec", cost: { type: "cw_multiplier", value: 12 }, location: "Liquor Store", base_stat_gain: "+0.125 Power", effect: "" },
-                    { name: "Montreal Bourbon", cost: { type: "cw_multiplier", value: 12 }, location: "Liquor Store", base_stat_gain: "+0.125 Strength", effect: "" },
-                    { name: "Brandy Brand Brandy", cost: { type: "cw_multiplier", value: 12 }, location: "Liquor Store", base_stat_gain: "+0.125 Speed", effect: "" },
-                    { name: "Aunt Flo Amaretto", cost: { type: "cw_multiplier", value: 14 }, location: "Liquor Store", base_stat_gain: "+0.150 Speed", effect: "" },
-                    { name: "Mutton Chop Scotch", cost: { type: "cw_multiplier", value: 16 }, location: "Liquor Store", base_stat_gain: "+0.075 Power +0.100 Strength", effect: "" },
-                    { name: "Homeless Hennessy", cost: { type: "cw_multiplier", value: 20 }, location: "Liquor Store", base_stat_gain: "+0.050 Speed +0.050 Power +0.075 Strength", effect: "" },
-                    { name: "Lemon Drop", cost: { type: "cw_multiplier", value: 4 }, location: "Dive Bar", base_stat_gain: "+0.050 Speed", effect: "" },
-                    { name: "Buttery Nipple", cost: { type: "cw_multiplier", value: 8 }, location: "Dive Bar", base_stat_gain: "+0.050 Speed", effect: "" },
-                    { name: "Canadian Flag", cost: { type: "cw_multiplier", value: 12 }, location: "Dive Bar", base_stat_gain: "+0.075 Speed", effect: "" },
-                    { name: "The CMYK", cost: { type: "cw_multiplier", value: 16 }, location: "Dive Bar", base_stat_gain: "+0.075 Speed", effect: "" },
-                    { name: "Five Star General", cost: { type: "cw_multiplier", value: 20 }, location: "Dive Bar", base_stat_gain: "+0.100 Speed", effect: "" },
-                    { name: "Rainbow Road", cost: { type: "cw_multiplier", value: 24 }, location: "Dive Bar", base_stat_gain: "+0.100 Speed", effect: "" },
-                    { name: "Shot of Whiskey", cost: { type: "fixed", value: 3000 }, location: "Alcoholic Rat / Shakedown Saloon", base_stat_gain: "+0.050 Speed", effect: "" },
-                    { name: "Shot of Ruiner's Rum", cost: { type: "fixed", value: 3000 }, location: "Alcoholic Rat / Shakedown Saloon", base_stat_gain: "+0.050 Speed +0.050 Power", effect: "" },
-                    { name: "Shot of Tequila", cost: { type: "fixed", value: 3000 }, location: "Alcoholic Rat / Shakedown Saloon", base_stat_gain: "+0.050 Speed +0.050 Strength", effect: "" },
-                    { name: "Bottle of Bernard's Barbaresco", cost: { type: "fixed", value: "50 RP" }, location: "Recycling Bin" },
-                    { name: "Bottle of Two Buck Chuck", cost: { type: "fixed", value: 100000 }, location: "Matching Game / Dive Bar (Tip Jar)" },
-                    { name: "Decaf Kahlua", cost: { type: "tiredness", value: 5 }, location: "Sailing" },
-                    { name: "Everclear", cost: { type: "tiredness", value: 5 }, location: "Sailing" },
-                    { name: "Irish Cream", cost: { type: "tiredness", value: 5 }, location: "Sailing" },
-                    { name: "Jack Daniel's", cost: { type: "tiredness", value: 5 }, location: "Sailing" },
-                    { name: "Jagermeister", cost: { type: "tiredness", value: 5 }, location: "Sailing" },
-                    { name: "Tapped Keg", cost: { type: "tiredness", value: 5 }, location: "Alcoholic Rat / 7/11 Dumpster" },
-                    { name: "Fotey", cost: { type: "tiredness", value: 5 }, location: "Sailing" }
-                ],
-                mixed: [
-                    { name: "Amish Highball", cost: { type: "mixed", text: "10CW+$200" }, location: "Mixer", ingredients: ["Boxcar Boxed Wine", "Cola"], base_stat_gain: "+0.025 Speed +0.050 Strength", effect: "Amish" },
-                    { name: "Angry Mother", cost: { type: "mixed", text: "14CW+$400" }, location: "Mixer", ingredients: ["Aunt Flo Amaretto", "Sweet & Sour"], base_stat_gain: "+0.075 Power", effect: "Angry" },
-                    { name: "Bawling Baby", cost: { type: "mixed", text: "Awake+6CW+$250" }, location: "Mixer", ingredients: ["Decaf Kahlua", "Purple Pigeon Vodka", "Milk"], base_stat_gain: "+0.007 Begging", effect: "Bawling like a baby" },
-                    { name: "Bloody Murray", cost: { type: "mixed", text: "Awake+6CW+10Cans+$50,000+200PP" }, location: "Mixer", ingredients: ["Purple Pigeon Vodka", "Celery", "Hair of the Dog", "Tabasco"], base_stat_gain: "+0.075 Power +0.075 Strength", effect: "Chance to decrease BAC by 0.12%." },
-                    { name: "Centrifuge", cost: { type: "mixed", text: "38CW+$600" }, location: "Mixer", ingredients: ["Birdbath Gin", "John Cuervo Tequila", "Octuple Sec", "Purple Pigeon Vodka", "Rev's Rum", "Sweet & Sour", "Cola"], base_stat_gain: "", effect: "Uranium Enriched" },
-                    { name: "Dead Man Walking", cost: { type: "mixed", text: "Awake+28CW+$400" }, location: "Mixer", ingredients: ["Octuple Sec", "Orange Juice", "Rev's Rum", "Ruiner's Rum", "Sweet & Sour"], base_stat_gain: "", effect: "Zombified" },
-                    { name: "Eggnog", cost: { type: "mixed", text: "Orange Gift (Awake)" }, location: "Mixer", ingredients: ["Orange Gift"], base_stat_gain: "+0.075 Speed +0.075 Power +0.075 Strength +0.025 Intelligence +0.004 Begging", effect: "" },
-                    { name: "Egyptini", cost: { type: "mixed", text: "Awake+6CW+$50" }, location: "Mixer", ingredients: ["Birdbath Gin", "Olive", "Wonka Bar Wrapper", "Bath Salts", "Ice"], base_stat_gain: "-0.250 Speed +0.250 Power +0.250 Strength", effect: "Mummified" },
-                    { name: "Erupting Volcano", cost: { type: "mixed", text: "Awake+20CW+$800" }, location: "Mixer", ingredients: ["Homeless Hennessy", "Dry Ice", "Fire", "Red Bull"], base_stat_gain: "+0.100 Power +0.100 Strength", effect: "Enraged" },
-                    { name: "Eye Gouger", cost: { type: "mixed", text: "6CW+$200" }, location: "Mixer", ingredients: ["Purple Pigeon Vodka", "Soda Water"], base_stat_gain: "", effect: "Blind" },
-                    { name: "Filthy Leprechaun", cost: { type: "mixed", text: "Awake+16CW" }, location: "Mixer", ingredients: ["Irish Cream", "Mutton Chop Scotch"], base_stat_gain: "+0.075 Speed", effect: "Green Noser" },
-                    { name: "Flaming Hedgehog", cost: { type: "mixed", text: "Awake+$300" }, location: "Mixer", ingredients: ["Jagermeister", "Fire", "Red Bull"], base_stat_gain: "+0.125 Power", effect: "Flame-tipped Spiked Hair" },
-                    { name: "Full Moon", cost: { type: "mixed", text: "Awake+$50" }, location: "Mixer", ingredients: ["Irish Cream", "Jack Daniel's", "Bath Salts", "Ice"], base_stat_gain: "+0.125 Power +0.125 Strength", effect: "Warwolf" },
-                    { name: "Gin & Juice", cost: { type: "mixed", text: "Awake+6CW" }, location: "Mixer", ingredients: ["Birdbath Gin", "Orange Juice"], base_stat_gain: "+0.050 Intel", effect: "Laid Back" },
-                    { name: "Happy Puppy", cost: { type: "mixed", text: "8CW+$200" }, location: "Mixer", ingredients: ["Wild Terrier Whiskey", "Cola"], base_stat_gain: "+0.100 Power", effect: "Puppy Power" },
-                    { name: "Hedgehog", cost: { type: "mixed", text: "Awake+$300" }, location: "Mixer", ingredients: ["Jagermeister", "Red Bull"], base_stat_gain: "+0.100 Power", effect: "Spiked Hair" },
-                    { name: "Hungry Hippo", cost: { type: "mixed", text: "Awake+6CW+$250" }, location: "Mixer", ingredients: ["Decaf Kahlua", "Irish Cream", "Purple Pigeon Vodka", "Milk"], base_stat_gain: "", effect: "You can eat another meal." },
-                    { name: "Jolly Gentleman", cost: { type: "mixed", text: "Awake+6CW" }, location: "Mixer", ingredients: ["Birdbath Gin", "Olive"], base_stat_gain: "+0.100 Power", effect: "Classy as Hell" },
-                    { name: "Lemonade", cost: { type: "mixed", text: "April Fool's Mini Adventure" }, location: "Mixer", ingredients: ["April Fool's Mini Adventure"], base_stat_gain: "+1.250 Speed +1.250 Power +1.250 Strength", effect: "Requires the Open Packet of Sugar to drink." },
-                    { name: "Prison Hooch", cost: { type: "mixed", text: "HoboArena Reward" }, location: "Mixer", ingredients: ["HoboArena Reward"], base_stat_gain: "+0.150 Speed +0.150 Power +0.150 Strength", effect: "Meleeria" },
-                    { name: "Purring Kitty", cost: { type: "mixed", text: "6CW+$200" }, location: "Mixer", ingredients: ["Birdbath Gin", "Soda Water"], base_stat_gain: "+0.100 Speed", effect: "Kitten Pox" },
-                    { name: "Rocket Juice", cost: { type: "mixed", text: "HoboArena Reward" }, location: "Mixer", ingredients: ["HoboArena Reward"], base_stat_gain: "+0.075 Speed +0.075 Power +0.075 Strength +2 Intelligence +2 Begging 100,000 Respect +1 Level", effect: "" },
-                    { name: "Self Immolation", cost: { type: "mixed", text: "Awake+15CW" }, location: "Mixer", ingredients: ["Aunt Flo Amaretto", "Crudweiser", "Everclear", "Fire"], base_stat_gain: "+0.200 Power +0.075 Strength", effect: "On Fire" },
-                    { name: "Sludge", cost: { type: "mixed", text: "Made from mixing drinks that do not form a proper mixed drink" }, location: "Mixer", ingredients: ["Made from mixing drinks that do not form a proper mixed drink"], base_stat_gain: "", effect: "Collect 1000 to unlock a new wish" },
-                    { name: "Sorrowful Penguin", cost: { type: "mixed", text: "Awake+10CW+$50" }, location: "Mixer", ingredients: ["Ice", "Jolly Rancher", "Zima Light"], base_stat_gain: "", effect: "Sorrowful" },
-                    { name: "Ten Foot Drop", cost: { type: "mixed", text: "18CW+$400" }, location: "Mixer", ingredients: ["Octuple Sec", "Purple Pigeon Vodka", "Sweet & Sour"], base_stat_gain: "", effect: "You lose all your life." },
-                    { name: "The Long Walk", cost: { type: "mixed", text: "36CW" }, location: "Mixer", ingredients: ["Montreal Bourbon", "Mutton Chop Scotch", "Wild Terrier Whiskey"], base_stat_gain: "", effect: "Shoegazer" },
-                    { name: "Time Traveler", cost: { type: "mixed", text: "Awake+12CW+$500" }, location: "Mixer", ingredients: ["Brandy Brand Brandy", "Dry Ice", "Jolly Rancher", "Orange Juice"], base_stat_gain: "+0.250 Speed", effect: "Time Displacement" },
-                    { name: "Transylvania Slammer", cost: { type: "mixed", text: "Awake+18CW+$50" }, location: "Mixer", ingredients: ["Albino Ale", "Aunt Flo Amaretto", "Jagermeister", "Bath Salts", "Ice"], base_stat_gain: "+0.125 Speed +0.125 Power", effect: "Glampire" }
-                ],
-                non_alcoholic: [
-                    { name: "Cola", cost: { type: "fixed", value: 200 }, location: "Liquor Store" },
-                    { name: "Sweet & Sour", cost: { type: "fixed", value: 400 }, location: "Liquor Store" },
-                    { name: "Milk", cost: { type: "fixed", value: 250 }, location: "Liquor Store" },
-                    { name: "Celery", cost: { type: "unknown", value: 0 }, location: "Food Store" },
-                    { name: "Tabasco", cost: { type: "unknown", value: 0 }, location: "Food Store" },
-                    { name: "Orange Juice", cost: { type: "unknown", value: 0 }, location: "Liquor Store" },
-                    { name: "Soda Water", cost: { type: "fixed", value: 200 }, location: "Liquor Store" },
-                    { name: "Dry Ice", cost: { type: "unknown", value: 0 }, location: "Liquor Store" },
-                    { name: "Ice", cost: { type: "fixed", value: 50 }, location: "Liquor Store" },
-                    { name: "Red Bull", cost: { type: "fixed", value: 300 }, location: "Convenience Store" },
-                    { name: "Olive", cost: { type: "unknown", value: 0 }, location: "Food Store" }
-                ]
-            }
-        }
-
 const DrinksHelper = {
             init: function() {
+                return; 
                 function getInventory() {
                     const inventory = {};
                     document.querySelectorAll('.bp-itm').forEach(item => {
@@ -773,138 +908,6 @@ const DrinksHelper = {
                 handleBartenderGuide();
             }
         }
-
-const FoodData = {
-    "Apple Core": { "img": "Apple-Core.gif" },
-    "Half a Donut": { "img": "Half-a-Donut.gif" },
-    "Piece of Bread": { "img": "Piece-of-Bread.gif" },
-    "Can of Coke": { "img": "Can-of-Coke.gif" },
-    "Piece of Pizza": { "img": "Piece-of-Pizza.gif" },
-    "Meat Pie": { "img": "Meat-Pie.gif" },
-    "Can of Pepsi": { "img": "Can-of-Pepsi.gif" },
-    "Rotten Fish": { "img": "Rotten-Fish.gif" },
-    "Half Eaten Burger": { "img": "Half-Eaten-Burger.gif" },
-    "Packet of Fries": { "img": "Packet-of-Fries.gif" },
-    "New Pizza": { "img": "New-Pizza.gif" },
-    "Chewed Chicken Leg": { "img": "Chewed-Chicken-Leg.gif" },
-    "Raw Chicken Leg": { "img": "Raw-Chicken-Leg.gif" },
-    "Cooked Chicken": { "img": "Cooked-Chicken.gif" },
-    "Half a HotDog": { "img": "Half-a-HotDog.gif" },
-    "HotDog": { "img": "HotDog.gif" },
-    "KFC Meal": { "img": "KFC-Meal.gif" },
-    "Raw Potato": { "img": "Raw-Potato.gif" },
-    "Vanilla Ice Cream": { "img": "Vanilla-Ice-Cream.gif" },
-    "Chocolate Ice Cream": { "img": "Chocolate-Ice-Cream.gif" },
-    "Fresh Apple": { "img": "Fresh-Apple.gif" },
-    "Fighters Lunch": { "img": "Fighters-Lunch.gif" },
-    "Double-Double": { "img": "Double-Double.gif" },
-    "Bachelor Chow": { "img": "Bachelor-Chow.gif" },
-    "Smart Bread": { "img": "Smart-Bread.gif" },
-    "Day Old Coffee Naan": { "img": "Day-Old-Coffee-Naan.gif" },
-    "Half a Sandwich Naan": { "img": "Half-a-Sandwich-Naan.gif" },
-    "Discarded Taco Naan": { "img": "Discarded-Taco-Naan.gif" },
-    "Wonka Bar": { "img": "Wonka-Bar.gif" },
-    "Single-Single": { "img": "Single-Single.gif" },
-    "Wonka-stripe Candy Cane": { "img": "Wonka-stripe-Candy-Cane.gif" },
-    "Rainbow Drop": { "img": "Rainbow-Drop.gif" },
-    "Roast Beef": { "img": "Roast-Beef.gif" },
-    "Pre-Chewed Gum": { "img": "Pre-Chewed-Gum.gif" },
-    "Roast Beef Flavored Gum": { "img": "Roast-Beef-Flavored-Gum.gif" },
-    "Semi-Lasting Gobstopper": { "img": "Semi-Lasting-Gobstopper.gif" },
-    "Sweet Bomb": { "img": "Sweet-Bomb.gif" },
-    "Blueberry Blast Jelly Beans": { "img": "Blueberry-Blast-Jelly-Beans.gif" },
-    "Beef Mushroom Stew": { "img": "Beef-Mushroom-Stew.gif" },
-    "Texas Fajita Soup": { "img": "Texas-Fajita-Soup.gif" },
-    "Cream of Okra Soup": { "img": "Cream-of-Okra-Soup.gif" },
-    "Garlic Salmon Bisque": { "img": "Garlic-Salmon-Bisque.gif" },
-    "Beggars Bouillon": { "img": "Beggar%27s-Bouillon.gif" },
-    "Fizzy Lifting Soda": { "img": "Fizzy-Lifting-Soda.gif" },
-    "Wonkas Peppermint Spirits": { "img": "Wonka%27s-Peppermint-Spirits.gif" },
-    "Altoids": { "img": "Altoids.gif" },
-    "Junior Mints": { "img": "Junior-Mints.gif" },
-    "Red Hots": { "img": "Red-Hots.gif" },
-    "Crystal Pepsi": { "img": "Crystal-Pepsi.gif" },
-    "Chocolate Vanilla Swirl Ice Cream": { "img": "Chocolate-Vanilla-Swirl-Ice-Cream.gif" },
-    "Redder Hots": { "img": "Redder-Hots.gif" },
-    "Gas Soaked Red Hots": { "img": "Gas-Soaked-Red-Hots.gif" },
-    "Gummi Gorilla": { "img": "Gummi-Gorilla.gif" },
-    "Gummi Peregrine Falcon": { "img": "Gummi-Peregrine-Falcon.gif" },
-    "Gummi Raptor": { "img": "Gummi-Raptor.gif" },
-    "Quantum Candy": { "img": "Quantum-Candy.gif" },
-    "Gummi Spaghetti Monster": { "img": "Gummi-Spaghetti-Monster.gif" },
-    "Fruit by the Furlong": { "img": "Fruit-by-the-Furlong.gif" },
-    "Candy Cigarette": { "img": "Candy-Cigarette.gif" },
-    "Pack of Candy Cigarettes": { "img": "Pack-of-Candy-Cigarettes.gif" },
-    "Freeze-Packed Dippin Dots": { "img": "Freeze-Packed-Dippin-Dots.gif" },
-    "Dippin Dots": { "img": "Dippin-Dots.gif" },
-    "Military Rations": { "img": "Military-Rations.gif" },
-    "Can of Whipped Cream": { "img": "Can-of-Whipped-Cream.gif" },
-    "Faberge Cream Egg": { "img": "Faberge-Cream-Egg.gif" },
-    "Apple Flavored Gum": { "img": "Apple-Flavored-Gum.gif" },
-    "Cinnamon Flavored Gum": { "img": "Cinnamon-Flavored-Gum.gif" },
-    "Dark Chocolate Wonka Bar": { "img": "Dark-Chocolate-Wonka-Bar.gif" },
-    "Special Brownie": { "img": "Special-Brownie.gif" },
-    "Bacon Blast Jelly Beans": { "img": "Bacon-Blast-Jelly-Beans.gif" },
-    "Fizzy Falling Soda": { "img": "Fizzy-Falling-Soda.gif" },
-    "Caulipop": { "img": "Caulipop.gif" },
-    "Dalipop": { "img": "Dalipop.gif" },
-    "Volleypop": { "img": "Volleypop.gif" },
-    "Polypop": { "img": "Polypop.gif" },
-    "Mountain Honeydew Melon": { "img": "Mountain-Honeydew-Melon.gif" },
-    "Mountain Dew": { "img": "Mountain-Dew.gif" },
-    "Salmon": { "img": "Salmon.gif" },
-    "Catfish": { "img": "Catfish.gif" },
-    "Fish Sticks": { "img": "Fish-Sticks.gif" },
-    "Octopus": { "img": "Octopus.gif" },
-    "Blowfish": { "img": "Blowfish.gif" },
-    "Hobo Stew": { "img": "Hobo-Stew.gif" },
-    "Beggars Brunch": { "img": "Beggars-Brunch.gif" },
-    "Hangover Omelette": { "img": "Hangover-Omelette.gif" },
-    "Stomach Parasite": { "img": "Stomach-Parasite.gif" },
-    "Forest Shroom": { "img": "Forest-Shroom.gif" },
-    "Garlic Clove": { "img": "Garlic-Clove.gif" },
-    "Chili Pepper": { "img": "Chili-Pepper.gif" },
-    "Okra": { "img": "Okra.gif" },
-    "Gingerbread Bum": { "img": "Gingerbread-Bum.gif" },
-    "Bernard Burger": { "img": "Bernard-Burger.gif" },
-    "Flying Dutchman": { "img": "Flying-Dutchman.gif" },
-    "Animal Style Fries": { "img": "Animal-Style-Fries.gif" },
-    "Neapolitan Shake": { "img": "Neapolitan-Shake.gif" },
-    "SARS Bar": { "img": "SARS-Bar.gif" },
-    "Hobowarheads": { "img": "Hobowarheads.gif" },
-    "Mop Rocks": { "img": "Mop-Rocks.gif" },
-    "ICPeanut Butter Cup": { "img": "ICPeanut-Butter-Cup.gif" },
-    "Sugarfree Gum": { "img": "Sugarfree-Gum.gif" },
-    "Kit Rat Bar": { "img": "Kit-Rat-Bar.gif" },
-    "Butlerfinger": { "img": "Butlerfinger.gif" },
-    "Life Savers": { "img": "Life-Savers.gif" },
-    "Pay Day": { "img": "Pay-Day.gif" },
-    "Candycorn": { "img": "Candycorn.gif" },
-    "Sourpatch Bums": { "img": "Sourpatch-Bums.gif" },
-    "L&amp;Ls": { "img": "L&amp;Ls.gif" },
-    "Apple Surprise": { "img": "Apple-Surprise.gif" },
-    "Death Mints": { "img": "Death-Mints.gif" },
-    "Blow-Up Pop": { "img": "Blow-Up-Pop.gif" },
-    "Peppermint Burger Patties": { "img": "Peppermint-Burger-Patties.gif" },
-    "Rock Candy": { "img": "Rock-Candy.gif" },
-    "Walking Taco": { "img": "Walking-Taco.gif" },
-    "Freedom Fries": { "img": "Freedom-Fries.gif" },
-    "Jugger-Nut": { "img": "Jugger-Nut.gif" },
-    "Pizza Del Mare": { "img": "Pizza-Del-Mare.gif" },
-    "Bottle of Coke": { "img": "Bottle-of-Coke.gif" },
-    "Brains": { "img": "Brains.gif" },
-    "Death By Chocolate": { "img": "Death-By-Chocolate.gif" },
-    "Spooky Biscuit": { "img": "Spooky-Biscuit.gif" },
-    "Twozzlers": { "img": "Twozzlers.gif" },
-    "Red Hot Chili Pepper": { "img": "Red-Hot-Chili-Pepper.gif" },
-    "Longer-Lasting Gobstopper": { "img": "Longer-Lasting-Gobstopper.gif" },
-    "Double Gorillas": { "img": "Double-Gorillas.gif" },
-    "Double Falcons": { "img": "Double-Falcons.gif" },
-    "Double Raptors": { "img": "Double-Raptors.gif" },
-    "Triple Dipps": { "img": "Triple-Dipps.gif" },
-    "Rainbow Balls": { "img": "Rainbow-Balls.gif" },
-    "Wonka Quadra Candy Cane": { "img": "Wonka-Quadra-Candy-Cane.gif" },
-};
 
 const FoodHelper = {
     init: function() {
@@ -1034,404 +1037,97 @@ const FoodHelper = {
     }
 };
 
-const SettingsHelper = {
-    init: function() {
-        if (!window.location.search.endsWith('cmd=preferences')) return;
-
-        const contentArea = document.querySelector('.content-area');
-        if (!contentArea) return;
-
-        console.log('Settings Helper loaded for preferences page');
-        
-        // Add divider and title
-        const headerContainer = document.createElement('div');
-        headerContainer.style.textAlign = 'center';
-        headerContainer.style.margin = '20px 0';
-        headerContainer.style.padding = '10px';
-        headerContainer.style.background = 'rgba(128, 128, 128, 0.1)';
-        headerContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
-        headerContainer.style.borderRadius = '5px';
-
-        const titleDiv = document.createElement('div');
-        titleDiv.innerHTML = "<h2 style='margin: 0; font-family: Arial, sans-serif; font-size: 20px; text-transform: uppercase; letter-spacing: 1px;'>Hobo Helper Settings</h2>";
-        headerContainer.appendChild(titleDiv);
-        contentArea.appendChild(headerContainer);
-
-        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
-        
-        // Helper function for toggles
-        const createToggle = (key, labelText, isGlobal = false, defaultValue = true) => {
-            const container = document.createElement('div');
-            container.style.marginBottom = '8px';
-            container.style.paddingLeft = isGlobal ? '0' : '5px';
-            container.style.display = 'flex';
-            container.style.alignItems = 'center';
-
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.id = `hw_helper_${key}`;
-            // default to true if undefined
-            checkbox.checked = savedSettings[key] !== undefined ? savedSettings[key] : defaultValue;
-            checkbox.style.cursor = 'pointer';
-            checkbox.style.transform = 'scale(1.2)';
-            checkbox.style.marginRight = '8px';
-            checkbox.style.accentColor = '#2196F3';
-
-            const label = document.createElement('label');
-            label.htmlFor = `hw_helper_${key}`;
-            label.innerHTML = ` ${labelText}`;
-            label.style.cursor = 'pointer';
-            label.style.fontFamily = 'Arial, sans-serif';
-            label.style.fontSize = '14px';
-
-            const toast = document.createElement('span');
-            toast.innerText = ' (Saved! Reload to apply)';
-            toast.style.color = 'green';
-            toast.style.fontSize = '12px';
-            toast.style.display = 'none';
-            label.appendChild(toast);
-
-            let toastTimeout;
-            checkbox.addEventListener('change', (e) => {
-                const settings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
-                settings[key] = e.target.checked;
-                localStorage.setItem('hw_helper_settings', JSON.stringify(settings));
-                
-                // Show saved toast or reload prompt
-                toast.style.display = 'inline';
-                clearTimeout(toastTimeout);
-                toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 2000);
-            });
-
-            container.appendChild(checkbox);
-            container.appendChild(label);
-            return container;
-        };
-
-        const createInput = (feature) => {
-            const { key, label: labelText, type: inputType, defaultValue, width, description } = feature;
-            const wrapper = document.createElement('div');
-            wrapper.style.marginBottom = '8px';
-            wrapper.style.paddingLeft = '5px';
-
-            const container = document.createElement('div');
-            container.style.display = 'flex';
-            if (width === '100%') {
-                container.style.flexDirection = 'column';
-                container.style.alignItems = 'flex-start';
-            } else {
-                container.style.alignItems = 'center';
-            }
-
-            const label = document.createElement('label');
-            label.htmlFor = `hw_helper_${key}`;
-            label.innerHTML = `${labelText}: `;
-            label.style.fontFamily = 'Arial, sans-serif';
-            label.style.fontSize = '14px';
-            label.style.marginRight = '8px';
-
-            const toast = document.createElement('span');
-            toast.innerText = ' (Saved! Reload to apply)';
-            toast.style.color = 'green';
-            toast.style.fontSize = '12px';
-            toast.style.display = 'none';
-            toast.style.marginLeft = '8px';
-
-            if (width === '100%') {
-                label.appendChild(toast);
-            }
-
-            const input = document.createElement('input');
-            input.type = inputType;
-            input.id = `hw_helper_${key}`;
-            input.style.width = width || (inputType === 'number' ? '60px' : '150px');
-            if (width === '100%') {
-                input.style.boxSizing = 'border-box';
-                input.style.marginTop = '4px';
-            }
-            input.value = savedSettings[key] !== undefined ? savedSettings[key] : defaultValue;
-            input.style.border = '1px solid #ccc';
-            input.style.borderRadius = '3px';
-            input.style.padding = '2px 5px';
-
-            let toastTimeout;
-            input.addEventListener('input', (e) => {
-                const settings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
-                settings[key] = e.target.value;
-                localStorage.setItem('hw_helper_settings', JSON.stringify(settings));
-                
-                toast.style.display = 'inline';
-                clearTimeout(toastTimeout);
-                toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 2000);
-            });
-
-            container.appendChild(label);
-            container.appendChild(input);
-            if (width !== '100%') {
-                container.appendChild(toast);
-            }
-            wrapper.appendChild(container);
-
-            if (description) {
-                const desc = document.createElement('div');
-                desc.innerHTML = description;
-                desc.style.fontSize = '11px';
-                desc.style.color = '#555';
-                desc.style.marginTop = '4px';
-                wrapper.appendChild(desc);
-            }
-
-            return wrapper;
-        };
-
-        const topDiv = document.createElement('div');
-        topDiv.style.background = 'rgba(128, 128, 128, 0.05)';
-        topDiv.style.border = '1px solid rgba(128, 128, 128, 0.2)';
-        topDiv.style.borderRadius = '5px';
-        topDiv.style.padding = '10px';
-        topDiv.style.marginBottom = '20px';
-
-        // Add global toggle
-        topDiv.appendChild(createToggle('global_enabled', 'Enable Hobo Helper (Global)', true));
-        contentArea.appendChild(topDiv);
-
-        const modsLabel = document.createElement('div');
-        modsLabel.innerText = "Active Modules:";
-        modsLabel.style.fontWeight = 'bold';
-        modsLabel.style.fontSize = '16px';
-        modsLabel.style.marginBottom = '10px';
-        modsLabel.style.borderBottom = '2px solid rgba(128, 128, 128, 0.3)';
-        modsLabel.style.paddingBottom = '5px';
-        contentArea.appendChild(modsLabel);
-
-        const subFeatures = {};
-        if (typeof Modules !== 'undefined') {
-            Object.keys(Modules).forEach(modName => {
-                if (Modules[modName].settings) {
-                    subFeatures[modName] = Modules[modName].settings;
-                }
-            });
-        }
-
-        const gridContainer = document.createElement('div');
-        gridContainer.style.display = 'flex';
-        gridContainer.style.justifyContent = 'space-between';
-        gridContainer.style.alignItems = 'flex-start';
-        contentArea.appendChild(gridContainer);
-
-        const col1 = document.createElement('div');
-        col1.style.width = '48%';
-        gridContainer.appendChild(col1);
-
-        const col2 = document.createElement('div');
-        col2.style.width = '48%';
-        gridContainer.appendChild(col2);
-
-        if (typeof Modules !== 'undefined') {
-            const activeModules = Object.keys(Modules).filter(modName => {
-                return modName !== 'SettingsHelper' && typeof Modules[modName].init === 'function';
-            });
-
-            activeModules.sort().forEach((modName) => {
-                const moduleBlock = document.createElement('div');
-                moduleBlock.style.marginBottom = '12px';
-                moduleBlock.style.padding = '8px 10px';
-                moduleBlock.style.background = 'rgba(128, 128, 128, 0.05)';
-                moduleBlock.style.border = '1px solid rgba(128, 128, 128, 0.2)';
-                moduleBlock.style.borderRadius = '6px';
-                moduleBlock.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
-
-                moduleBlock.appendChild(createToggle(modName, `<b>Enable ${modName}</b>`));
-
-                // Render sub-features if this module has them defined
-                if (subFeatures[modName]) {
-                    const subContainer = document.createElement('div');
-                    subContainer.style.paddingLeft = '25px';
-                    subContainer.style.marginTop = '8px';
-                    subContainer.style.borderLeft = '2px solid #2196F3';
-                    subFeatures[modName].forEach(feature => {
-                        let el;
-                        if (feature.type === 'number' || feature.type === 'text') {
-                            el = createInput(feature);
-                        } else {
-                            el = createToggle(feature.key, feature.label, false, feature.defaultValue !== false);
-                        }
-
-                        if (feature.parent) {
-                            const parentCheckbox = document.getElementById(`hw_helper_${feature.parent}`);
-                            if (parentCheckbox) {
-                                const containerDiv = el;
-                                const updateVisibility = () => {
-                                    containerDiv.style.opacity = parentCheckbox.checked ? '1' : '0.4';
-                                    containerDiv.style.pointerEvents = parentCheckbox.checked ? 'auto' : 'none';
-                                };
-                                parentCheckbox.addEventListener('change', updateVisibility);
-                                updateVisibility();
-                            }
-                        }
-
-                        subContainer.appendChild(el);
-                    });
-                    moduleBlock.appendChild(subContainer);
-                }
-
-                // Custom settings for FoodHelper
-                if (modName === 'FoodHelper') {
-                    const foodContainer = document.createElement('div');
-                    foodContainer.style.paddingLeft = '25px';
-                    foodContainer.style.marginTop = '10px';
-
-                    const label = document.createElement('b');
-                    label.innerText = 'Crap Foods List:';
-                    label.style.display = 'block';
-                    label.style.marginBottom = '5px';
-                    foodContainer.appendChild(label);
-
-                    const listContainer = document.createElement('div');
-                    listContainer.style.background = 'rgba(0, 0, 0, 0.05)';
-                    listContainer.style.padding = '10px';
-                    listContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
-                    listContainer.style.borderRadius = '4px';
-                    listContainer.style.maxWidth = '100%';
-
-                    const crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
-                    if (crapList.length === 0) {
-                        listContainer.innerText = 'No foods marked as crap.';
-                    } else {
-                        const ul = document.createElement('ul');
-                        ul.style.margin = '0';
-                        ul.style.paddingLeft = '20px';
-                        crapList.forEach(food => {
-                            const li = document.createElement('li');
-                            const a = document.createElement('a');
-                            a.href = '#';
-                            a.innerText = '[x]';
-                            a.style.color = 'red';
-                            a.style.textDecoration = 'none';
-                            a.style.marginRight = '5px';
-                            a.title = 'Remove from Crap list';
-                            a.onclick = (e) => {
-                                e.preventDefault();
-                                let currentList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
-                                const updatedList = currentList.filter(f => f !== food);
-                                localStorage.setItem('hw_helper_food_crap', JSON.stringify(updatedList));
-                                li.remove();
-                                if (updatedList.length === 0) {
-                                    listContainer.innerText = 'No foods marked as crap.';
-                                }
-                            };
-                            li.appendChild(a);
-                            li.appendChild(document.createTextNode(food));
-                            ul.appendChild(li);
-                        });
-                        listContainer.appendChild(ul);
-                    }
-                    foodContainer.appendChild(listContainer);
-                    moduleBlock.appendChild(foodContainer);
-                }
-
-                // Manually balance columns: FoodHelper's large box goes left, the rest goes right.
-                if (modName <= 'FoodHelper') {
-                    col1.appendChild(moduleBlock);
-                } else {
-                    col2.appendChild(moduleBlock);
-                }
-            });
-        }
-    }
-}
-
 const BankHelper = {
     cmds: 'bank',
     settings: [
         { key: 'BankHelper_5FightersLunches', label: "5 Fighter's Lunches Goal" }
     ],
-            getBankGoals: function() {
-                try {
-                    return JSON.parse(localStorage.getItem('hw_bank_goals') || '{}');
-                } catch(e) {
-                    return {};
-                }
-            },
-            addBankGoal: function(actionName, cost) {
-                const goals = this.getBankGoals();
-                if (cost === 0 || cost === null) {
-                    delete goals[actionName];
-                } else {
-                    goals[actionName] = cost;
-                }
-                if (Object.keys(goals).length === 0) {
-                    localStorage.removeItem('hw_bank_goals');
-                } else {
-                    localStorage.setItem('hw_bank_goals', JSON.stringify(goals));
-                }
-            },
-            init: function() {
-                const settings = Utils.getSettings();
-                const withdrawInput = document.getElementById('w_money');
-                const withdrawForm = document.querySelector('form[name="with"]');
-                const nativeWithdrawBtn = withdrawForm ? withdrawForm.querySelector('input[type="submit"]') : null;
+    getBankGoals: function() {
+        try {
+            return JSON.parse(localStorage.getItem('hw_bank_goals') || '{}');
+        } catch(e) {
+            return {};
+        }
+    },
+    addBankGoal: function(actionName, cost) {
+        const goals = this.getBankGoals();
+        if (cost === 0 || cost === null) {
+            delete goals[actionName];
+        } else {
+            goals[actionName] = cost;
+        }
+        if (Object.keys(goals).length === 0) {
+            localStorage.removeItem('hw_bank_goals');
+        } else {
+            localStorage.setItem('hw_bank_goals', JSON.stringify(goals));
+        }
+    },
+    init: function() {
+        const settings = Utils.getSettings();
+        const withdrawInput = document.getElementById('w_money');
+        const withdrawForm = document.querySelector('form[name="with"]');
+        const nativeWithdrawBtn = withdrawForm ? withdrawForm.querySelector('input[type="submit"]') : null;
 
-                if (!withdrawInput || !nativeWithdrawBtn) return;
+        if (!withdrawInput || !nativeWithdrawBtn) return;
 
-                if (settings.BankHelper_5FightersLunches !== false) {
-                    const level = Utils.getHoboLevel();
-                    const lunchCost = Utils.getFightersLunchCost(level);
-                    const totalCost = lunchCost * 5;
+        if (settings.BankHelper_5FightersLunches !== false) {
+            const level = Utils.getHoboLevel();
+            const lunchCost = Utils.getFightersLunchCost(level);
+            const totalCost = lunchCost * 5;
 
-                    if (totalCost > 0) {
-                        let clickCount = 0;
-                        const lunchBtn = document.createElement('input');
-                        lunchBtn.type = 'button';
-                        lunchBtn.value = ` + Add 5 Fighter's Lunches ($${totalCost.toLocaleString()}) `;
-                        lunchBtn.style.marginLeft = '10px';
-                        lunchBtn.style.cursor = 'pointer';
-                        lunchBtn.style.backgroundColor = '#e6f7ff';
-                        lunchBtn.style.border = '1px solid #91d5ff';
+            if (totalCost > 0) {
+                let clickCount = 0;
+                const lunchBtn = document.createElement('input');
+                lunchBtn.type = 'button';
+                lunchBtn.value = ` + Add 5 Fighter's Lunches ($${totalCost.toLocaleString()}) `;
+                lunchBtn.style.marginLeft = '10px';
+                lunchBtn.style.cursor = 'pointer';
+                lunchBtn.style.backgroundColor = '#e6f7ff';
+                lunchBtn.style.border = '1px solid #91d5ff';
 
-                        lunchBtn.onclick = function() {
-                            clickCount++;
-                            let currentVal = parseInt(withdrawInput.value.replace(/,/g, '')) || 0;
-                            withdrawInput.value = (currentVal + totalCost).toString();
-                            
-                            this.value = ` + Add 5 Fighter's Lunches ($${totalCost.toLocaleString()}) [Added ${clickCount * 5}] `;
-                        };
+                lunchBtn.onclick = function() {
+                    clickCount++;
+                    let currentVal = parseInt(withdrawInput.value.replace(/,/g, '')) || 0;
+                    withdrawInput.value = (currentVal + totalCost).toString();
 
-                        nativeWithdrawBtn.parentNode.insertBefore(lunchBtn, nativeWithdrawBtn.nextSibling);
-                    }
-                }
+                    this.value = ` + Add 5 Fighter's Lunches ($${totalCost.toLocaleString()}) [Added ${clickCount * 5}] `;
+                };
 
-                const goals = this.getBankGoals();
-                if (Object.keys(goals).length === 0) return;
-
-                Object.keys(goals).forEach(goalName => {
-                    const goalVal = parseInt(goals[goalName]);
-                    if (isNaN(goalVal) || goalVal <= 0) return;
-
-                    const btn = document.createElement('input');
-                    btn.type = 'button';
-                    btn.value = ` + Add ${goalName} ($${goalVal.toLocaleString()}) `;
-                    btn.style.marginLeft = '10px';
-                    btn.style.cursor = 'pointer';
-                    btn.style.backgroundColor = '#e6f7ff';
-                    btn.style.border = '1px solid #91d5ff';
-
-                    btn.onclick = function() {
-                        let currentVal = parseInt(withdrawInput.value.replace(/,/g, '')) || 0;
-                        withdrawInput.value = (currentVal + goalVal).toString();
-
-                        Modules.BankHelper.addBankGoal(goalName, 0);
-
-                        this.value = "Added!";
-                        this.disabled = true;
-                        this.style.backgroundColor = '#f5f5f5';
-                        this.style.border = '1px solid #d9d9d9';
-                    };
-
-                    nativeWithdrawBtn.parentNode.insertBefore(btn, nativeWithdrawBtn.nextSibling);
-                });
+                nativeWithdrawBtn.parentNode.insertBefore(lunchBtn, nativeWithdrawBtn.nextSibling);
             }
         }
+
+        const goals = this.getBankGoals();
+        if (Object.keys(goals).length === 0) return;
+
+        Object.keys(goals).forEach(goalName => {
+            const goalVal = parseInt(goals[goalName]);
+            if (isNaN(goalVal) || goalVal <= 0) return;
+
+            const btn = document.createElement('input');
+            btn.type = 'button';
+            btn.value = ` + Add ${goalName} ($${goalVal.toLocaleString()}) `;
+            btn.style.marginLeft = '10px';
+            btn.style.cursor = 'pointer';
+            btn.style.backgroundColor = '#e6f7ff';
+            btn.style.border = '1px solid #91d5ff';
+
+            btn.onclick = function() {
+                let currentVal = parseInt(withdrawInput.value.replace(/,/g, '')) || 0;
+                withdrawInput.value = (currentVal + goalVal).toString();
+
+                Modules.BankHelper.addBankGoal(goalName, 0);
+
+                this.value = "Added!";
+                this.disabled = true;
+                this.style.backgroundColor = '#f5f5f5';
+                this.style.border = '1px solid #d9d9d9';
+            };
+
+            nativeWithdrawBtn.parentNode.insertBefore(btn, nativeWithdrawBtn.nextSibling);
+        });
+    }
+}
 
 const BernardsBasementHelper = {
     cmds: 'bernards',
@@ -1649,17 +1345,17 @@ const FortSlugworthHelper = {
 };
 
 const GangHelper = {
+    cmds: 'gang',
     settings: [
         { key: 'GangHelper_EnableFeature', label: 'Enable Gang Helper' }
     ],
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
-        const cmd = urlParams.get('cmd');
         const doParam = urlParams.get('do');
         const wParam = urlParams.get('w');
         
-        // Ensure we are on the Gang page
-        if (cmd !== 'gang' || doParam !== 'enter') return;
+        // Ensure we are on the Gang do=enter page
+        if (doParam !== 'enter') return;
 
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
 
@@ -1781,6 +1477,7 @@ const GangHelper = {
 };
 
 const GangLoansHelper = {
+    cmds: 'gang2',
     init: function() {
         const isLoans = window.location.search.includes('cmd=gang2') && window.location.search.includes('do=loans');
         const isLoanAdd = window.location.search.includes('cmd=gang2') && window.location.search.includes('do=loan_add');
@@ -2615,9 +2312,8 @@ const HitlistHelper = {
 };
 
 const KurtzCampHelper = {
+    cmds: 'camp_kurtz',
     init: function() {
-        if (!Utils.isCurrentPage('cmd=camp_kurtz')) return;
-        
         // Check Settings
         const settings = Utils.getSettings();
         if (settings.kurtzCampHelper === false) return;
@@ -2680,138 +2376,138 @@ const KurtzCampHelper = {
 
 const LiquorStoreHelper = {
     cmds: 'liquor_store',
-            init: function() {
-                if (window.location.href.includes('cmd=liquor_store')) {
-                    try {
-                        const contentArea = document.querySelector('.content-area') || document.body;
-                        const spans = contentArea.querySelectorAll('span');
-                        let purchasedItem = null;
-                        let purchasedAmount = 0;
-                        
-                        for (let i = 0; i < spans.length; i++) {
-                            const span = spans[i];
-                            if (span.textContent.includes('You get') && span.querySelector('img')) {
-                                const img = span.querySelector('img');
-                                const itemName = img.title || img.alt;
-                                
-                                let amount = 1;
-                                const amountMatch = span.textContent.match(/\(\s*(\d+)\s*\)/);
-                                if (amountMatch) {
-                                    amount = Utils.parseNumber(amountMatch[1]);
-                                }
-                                
-                                if (itemName) {
-                                    purchasedItem = itemName.replace(/&amp;/g, '&').trim();
-                                    purchasedAmount = amount;
-                                    break;
-                                }
-                            }
+    init: function() {
+        if (window.location.href.includes('cmd=liquor_store')) {
+            try {
+                const contentArea = document.querySelector('.content-area') || document.body;
+                const spans = contentArea.querySelectorAll('span');
+                let purchasedItem = null;
+                let purchasedAmount = 0;
+
+                for (let i = 0; i < spans.length; i++) {
+                    const span = spans[i];
+                    if (span.textContent.includes('You get') && span.querySelector('img')) {
+                        const img = span.querySelector('img');
+                        const itemName = img.title || img.alt;
+
+                        let amount = 1;
+                        const amountMatch = span.textContent.match(/\(\s*(\d+)\s*\)/);
+                        if (amountMatch) {
+                            amount = Utils.parseNumber(amountMatch[1]);
                         }
 
-                        if (purchasedItem && purchasedAmount > 0) {
-                            const shoppingListStr = localStorage.getItem('hobowarsDrinkShoppingList');
-                            if (shoppingListStr) {
-                                let shoppingList = JSON.parse(shoppingListStr);
-                                if (shoppingList[purchasedItem]) {
-                                    shoppingList[purchasedItem] -= purchasedAmount;
-                                    if (shoppingList[purchasedItem] <= 0) {
-                                        delete shoppingList[purchasedItem];
-                                    }
-                                    if (Object.keys(shoppingList).length === 0) {
-                                        localStorage.removeItem('hobowarsDrinkShoppingList');
-                                        localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
-                                    } else {
-                                        localStorage.setItem('hobowarsDrinkShoppingList', JSON.stringify(shoppingList));
-                                    }
-                                }
-                            }
-                        }
-                    } catch (e) {
-                        console.error('Error handling purchase check', e);
-                    }
-
-                    const shoppingListStr = localStorage.getItem('hobowarsDrinkShoppingList');
-                    if (shoppingListStr) {
-                        try {
-                            const shoppingList = JSON.parse(shoppingListStr);
-                            const items = Object.keys(shoppingList);
-                            if (items.length > 0) {
-                                const targetDrink = localStorage.getItem('hobowarsDrinkShoppingList_TargetDrink');
-                                const titleText = targetDrink ? `🛍️ Mixer Shopping List - ${targetDrink}` : `🛍️ Mixer Shopping List`;
-
-                                let contentHtml = `
-                                    <div style="font-weight: bold; margin-bottom: 8px; font-size: 14px; display: flex; justify-content: space-between; align-items: center;">
-                                        <span>${titleText}</span>
-                                        <button id="clear-shopping-list" style="cursor: pointer; font-size: 11px; padding: 2px 6px;">Clear List</button>
-                                    </div>
-                                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-                                        <tbody>`;
-                                items.forEach(item => {
-                                    contentHtml += `
-                                        <tr style="border-bottom: 1px dotted #ccc;">
-                                            <td style="padding: 4px 0;"><strong>${item}</strong></td>
-                                            <td style="padding: 4px 0; text-align: right; color: #d9534f; font-weight: bold;">${shoppingList[item]} required</td>
-                                        </tr>`;
-                                });
-                                contentHtml += `</tbody></table>`;
-
-                                const listContainer = document.createElement('div');
-                                listContainer.style.cssText = 'margin: 10px auto 15px auto; border: 1px solid #ccc; padding: 10px; background-color: #f9f9f9; width: 80%; display: block;';
-                                listContainer.innerHTML = contentHtml;
-                                
-                                const contentArea = document.querySelector('.content-area') || document.body;
-                                const firstTable = contentArea.querySelector('table.shop-list') || contentArea.querySelector('table[width="100%"]');
-                                
-                                if (firstTable) {
-                                    firstTable.parentNode.insertBefore(listContainer, firstTable);
-                                } else {
-                                    contentArea.appendChild(listContainer);
-                                }
-
-                                document.getElementById('clear-shopping-list').addEventListener('click', function(e) {
-                                    e.preventDefault();
-                                    localStorage.removeItem('hobowarsDrinkShoppingList');
-                                    localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
-                                    listContainer.style.display = 'none';
-                                });
-
-                                // Highlight drinks in the shop that are on the shopping list
-                                const costs = contentArea.querySelectorAll('.shopCost');
-                                costs.forEach(costDiv => {
-                                    const td = costDiv.parentElement;
-                                    if (!td) return;
-
-                                    const textContent = td.textContent.trim();
-                                    let isMatch = false;
-                                    for (let i = 0; i < items.length; i++) {
-                                        if (textContent.startsWith(items[i])) {
-                                            isMatch = true;
-                                            break;
-                                        }
-                                    }
-
-                                    if (isMatch) {
-                                        const tr = td.closest('tr');
-                                        if (tr) {
-                                            const img = tr.querySelector('img.shopimg') || tr.querySelector('img');
-                                            if (img && img.parentElement && img.parentElement.tagName === 'TD') {
-                                                img.parentElement.style.backgroundColor = '#fff3cd';
-                                                img.parentElement.style.borderRadius = '5px';
-                                            } else {
-                                                td.style.backgroundColor = '#fff3cd';
-                                                td.style.borderRadius = '5px';
-                                            }
-                                        }
-                                    }
-                                });
-                            }
-                        } catch (e) {
-                            console.error('Error parsing shopping list', e);
+                        if (itemName) {
+                            purchasedItem = itemName.replace(/&amp;/g, '&').trim();
+                            purchasedAmount = amount;
+                            break;
                         }
                     }
                 }
+
+                if (purchasedItem && purchasedAmount > 0) {
+                    const shoppingListStr = localStorage.getItem('hobowarsDrinkShoppingList');
+                    if (shoppingListStr) {
+                        let shoppingList = JSON.parse(shoppingListStr);
+                        if (shoppingList[purchasedItem]) {
+                            shoppingList[purchasedItem] -= purchasedAmount;
+                            if (shoppingList[purchasedItem] <= 0) {
+                                delete shoppingList[purchasedItem];
+                            }
+                            if (Object.keys(shoppingList).length === 0) {
+                                localStorage.removeItem('hobowarsDrinkShoppingList');
+                                localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
+                            } else {
+                                localStorage.setItem('hobowarsDrinkShoppingList', JSON.stringify(shoppingList));
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Error handling purchase check', e);
+            }
+
+            const shoppingListStr = localStorage.getItem('hobowarsDrinkShoppingList');
+            if (shoppingListStr) {
+                try {
+                    const shoppingList = JSON.parse(shoppingListStr);
+                    const items = Object.keys(shoppingList);
+                    if (items.length > 0) {
+                        const targetDrink = localStorage.getItem('hobowarsDrinkShoppingList_TargetDrink');
+                        const titleText = targetDrink ? `🛍️ Mixer Shopping List - ${targetDrink}` : `🛍️ Mixer Shopping List`;
+
+                        let contentHtml = `
+                            <div style="font-weight: bold; margin-bottom: 8px; font-size: 14px; display: flex; justify-content: space-between; align-items: center;">
+                                <span>${titleText}</span>
+                                <button id="clear-shopping-list" style="cursor: pointer; font-size: 11px; padding: 2px 6px;">Clear List</button>
+                            </div>
+                            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                                <tbody>`;
+                        items.forEach(item => {
+                            contentHtml += `
+                                <tr style="border-bottom: 1px dotted #ccc;">
+                                    <td style="padding: 4px 0;"><strong>${item}</strong></td>
+                                    <td style="padding: 4px 0; text-align: right; color: #d9534f; font-weight: bold;">${shoppingList[item]} required</td>
+                                </tr>`;
+                        });
+                        contentHtml += `</tbody></table>`;
+
+                        const listContainer = document.createElement('div');
+                        listContainer.style.cssText = 'margin: 10px auto 15px auto; border: 1px solid #ccc; padding: 10px; background-color: #f9f9f9; width: 80%; display: block;';
+                        listContainer.innerHTML = contentHtml;
+
+                        const contentArea = document.querySelector('.content-area') || document.body;
+                        const firstTable = contentArea.querySelector('table.shop-list') || contentArea.querySelector('table[width="100%"]');
+
+                        if (firstTable) {
+                            firstTable.parentNode.insertBefore(listContainer, firstTable);
+                        } else {
+                            contentArea.appendChild(listContainer);
+                        }
+
+                        document.getElementById('clear-shopping-list').addEventListener('click', function(e) {
+                            e.preventDefault();
+                            localStorage.removeItem('hobowarsDrinkShoppingList');
+                            localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
+                            listContainer.style.display = 'none';
+                        });
+
+                        // Highlight drinks in the shop that are on the shopping list
+                        const costs = contentArea.querySelectorAll('.shopCost');
+                        costs.forEach(costDiv => {
+                            const td = costDiv.parentElement;
+                            if (!td) return;
+
+                            const textContent = td.textContent.trim();
+                            let isMatch = false;
+                            for (let i = 0; i < items.length; i++) {
+                                if (textContent.startsWith(items[i])) {
+                                    isMatch = true;
+                                    break;
+                                }
+                            }
+
+                            if (isMatch) {
+                                const tr = td.closest('tr');
+                                if (tr) {
+                                    const img = tr.querySelector('img.shopimg') || tr.querySelector('img');
+                                    if (img && img.parentElement && img.parentElement.tagName === 'TD') {
+                                        img.parentElement.style.backgroundColor = '#fff3cd';
+                                        img.parentElement.style.borderRadius = '5px';
+                                    } else {
+                                        td.style.backgroundColor = '#fff3cd';
+                                        td.style.borderRadius = '5px';
+                                    }
+                                }
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.error('Error parsing shopping list', e);
+                }
             }
         }
+    }
+}
 
 const LivingAreaHelper = {
     cmds: '',
@@ -2952,10 +2648,6 @@ const LivingAreaHelper = {
     },
 
     initMixerLink: function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const cmd = urlParams.get('cmd');
-        if (cmd) return;
-
         const gearInfo = document.getElementById('gearInfo');
         if (!gearInfo) return;
         
@@ -3490,6 +3182,7 @@ const LockoutHelper = {
 };
 
 const MessageBoardHelper = {
+    cmds: 'gathering',
     settings: [
         { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
         { key: 'MessageBoardHelper_VoteButtons', label: 'Larger Vote Buttons' },
@@ -3503,7 +3196,6 @@ const MessageBoardHelper = {
         }
     ],
     init: function() {
-        if (!Utils.isCurrentPage('cmd=gathering')) return;
 
         const settings = Utils.getSettings();
         if (settings?.MessageBoardHelper?.enabled === false) return;
@@ -3998,537 +3690,539 @@ const MessageBoardHelper = {
 };
 
 const MixerHelper = {
-            init: function() {
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('cmd') === 'mixer') {
-                    const makeManyInput = document.querySelector('input[name="make_many"]');
-                    if (makeManyInput) {
-                        const maxBtn = document.createElement('button');
-                        maxBtn.textContent = 'Max';
-                        maxBtn.style.marginLeft = '8px';
-                        maxBtn.style.fontSize = '10px';
-                        maxBtn.style.cursor = 'pointer';
+    cmds: 'mixer',
+    init: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('cmd') === 'mixer') {
+            const makeManyInput = document.querySelector('input[name="make_many"]');
+            if (makeManyInput) {
+                const maxBtn = document.createElement('button');
+                maxBtn.textContent = 'Max';
+                maxBtn.style.marginLeft = '8px';
+                maxBtn.style.fontSize = '10px';
+                maxBtn.style.cursor = 'pointer';
 
-                        maxBtn.onclick = function(e) {
-                            e.preventDefault();
+                maxBtn.onclick = function(e) {
+                    e.preventDefault();
 
-                            const form = document.getElementById('mixer');
-                            if (!form) return;
+                    const form = document.getElementById('mixer');
+                    if (!form) return;
 
-                            const hiddenInputs = form.querySelectorAll('input[type="hidden"][name^="ingreds["]');
-                            if (hiddenInputs.length === 0) return;
+                    const hiddenInputs = form.querySelectorAll('input[type="hidden"][name^="ingreds["]');
+                    if (hiddenInputs.length === 0) return;
 
-                            let maxCanMake = Infinity;
+                    let maxCanMake = Infinity;
 
-                            hiddenInputs.forEach(input => {
-                                const id = input.value;
-                                const amountEl = document.getElementById('amnt_' + id);
-                                if (amountEl) {
-                                    // The game subtracts 1 from the innerHTML amount when you add it to the mixer.
-                                    // The true total inventory limit is the displayed amount + 1.
-                                    const available = parseInt(amountEl.textContent, 10) + 1;
-                                    if (!isNaN(available) && available < maxCanMake) {
-                                        maxCanMake = available;
-                                    }
-                                }
-                            });
-
-                            if (maxCanMake !== Infinity) {
-                                makeManyInput.value = maxCanMake.toString();
+                    hiddenInputs.forEach(input => {
+                        const id = input.value;
+                        const amountEl = document.getElementById('amnt_' + id);
+                        if (amountEl) {
+                            // The game subtracts 1 from the innerHTML amount when you add it to the mixer.
+                            // The true total inventory limit is the displayed amount + 1.
+                            const available = parseInt(amountEl.textContent, 10) + 1;
+                            if (!isNaN(available) && available < maxCanMake) {
+                                maxCanMake = available;
                             }
-                        };
+                        }
+                    });
 
-                        makeManyInput.parentNode.insertBefore(maxBtn, makeManyInput.nextSibling);
+                    if (maxCanMake !== Infinity) {
+                        makeManyInput.value = maxCanMake.toString();
                     }
+                };
 
-                    // --- Possible Drinks Helper ---
-                    const mixAwayBtn = document.querySelector('input[value="Mix Away"]');
-                    const myMixer = document.getElementById('myMixer');
-
-                    if (mixAwayBtn && myMixer) {
-                        // 1. Determine which drinks are unlocked by reading the Bartender Guide DOM
-                        let unlockedDrinks = [];
-                        const uTags = document.querySelectorAll('u');
-                        let guideContainer = null;
-
-                        uTags.forEach(u => {
-                            if (u.textContent.includes('Bartender Guide')) {
-                                // The <u> is inside a <div>, and the drinks are siblings to that <div> inside a <td>
-                                guideContainer = u.closest('td');
-                            }
-                        });
-
-                        if (guideContainer) {
-                            // Any img with a title in the guide container is considered unlocked here
-                            // even if it lacks an <a> tag (greyed out due to missing ingredients)
-                            const unlockedImgs = guideContainer.querySelectorAll('img[title], img[alt]');
-                            unlockedImgs.forEach(img => {
-                                let name = img.title || img.alt;
-                                if (name) {
-                                    name = name.replace(/&amp;/g, '&').trim();
-                                    // Make sure it's valid title and not empty
-                                    if (name && !unlockedDrinks.includes(name)) {
-                                        unlockedDrinks.push(name);
-                                    }
-                                }
-                            });
-                        }
-
-                        // 2. Setup the UI container above 'Mix Away'
-                        const possibleDrinksDiv = document.createElement('div');
-                        possibleDrinksDiv.id = 'possible-drinks-helper';
-                        possibleDrinksDiv.style.marginBottom = '5px';
-                        possibleDrinksDiv.style.fontWeight = 'bold';
-                        possibleDrinksDiv.style.fontSize = '13px';
-
-                        mixAwayBtn.parentNode.insertBefore(possibleDrinksDiv, mixAwayBtn);
-
-                        // 3. Update logic when ingredients change
-                        const updatePossibleDrinks = () => {
-                            const amtSpans = myMixer.querySelectorAll('span[id^="mix_amt_"]');
-                            let currentIngredients = [];
-
-                            amtSpans.forEach(span => {
-                                let text = span.textContent.trim();
-                                text = text.replace(/^\d+\s*x\s*/, '').trim();
-                                if (text) {
-                                    currentIngredients.push(text);
-                                }
-                            });
-
-                            if (currentIngredients.length === 0) {
-                                possibleDrinksDiv.innerHTML = '';
-                                return;
-                            }
-
-                            const mixedDrinksData = Modules.DrinksData.drinks.mixed || [];
-                            let possibleDrinkNames = [];
-
-                            mixedDrinksData.forEach(drink => {
-                                // Must be previously unlocked AND contain all current ingredients in its recipe
-                                if (unlockedDrinks.includes(drink.name) && drink.ingredients && Array.isArray(drink.ingredients)) {
-                                    let isPossible = currentIngredients.every(ing => drink.ingredients.includes(ing));
-                                    if (isPossible) {
-                                        possibleDrinkNames.push(drink.name);
-                                    }
-                                }
-                            });
-
-                            if (possibleDrinkNames.length > 0) {
-                                possibleDrinksDiv.innerHTML = `<span style="color: #666;">Possible Drinks:</span> <span style="color: #000;">${possibleDrinkNames.join(', ')}</span><br><br>`;
-                            } else {
-                                possibleDrinksDiv.innerHTML = `<span style="color: #888; font-style: italic;">No unlocked drinks match these ingredients.</span><br><br>`;
-                            }
-                        };
-
-                        // 4. Setup an observer to watch for additions/removals in the virtual mixer
-                        const observer = new MutationObserver((mutations) => {
-                            updatePossibleDrinks();
-                            if (!window.isAutomatedMixerChange) {
-                                window.lastClickedRecipe = null;
-                            }
-                            if (typeof window.updateShoppingList === 'function') {
-                                window.updateShoppingList();
-                            }
-                        });
-                        observer.observe(myMixer, { childList: true, subtree: true });
-
-                        // Initial update on load
-                        updatePossibleDrinks();
-
-                        // Build map of items to IDs and counts
-                        const inventoryMap = {};
-                        document.querySelectorAll('div[id^="itemimg_"]').forEach(div => {
-                            const b = div.querySelector('b[id^="amnt_"]');
-                            const img = div.querySelector('img');
-                            if (b && img) {
-                                const idMatch = b.id.match(/amnt_(\d+)/);
-                                if (idMatch) {
-                                    const id = idMatch[1];
-                                    let nameMatch = img.getAttribute('onmouseover')?.match(/ShowName\('([^']+)'\)/);
-                                    if (nameMatch) {
-                                        const name = nameMatch[1].replace(/&amp;/g, '&');
-                                        inventoryMap[name] = id;
-                                    }
-                                }
-                            }
-                        });
-
-                        if (guideContainer) {
-                            // Find all gray icons (images not wrapped in an <a> tag)
-                            const grayImgs = Array.from(guideContainer.querySelectorAll('img')).filter(img => img.parentElement.tagName.toLowerCase() !== 'a');
-                            grayImgs.forEach(img => {
-                                img.style.cursor = 'pointer';
-                                img.onclick = function() {
-                                    window.isAutomatedMixerChange = true;
-
-                                    const drinkName = img.title || img.alt;
-                                    const mixedDrinksData = Modules.DrinksData.drinks.mixed || [];
-                                    const drink = mixedDrinksData.find(d => d.name === drinkName);
-
-                                    window.lastClickedRecipe = drink;
-
-                                    let scriptAdd = ["if (typeof deleteAll === 'function') deleteAll();"];
-
-                                    if (drink && drink.ingredients) {
-                                        drink.ingredients.forEach(ing => {
-                                            const id = inventoryMap[ing];
-                                            let available = false;
-                                            if (id) {
-                                                const amountEl = document.getElementById('amnt_' + id);
-                                                if (amountEl) {
-                                                    const amount = parseInt(amountEl.textContent, 10);
-                                                    if (amount > 0) {
-                                                        available = true;
-                                                        scriptAdd.push(`if (typeof AddDrink === 'function') AddDrink(${id}, "${ing}");`);
-                                                    }
-                                                }
-                                            }
-                                        });
-                                    }
-
-                                    if (scriptAdd.length > 0) {
-                                        const script = document.createElement('script');
-                                        script.textContent = scriptAdd.join('\n');
-                                        document.body.appendChild(script);
-                                        script.remove();
-                                    }
-
-                                    setTimeout(() => { window.isAutomatedMixerChange = false; }, 100);
-                                };
-                            });
-
-                            // Also clear tracking state when clicking a normal (colored) drink link
-                            const normalLinks = guideContainer.querySelectorAll('a[href*="AddDrink"]');
-                            normalLinks.forEach(link => {
-                                link.addEventListener('click', () => {
-                                    window.isAutomatedMixerChange = true;
-
-                                    const img = link.querySelector('img');
-                                    const drinkName = img ? (img.title || img.alt) : '';
-                                    const mixedDrinksData = Modules.DrinksData.drinks.mixed || [];
-                                    const drink = mixedDrinksData.find(d => d.name === drinkName);
-                                    window.lastClickedRecipe = drink;
-
-                                    setTimeout(() => { window.isAutomatedMixerChange = false; }, 100);
-                                });
-                            });
-                        }
-
-                        const startOverLink = document.querySelector('a[href$="cmd=mixer"]');
-                        if (startOverLink) {
-                            startOverLink.addEventListener('click', () => {
-                                window.lastClickedRecipe = null;
-                                if (typeof window.updateShoppingList === 'function') window.updateShoppingList();
-                            });
-                        }
-
-                        // --- Shopping List Helper ---
-                        const makeManyInput = document.querySelector('input[name="make_many"]');
-                        if (mixAwayBtn && makeManyInput) {
-                            const shoppingListContainer = document.createElement('div');
-                            shoppingListContainer.id = 'shopping-list-container';
-                            shoppingListContainer.style.marginBottom = '15px';
-                            shoppingListContainer.style.display = 'none';
-                            shoppingListContainer.innerHTML = `<div class="style1" style="font-weight:bold; margin-bottom:5px;"><u>Shopping List:</u></div>
-                                                               <div id="shopping_list_items" style="font-size: 13px; color:#555; text-align: left; display: inline-block;"></div>`;
-
-                            // Insert above "Mix Away" button
-                            mixAwayBtn.parentNode.insertBefore(shoppingListContainer, mixAwayBtn);
-
-                            const shoppingListContent = shoppingListContainer.querySelector('#shopping_list_items');
-
-                            window.updateShoppingList = function() {
-                                let ingredientsNeeded = [];
-
-                                if (window.lastClickedRecipe && window.lastClickedRecipe.ingredients) {
-                                    ingredientsNeeded = window.lastClickedRecipe.ingredients;
-                                } else {
-                                    // Extract from items currently in mixer
-                                    const amtSpans = myMixer.querySelectorAll('span[id^="mix_amt_"]');
-                                    amtSpans.forEach(span => {
-                                        let text = span.textContent.trim();
-                                        text = text.replace(/^\d+\s*x\s*/, '').trim();
-                                        if (text && !ingredientsNeeded.includes(text)) {
-                                            ingredientsNeeded.push(text);
-                                        }
-                                    });
-                                }
-
-                                let makeMany = parseInt(makeManyInput.value, 10);
-                                if (isNaN(makeMany) || makeMany < 1) makeMany = 1;
-
-                                let missingTableRows = [];
-                                let totalFixed = 0;
-
-                                ingredientsNeeded.forEach(ingName => {
-                                    const id = inventoryMap[ingName];
-                                    let hasCount = 0;
-
-                                    if (id) {
-                                        const amountEl = document.getElementById('amnt_' + id);
-                                        if (amountEl) {
-                                            hasCount = parseInt(amountEl.textContent, 10);
-                                            if (document.getElementById('mix_amt_' + id)) {
-                                                hasCount += 1;
-                                            }
-                                        }
-                                    }
-
-                                    const neededAmount = makeMany - hasCount;
-                                    if (neededAmount > 0) {
-                                        const allDrinks = [
-                                            ...(Modules.DrinksData.drinks.alcoholic || []),
-                                            ...(Modules.DrinksData.drinks.non_alcoholic || [])
-                                        ];
-                                        const baseDrink = allDrinks.find(d => d.name === ingName);
-
-                                        let itemCostStr = '';
-
-                                        if (baseDrink && baseDrink.cost) {
-                                            let hasDiscount = false;
-                                            
-                                            if (baseDrink.cost.type === 'cw_multiplier') {
-                                                const costVal = baseDrink.cost.value * neededAmount;
-                                                const cwPrice = Utils.getCWPrice();
-                                                let dollarCost = Math.round(costVal * cwPrice);
-                                                
-                                                if (baseDrink.location === 'Liquor Store') {
-                                                    dollarCost = Math.round(dollarCost * 0.9);
-                                                    hasDiscount = true;
-                                                }
-
-                                                totalFixed += dollarCost;
-                                                itemCostStr = `$${dollarCost.toLocaleString()}${hasDiscount ? '*' : ''}`;
-                                            } else if (baseDrink.cost.type === 'fixed' && typeof baseDrink.cost.value === 'number') {
-                                                let costVal = baseDrink.cost.value * neededAmount;
-                                                
-                                                if (baseDrink.location === 'Liquor Store') {
-                                                    costVal = Math.round(costVal * 0.9);
-                                                    hasDiscount = true;
-                                                }
-
-                                                totalFixed += costVal;
-                                                itemCostStr = `$${costVal.toLocaleString()}${hasDiscount ? '*' : ''}`;
-                                            } else if (baseDrink.cost.type === 'fixed' && typeof baseDrink.cost.value === 'string') {
-                                                itemCostStr = `${neededAmount}x ${baseDrink.cost.value}`;
-                                            }
-                                        }
-
-                                        missingTableRows.push(`
-                                            <tr>
-                                                <td style="padding: 2px 8px 2px 0;"><span style="color:#d9534f; font-weight:bold;">✗</span></td>
-                                                <td style="padding: 2px 15px 2px 0; color:#000;">${neededAmount} x ${ingName} <span style="color:#888; font-size:11px;">(Have: ${hasCount})</span></td>
-                                                <td style="padding: 2px 0; color:#666; text-align: right; white-space: nowrap;">${itemCostStr}</td>
-                                            </tr>
-                                        `);
-                                    }
-                                });
-
-                                if (missingTableRows.length > 0 && ingredientsNeeded.length > 0) {
-                                    let listHtml = `<table style="border-collapse: collapse; font-size: 13px; min-width: 200px;">${missingTableRows.join('')}</table>`;
-                                    
-                                    if (totalFixed > 0) {
-                                        listHtml += `<div style="margin-top: 5px; font-weight: bold; color: #333; border-top: 1px dashed #ccc; padding-top: 3px;">Estimated Cost: <span style="color:red;">$${totalFixed.toLocaleString()}</span> <span id="bank-btn-container"></span></div>`;
-                                        listHtml += `<div style="margin-top: 2px; font-size: 10px; color: #888;">* 10% Bartender's Guide discount applied</div>`;
-                                    }
-
-                                    shoppingListContent.innerHTML = listHtml;
-                                    shoppingListContainer.style.display = 'block';
-
-                                    const bankBtnContainer = document.getElementById('bank-btn-container');
-                                    if (bankBtnContainer) {
-                                        const bankBtn = Utils.createBankButton('Drink Ingredients', totalFixed);
-                                        bankBtn.addEventListener('click', function() {
-                                            let saveObj = {};
-                                            ingredientsNeeded.forEach(ingName => {
-                                                const id = inventoryMap[ingName];
-                                                let hasCount = 0;
-                                                if (id) {
-                                                    const amountEl = document.getElementById('amnt_' + id);
-                                                    if (amountEl) {
-                                                        hasCount = parseInt(amountEl.textContent, 10);
-                                                        if (document.getElementById('mix_amt_' + id)) {
-                                                            hasCount += 1;
-                                                        }
-                                                    }
-                                                }
-                                                const neededAmount = makeMany - hasCount;
-                                                if (neededAmount > 0) {
-                                                    saveObj[ingName] = neededAmount;
-                                                }
-                                            });
-
-                                            localStorage.setItem('hobowarsDrinkShoppingList', JSON.stringify(saveObj));
-                                            if (window.lastClickedRecipe && window.lastClickedRecipe.name) {
-                                                localStorage.setItem('hobowarsDrinkShoppingList_TargetDrink', window.lastClickedRecipe.name);
-                                            } else {
-                                                localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
-                                            }
-                                        });
-                                        bankBtnContainer.appendChild(bankBtn);
-                                    }
-                                } else {
-                                    shoppingListContent.innerHTML = '';
-                                    shoppingListContainer.style.display = 'none';
-                                }
-                            };
-
-                            makeManyInput.addEventListener('input', () => {
-                                if (typeof window.updateShoppingList === 'function') window.updateShoppingList();
-                            });
-                        }
-                    }
-                }
+                makeManyInput.parentNode.insertBefore(maxBtn, makeManyInput.nextSibling);
             }
-        }
 
-const NorthernFenceHelper = {
-    cmds: 'hill3',
-            init: function() {
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('cmd') === 'hill3') {
-                    if (urlParams.get('do') === 'npc') {
-                        this.initNpcRacingHelper();
-                    } else if (urlParams.get('do') === 'hof') {
-                        this.initHallOfFameHelper();
-                    }
-                }
-            },
+            // --- Possible Drinks Helper ---
+            const mixAwayBtn = document.querySelector('input[value="Mix Away"]');
+            const myMixer = document.getElementById('myMixer');
 
-            initNpcRacingHelper: function() {
-                const table = document.querySelector('.content-area table');
-                if (!table) return;
+            if (mixAwayBtn && myMixer) {
+                // 1. Determine which drinks are unlocked by reading the Bartender Guide DOM
+                let unlockedDrinks = [];
+                const uTags = document.querySelectorAll('u');
+                let guideContainer = null;
 
-                const rows = table.querySelectorAll('tr');
-                rows.forEach(row => {
-                    const cells = row.querySelectorAll('td');
-                    if (cells.length >= 6) {
-                        const costCell = cells[4];
-                        const costText = costCell.textContent.trim();
-                        if (costText.startsWith('$')) {
-                            const costMatch = costText.match(/\$?([0-9,]+)/);
-                            if (costMatch) {
-                                const cost = Utils.parseNumber(costMatch[1]);
-                                if (!isNaN(cost)) {
-                                    const totalCost = cost * 2; // Can race twice
-                                    const name = cells[0].textContent.trim();
-
-                                    const actionCell = cells[5];
-
-                                    // Parse original race link
-                                    const raceLink = actionCell.querySelector('a');
-                                    let raceHref = '';
-                                    if (raceLink) {
-                                        raceHref = raceLink.getAttribute('href');
-                                    }
-
-                                    // Replace inner text with clear flex layout for buttons
-                                    actionCell.innerHTML = '';
-                                    actionCell.style.display = 'flex';
-                                    actionCell.style.alignItems = 'center';
-                                    actionCell.style.justifyContent = 'center';
-
-                                    const commonBtnStyle = '-webkit-font-smoothing: antialiased; color: #636363; background: #ddd; font-weight: bold; text-decoration: none; padding: 0; width: 80px; height: 26px; line-height: 26px; text-align: center; border-radius: 3px; border: none; cursor: pointer; margin: 3px 2px; -webkit-appearance: none; display: inline-block; user-select: none; -webkit-user-select: none; font-family: inherit; font-size: 13px; box-sizing: border-box; vertical-align: middle;';
-
-                                    if (raceHref) {
-                                        const raceBtn = document.createElement('a');
-                                        raceBtn.href = raceHref;
-                                        raceBtn.textContent = 'Race';
-
-                                        raceBtn.className = 'btn';
-                                        raceBtn.style.cssText = commonBtnStyle;
-
-                                        raceBtn.addEventListener('mouseover', () => raceBtn.style.background = '#ccc');
-                                        raceBtn.addEventListener('mouseout', () => raceBtn.style.background = '#ddd');
-
-                                        actionCell.appendChild(raceBtn);
-                                    }
-
-                                    const btn = Utils.createBankButton(`Pikies (${name})`, totalCost);
-                                    btn.className = 'btn';
-                                    btn.style.cssText = commonBtnStyle;
-
-                                    btn.addEventListener('mouseover', () => { if (!btn.disabled) btn.style.background = '#ccc'; });
-                                    btn.addEventListener('mouseout', () => { if (!btn.disabled) btn.style.background = '#ddd'; });
-                                    // Make sure disabled state looks reasonable when clicked
-                                    const originalOnclick = btn.onclick;
-                                    btn.onclick = function(e) {
-                                        if (originalOnclick) originalOnclick.call(this, e);
-                                        this.style.background = '#eee';
-                                        this.style.color = '#aaa';
-                                        this.style.cursor = 'not-allowed';
-                                    };
-
-                                    actionCell.appendChild(btn);
-                                }
-                            }
-                        }
+                uTags.forEach(u => {
+                    if (u.textContent.includes('Bartender Guide')) {
+                        // The <u> is inside a <div>, and the drinks are siblings to that <div> inside a <td>
+                        guideContainer = u.closest('td');
                     }
                 });
-            },
-            
-            initHallOfFameHelper: function() {
-                const playerId = Utils.getHoboId();
-                const table = document.querySelector('.content-area table');
-                let foundPlayer = false;
 
-                if (table && playerId !== 'Unknown') {
-                    const rows = table.querySelectorAll('tr');
-                    rows.forEach(row => {
-                        const cells = row.querySelectorAll('td');
-                        if (cells.length >= 3) {
-                            const hoboLink = cells[0].querySelector('a');
-                            if (hoboLink && hoboLink.href.includes(`ID=${playerId}`)) {
-                                row.style.fontWeight = 'bold';
-                                foundPlayer = true;
+                if (guideContainer) {
+                    // Any img with a title in the guide container is considered unlocked here
+                    // even if it lacks an <a> tag (greyed out due to missing ingredients)
+                    const unlockedImgs = guideContainer.querySelectorAll('img[title], img[alt]');
+                    unlockedImgs.forEach(img => {
+                        let name = img.title || img.alt;
+                        if (name) {
+                            name = name.replace(/&amp;/g, '&').trim();
+                            // Make sure it's valid title and not empty
+                            if (name && !unlockedDrinks.includes(name)) {
+                                unlockedDrinks.push(name);
                             }
                         }
                     });
                 }
 
-                const urlParams = new URLSearchParams(window.location.search);
-                const urlPage = urlParams.get('page');
-                const currentPageNum = urlPage ? parseInt(urlPage) + 1 : 1;
+                // 2. Setup the UI container above 'Mix Away'
+                const possibleDrinksDiv = document.createElement('div');
+                possibleDrinksDiv.id = 'possible-drinks-helper';
+                possibleDrinksDiv.style.marginBottom = '5px';
+                possibleDrinksDiv.style.fontWeight = 'bold';
+                possibleDrinksDiv.style.fontSize = '13px';
 
-                if (foundPlayer) {
-                    localStorage.setItem('hof_player_page', currentPageNum);
-                }
+                mixAwayBtn.parentNode.insertBefore(possibleDrinksDiv, mixAwayBtn);
 
-                const savedPageNum = localStorage.getItem('hof_player_page');
-                if (savedPageNum) {
-                    const strongs = document.querySelectorAll('.content-area strong');
-                    let pagesContainer = null;
-                    for (const s of strongs) {
-                        if (s.textContent.trim() === 'Pages:') {
-                            pagesContainer = s.parentNode;
-                            break;
+                // 3. Update logic when ingredients change
+                const updatePossibleDrinks = () => {
+                    const amtSpans = myMixer.querySelectorAll('span[id^="mix_amt_"]');
+                    let currentIngredients = [];
+
+                    amtSpans.forEach(span => {
+                        let text = span.textContent.trim();
+                        text = text.replace(/^\d+\s*x\s*/, '').trim();
+                        if (text) {
+                            currentIngredients.push(text);
+                        }
+                    });
+
+                    if (currentIngredients.length === 0) {
+                        possibleDrinksDiv.innerHTML = '';
+                        return;
+                    }
+
+                    const mixedDrinksData = Modules.DrinksData.drinks.mixed || [];
+                    let possibleDrinkNames = [];
+
+                    mixedDrinksData.forEach(drink => {
+                        // Must be previously unlocked AND contain all current ingredients in its recipe
+                        if (unlockedDrinks.includes(drink.name) && drink.ingredients && Array.isArray(drink.ingredients)) {
+                            let isPossible = currentIngredients.every(ing => drink.ingredients.includes(ing));
+                            if (isPossible) {
+                                possibleDrinkNames.push(drink.name);
+                            }
+                        }
+                    });
+
+                    if (possibleDrinkNames.length > 0) {
+                        possibleDrinksDiv.innerHTML = `<span style="color: #666;">Possible Drinks:</span> <span style="color: #000;">${possibleDrinkNames.join(', ')}</span><br><br>`;
+                    } else {
+                        possibleDrinksDiv.innerHTML = `<span style="color: #888; font-style: italic;">No unlocked drinks match these ingredients.</span><br><br>`;
+                    }
+                };
+
+                // 4. Setup an observer to watch for additions/removals in the virtual mixer
+                const observer = new MutationObserver((mutations) => {
+                    updatePossibleDrinks();
+                    if (!window.isAutomatedMixerChange) {
+                        window.lastClickedRecipe = null;
+                    }
+                    if (typeof window.updateShoppingList === 'function') {
+                        window.updateShoppingList();
+                    }
+                });
+                observer.observe(myMixer, { childList: true, subtree: true });
+
+                // Initial update on load
+                updatePossibleDrinks();
+
+                // Build map of items to IDs and counts
+                const inventoryMap = {};
+                document.querySelectorAll('div[id^="itemimg_"]').forEach(div => {
+                    const b = div.querySelector('b[id^="amnt_"]');
+                    const img = div.querySelector('img');
+                    if (b && img) {
+                        const idMatch = b.id.match(/amnt_(\d+)/);
+                        if (idMatch) {
+                            const id = idMatch[1];
+                            let nameMatch = img.getAttribute('onmouseover')?.match(/ShowName\('([^']+)'\)/);
+                            if (nameMatch) {
+                                const name = nameMatch[1].replace(/&amp;/g, '&');
+                                inventoryMap[name] = id;
+                            }
                         }
                     }
+                });
 
-                    if (pagesContainer) {
-                        const links = pagesContainer.querySelectorAll('a');
-                        links.forEach(link => {
-                            if (link.href && link.href.includes('do=hof') && link.textContent.trim() === savedPageNum.toString()) {
-                                link.style.fontWeight = 'bold';
-                                link.style.color = '#008000';
-                                link.style.textDecoration = 'underline';
+                if (guideContainer) {
+                    // Find all gray icons (images not wrapped in an <a> tag)
+                    const grayImgs = Array.from(guideContainer.querySelectorAll('img')).filter(img => img.parentElement.tagName.toLowerCase() !== 'a');
+                    grayImgs.forEach(img => {
+                        img.style.cursor = 'pointer';
+                        img.onclick = function() {
+                            window.isAutomatedMixerChange = true;
+
+                            const drinkName = img.title || img.alt;
+                            const mixedDrinksData = Modules.DrinksData.drinks.mixed || [];
+                            const drink = mixedDrinksData.find(d => d.name === drinkName);
+
+                            window.lastClickedRecipe = drink;
+
+                            let scriptAdd = ["if (typeof deleteAll === 'function') deleteAll();"];
+
+                            if (drink && drink.ingredients) {
+                                drink.ingredients.forEach(ing => {
+                                    const id = inventoryMap[ing];
+                                    let available = false;
+                                    if (id) {
+                                        const amountEl = document.getElementById('amnt_' + id);
+                                        if (amountEl) {
+                                            const amount = parseInt(amountEl.textContent, 10);
+                                            if (amount > 0) {
+                                                available = true;
+                                                scriptAdd.push(`if (typeof AddDrink === 'function') AddDrink(${id}, "${ing}");`);
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+
+                            if (scriptAdd.length > 0) {
+                                const script = document.createElement('script');
+                                script.textContent = scriptAdd.join('\n');
+                                document.body.appendChild(script);
+                                script.remove();
+                            }
+
+                            setTimeout(() => { window.isAutomatedMixerChange = false; }, 100);
+                        };
+                    });
+
+                    // Also clear tracking state when clicking a normal (colored) drink link
+                    const normalLinks = guideContainer.querySelectorAll('a[href*="AddDrink"]');
+                    normalLinks.forEach(link => {
+                        link.addEventListener('click', () => {
+                            window.isAutomatedMixerChange = true;
+
+                            const img = link.querySelector('img');
+                            const drinkName = img ? (img.title || img.alt) : '';
+                            const mixedDrinksData = Modules.DrinksData.drinks.mixed || [];
+                            const drink = mixedDrinksData.find(d => d.name === drinkName);
+                            window.lastClickedRecipe = drink;
+
+                            setTimeout(() => { window.isAutomatedMixerChange = false; }, 100);
+                        });
+                    });
+                }
+
+                const startOverLink = document.querySelector('a[href$="cmd=mixer"]');
+                if (startOverLink) {
+                    startOverLink.addEventListener('click', () => {
+                        window.lastClickedRecipe = null;
+                        if (typeof window.updateShoppingList === 'function') window.updateShoppingList();
+                    });
+                }
+
+                // --- Shopping List Helper ---
+                const makeManyInput = document.querySelector('input[name="make_many"]');
+                if (mixAwayBtn && makeManyInput) {
+                    const shoppingListContainer = document.createElement('div');
+                    shoppingListContainer.id = 'shopping-list-container';
+                    shoppingListContainer.style.marginBottom = '15px';
+                    shoppingListContainer.style.display = 'none';
+                    shoppingListContainer.innerHTML = `<div class="style1" style="font-weight:bold; margin-bottom:5px;"><u>Shopping List:</u></div>
+                                                       <div id="shopping_list_items" style="font-size: 13px; color:#555; text-align: left; display: inline-block;"></div>`;
+
+                    // Insert above "Mix Away" button
+                    mixAwayBtn.parentNode.insertBefore(shoppingListContainer, mixAwayBtn);
+
+                    const shoppingListContent = shoppingListContainer.querySelector('#shopping_list_items');
+
+                    window.updateShoppingList = function() {
+                        let ingredientsNeeded = [];
+
+                        if (window.lastClickedRecipe && window.lastClickedRecipe.ingredients) {
+                            ingredientsNeeded = window.lastClickedRecipe.ingredients;
+                        } else {
+                            // Extract from items currently in mixer
+                            const amtSpans = myMixer.querySelectorAll('span[id^="mix_amt_"]');
+                            amtSpans.forEach(span => {
+                                let text = span.textContent.trim();
+                                text = text.replace(/^\d+\s*x\s*/, '').trim();
+                                if (text && !ingredientsNeeded.includes(text)) {
+                                    ingredientsNeeded.push(text);
+                                }
+                            });
+                        }
+
+                        let makeMany = parseInt(makeManyInput.value, 10);
+                        if (isNaN(makeMany) || makeMany < 1) makeMany = 1;
+
+                        let missingTableRows = [];
+                        let totalFixed = 0;
+
+                        ingredientsNeeded.forEach(ingName => {
+                            const id = inventoryMap[ingName];
+                            let hasCount = 0;
+
+                            if (id) {
+                                const amountEl = document.getElementById('amnt_' + id);
+                                if (amountEl) {
+                                    hasCount = parseInt(amountEl.textContent, 10);
+                                    if (document.getElementById('mix_amt_' + id)) {
+                                        hasCount += 1;
+                                    }
+                                }
+                            }
+
+                            const neededAmount = makeMany - hasCount;
+                            if (neededAmount > 0) {
+                                const allDrinks = [
+                                    ...(Modules.DrinksData.drinks.alcoholic || []),
+                                    ...(Modules.DrinksData.drinks.non_alcoholic || [])
+                                ];
+                                const baseDrink = allDrinks.find(d => d.name === ingName);
+
+                                let itemCostStr = '';
+
+                                if (baseDrink && baseDrink.cost) {
+                                    let hasDiscount = false;
+
+                                    if (baseDrink.cost.type === 'cw_multiplier') {
+                                        const costVal = baseDrink.cost.value * neededAmount;
+                                        const cwPrice = Utils.getCWPrice();
+                                        let dollarCost = Math.round(costVal * cwPrice);
+
+                                        if (baseDrink.location === 'Liquor Store') {
+                                            dollarCost = Math.round(dollarCost * 0.9);
+                                            hasDiscount = true;
+                                        }
+
+                                        totalFixed += dollarCost;
+                                        itemCostStr = `$${dollarCost.toLocaleString()}${hasDiscount ? '*' : ''}`;
+                                    } else if (baseDrink.cost.type === 'fixed' && typeof baseDrink.cost.value === 'number') {
+                                        let costVal = baseDrink.cost.value * neededAmount;
+
+                                        if (baseDrink.location === 'Liquor Store') {
+                                            costVal = Math.round(costVal * 0.9);
+                                            hasDiscount = true;
+                                        }
+
+                                        totalFixed += costVal;
+                                        itemCostStr = `$${costVal.toLocaleString()}${hasDiscount ? '*' : ''}`;
+                                    } else if (baseDrink.cost.type === 'fixed' && typeof baseDrink.cost.value === 'string') {
+                                        itemCostStr = `${neededAmount}x ${baseDrink.cost.value}`;
+                                    }
+                                }
+
+                                missingTableRows.push(`
+                                    <tr>
+                                        <td style="padding: 2px 8px 2px 0;"><span style="color:#d9534f; font-weight:bold;">✗</span></td>
+                                        <td style="padding: 2px 15px 2px 0; color:#000;">${neededAmount} x ${ingName} <span style="color:#888; font-size:11px;">(Have: ${hasCount})</span></td>
+                                        <td style="padding: 2px 0; color:#666; text-align: right; white-space: nowrap;">${itemCostStr}</td>
+                                    </tr>
+                                `);
                             }
                         });
 
-                        const pagesStrongs = pagesContainer.querySelectorAll('strong');
-                        pagesStrongs.forEach(s => {
-                            if (s.textContent.trim() === savedPageNum.toString()) {
-                                s.style.color = '#008000';
-                                s.style.textDecoration = 'underline';
+                        if (missingTableRows.length > 0 && ingredientsNeeded.length > 0) {
+                            let listHtml = `<table style="border-collapse: collapse; font-size: 13px; min-width: 200px;">${missingTableRows.join('')}</table>`;
+
+                            if (totalFixed > 0) {
+                                listHtml += `<div style="margin-top: 5px; font-weight: bold; color: #333; border-top: 1px dashed #ccc; padding-top: 3px;">Estimated Cost: <span style="color:red;">$${totalFixed.toLocaleString()}</span> <span id="bank-btn-container"></span></div>`;
+                                listHtml += `<div style="margin-top: 2px; font-size: 10px; color: #888;">* 10% Bartender's Guide discount applied</div>`;
                             }
-                        });
-                    }
+
+                            shoppingListContent.innerHTML = listHtml;
+                            shoppingListContainer.style.display = 'block';
+
+                            const bankBtnContainer = document.getElementById('bank-btn-container');
+                            if (bankBtnContainer) {
+                                const bankBtn = Utils.createBankButton('Drink Ingredients', totalFixed);
+                                bankBtn.addEventListener('click', function() {
+                                    let saveObj = {};
+                                    ingredientsNeeded.forEach(ingName => {
+                                        const id = inventoryMap[ingName];
+                                        let hasCount = 0;
+                                        if (id) {
+                                            const amountEl = document.getElementById('amnt_' + id);
+                                            if (amountEl) {
+                                                hasCount = parseInt(amountEl.textContent, 10);
+                                                if (document.getElementById('mix_amt_' + id)) {
+                                                    hasCount += 1;
+                                                }
+                                            }
+                                        }
+                                        const neededAmount = makeMany - hasCount;
+                                        if (neededAmount > 0) {
+                                            saveObj[ingName] = neededAmount;
+                                        }
+                                    });
+
+                                    localStorage.setItem('hobowarsDrinkShoppingList', JSON.stringify(saveObj));
+                                    if (window.lastClickedRecipe && window.lastClickedRecipe.name) {
+                                        localStorage.setItem('hobowarsDrinkShoppingList_TargetDrink', window.lastClickedRecipe.name);
+                                    } else {
+                                        localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
+                                    }
+                                });
+                                bankBtnContainer.appendChild(bankBtn);
+                            }
+                        } else {
+                            shoppingListContent.innerHTML = '';
+                            shoppingListContainer.style.display = 'none';
+                        }
+                    };
+
+                    makeManyInput.addEventListener('input', () => {
+                        if (typeof window.updateShoppingList === 'function') window.updateShoppingList();
+                    });
                 }
             }
         }
+    }
+}
+
+const NorthernFenceHelper = {
+    cmds: 'hill3',
+    init: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('cmd') === 'hill3') {
+            if (urlParams.get('do') === 'npc') {
+                this.initNpcRacingHelper();
+            } else if (urlParams.get('do') === 'hof') {
+                this.initHallOfFameHelper();
+            }
+        }
+    },
+
+    initNpcRacingHelper: function() {
+        const table = document.querySelector('.content-area table');
+        if (!table) return;
+
+        const rows = table.querySelectorAll('tr');
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length >= 6) {
+                const costCell = cells[4];
+                const costText = costCell.textContent.trim();
+                if (costText.startsWith('$')) {
+                    const costMatch = costText.match(/\$?([0-9,]+)/);
+                    if (costMatch) {
+                        const cost = Utils.parseNumber(costMatch[1]);
+                        if (!isNaN(cost)) {
+                            const totalCost = cost * 2; // Can race twice
+                            const name = cells[0].textContent.trim();
+
+                            const actionCell = cells[5];
+
+                            // Parse original race link
+                            const raceLink = actionCell.querySelector('a');
+                            let raceHref = '';
+                            if (raceLink) {
+                                raceHref = raceLink.getAttribute('href');
+                            }
+
+                            // Replace inner text with clear flex layout for buttons
+                            actionCell.innerHTML = '';
+                            actionCell.style.display = 'flex';
+                            actionCell.style.alignItems = 'center';
+                            actionCell.style.justifyContent = 'center';
+
+                            const commonBtnStyle = '-webkit-font-smoothing: antialiased; color: #636363; background: #ddd; font-weight: bold; text-decoration: none; padding: 0; width: 80px; height: 26px; line-height: 26px; text-align: center; border-radius: 3px; border: none; cursor: pointer; margin: 3px 2px; -webkit-appearance: none; display: inline-block; user-select: none; -webkit-user-select: none; font-family: inherit; font-size: 13px; box-sizing: border-box; vertical-align: middle;';
+
+                            if (raceHref) {
+                                const raceBtn = document.createElement('a');
+                                raceBtn.href = raceHref;
+                                raceBtn.textContent = 'Race';
+
+                                raceBtn.className = 'btn';
+                                raceBtn.style.cssText = commonBtnStyle;
+
+                                raceBtn.addEventListener('mouseover', () => raceBtn.style.background = '#ccc');
+                                raceBtn.addEventListener('mouseout', () => raceBtn.style.background = '#ddd');
+
+                                actionCell.appendChild(raceBtn);
+                            }
+
+                            const btn = Utils.createBankButton(`Pikies (${name})`, totalCost);
+                            btn.className = 'btn';
+                            btn.style.cssText = commonBtnStyle;
+
+                            btn.addEventListener('mouseover', () => { if (!btn.disabled) btn.style.background = '#ccc'; });
+                            btn.addEventListener('mouseout', () => { if (!btn.disabled) btn.style.background = '#ddd'; });
+                            // Make sure disabled state looks reasonable when clicked
+                            const originalOnclick = btn.onclick;
+                            btn.onclick = function(e) {
+                                if (originalOnclick) originalOnclick.call(this, e);
+                                this.style.background = '#eee';
+                                this.style.color = '#aaa';
+                                this.style.cursor = 'not-allowed';
+                            };
+
+                            actionCell.appendChild(btn);
+                        }
+                    }
+                }
+            }
+        });
+    },
+
+    initHallOfFameHelper: function() {
+        const playerId = Utils.getHoboId();
+        const table = document.querySelector('.content-area table');
+        let foundPlayer = false;
+
+        if (table && playerId !== 'Unknown') {
+            const rows = table.querySelectorAll('tr');
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 3) {
+                    const hoboLink = cells[0].querySelector('a');
+                    if (hoboLink && hoboLink.href.includes(`ID=${playerId}`)) {
+                        row.style.fontWeight = 'bold';
+                        foundPlayer = true;
+                    }
+                }
+            });
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlPage = urlParams.get('page');
+        const currentPageNum = urlPage ? parseInt(urlPage) + 1 : 1;
+
+        if (foundPlayer) {
+            localStorage.setItem('hof_player_page', currentPageNum);
+        }
+
+        const savedPageNum = localStorage.getItem('hof_player_page');
+        if (savedPageNum) {
+            const strongs = document.querySelectorAll('.content-area strong');
+            let pagesContainer = null;
+            for (const s of strongs) {
+                if (s.textContent.trim() === 'Pages:') {
+                    pagesContainer = s.parentNode;
+                    break;
+                }
+            }
+
+            if (pagesContainer) {
+                const links = pagesContainer.querySelectorAll('a');
+                links.forEach(link => {
+                    if (link.href && link.href.includes('do=hof') && link.textContent.trim() === savedPageNum.toString()) {
+                        link.style.fontWeight = 'bold';
+                        link.style.color = '#008000';
+                        link.style.textDecoration = 'underline';
+                    }
+                });
+
+                const pagesStrongs = pagesContainer.querySelectorAll('strong');
+                pagesStrongs.forEach(s => {
+                    if (s.textContent.trim() === savedPageNum.toString()) {
+                        s.style.color = '#008000';
+                        s.style.textDecoration = 'underline';
+                    }
+                });
+            }
+        }
+    }
+}
 
 const RatsHelper = {
+    cmds: 'rats',
     settings: [
         { key: 'RatsHelper_NewsFilter', label: 'Rat News Filter' }
     ],
@@ -4636,8 +4330,8 @@ const RatsHelper = {
 };
 
 const RecyclingBinHelper = {
+    cmds: 'recycling_bin',
     init: function() {
-        if (!Utils.isCurrentPage('cmd=recycling_bin')) return;
 
         const settings = Utils.getSettings();
         if (settings.global_enabled === false) return;
@@ -4669,9 +4363,316 @@ const RecyclingBinHelper = {
     }
 };
 
-const SoupKitchenHelper = {
+const SettingsHelper = {
+    cmds: 'preferences',
     init: function() {
-        if (!window.location.search.includes('cmd=soup_kitchen')) return;
+
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        console.log('Settings Helper loaded for preferences page');
+        
+        // Add divider and title
+        const headerContainer = document.createElement('div');
+        headerContainer.style.textAlign = 'center';
+        headerContainer.style.margin = '20px 0';
+        headerContainer.style.padding = '10px';
+        headerContainer.style.background = 'rgba(128, 128, 128, 0.1)';
+        headerContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
+        headerContainer.style.borderRadius = '5px';
+
+        const titleDiv = document.createElement('div');
+        titleDiv.innerHTML = "<h2 style='margin: 0; font-family: Arial, sans-serif; font-size: 20px; text-transform: uppercase; letter-spacing: 1px;'>Hobo Helper Settings</h2>";
+        headerContainer.appendChild(titleDiv);
+        contentArea.appendChild(headerContainer);
+
+        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        
+        // Helper function for toggles
+        const createToggle = (key, labelText, isGlobal = false, defaultValue = true) => {
+            const container = document.createElement('div');
+            container.style.marginBottom = '8px';
+            container.style.paddingLeft = isGlobal ? '0' : '5px';
+            container.style.display = 'flex';
+            container.style.alignItems = 'center';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = `hw_helper_${key}`;
+            // default to true if undefined
+            checkbox.checked = savedSettings[key] !== undefined ? savedSettings[key] : defaultValue;
+            checkbox.style.cursor = 'pointer';
+            checkbox.style.transform = 'scale(1.2)';
+            checkbox.style.marginRight = '8px';
+            checkbox.style.accentColor = '#2196F3';
+
+            const label = document.createElement('label');
+            label.htmlFor = `hw_helper_${key}`;
+            label.innerHTML = ` ${labelText}`;
+            label.style.cursor = 'pointer';
+            label.style.fontFamily = 'Arial, sans-serif';
+            label.style.fontSize = '14px';
+
+            const toast = document.createElement('span');
+            toast.innerText = ' (Saved! Reload to apply)';
+            toast.style.color = 'green';
+            toast.style.fontSize = '12px';
+            toast.style.display = 'none';
+            label.appendChild(toast);
+
+            let toastTimeout;
+            checkbox.addEventListener('change', (e) => {
+                const settings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+                settings[key] = e.target.checked;
+                localStorage.setItem('hw_helper_settings', JSON.stringify(settings));
+                
+                // Show saved toast or reload prompt
+                toast.style.display = 'inline';
+                clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 2000);
+            });
+
+            container.appendChild(checkbox);
+            container.appendChild(label);
+            return container;
+        };
+
+        const createInput = (feature) => {
+            const { key, label: labelText, type: inputType, defaultValue, width, description } = feature;
+            const wrapper = document.createElement('div');
+            wrapper.style.marginBottom = '8px';
+            wrapper.style.paddingLeft = '5px';
+
+            const container = document.createElement('div');
+            container.style.display = 'flex';
+            if (width === '100%') {
+                container.style.flexDirection = 'column';
+                container.style.alignItems = 'flex-start';
+            } else {
+                container.style.alignItems = 'center';
+            }
+
+            const label = document.createElement('label');
+            label.htmlFor = `hw_helper_${key}`;
+            label.innerHTML = `${labelText}: `;
+            label.style.fontFamily = 'Arial, sans-serif';
+            label.style.fontSize = '14px';
+            label.style.marginRight = '8px';
+
+            const toast = document.createElement('span');
+            toast.innerText = ' (Saved! Reload to apply)';
+            toast.style.color = 'green';
+            toast.style.fontSize = '12px';
+            toast.style.display = 'none';
+            toast.style.marginLeft = '8px';
+
+            if (width === '100%') {
+                label.appendChild(toast);
+            }
+
+            const input = document.createElement('input');
+            input.type = inputType;
+            input.id = `hw_helper_${key}`;
+            input.style.width = width || (inputType === 'number' ? '60px' : '150px');
+            if (width === '100%') {
+                input.style.boxSizing = 'border-box';
+                input.style.marginTop = '4px';
+            }
+            input.value = savedSettings[key] !== undefined ? savedSettings[key] : defaultValue;
+            input.style.border = '1px solid #ccc';
+            input.style.borderRadius = '3px';
+            input.style.padding = '2px 5px';
+
+            let toastTimeout;
+            input.addEventListener('input', (e) => {
+                const settings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+                settings[key] = e.target.value;
+                localStorage.setItem('hw_helper_settings', JSON.stringify(settings));
+                
+                toast.style.display = 'inline';
+                clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 2000);
+            });
+
+            container.appendChild(label);
+            container.appendChild(input);
+            if (width !== '100%') {
+                container.appendChild(toast);
+            }
+            wrapper.appendChild(container);
+
+            if (description) {
+                const desc = document.createElement('div');
+                desc.innerHTML = description;
+                desc.style.fontSize = '11px';
+                desc.style.color = '#555';
+                desc.style.marginTop = '4px';
+                wrapper.appendChild(desc);
+            }
+
+            return wrapper;
+        };
+
+        const topDiv = document.createElement('div');
+        topDiv.style.background = 'rgba(128, 128, 128, 0.05)';
+        topDiv.style.border = '1px solid rgba(128, 128, 128, 0.2)';
+        topDiv.style.borderRadius = '5px';
+        topDiv.style.padding = '10px';
+        topDiv.style.marginBottom = '20px';
+
+        // Add global toggle
+        topDiv.appendChild(createToggle('global_enabled', 'Enable Hobo Helper (Global)', true));
+        contentArea.appendChild(topDiv);
+
+        const modsLabel = document.createElement('div');
+        modsLabel.innerText = "Active Modules:";
+        modsLabel.style.fontWeight = 'bold';
+        modsLabel.style.fontSize = '16px';
+        modsLabel.style.marginBottom = '10px';
+        modsLabel.style.borderBottom = '2px solid rgba(128, 128, 128, 0.3)';
+        modsLabel.style.paddingBottom = '5px';
+        contentArea.appendChild(modsLabel);
+
+        const subFeatures = {};
+        if (typeof Modules !== 'undefined') {
+            Object.keys(Modules).forEach(modName => {
+                if (Modules[modName].settings) {
+                    subFeatures[modName] = Modules[modName].settings;
+                }
+            });
+        }
+
+        const gridContainer = document.createElement('div');
+        gridContainer.style.display = 'flex';
+        gridContainer.style.justifyContent = 'space-between';
+        gridContainer.style.alignItems = 'flex-start';
+        contentArea.appendChild(gridContainer);
+
+        const col1 = document.createElement('div');
+        col1.style.width = '48%';
+        gridContainer.appendChild(col1);
+
+        const col2 = document.createElement('div');
+        col2.style.width = '48%';
+        gridContainer.appendChild(col2);
+
+        if (typeof Modules !== 'undefined') {
+            const activeModules = Object.keys(Modules).filter(modName => {
+                return modName !== 'SettingsHelper' && typeof Modules[modName].init === 'function';
+            });
+
+            activeModules.sort().forEach((modName) => {
+                const moduleBlock = document.createElement('div');
+                moduleBlock.style.marginBottom = '12px';
+                moduleBlock.style.padding = '8px 10px';
+                moduleBlock.style.background = 'rgba(128, 128, 128, 0.05)';
+                moduleBlock.style.border = '1px solid rgba(128, 128, 128, 0.2)';
+                moduleBlock.style.borderRadius = '6px';
+                moduleBlock.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+
+                moduleBlock.appendChild(createToggle(modName, `<b>Enable ${modName}</b>`));
+
+                // Render sub-features if this module has them defined
+                if (subFeatures[modName]) {
+                    const subContainer = document.createElement('div');
+                    subContainer.style.paddingLeft = '25px';
+                    subContainer.style.marginTop = '8px';
+                    subContainer.style.borderLeft = '2px solid #2196F3';
+                    subFeatures[modName].forEach(feature => {
+                        let el;
+                        if (feature.type === 'number' || feature.type === 'text') {
+                            el = createInput(feature);
+                        } else {
+                            el = createToggle(feature.key, feature.label, false, feature.defaultValue !== false);
+                        }
+
+                        if (feature.parent) {
+                            const parentCheckbox = document.getElementById(`hw_helper_${feature.parent}`);
+                            if (parentCheckbox) {
+                                const containerDiv = el;
+                                const updateVisibility = () => {
+                                    containerDiv.style.opacity = parentCheckbox.checked ? '1' : '0.4';
+                                    containerDiv.style.pointerEvents = parentCheckbox.checked ? 'auto' : 'none';
+                                };
+                                parentCheckbox.addEventListener('change', updateVisibility);
+                                updateVisibility();
+                            }
+                        }
+
+                        subContainer.appendChild(el);
+                    });
+                    moduleBlock.appendChild(subContainer);
+                }
+
+                // Custom settings for FoodHelper
+                if (modName === 'FoodHelper') {
+                    const foodContainer = document.createElement('div');
+                    foodContainer.style.paddingLeft = '25px';
+                    foodContainer.style.marginTop = '10px';
+
+                    const label = document.createElement('b');
+                    label.innerText = 'Crap Foods List:';
+                    label.style.display = 'block';
+                    label.style.marginBottom = '5px';
+                    foodContainer.appendChild(label);
+
+                    const listContainer = document.createElement('div');
+                    listContainer.style.background = 'rgba(0, 0, 0, 0.05)';
+                    listContainer.style.padding = '10px';
+                    listContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
+                    listContainer.style.borderRadius = '4px';
+                    listContainer.style.maxWidth = '100%';
+
+                    const crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
+                    if (crapList.length === 0) {
+                        listContainer.innerText = 'No foods marked as crap.';
+                    } else {
+                        const ul = document.createElement('ul');
+                        ul.style.margin = '0';
+                        ul.style.paddingLeft = '20px';
+                        crapList.forEach(food => {
+                            const li = document.createElement('li');
+                            const a = document.createElement('a');
+                            a.href = '#';
+                            a.innerText = '[x]';
+                            a.style.color = 'red';
+                            a.style.textDecoration = 'none';
+                            a.style.marginRight = '5px';
+                            a.title = 'Remove from Crap list';
+                            a.onclick = (e) => {
+                                e.preventDefault();
+                                let currentList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
+                                const updatedList = currentList.filter(f => f !== food);
+                                localStorage.setItem('hw_helper_food_crap', JSON.stringify(updatedList));
+                                li.remove();
+                                if (updatedList.length === 0) {
+                                    listContainer.innerText = 'No foods marked as crap.';
+                                }
+                            };
+                            li.appendChild(a);
+                            li.appendChild(document.createTextNode(food));
+                            ul.appendChild(li);
+                        });
+                        listContainer.appendChild(ul);
+                    }
+                    foodContainer.appendChild(listContainer);
+                    moduleBlock.appendChild(foodContainer);
+                }
+
+                // Manually balance columns: FoodHelper's large box goes left, the rest goes right.
+                if (modName <= 'FoodHelper') {
+                    col1.appendChild(moduleBlock);
+                } else {
+                    col2.appendChild(moduleBlock);
+                }
+            });
+        }
+    }
+}
+
+const SoupKitchenHelper = {
+    cmds: 'soup_kitchen',
+    init: function() {
 
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
@@ -4765,47 +4766,43 @@ const SoupKitchenHelper = {
 };
 
 const TattooParlorHelper = {
-            init: function() {
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('cmd') === 'tattoo_parlor') {
-                    const links = document.querySelectorAll('a[href*="tattoo_parlor"]');
-                    links.forEach(link => {
-                        const text = link.textContent;
-                        if (text.includes('Retouch') || text.includes('Remove')) {
-                            const costMatch = text.match(/\$?([0-9,]+)/);
-                            if (costMatch) {
-                                const cost = Utils.parseNumber(costMatch[1]);
-                                if (!isNaN(cost) && cost > 0) {
-                                    const actionName = text.includes('Retouch') ? 'Tattoo Retouch' : 'Tattoo Remove';
+    cmds: 'tattoo_parlor',
+    init: function() {
+        const links = document.querySelectorAll('a[href*="tattoo_parlor"]');
+        links.forEach(link => {
+            const text = link.textContent;
+            if (text.includes('Retouch') || text.includes('Remove')) {
+                const costMatch = text.match(/\$?([0-9,]+)/);
+                if (costMatch) {
+                    const cost = Utils.parseNumber(costMatch[1]);
+                    if (!isNaN(cost) && cost > 0) {
+                        const actionName = text.includes('Retouch') ? 'Tattoo Retouch' : 'Tattoo Remove';
 
-                                    const btn = Utils.createBankButton(actionName, cost);
+                        const btn = Utils.createBankButton(actionName, cost);
 
-                                    // Move button outside the link's parent if it's wrapped in square brackets
-                                    if (link.nextSibling && link.nextSibling.nodeType === Node.TEXT_NODE && link.nextSibling.textContent.includes(']')) {
-                                        link.parentNode.insertBefore(btn, link.nextSibling.nextSibling);
-                                    } else {
-                                        link.parentNode.insertBefore(btn, link.nextSibling);
-                                    }
-                                }
-                            }
+                        // Move button outside the link's parent if it's wrapped in square brackets
+                        if (link.nextSibling && link.nextSibling.nodeType === Node.TEXT_NODE && link.nextSibling.textContent.includes(']')) {
+                            link.parentNode.insertBefore(btn, link.nextSibling.nextSibling);
+                        } else {
+                            link.parentNode.insertBefore(btn, link.nextSibling);
                         }
-                    });
+                    }
                 }
             }
-        }
+        });
+    }
+};
 
 const UniversityHelper = {
+    cmds: 'uni',
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
-        const cmd = urlParams.get('cmd');
         const doParam = urlParams.get('do');
         
-        if (cmd === 'uni') {
-            if (['str', 'pow', 'spd'].includes(doParam)) {
-                this.updateStatsFromTrain();
-            }
-            this.displayNeededStats();
+        if (['str', 'pow', 'spd'].includes(doParam)) {
+            this.updateStatsFromTrain();
         }
+        this.displayNeededStats();
     },
 
     updateStatsFromTrain: function() {
@@ -4882,6 +4879,7 @@ const UniversityHelper = {
 };
 
 const WeaponsHelper = {
+    cmds: 'wep',
     settings: [
         { key: 'WeaponsHelper_EnableFeature', label: 'Enable Weapons Helper' }
     ],
@@ -4942,143 +4940,151 @@ const WeaponsHelper = {
 };
 
 const WellnessClinicHelper = {
-            init: function() {
-                const url = window.location.href;
+    cmds: 'wellness_clinic',
+    init: function() {
+        const url = window.location.href;
 
-                const clinicData = [
-                    {lv: 1, fee: 2500}, {lv: 2, fee: 12500}, {lv: 3, fee: 42500}, {lv: 4, fee: 92500}, {lv: 5, fee: 162500},
-                    {lv: 6, fee: 252500}, {lv: 7, fee: 362500}, {lv: 8, fee: 492500}, {lv: 9, fee: 642500}, {lv: 10, fee: 812500},
-                    {lv: 11, fee: 1002500}, {lv: 12, fee: 1212500}, {lv: 13, fee: 1442500}, {lv: 14, fee: 1692500}, {lv: 15, fee: 1962500},
-                    {lv: 16, fee: 2252500}, {lv: 17, fee: 2562500}, {lv: 18, fee: 2892500}, {lv: 19, fee: 3242500}, {lv: 20, fee: 3612500},
-                    {lv: 21, fee: 4002500}, {lv: 22, fee: 4412500}, {lv: 23, fee: 4842500}, {lv: 24, fee: 5292500}, {lv: 25, fee: 5762500},
-                    {lv: 26, fee: 6252500}, {lv: 27, fee: 6762500}, {lv: 28, fee: 7292500}, {lv: 29, fee: 7842500}, {lv: 30, fee: 8412500},
-                    {lv: 31, fee: 9002500}, {lv: 32, fee: 9612500}, {lv: 33, fee: 10242500}, {lv: 34, fee: 10892500}, {lv: 35, fee: 11562500},
-                    {lv: 36, fee: 12252500}, {lv: 37, fee: 12962500}, {lv: 38, fee: 13692500}, {lv: 39, fee: 14442500}, {lv: 40, fee: 15212500},
-                    {lv: 41, fee: 16002500}, {lv: 42, fee: 16812500}, {lv: 43, fee: 17642500}, {lv: 44, fee: 18492500}, {lv: 45, fee: 19362500},
-                    {lv: 46, fee: 20252500}, {lv: 47, fee: 21162500}, {lv: 48, fee: 22092500}, {lv: 49, fee: 23042500}, {lv: 50, fee: 24012500},
-                    {lv: 51, fee: 25002500}, {lv: 52, fee: 26012500}, {lv: 53, fee: 27042500}, {lv: 54, fee: 28092500}, {lv: 55, fee: 29162500},
-                    {lv: 56, fee: 30252500}, {lv: 57, fee: 31362500}, {lv: 58, fee: 32492500}, {lv: 59, fee: 33642500}, {lv: 60, fee: 34812500},
-                    {lv: 61, fee: 36002500}, {lv: 62, fee: 37212500}, {lv: 63, fee: 38442500}, {lv: 64, fee: 39692500}, {lv: 65, fee: 40962500},
-                    {lv: 66, fee: 42252500}, {lv: 67, fee: 43562500}, {lv: 68, fee: 44892500}, {lv: 69, fee: 46242500}, {lv: 70, fee: 47612500},
-                    {lv: 71, fee: 49002500}, {lv: 72, fee: 50412500}, {lv: 73, fee: 51842500}, {lv: 74, fee: 53292500}, {lv: 75, fee: 54762500},
-                    {lv: 76, fee: 56252500}, {lv: 77, fee: 57762500}, {lv: 78, fee: 59292500}, {lv: 79, fee: 60842500}, {lv: 80, fee: 62412500},
-                    {lv: 81, fee: 64002500}, {lv: 82, fee: 65612500}, {lv: 83, fee: 67242500}, {lv: 84, fee: 68892500}, {lv: 85, fee: 70562500},
-                    {lv: 86, fee: 72252500}, {lv: 87, fee: 73962500}, {lv: 88, fee: 75692500}, {lv: 89, fee: 77442500}, {lv: 90, fee: 79212500},
-                    {lv: 91, fee: 81002500}, {lv: 92, fee: 82812500}, {lv: 93, fee: 84642500}, {lv: 94, fee: 86492500}, {lv: 95, fee: 88362500},
-                    {lv: 96, fee: 90252500}, {lv: 97, fee: 92162500}, {lv: 98, fee: 94092500}, {lv: 99, fee: 96042500}, {lv: 100, fee: 98012500}
-                ];
+        const clinicData = [
+            {lv: 1, fee: 2500}, {lv: 2, fee: 12500}, {lv: 3, fee: 42500}, {lv: 4, fee: 92500}, {lv: 5, fee: 162500},
+            {lv: 6, fee: 252500}, {lv: 7, fee: 362500}, {lv: 8, fee: 492500}, {lv: 9, fee: 642500}, {lv: 10, fee: 812500},
+            {lv: 11, fee: 1002500}, {lv: 12, fee: 1212500}, {lv: 13, fee: 1442500}, {lv: 14, fee: 1692500}, {lv: 15, fee: 1962500},
+            {lv: 16, fee: 2252500}, {lv: 17, fee: 2562500}, {lv: 18, fee: 2892500}, {lv: 19, fee: 3242500}, {lv: 20, fee: 3612500},
+            {lv: 21, fee: 4002500}, {lv: 22, fee: 4412500}, {lv: 23, fee: 4842500}, {lv: 24, fee: 5292500}, {lv: 25, fee: 5762500},
+            {lv: 26, fee: 6252500}, {lv: 27, fee: 6762500}, {lv: 28, fee: 7292500}, {lv: 29, fee: 7842500}, {lv: 30, fee: 8412500},
+            {lv: 31, fee: 9002500}, {lv: 32, fee: 9612500}, {lv: 33, fee: 10242500}, {lv: 34, fee: 10892500}, {lv: 35, fee: 11562500},
+            {lv: 36, fee: 12252500}, {lv: 37, fee: 12962500}, {lv: 38, fee: 13692500}, {lv: 39, fee: 14442500}, {lv: 40, fee: 15212500},
+            {lv: 41, fee: 16002500}, {lv: 42, fee: 16812500}, {lv: 43, fee: 17642500}, {lv: 44, fee: 18492500}, {lv: 45, fee: 19362500},
+            {lv: 46, fee: 20252500}, {lv: 47, fee: 21162500}, {lv: 48, fee: 22092500}, {lv: 49, fee: 23042500}, {lv: 50, fee: 24012500},
+            {lv: 51, fee: 25002500}, {lv: 52, fee: 26012500}, {lv: 53, fee: 27042500}, {lv: 54, fee: 28092500}, {lv: 55, fee: 29162500},
+            {lv: 56, fee: 30252500}, {lv: 57, fee: 31362500}, {lv: 58, fee: 32492500}, {lv: 59, fee: 33642500}, {lv: 60, fee: 34812500},
+            {lv: 61, fee: 36002500}, {lv: 62, fee: 37212500}, {lv: 63, fee: 38442500}, {lv: 64, fee: 39692500}, {lv: 65, fee: 40962500},
+            {lv: 66, fee: 42252500}, {lv: 67, fee: 43562500}, {lv: 68, fee: 44892500}, {lv: 69, fee: 46242500}, {lv: 70, fee: 47612500},
+            {lv: 71, fee: 49002500}, {lv: 72, fee: 50412500}, {lv: 73, fee: 51842500}, {lv: 74, fee: 53292500}, {lv: 75, fee: 54762500},
+            {lv: 76, fee: 56252500}, {lv: 77, fee: 57762500}, {lv: 78, fee: 59292500}, {lv: 79, fee: 60842500}, {lv: 80, fee: 62412500},
+            {lv: 81, fee: 64002500}, {lv: 82, fee: 65612500}, {lv: 83, fee: 67242500}, {lv: 84, fee: 68892500}, {lv: 85, fee: 70562500},
+            {lv: 86, fee: 72252500}, {lv: 87, fee: 73962500}, {lv: 88, fee: 75692500}, {lv: 89, fee: 77442500}, {lv: 90, fee: 79212500},
+            {lv: 91, fee: 81002500}, {lv: 92, fee: 82812500}, {lv: 93, fee: 84642500}, {lv: 94, fee: 86492500}, {lv: 95, fee: 88362500},
+            {lv: 96, fee: 90252500}, {lv: 97, fee: 92162500}, {lv: 98, fee: 94092500}, {lv: 99, fee: 96042500}, {lv: 100, fee: 98012500}
+        ];
 
-                if (url.includes('cmd=wellness_clinic')) {
-                    const contentArea = document.querySelector('.content-area');
-                    if (!contentArea) return;
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
 
-                    const text = contentArea.innerText;
-                    const costMatch = text.match(/\$?([0-9]{1,3}(,[0-9]{3})+|[0-9]{4,})/);
-                    let detectedCost = 0;
-                    if (costMatch) detectedCost = Utils.parseNumber(costMatch[0]);
+        const text = contentArea.innerText;
+        const costMatch = text.match(/\$?([0-9]{1,3}(,[0-9]{3})+|[0-9]{4,})/);
+        let detectedCost = 0;
+        if (costMatch) detectedCost = Utils.parseNumber(costMatch[0]);
 
-                    const hasPaid = url.includes('do=pay');
-                    let currentIndex = clinicData.findIndex(row => row.fee === detectedCost);
-                    if (hasPaid && currentIndex !== -1 && currentIndex < clinicData.length - 1) currentIndex += 1;
+        const hasPaid = url.includes('do=pay');
+        let currentIndex = clinicData.findIndex(row => row.fee === detectedCost);
+        if (hasPaid && currentIndex !== -1 && currentIndex < clinicData.length - 1) currentIndex += 1;
 
-                    let runningTotalSpentDay = 0;
-                    let runningFutureCost = 0;
-                    let tableRows = "";
+        let runningTotalSpentDay = 0;
+        let runningFutureCost = 0;
+        let tableRows = "";
 
-                    let savedGoals = Modules.BankHelper.getBankGoals();
-                    const savedGoal = savedGoals['Wellness'];
+        let savedGoals = Modules.BankHelper.getBankGoals();
+        const savedGoal = savedGoals['Wellness'];
 
-                    clinicData.forEach((row, index) => {
-                        runningTotalSpentDay += row.fee;
-                        const isCurrentOrFuture = (index >= currentIndex && currentIndex !== -1);
-                        if (isCurrentOrFuture) runningFutureCost += row.fee;
+        clinicData.forEach((row, index) => {
+            runningTotalSpentDay += row.fee;
+            const isCurrentOrFuture = (index >= currentIndex && currentIndex !== -1);
+            if (isCurrentOrFuture) runningFutureCost += row.fee;
 
-                        const isCurrentRow = (index === currentIndex);
-                        const rowID = isCurrentRow ? 'id="hw-current-row"' : '';
-                        const bg = isCurrentRow ? 'rgba(255, 255, 153, 0.4)' : 'transparent';
-                        const isBlue = (savedGoal && parseInt(savedGoal) === runningFutureCost);
-                        const activeClass = isBlue ? 'active' : '';
-                        const interactiveClass = isCurrentOrFuture ? 'interactive' : '';
-                        const cellClasses = `hw-wellness-finish-cell ${interactiveClass} ${activeClass}`.trim();
-                        const interactiveStyle = isCurrentOrFuture ? 'cursor: pointer; color: #800;' : 'color: #888;';
+            const isCurrentRow = (index === currentIndex);
+            const rowID = isCurrentRow ? 'id="hw-current-row"' : '';
+            const bg = isCurrentRow ? 'rgba(255, 255, 153, 0.4)' : 'transparent';
+            const isBlue = (savedGoal && parseInt(savedGoal) === runningFutureCost);
+            const activeClass = isBlue ? 'active' : '';
+            const interactiveClass = isCurrentOrFuture ? 'interactive' : '';
+            const cellClasses = `hw-wellness-finish-cell ${interactiveClass} ${activeClass}`.trim();
+            const interactiveStyle = isCurrentOrFuture ? 'cursor: pointer; color: #800;' : 'color: #888;';
 
-                        tableRows += `
-                            <tr ${rowID} style="background-color: ${bg}; border-bottom: 1px solid #ddd;">
-                                <td style="padding: 4px; text-align: center; border-right: 1px solid #bbb;">${row.lv}</td>
-                                <td style="padding: 4px; text-align: right; border-right: 1px solid #bbb;">$${row.fee.toLocaleString()}</td>
-                                <td style="padding: 4px; text-align: right; border-right: 1px solid #bbb;">$${runningTotalSpentDay.toLocaleString()}</td>
-                                <td class="${cellClasses}" data-val="${runningFutureCost}" style="padding: 4px; text-align: right; ${interactiveStyle}">
-                                    ${isCurrentOrFuture ? `$${runningFutureCost.toLocaleString()}` : '-'}
-                                </td>
-                            </tr>
-                        `;
-                    });
+            tableRows += `
+                <tr ${rowID} style="background-color: ${bg}; border-bottom: 1px solid #ddd;">
+                    <td style="padding: 4px; text-align: center; border-right: 1px solid #bbb;">${row.lv}</td>
+                    <td style="padding: 4px; text-align: right; border-right: 1px solid #bbb;">$${row.fee.toLocaleString()}</td>
+                    <td style="padding: 4px; text-align: right; border-right: 1px solid #bbb;">$${runningTotalSpentDay.toLocaleString()}</td>
+                    <td class="${cellClasses}" data-val="${runningFutureCost}" style="padding: 4px; text-align: right; ${interactiveStyle}">
+                        ${isCurrentOrFuture ? `$${runningFutureCost.toLocaleString()}` : '-'}
+                    </td>
+                </tr>
+            `;
+        });
 
-                    const spentToday = (currentIndex !== -1) ? (runningTotalSpentDay - runningFutureCost) : 0;
+        const spentToday = (currentIndex !== -1) ? (runningTotalSpentDay - runningFutureCost) : 0;
 
-                    const trackerHtml = `
-                        <style>
-                            .hw-wellness-finish-cell.interactive:hover:not(.active) {
-                                background-color: #e0f0ff !important;
-                            }
-                            .hw-wellness-finish-cell.active {
-                                background-color: lightblue !important;
-                                font-weight: bold;
-                            }
-                        </style>
-                        <div id="hw-tracker-container" style="margin: 20px auto; width: 95%; max-width: 580px; font-family: Verdana, sans-serif;">
-                            <div id="hw-scroll-box" style="max-height: 350px; overflow-y: auto; border: 1px solid #666; border-radius: 4px; background-color: rgba(255,255,255,0.7);">
-                                <table style="width: 100%; border-collapse: collapse; color: #000; font-size: 11px;">
-                                    <thead style="position: sticky; top: 0; background: #f0f0f0; z-index: 10; border-bottom: 2px solid #999;">
-                                        <tr>
-                                            <th style="padding: 6px; border-right: 1px solid #bbb;">Lv</th>
-                                            <th style="padding: 6px; border-right: 1px solid #bbb;">Fee</th>
-                                            <th style="padding: 6px; border-right: 1px solid #bbb;">Total Spent Day</th>
-                                            <th style="padding: 6px; background: #f9f9e8;">Cumulative Spend</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>${tableRows}</tbody>
-                                </table>
-                            </div>
-                            <div style="font-size: 11px; font-style: italic; color: #555; margin-top: 4px; text-align: center;">
-                               💡 Click any amount in the <b>Cumulative Spend</b> column to set it as a Bank Withdraw Goal.
-                            </div>
-                            <div style="font-size: 12px; margin-top: 8px; color: #333; text-align: right; font-weight: bold;">
-                               Total Spent Today: <span style="color: #800;">$${spentToday.toLocaleString()}</span>
-                            </div>
-                        </div>
-                    `;
-
-                    contentArea.insertAdjacentHTML('beforeend', trackerHtml);
-
-                    document.querySelectorAll('.hw-wellness-finish-cell').forEach(cell => {
-                        cell.addEventListener('click', function() {
-                            if (!this.classList.contains('interactive')) return;
-                            const val = this.getAttribute('data-val');
-                            if (val === "0") return;
-                            const isAlreadyActive = this.classList.contains('active');
-                            document.querySelectorAll('.hw-wellness-finish-cell').forEach(c => c.classList.remove('active'));
-
-                            if (!isAlreadyActive) {
-                                this.classList.add('active');
-                                Modules.BankHelper.addBankGoal('Wellness', parseInt(val));
-                            } else {
-                                Modules.BankHelper.addBankGoal('Wellness', 0);
-                            }
-                        });
-                    });
-
-                    setTimeout(() => {
-                        const row = document.getElementById('hw-current-row');
-                        const box = document.getElementById('hw-scroll-box');
-                        if (row && box) box.scrollTop = row.offsetTop - 100;
-                    }, 150);
+        const trackerHtml = `
+            <style>
+                .hw-wellness-finish-cell.interactive:hover:not(.active) {
+                    background-color: #e0f0ff !important;
                 }
-            }
-        }
+                .hw-wellness-finish-cell.active {
+                    background-color: lightblue !important;
+                    font-weight: bold;
+                }
+            </style>
+            <div id="hw-tracker-container" style="margin: 20px auto; width: 95%; max-width: 580px; font-family: Verdana, sans-serif;">
+                <div id="hw-scroll-box" style="max-height: 350px; overflow-y: auto; border: 1px solid #666; border-radius: 4px; background-color: rgba(255,255,255,0.7);">
+                    <table style="width: 100%; border-collapse: collapse; color: #000; font-size: 11px;">
+                        <thead style="position: sticky; top: 0; background: #f0f0f0; z-index: 10; border-bottom: 2px solid #999;">
+                            <tr>
+                                <th style="padding: 6px; border-right: 1px solid #bbb;">Lv</th>
+                                <th style="padding: 6px; border-right: 1px solid #bbb;">Fee</th>
+                                <th style="padding: 6px; border-right: 1px solid #bbb;">Total Spent Day</th>
+                                <th style="padding: 6px; background: #f9f9e8;">Cumulative Spend</th>
+                            </tr>
+                        </thead>
+                        <tbody>${tableRows}</tbody>
+                    </table>
+                </div>
+                <div style="font-size: 11px; font-style: italic; color: #555; margin-top: 4px; text-align: center;">
+                   💡 Click any amount in the <b>Cumulative Spend</b> column to set it as a Bank Withdraw Goal.
+                </div>
+                <div style="font-size: 12px; margin-top: 8px; color: #333; text-align: right; font-weight: bold;">
+                   Total Spent Today: <span style="color: #800;">$${spentToday.toLocaleString()}</span>
+                </div>
+            </div>
+        `;
+
+        contentArea.insertAdjacentHTML('beforeend', trackerHtml);
+
+        document.querySelectorAll('.hw-wellness-finish-cell').forEach(cell => {
+            cell.addEventListener('click', function() {
+                if (!this.classList.contains('interactive')) return;
+                const val = this.getAttribute('data-val');
+                if (val === "0") return;
+                const isAlreadyActive = this.classList.contains('active');
+                document.querySelectorAll('.hw-wellness-finish-cell').forEach(c => c.classList.remove('active'));
+
+                if (!isAlreadyActive) {
+                    this.classList.add('active');
+                    Modules.BankHelper.addBankGoal('Wellness', parseInt(val));
+                } else {
+                    Modules.BankHelper.addBankGoal('Wellness', 0);
+                }
+            });
+        });
+
+        setTimeout(() => {
+            const row = document.getElementById('hw-current-row');
+            const box = document.getElementById('hw-scroll-box');
+            if (row && box) box.scrollTop = row.offsetTop - 100;
+        }, 150);
+    }
+}
 
 const ChangelogData = {
     changes: [
+        {
+            version: "8.04",
+            date: "2026-04-08",
+            type: "Added",
+            notes: [
+                "Created a configurable interface for the `MessageBoardHelper` \"Add Paid Message Text\" append button. Users can now override the prepended message format using custom text combined with dynamic variables `{hoboname}`, `{hoboId}`, and `{date}`.",
+                "Expanded `SettingsHelper` layout architecture to handle fluid input scaling (e.g. `100%` width blocks) and trailing feature description texts natively."
+            ]
+        },
         {
             version: "8.03",
             date: "2026-04-08",
@@ -5113,25 +5119,23 @@ const ChangelogData = {
                 "Desktop users also gain an invisible drag-to-scroll interactivity across the topbar menu for testing and accessibility.",
                 "Improved the styling of \"Race\" and \"Pikies\" action buttons in the Northern Fence racing page for a cleaner layout."
             ]
-        },
-        {
-            version: "7.99",
-            date: "2026-04-08",
-            type: "Changed",
-            notes: [
-                "Improved layout and styling of \"Give a Loan\" and \"Clear a Loan\" forms in the Gang Loans helper."
-            ]
         }
     ]
 };
-    const Modules = {
+    const DataModules = {
+        DrinksData,
+        FoodData,
+        ChangelogData
+    };
+
+    const GlobalModules = {
         BackpackHelper,
         DisplayHelper,
-        DrinksData,
         DrinksHelper,
-        FoodData,
         FoodHelper,
-        SettingsHelper,
+    };
+
+    const PageModules = {
         BankHelper,
         BernardsBasementHelper,
         CanDepoHelper,
@@ -5148,49 +5152,88 @@ const ChangelogData = {
         NorthernFenceHelper,
         RatsHelper,
         RecyclingBinHelper,
+        SettingsHelper,
         SoupKitchenHelper,
         TattooParlorHelper,
         UniversityHelper,
         WeaponsHelper,
         WellnessClinicHelper,
-        ChangelogData
     };
 
+    // Alias for easy access across helpers if needed
+    const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
+    if (typeof window !== 'undefined') {
+        window.HoboHelperModules = Modules;
+    }
+
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+
+    // Cache the settings globally so individual modules do not repeatedly block the main thread on synchronous LocalStorage I/O during initialization
+    if (typeof Utils !== 'undefined') {
+        Utils.getSettings = function() { return savedSettings; };
+    }
+
     const globalEnabled = savedSettings['global_enabled'] !== false;
     const urlParams = new URLSearchParams(window.location.search);
     const currentCmd = urlParams.get('cmd') || '';
 
-    // Initialize all modules
-    Object.keys(Modules).forEach(moduleName => {
-        const module = Modules[moduleName];
+    // To prevent DOM flash, run script at document-start, hide the document visually, apply modifications, then show it.
+    if (document.documentElement) {
+        document.documentElement.style.visibility = 'hidden';
+    }
 
-        if (typeof module.alwaysInit === 'function') {
-            module.alwaysInit();
-        }
+    const initModules = () => {
+        // Initialize Global Modules first
+        Object.entries(GlobalModules).forEach(([moduleName, module]) => {
+            if (typeof module.alwaysInit === 'function') {
+                module.alwaysInit();
+            }
 
-        if (typeof module.init === 'function') {
-            const moduleEnabled = savedSettings[moduleName] !== false;
-            
-            // Check if module specifies cmds constraint
-            const hasCmdRestriction = module.cmds !== undefined && module.cmds !== null;
-            let isCmdMatch = false;
-            
-            if (hasCmdRestriction) {
-                if (Array.isArray(module.cmds)) {
-                    isCmdMatch = module.cmds.includes(currentCmd);
-                } else if (typeof module.cmds === 'string') {
-                    isCmdMatch = module.cmds === currentCmd;
+            if (typeof module.init === 'function') {
+                const moduleEnabled = savedSettings[moduleName] !== false;
+                
+                if (globalEnabled && moduleEnabled) {
+                    module.init();
                 }
+            }
+        });
+
+        // Filter and Initialize Page Modules in a single pass
+        Object.entries(PageModules).forEach(([moduleName, module]) => {
+            let isMatch = false;
+            if (module.cmds === undefined || module.cmds === null) {
+                isMatch = true;
+            } else if (Array.isArray(module.cmds)) {
+                isMatch = module.cmds.includes(currentCmd);
             } else {
-                // If no cmds specified, assume it's a global module
-                isCmdMatch = true;
+                isMatch = module.cmds === currentCmd;
             }
 
-            if (isCmdMatch && (moduleName === 'SettingsHelper' || (globalEnabled && moduleEnabled))) {
-                module.init();
+            if (isMatch) {
+                if (typeof module.alwaysInit === 'function') {
+                    module.alwaysInit();
+                }
+
+                if (typeof module.init === 'function') {
+                    const moduleEnabled = savedSettings[moduleName] !== false;
+
+                    if (moduleName === 'SettingsHelper' || (globalEnabled && moduleEnabled)) {
+                        module.init();
+                    }
+                }
             }
+        });
+
+        // Show document again after modifications
+        if (document.documentElement) {
+            document.documentElement.style.visibility = '';
         }
-    });
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initModules);
+    } else {
+        initModules();
+    }
 })();
 

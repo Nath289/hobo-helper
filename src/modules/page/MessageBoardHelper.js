@@ -1,4 +1,5 @@
 const MessageBoardHelper = {
+    cmds: 'gathering',
     settings: [
         { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
         { key: 'MessageBoardHelper_VoteButtons', label: 'Larger Vote Buttons' },
@@ -12,7 +13,6 @@ const MessageBoardHelper = {
         }
     ],
     init: function() {
-        if (!Utils.isCurrentPage('cmd=gathering')) return;
 
         const settings = Utils.getSettings();
         if (settings?.MessageBoardHelper?.enabled === false) return;

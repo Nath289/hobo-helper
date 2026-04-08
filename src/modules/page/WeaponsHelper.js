@@ -1,4 +1,5 @@
 const WeaponsHelper = {
+    cmds: 'wep',
     settings: [
         { key: 'WeaponsHelper_EnableFeature', label: 'Enable Weapons Helper' }
     ],
@@ -57,3 +58,4 @@ const WeaponsHelper = {
         });
     }
 };
+

@@ -1,6 +1,6 @@
 const SettingsHelper = {
+    cmds: 'preferences',
     init: function() {
-        if (!window.location.search.endsWith('cmd=preferences')) return;
 
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;

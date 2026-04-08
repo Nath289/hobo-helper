@@ -1,6 +1,6 @@
 const SoupKitchenHelper = {
+    cmds: 'soup_kitchen',
     init: function() {
-        if (!window.location.search.includes('cmd=soup_kitchen')) return;
 
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
@@ -92,3 +92,4 @@ const SoupKitchenHelper = {
         contentArea.appendChild(tableContainer);
     }
 };
+

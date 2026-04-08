@@ -6,6 +6,8 @@
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
 // @grant        GM_notification
+// @noframes
+// @run-at       document-end
 // ==/UserScript==
 
 (function() {
@@ -139,6 +141,226 @@ const Utils = {
         }
 
 };
+const DrinksData = {
+            // Data structure containing all drinks in the game
+            drinks: {
+                alcoholic: [
+                    { name: "Crudweiser", cost: { type: "cw_multiplier", value: 1 }, location: "Liquor Store", base_stat_gain: "", effect: "" },
+                    { name: "Goon Sack", cost: { type: "cw_multiplier", value: 4 }, location: "Liquor Store", base_stat_gain: "+0.050 Power", effect: "" },
+                    { name: "Albino Ale", cost: { type: "cw_multiplier", value: 4 }, location: "Liquor Store", base_stat_gain: "+0.050 Strength", effect: "" },
+                    { name: "Purple Pigeon Vodka", cost: { type: "cw_multiplier", value: 6 }, location: "Liquor Store", base_stat_gain: "+0.050 Speed +0.050 Power", effect: "" },
+                    { name: "John Cuervo Tequila", cost: { type: "cw_multiplier", value: 6 }, location: "Liquor Store", base_stat_gain: "+0.050 Power +0.050 Strength", effect: "" },
+                    { name: "Birdbath Gin", cost: { type: "cw_multiplier", value: 6 }, location: "Liquor Store", base_stat_gain: "+0.050 Speed +0.050 Strength", effect: "" },
+                    { name: "Rev's Rum", cost: { type: "cw_multiplier", value: 8 }, location: "Liquor Store", base_stat_gain: "+0.100 Strength", effect: "" },
+                    { name: "Ruiner's Rum", cost: { type: "cw_multiplier", value: 8 }, location: "Liquor Store", base_stat_gain: "+0.100 Power", effect: "" },
+                    { name: "Wild Terrier Whiskey", cost: { type: "cw_multiplier", value: 8 }, location: "Liquor Store", base_stat_gain: "+0.100 Speed", effect: "" },
+                    { name: "Zima Light", cost: { type: "cw_multiplier", value: 10 }, location: "Liquor Store", base_stat_gain: "-0.025 Strength", effect: "" },
+                    { name: "Portly Stout", cost: { type: "cw_multiplier", value: 10 }, location: "Liquor Store", base_stat_gain: "+0.100 Strength", effect: "" },
+                    { name: "Boxcar Boxed Wine", cost: { type: "cw_multiplier", value: 10 }, location: "Liquor Store", base_stat_gain: "+0.075 Power", effect: "" },
+                    { name: "Octuple Sec", cost: { type: "cw_multiplier", value: 12 }, location: "Liquor Store", base_stat_gain: "+0.125 Power", effect: "" },
+                    { name: "Montreal Bourbon", cost: { type: "cw_multiplier", value: 12 }, location: "Liquor Store", base_stat_gain: "+0.125 Strength", effect: "" },
+                    { name: "Brandy Brand Brandy", cost: { type: "cw_multiplier", value: 12 }, location: "Liquor Store", base_stat_gain: "+0.125 Speed", effect: "" },
+                    { name: "Aunt Flo Amaretto", cost: { type: "cw_multiplier", value: 14 }, location: "Liquor Store", base_stat_gain: "+0.150 Speed", effect: "" },
+                    { name: "Mutton Chop Scotch", cost: { type: "cw_multiplier", value: 16 }, location: "Liquor Store", base_stat_gain: "+0.075 Power +0.100 Strength", effect: "" },
+                    { name: "Homeless Hennessy", cost: { type: "cw_multiplier", value: 20 }, location: "Liquor Store", base_stat_gain: "+0.050 Speed +0.050 Power +0.075 Strength", effect: "" },
+                    { name: "Lemon Drop", cost: { type: "cw_multiplier", value: 4 }, location: "Dive Bar", base_stat_gain: "+0.050 Speed", effect: "" },
+                    { name: "Buttery Nipple", cost: { type: "cw_multiplier", value: 8 }, location: "Dive Bar", base_stat_gain: "+0.050 Speed", effect: "" },
+                    { name: "Canadian Flag", cost: { type: "cw_multiplier", value: 12 }, location: "Dive Bar", base_stat_gain: "+0.075 Speed", effect: "" },
+                    { name: "The CMYK", cost: { type: "cw_multiplier", value: 16 }, location: "Dive Bar", base_stat_gain: "+0.075 Speed", effect: "" },
+                    { name: "Five Star General", cost: { type: "cw_multiplier", value: 20 }, location: "Dive Bar", base_stat_gain: "+0.100 Speed", effect: "" },
+                    { name: "Rainbow Road", cost: { type: "cw_multiplier", value: 24 }, location: "Dive Bar", base_stat_gain: "+0.100 Speed", effect: "" },
+                    { name: "Shot of Whiskey", cost: { type: "fixed", value: 3000 }, location: "Alcoholic Rat / Shakedown Saloon", base_stat_gain: "+0.050 Speed", effect: "" },
+                    { name: "Shot of Ruiner's Rum", cost: { type: "fixed", value: 3000 }, location: "Alcoholic Rat / Shakedown Saloon", base_stat_gain: "+0.050 Speed +0.050 Power", effect: "" },
+                    { name: "Shot of Tequila", cost: { type: "fixed", value: 3000 }, location: "Alcoholic Rat / Shakedown Saloon", base_stat_gain: "+0.050 Speed +0.050 Strength", effect: "" },
+                    { name: "Bottle of Bernard's Barbaresco", cost: { type: "fixed", value: "50 RP" }, location: "Recycling Bin" },
+                    { name: "Bottle of Two Buck Chuck", cost: { type: "fixed", value: 100000 }, location: "Matching Game / Dive Bar (Tip Jar)" },
+                    { name: "Decaf Kahlua", cost: { type: "tiredness", value: 5 }, location: "Sailing" },
+                    { name: "Everclear", cost: { type: "tiredness", value: 5 }, location: "Sailing" },
+                    { name: "Irish Cream", cost: { type: "tiredness", value: 5 }, location: "Sailing" },
+                    { name: "Jack Daniel's", cost: { type: "tiredness", value: 5 }, location: "Sailing" },
+                    { name: "Jagermeister", cost: { type: "tiredness", value: 5 }, location: "Sailing" },
+                    { name: "Tapped Keg", cost: { type: "tiredness", value: 5 }, location: "Alcoholic Rat / 7/11 Dumpster" },
+                    { name: "Fotey", cost: { type: "tiredness", value: 5 }, location: "Sailing" }
+                ],
+                mixed: [
+                    { name: "Amish Highball", cost: { type: "mixed", text: "10CW+$200" }, location: "Mixer", ingredients: ["Boxcar Boxed Wine", "Cola"], base_stat_gain: "+0.025 Speed +0.050 Strength", effect: "Amish" },
+                    { name: "Angry Mother", cost: { type: "mixed", text: "14CW+$400" }, location: "Mixer", ingredients: ["Aunt Flo Amaretto", "Sweet & Sour"], base_stat_gain: "+0.075 Power", effect: "Angry" },
+                    { name: "Bawling Baby", cost: { type: "mixed", text: "Awake+6CW+$250" }, location: "Mixer", ingredients: ["Decaf Kahlua", "Purple Pigeon Vodka", "Milk"], base_stat_gain: "+0.007 Begging", effect: "Bawling like a baby" },
+                    { name: "Bloody Murray", cost: { type: "mixed", text: "Awake+6CW+10Cans+$50,000+200PP" }, location: "Mixer", ingredients: ["Purple Pigeon Vodka", "Celery", "Hair of the Dog", "Tabasco"], base_stat_gain: "+0.075 Power +0.075 Strength", effect: "Chance to decrease BAC by 0.12%." },
+                    { name: "Centrifuge", cost: { type: "mixed", text: "38CW+$600" }, location: "Mixer", ingredients: ["Birdbath Gin", "John Cuervo Tequila", "Octuple Sec", "Purple Pigeon Vodka", "Rev's Rum", "Sweet & Sour", "Cola"], base_stat_gain: "", effect: "Uranium Enriched" },
+                    { name: "Dead Man Walking", cost: { type: "mixed", text: "Awake+28CW+$400" }, location: "Mixer", ingredients: ["Octuple Sec", "Orange Juice", "Rev's Rum", "Ruiner's Rum", "Sweet & Sour"], base_stat_gain: "", effect: "Zombified" },
+                    { name: "Eggnog", cost: { type: "mixed", text: "Orange Gift (Awake)" }, location: "Mixer", ingredients: ["Orange Gift"], base_stat_gain: "+0.075 Speed +0.075 Power +0.075 Strength +0.025 Intelligence +0.004 Begging", effect: "" },
+                    { name: "Egyptini", cost: { type: "mixed", text: "Awake+6CW+$50" }, location: "Mixer", ingredients: ["Birdbath Gin", "Olive", "Wonka Bar Wrapper", "Bath Salts", "Ice"], base_stat_gain: "-0.250 Speed +0.250 Power +0.250 Strength", effect: "Mummified" },
+                    { name: "Erupting Volcano", cost: { type: "mixed", text: "Awake+20CW+$800" }, location: "Mixer", ingredients: ["Homeless Hennessy", "Dry Ice", "Fire", "Red Bull"], base_stat_gain: "+0.100 Power +0.100 Strength", effect: "Enraged" },
+                    { name: "Eye Gouger", cost: { type: "mixed", text: "6CW+$200" }, location: "Mixer", ingredients: ["Purple Pigeon Vodka", "Soda Water"], base_stat_gain: "", effect: "Blind" },
+                    { name: "Filthy Leprechaun", cost: { type: "mixed", text: "Awake+16CW" }, location: "Mixer", ingredients: ["Irish Cream", "Mutton Chop Scotch"], base_stat_gain: "+0.075 Speed", effect: "Green Noser" },
+                    { name: "Flaming Hedgehog", cost: { type: "mixed", text: "Awake+$300" }, location: "Mixer", ingredients: ["Jagermeister", "Fire", "Red Bull"], base_stat_gain: "+0.125 Power", effect: "Flame-tipped Spiked Hair" },
+                    { name: "Full Moon", cost: { type: "mixed", text: "Awake+$50" }, location: "Mixer", ingredients: ["Irish Cream", "Jack Daniel's", "Bath Salts", "Ice"], base_stat_gain: "+0.125 Power +0.125 Strength", effect: "Warwolf" },
+                    { name: "Gin & Juice", cost: { type: "mixed", text: "Awake+6CW" }, location: "Mixer", ingredients: ["Birdbath Gin", "Orange Juice"], base_stat_gain: "+0.050 Intel", effect: "Laid Back" },
+                    { name: "Happy Puppy", cost: { type: "mixed", text: "8CW+$200" }, location: "Mixer", ingredients: ["Wild Terrier Whiskey", "Cola"], base_stat_gain: "+0.100 Power", effect: "Puppy Power" },
+                    { name: "Hedgehog", cost: { type: "mixed", text: "Awake+$300" }, location: "Mixer", ingredients: ["Jagermeister", "Red Bull"], base_stat_gain: "+0.100 Power", effect: "Spiked Hair" },
+                    { name: "Hungry Hippo", cost: { type: "mixed", text: "Awake+6CW+$250" }, location: "Mixer", ingredients: ["Decaf Kahlua", "Irish Cream", "Purple Pigeon Vodka", "Milk"], base_stat_gain: "", effect: "You can eat another meal." },
+                    { name: "Jolly Gentleman", cost: { type: "mixed", text: "Awake+6CW" }, location: "Mixer", ingredients: ["Birdbath Gin", "Olive"], base_stat_gain: "+0.100 Power", effect: "Classy as Hell" },
+                    { name: "Lemonade", cost: { type: "mixed", text: "April Fool's Mini Adventure" }, location: "Mixer", ingredients: ["April Fool's Mini Adventure"], base_stat_gain: "+1.250 Speed +1.250 Power +1.250 Strength", effect: "Requires the Open Packet of Sugar to drink." },
+                    { name: "Prison Hooch", cost: { type: "mixed", text: "HoboArena Reward" }, location: "Mixer", ingredients: ["HoboArena Reward"], base_stat_gain: "+0.150 Speed +0.150 Power +0.150 Strength", effect: "Meleeria" },
+                    { name: "Purring Kitty", cost: { type: "mixed", text: "6CW+$200" }, location: "Mixer", ingredients: ["Birdbath Gin", "Soda Water"], base_stat_gain: "+0.100 Speed", effect: "Kitten Pox" },
+                    { name: "Rocket Juice", cost: { type: "mixed", text: "HoboArena Reward" }, location: "Mixer", ingredients: ["HoboArena Reward"], base_stat_gain: "+0.075 Speed +0.075 Power +0.075 Strength +2 Intelligence +2 Begging 100,000 Respect +1 Level", effect: "" },
+                    { name: "Self Immolation", cost: { type: "mixed", text: "Awake+15CW" }, location: "Mixer", ingredients: ["Aunt Flo Amaretto", "Crudweiser", "Everclear", "Fire"], base_stat_gain: "+0.200 Power +0.075 Strength", effect: "On Fire" },
+                    { name: "Sludge", cost: { type: "mixed", text: "Made from mixing drinks that do not form a proper mixed drink" }, location: "Mixer", ingredients: ["Made from mixing drinks that do not form a proper mixed drink"], base_stat_gain: "", effect: "Collect 1000 to unlock a new wish" },
+                    { name: "Sorrowful Penguin", cost: { type: "mixed", text: "Awake+10CW+$50" }, location: "Mixer", ingredients: ["Ice", "Jolly Rancher", "Zima Light"], base_stat_gain: "", effect: "Sorrowful" },
+                    { name: "Ten Foot Drop", cost: { type: "mixed", text: "18CW+$400" }, location: "Mixer", ingredients: ["Octuple Sec", "Purple Pigeon Vodka", "Sweet & Sour"], base_stat_gain: "", effect: "You lose all your life." },
+                    { name: "The Long Walk", cost: { type: "mixed", text: "36CW" }, location: "Mixer", ingredients: ["Montreal Bourbon", "Mutton Chop Scotch", "Wild Terrier Whiskey"], base_stat_gain: "", effect: "Shoegazer" },
+                    { name: "Time Traveler", cost: { type: "mixed", text: "Awake+12CW+$500" }, location: "Mixer", ingredients: ["Brandy Brand Brandy", "Dry Ice", "Jolly Rancher", "Orange Juice"], base_stat_gain: "+0.250 Speed", effect: "Time Displacement" },
+                    { name: "Transylvania Slammer", cost: { type: "mixed", text: "Awake+18CW+$50" }, location: "Mixer", ingredients: ["Albino Ale", "Aunt Flo Amaretto", "Jagermeister", "Bath Salts", "Ice"], base_stat_gain: "+0.125 Speed +0.125 Power", effect: "Glampire" }
+                ],
+                non_alcoholic: [
+                    { name: "Cola", cost: { type: "fixed", value: 200 }, location: "Liquor Store" },
+                    { name: "Sweet & Sour", cost: { type: "fixed", value: 400 }, location: "Liquor Store" },
+                    { name: "Milk", cost: { type: "fixed", value: 250 }, location: "Liquor Store" },
+                    { name: "Celery", cost: { type: "unknown", value: 0 }, location: "Food Store" },
+                    { name: "Tabasco", cost: { type: "unknown", value: 0 }, location: "Food Store" },
+                    { name: "Orange Juice", cost: { type: "unknown", value: 0 }, location: "Liquor Store" },
+                    { name: "Soda Water", cost: { type: "fixed", value: 200 }, location: "Liquor Store" },
+                    { name: "Dry Ice", cost: { type: "unknown", value: 0 }, location: "Liquor Store" },
+                    { name: "Ice", cost: { type: "fixed", value: 50 }, location: "Liquor Store" },
+                    { name: "Red Bull", cost: { type: "fixed", value: 300 }, location: "Convenience Store" },
+                    { name: "Olive", cost: { type: "unknown", value: 0 }, location: "Food Store" }
+                ]
+            }
+        }
+
+const FoodData = {
+    "Apple Core": { "img": "Apple-Core.gif" },
+    "Half a Donut": { "img": "Half-a-Donut.gif" },
+    "Piece of Bread": { "img": "Piece-of-Bread.gif" },
+    "Can of Coke": { "img": "Can-of-Coke.gif" },
+    "Piece of Pizza": { "img": "Piece-of-Pizza.gif" },
+    "Meat Pie": { "img": "Meat-Pie.gif" },
+    "Can of Pepsi": { "img": "Can-of-Pepsi.gif" },
+    "Rotten Fish": { "img": "Rotten-Fish.gif" },
+    "Half Eaten Burger": { "img": "Half-Eaten-Burger.gif" },
+    "Packet of Fries": { "img": "Packet-of-Fries.gif" },
+    "New Pizza": { "img": "New-Pizza.gif" },
+    "Chewed Chicken Leg": { "img": "Chewed-Chicken-Leg.gif" },
+    "Raw Chicken Leg": { "img": "Raw-Chicken-Leg.gif" },
+    "Cooked Chicken": { "img": "Cooked-Chicken.gif" },
+    "Half a HotDog": { "img": "Half-a-HotDog.gif" },
+    "HotDog": { "img": "HotDog.gif" },
+    "KFC Meal": { "img": "KFC-Meal.gif" },
+    "Raw Potato": { "img": "Raw-Potato.gif" },
+    "Vanilla Ice Cream": { "img": "Vanilla-Ice-Cream.gif" },
+    "Chocolate Ice Cream": { "img": "Chocolate-Ice-Cream.gif" },
+    "Fresh Apple": { "img": "Fresh-Apple.gif" },
+    "Fighters Lunch": { "img": "Fighters-Lunch.gif" },
+    "Double-Double": { "img": "Double-Double.gif" },
+    "Bachelor Chow": { "img": "Bachelor-Chow.gif" },
+    "Smart Bread": { "img": "Smart-Bread.gif" },
+    "Day Old Coffee Naan": { "img": "Day-Old-Coffee-Naan.gif" },
+    "Half a Sandwich Naan": { "img": "Half-a-Sandwich-Naan.gif" },
+    "Discarded Taco Naan": { "img": "Discarded-Taco-Naan.gif" },
+    "Wonka Bar": { "img": "Wonka-Bar.gif" },
+    "Single-Single": { "img": "Single-Single.gif" },
+    "Wonka-stripe Candy Cane": { "img": "Wonka-stripe-Candy-Cane.gif" },
+    "Rainbow Drop": { "img": "Rainbow-Drop.gif" },
+    "Roast Beef": { "img": "Roast-Beef.gif" },
+    "Pre-Chewed Gum": { "img": "Pre-Chewed-Gum.gif" },
+    "Roast Beef Flavored Gum": { "img": "Roast-Beef-Flavored-Gum.gif" },
+    "Semi-Lasting Gobstopper": { "img": "Semi-Lasting-Gobstopper.gif" },
+    "Sweet Bomb": { "img": "Sweet-Bomb.gif" },
+    "Blueberry Blast Jelly Beans": { "img": "Blueberry-Blast-Jelly-Beans.gif" },
+    "Beef Mushroom Stew": { "img": "Beef-Mushroom-Stew.gif" },
+    "Texas Fajita Soup": { "img": "Texas-Fajita-Soup.gif" },
+    "Cream of Okra Soup": { "img": "Cream-of-Okra-Soup.gif" },
+    "Garlic Salmon Bisque": { "img": "Garlic-Salmon-Bisque.gif" },
+    "Beggars Bouillon": { "img": "Beggar%27s-Bouillon.gif" },
+    "Fizzy Lifting Soda": { "img": "Fizzy-Lifting-Soda.gif" },
+    "Wonkas Peppermint Spirits": { "img": "Wonka%27s-Peppermint-Spirits.gif" },
+    "Altoids": { "img": "Altoids.gif" },
+    "Junior Mints": { "img": "Junior-Mints.gif" },
+    "Red Hots": { "img": "Red-Hots.gif" },
+    "Crystal Pepsi": { "img": "Crystal-Pepsi.gif" },
+    "Chocolate Vanilla Swirl Ice Cream": { "img": "Chocolate-Vanilla-Swirl-Ice-Cream.gif" },
+    "Redder Hots": { "img": "Redder-Hots.gif" },
+    "Gas Soaked Red Hots": { "img": "Gas-Soaked-Red-Hots.gif" },
+    "Gummi Gorilla": { "img": "Gummi-Gorilla.gif" },
+    "Gummi Peregrine Falcon": { "img": "Gummi-Peregrine-Falcon.gif" },
+    "Gummi Raptor": { "img": "Gummi-Raptor.gif" },
+    "Quantum Candy": { "img": "Quantum-Candy.gif" },
+    "Gummi Spaghetti Monster": { "img": "Gummi-Spaghetti-Monster.gif" },
+    "Fruit by the Furlong": { "img": "Fruit-by-the-Furlong.gif" },
+    "Candy Cigarette": { "img": "Candy-Cigarette.gif" },
+    "Pack of Candy Cigarettes": { "img": "Pack-of-Candy-Cigarettes.gif" },
+    "Freeze-Packed Dippin Dots": { "img": "Freeze-Packed-Dippin-Dots.gif" },
+    "Dippin Dots": { "img": "Dippin-Dots.gif" },
+    "Military Rations": { "img": "Military-Rations.gif" },
+    "Can of Whipped Cream": { "img": "Can-of-Whipped-Cream.gif" },
+    "Faberge Cream Egg": { "img": "Faberge-Cream-Egg.gif" },
+    "Apple Flavored Gum": { "img": "Apple-Flavored-Gum.gif" },
+    "Cinnamon Flavored Gum": { "img": "Cinnamon-Flavored-Gum.gif" },
+    "Dark Chocolate Wonka Bar": { "img": "Dark-Chocolate-Wonka-Bar.gif" },
+    "Special Brownie": { "img": "Special-Brownie.gif" },
+    "Bacon Blast Jelly Beans": { "img": "Bacon-Blast-Jelly-Beans.gif" },
+    "Fizzy Falling Soda": { "img": "Fizzy-Falling-Soda.gif" },
+    "Caulipop": { "img": "Caulipop.gif" },
+    "Dalipop": { "img": "Dalipop.gif" },
+    "Volleypop": { "img": "Volleypop.gif" },
+    "Polypop": { "img": "Polypop.gif" },
+    "Mountain Honeydew Melon": { "img": "Mountain-Honeydew-Melon.gif" },
+    "Mountain Dew": { "img": "Mountain-Dew.gif" },
+    "Salmon": { "img": "Salmon.gif" },
+    "Catfish": { "img": "Catfish.gif" },
+    "Fish Sticks": { "img": "Fish-Sticks.gif" },
+    "Octopus": { "img": "Octopus.gif" },
+    "Blowfish": { "img": "Blowfish.gif" },
+    "Hobo Stew": { "img": "Hobo-Stew.gif" },
+    "Beggars Brunch": { "img": "Beggars-Brunch.gif" },
+    "Hangover Omelette": { "img": "Hangover-Omelette.gif" },
+    "Stomach Parasite": { "img": "Stomach-Parasite.gif" },
+    "Forest Shroom": { "img": "Forest-Shroom.gif" },
+    "Garlic Clove": { "img": "Garlic-Clove.gif" },
+    "Chili Pepper": { "img": "Chili-Pepper.gif" },
+    "Okra": { "img": "Okra.gif" },
+    "Gingerbread Bum": { "img": "Gingerbread-Bum.gif" },
+    "Bernard Burger": { "img": "Bernard-Burger.gif" },
+    "Flying Dutchman": { "img": "Flying-Dutchman.gif" },
+    "Animal Style Fries": { "img": "Animal-Style-Fries.gif" },
+    "Neapolitan Shake": { "img": "Neapolitan-Shake.gif" },
+    "SARS Bar": { "img": "SARS-Bar.gif" },
+    "Hobowarheads": { "img": "Hobowarheads.gif" },
+    "Mop Rocks": { "img": "Mop-Rocks.gif" },
+    "ICPeanut Butter Cup": { "img": "ICPeanut-Butter-Cup.gif" },
+    "Sugarfree Gum": { "img": "Sugarfree-Gum.gif" },
+    "Kit Rat Bar": { "img": "Kit-Rat-Bar.gif" },
+    "Butlerfinger": { "img": "Butlerfinger.gif" },
+    "Life Savers": { "img": "Life-Savers.gif" },
+    "Pay Day": { "img": "Pay-Day.gif" },
+    "Candycorn": { "img": "Candycorn.gif" },
+    "Sourpatch Bums": { "img": "Sourpatch-Bums.gif" },
+    "L&amp;Ls": { "img": "L&amp;Ls.gif" },
+    "Apple Surprise": { "img": "Apple-Surprise.gif" },
+    "Death Mints": { "img": "Death-Mints.gif" },
+    "Blow-Up Pop": { "img": "Blow-Up-Pop.gif" },
+    "Peppermint Burger Patties": { "img": "Peppermint-Burger-Patties.gif" },
+    "Rock Candy": { "img": "Rock-Candy.gif" },
+    "Walking Taco": { "img": "Walking-Taco.gif" },
+    "Freedom Fries": { "img": "Freedom-Fries.gif" },
+    "Jugger-Nut": { "img": "Jugger-Nut.gif" },
+    "Pizza Del Mare": { "img": "Pizza-Del-Mare.gif" },
+    "Bottle of Coke": { "img": "Bottle-of-Coke.gif" },
+    "Brains": { "img": "Brains.gif" },
+    "Death By Chocolate": { "img": "Death-By-Chocolate.gif" },
+    "Spooky Biscuit": { "img": "Spooky-Biscuit.gif" },
+    "Twozzlers": { "img": "Twozzlers.gif" },
+    "Red Hot Chili Pepper": { "img": "Red-Hot-Chili-Pepper.gif" },
+    "Longer-Lasting Gobstopper": { "img": "Longer-Lasting-Gobstopper.gif" },
+    "Double Gorillas": { "img": "Double-Gorillas.gif" },
+    "Double Falcons": { "img": "Double-Falcons.gif" },
+    "Double Raptors": { "img": "Double-Raptors.gif" },
+    "Triple Dipps": { "img": "Triple-Dipps.gif" },
+    "Rainbow Balls": { "img": "Rainbow-Balls.gif" },
+    "Wonka Quadra Candy Cane": { "img": "Wonka-Quadra-Candy-Cane.gif" },
+};
+
 const BackpackHelper = {
     init: function() {
         const settings = Utils.getSettings();
@@ -598,94 +820,6 @@ const DisplayHelper = {
     }
 };
 
-const DrinksData = {
-            // Data structure containing all drinks in the game
-            drinks: {
-                alcoholic: [
-                    { name: "Crudweiser", cost: { type: "cw_multiplier", value: 1 }, location: "Liquor Store", base_stat_gain: "", effect: "" },
-                    { name: "Goon Sack", cost: { type: "cw_multiplier", value: 4 }, location: "Liquor Store", base_stat_gain: "+0.050 Power", effect: "" },
-                    { name: "Albino Ale", cost: { type: "cw_multiplier", value: 4 }, location: "Liquor Store", base_stat_gain: "+0.050 Strength", effect: "" },
-                    { name: "Purple Pigeon Vodka", cost: { type: "cw_multiplier", value: 6 }, location: "Liquor Store", base_stat_gain: "+0.050 Speed +0.050 Power", effect: "" },
-                    { name: "John Cuervo Tequila", cost: { type: "cw_multiplier", value: 6 }, location: "Liquor Store", base_stat_gain: "+0.050 Power +0.050 Strength", effect: "" },
-                    { name: "Birdbath Gin", cost: { type: "cw_multiplier", value: 6 }, location: "Liquor Store", base_stat_gain: "+0.050 Speed +0.050 Strength", effect: "" },
-                    { name: "Rev's Rum", cost: { type: "cw_multiplier", value: 8 }, location: "Liquor Store", base_stat_gain: "+0.100 Strength", effect: "" },
-                    { name: "Ruiner's Rum", cost: { type: "cw_multiplier", value: 8 }, location: "Liquor Store", base_stat_gain: "+0.100 Power", effect: "" },
-                    { name: "Wild Terrier Whiskey", cost: { type: "cw_multiplier", value: 8 }, location: "Liquor Store", base_stat_gain: "+0.100 Speed", effect: "" },
-                    { name: "Zima Light", cost: { type: "cw_multiplier", value: 10 }, location: "Liquor Store", base_stat_gain: "-0.025 Strength", effect: "" },
-                    { name: "Portly Stout", cost: { type: "cw_multiplier", value: 10 }, location: "Liquor Store", base_stat_gain: "+0.100 Strength", effect: "" },
-                    { name: "Boxcar Boxed Wine", cost: { type: "cw_multiplier", value: 10 }, location: "Liquor Store", base_stat_gain: "+0.075 Power", effect: "" },
-                    { name: "Octuple Sec", cost: { type: "cw_multiplier", value: 12 }, location: "Liquor Store", base_stat_gain: "+0.125 Power", effect: "" },
-                    { name: "Montreal Bourbon", cost: { type: "cw_multiplier", value: 12 }, location: "Liquor Store", base_stat_gain: "+0.125 Strength", effect: "" },
-                    { name: "Brandy Brand Brandy", cost: { type: "cw_multiplier", value: 12 }, location: "Liquor Store", base_stat_gain: "+0.125 Speed", effect: "" },
-                    { name: "Aunt Flo Amaretto", cost: { type: "cw_multiplier", value: 14 }, location: "Liquor Store", base_stat_gain: "+0.150 Speed", effect: "" },
-                    { name: "Mutton Chop Scotch", cost: { type: "cw_multiplier", value: 16 }, location: "Liquor Store", base_stat_gain: "+0.075 Power +0.100 Strength", effect: "" },
-                    { name: "Homeless Hennessy", cost: { type: "cw_multiplier", value: 20 }, location: "Liquor Store", base_stat_gain: "+0.050 Speed +0.050 Power +0.075 Strength", effect: "" },
-                    { name: "Lemon Drop", cost: { type: "cw_multiplier", value: 4 }, location: "Dive Bar", base_stat_gain: "+0.050 Speed", effect: "" },
-                    { name: "Buttery Nipple", cost: { type: "cw_multiplier", value: 8 }, location: "Dive Bar", base_stat_gain: "+0.050 Speed", effect: "" },
-                    { name: "Canadian Flag", cost: { type: "cw_multiplier", value: 12 }, location: "Dive Bar", base_stat_gain: "+0.075 Speed", effect: "" },
-                    { name: "The CMYK", cost: { type: "cw_multiplier", value: 16 }, location: "Dive Bar", base_stat_gain: "+0.075 Speed", effect: "" },
-                    { name: "Five Star General", cost: { type: "cw_multiplier", value: 20 }, location: "Dive Bar", base_stat_gain: "+0.100 Speed", effect: "" },
-                    { name: "Rainbow Road", cost: { type: "cw_multiplier", value: 24 }, location: "Dive Bar", base_stat_gain: "+0.100 Speed", effect: "" },
-                    { name: "Shot of Whiskey", cost: { type: "fixed", value: 3000 }, location: "Alcoholic Rat / Shakedown Saloon", base_stat_gain: "+0.050 Speed", effect: "" },
-                    { name: "Shot of Ruiner's Rum", cost: { type: "fixed", value: 3000 }, location: "Alcoholic Rat / Shakedown Saloon", base_stat_gain: "+0.050 Speed +0.050 Power", effect: "" },
-                    { name: "Shot of Tequila", cost: { type: "fixed", value: 3000 }, location: "Alcoholic Rat / Shakedown Saloon", base_stat_gain: "+0.050 Speed +0.050 Strength", effect: "" },
-                    { name: "Bottle of Bernard's Barbaresco", cost: { type: "fixed", value: "50 RP" }, location: "Recycling Bin" },
-                    { name: "Bottle of Two Buck Chuck", cost: { type: "fixed", value: 100000 }, location: "Matching Game / Dive Bar (Tip Jar)" },
-                    { name: "Decaf Kahlua", cost: { type: "tiredness", value: 5 }, location: "Sailing" },
-                    { name: "Everclear", cost: { type: "tiredness", value: 5 }, location: "Sailing" },
-                    { name: "Irish Cream", cost: { type: "tiredness", value: 5 }, location: "Sailing" },
-                    { name: "Jack Daniel's", cost: { type: "tiredness", value: 5 }, location: "Sailing" },
-                    { name: "Jagermeister", cost: { type: "tiredness", value: 5 }, location: "Sailing" },
-                    { name: "Tapped Keg", cost: { type: "tiredness", value: 5 }, location: "Alcoholic Rat / 7/11 Dumpster" },
-                    { name: "Fotey", cost: { type: "tiredness", value: 5 }, location: "Sailing" }
-                ],
-                mixed: [
-                    { name: "Amish Highball", cost: { type: "mixed", text: "10CW+$200" }, location: "Mixer", ingredients: ["Boxcar Boxed Wine", "Cola"], base_stat_gain: "+0.025 Speed +0.050 Strength", effect: "Amish" },
-                    { name: "Angry Mother", cost: { type: "mixed", text: "14CW+$400" }, location: "Mixer", ingredients: ["Aunt Flo Amaretto", "Sweet & Sour"], base_stat_gain: "+0.075 Power", effect: "Angry" },
-                    { name: "Bawling Baby", cost: { type: "mixed", text: "Awake+6CW+$250" }, location: "Mixer", ingredients: ["Decaf Kahlua", "Purple Pigeon Vodka", "Milk"], base_stat_gain: "+0.007 Begging", effect: "Bawling like a baby" },
-                    { name: "Bloody Murray", cost: { type: "mixed", text: "Awake+6CW+10Cans+$50,000+200PP" }, location: "Mixer", ingredients: ["Purple Pigeon Vodka", "Celery", "Hair of the Dog", "Tabasco"], base_stat_gain: "+0.075 Power +0.075 Strength", effect: "Chance to decrease BAC by 0.12%." },
-                    { name: "Centrifuge", cost: { type: "mixed", text: "38CW+$600" }, location: "Mixer", ingredients: ["Birdbath Gin", "John Cuervo Tequila", "Octuple Sec", "Purple Pigeon Vodka", "Rev's Rum", "Sweet & Sour", "Cola"], base_stat_gain: "", effect: "Uranium Enriched" },
-                    { name: "Dead Man Walking", cost: { type: "mixed", text: "Awake+28CW+$400" }, location: "Mixer", ingredients: ["Octuple Sec", "Orange Juice", "Rev's Rum", "Ruiner's Rum", "Sweet & Sour"], base_stat_gain: "", effect: "Zombified" },
-                    { name: "Eggnog", cost: { type: "mixed", text: "Orange Gift (Awake)" }, location: "Mixer", ingredients: ["Orange Gift"], base_stat_gain: "+0.075 Speed +0.075 Power +0.075 Strength +0.025 Intelligence +0.004 Begging", effect: "" },
-                    { name: "Egyptini", cost: { type: "mixed", text: "Awake+6CW+$50" }, location: "Mixer", ingredients: ["Birdbath Gin", "Olive", "Wonka Bar Wrapper", "Bath Salts", "Ice"], base_stat_gain: "-0.250 Speed +0.250 Power +0.250 Strength", effect: "Mummified" },
-                    { name: "Erupting Volcano", cost: { type: "mixed", text: "Awake+20CW+$800" }, location: "Mixer", ingredients: ["Homeless Hennessy", "Dry Ice", "Fire", "Red Bull"], base_stat_gain: "+0.100 Power +0.100 Strength", effect: "Enraged" },
-                    { name: "Eye Gouger", cost: { type: "mixed", text: "6CW+$200" }, location: "Mixer", ingredients: ["Purple Pigeon Vodka", "Soda Water"], base_stat_gain: "", effect: "Blind" },
-                    { name: "Filthy Leprechaun", cost: { type: "mixed", text: "Awake+16CW" }, location: "Mixer", ingredients: ["Irish Cream", "Mutton Chop Scotch"], base_stat_gain: "+0.075 Speed", effect: "Green Noser" },
-                    { name: "Flaming Hedgehog", cost: { type: "mixed", text: "Awake+$300" }, location: "Mixer", ingredients: ["Jagermeister", "Fire", "Red Bull"], base_stat_gain: "+0.125 Power", effect: "Flame-tipped Spiked Hair" },
-                    { name: "Full Moon", cost: { type: "mixed", text: "Awake+$50" }, location: "Mixer", ingredients: ["Irish Cream", "Jack Daniel's", "Bath Salts", "Ice"], base_stat_gain: "+0.125 Power +0.125 Strength", effect: "Warwolf" },
-                    { name: "Gin & Juice", cost: { type: "mixed", text: "Awake+6CW" }, location: "Mixer", ingredients: ["Birdbath Gin", "Orange Juice"], base_stat_gain: "+0.050 Intel", effect: "Laid Back" },
-                    { name: "Happy Puppy", cost: { type: "mixed", text: "8CW+$200" }, location: "Mixer", ingredients: ["Wild Terrier Whiskey", "Cola"], base_stat_gain: "+0.100 Power", effect: "Puppy Power" },
-                    { name: "Hedgehog", cost: { type: "mixed", text: "Awake+$300" }, location: "Mixer", ingredients: ["Jagermeister", "Red Bull"], base_stat_gain: "+0.100 Power", effect: "Spiked Hair" },
-                    { name: "Hungry Hippo", cost: { type: "mixed", text: "Awake+6CW+$250" }, location: "Mixer", ingredients: ["Decaf Kahlua", "Irish Cream", "Purple Pigeon Vodka", "Milk"], base_stat_gain: "", effect: "You can eat another meal." },
-                    { name: "Jolly Gentleman", cost: { type: "mixed", text: "Awake+6CW" }, location: "Mixer", ingredients: ["Birdbath Gin", "Olive"], base_stat_gain: "+0.100 Power", effect: "Classy as Hell" },
-                    { name: "Lemonade", cost: { type: "mixed", text: "April Fool's Mini Adventure" }, location: "Mixer", ingredients: ["April Fool's Mini Adventure"], base_stat_gain: "+1.250 Speed +1.250 Power +1.250 Strength", effect: "Requires the Open Packet of Sugar to drink." },
-                    { name: "Prison Hooch", cost: { type: "mixed", text: "HoboArena Reward" }, location: "Mixer", ingredients: ["HoboArena Reward"], base_stat_gain: "+0.150 Speed +0.150 Power +0.150 Strength", effect: "Meleeria" },
-                    { name: "Purring Kitty", cost: { type: "mixed", text: "6CW+$200" }, location: "Mixer", ingredients: ["Birdbath Gin", "Soda Water"], base_stat_gain: "+0.100 Speed", effect: "Kitten Pox" },
-                    { name: "Rocket Juice", cost: { type: "mixed", text: "HoboArena Reward" }, location: "Mixer", ingredients: ["HoboArena Reward"], base_stat_gain: "+0.075 Speed +0.075 Power +0.075 Strength +2 Intelligence +2 Begging 100,000 Respect +1 Level", effect: "" },
-                    { name: "Self Immolation", cost: { type: "mixed", text: "Awake+15CW" }, location: "Mixer", ingredients: ["Aunt Flo Amaretto", "Crudweiser", "Everclear", "Fire"], base_stat_gain: "+0.200 Power +0.075 Strength", effect: "On Fire" },
-                    { name: "Sludge", cost: { type: "mixed", text: "Made from mixing drinks that do not form a proper mixed drink" }, location: "Mixer", ingredients: ["Made from mixing drinks that do not form a proper mixed drink"], base_stat_gain: "", effect: "Collect 1000 to unlock a new wish" },
-                    { name: "Sorrowful Penguin", cost: { type: "mixed", text: "Awake+10CW+$50" }, location: "Mixer", ingredients: ["Ice", "Jolly Rancher", "Zima Light"], base_stat_gain: "", effect: "Sorrowful" },
-                    { name: "Ten Foot Drop", cost: { type: "mixed", text: "18CW+$400" }, location: "Mixer", ingredients: ["Octuple Sec", "Purple Pigeon Vodka", "Sweet & Sour"], base_stat_gain: "", effect: "You lose all your life." },
-                    { name: "The Long Walk", cost: { type: "mixed", text: "36CW" }, location: "Mixer", ingredients: ["Montreal Bourbon", "Mutton Chop Scotch", "Wild Terrier Whiskey"], base_stat_gain: "", effect: "Shoegazer" },
-                    { name: "Time Traveler", cost: { type: "mixed", text: "Awake+12CW+$500" }, location: "Mixer", ingredients: ["Brandy Brand Brandy", "Dry Ice", "Jolly Rancher", "Orange Juice"], base_stat_gain: "+0.250 Speed", effect: "Time Displacement" },
-                    { name: "Transylvania Slammer", cost: { type: "mixed", text: "Awake+18CW+$50" }, location: "Mixer", ingredients: ["Albino Ale", "Aunt Flo Amaretto", "Jagermeister", "Bath Salts", "Ice"], base_stat_gain: "+0.125 Speed +0.125 Power", effect: "Glampire" }
-                ],
-                non_alcoholic: [
-                    { name: "Cola", cost: { type: "fixed", value: 200 }, location: "Liquor Store" },
-                    { name: "Sweet & Sour", cost: { type: "fixed", value: 400 }, location: "Liquor Store" },
-                    { name: "Milk", cost: { type: "fixed", value: 250 }, location: "Liquor Store" },
-                    { name: "Celery", cost: { type: "unknown", value: 0 }, location: "Food Store" },
-                    { name: "Tabasco", cost: { type: "unknown", value: 0 }, location: "Food Store" },
-                    { name: "Orange Juice", cost: { type: "unknown", value: 0 }, location: "Liquor Store" },
-                    { name: "Soda Water", cost: { type: "fixed", value: 200 }, location: "Liquor Store" },
-                    { name: "Dry Ice", cost: { type: "unknown", value: 0 }, location: "Liquor Store" },
-                    { name: "Ice", cost: { type: "fixed", value: 50 }, location: "Liquor Store" },
-                    { name: "Red Bull", cost: { type: "fixed", value: 300 }, location: "Convenience Store" },
-                    { name: "Olive", cost: { type: "unknown", value: 0 }, location: "Food Store" }
-                ]
-            }
-        }
-
 const DrinksHelper = {
             init: function() {
                 function getInventory() {
@@ -773,138 +907,6 @@ const DrinksHelper = {
                 handleBartenderGuide();
             }
         }
-
-const FoodData = {
-    "Apple Core": { "img": "Apple-Core.gif" },
-    "Half a Donut": { "img": "Half-a-Donut.gif" },
-    "Piece of Bread": { "img": "Piece-of-Bread.gif" },
-    "Can of Coke": { "img": "Can-of-Coke.gif" },
-    "Piece of Pizza": { "img": "Piece-of-Pizza.gif" },
-    "Meat Pie": { "img": "Meat-Pie.gif" },
-    "Can of Pepsi": { "img": "Can-of-Pepsi.gif" },
-    "Rotten Fish": { "img": "Rotten-Fish.gif" },
-    "Half Eaten Burger": { "img": "Half-Eaten-Burger.gif" },
-    "Packet of Fries": { "img": "Packet-of-Fries.gif" },
-    "New Pizza": { "img": "New-Pizza.gif" },
-    "Chewed Chicken Leg": { "img": "Chewed-Chicken-Leg.gif" },
-    "Raw Chicken Leg": { "img": "Raw-Chicken-Leg.gif" },
-    "Cooked Chicken": { "img": "Cooked-Chicken.gif" },
-    "Half a HotDog": { "img": "Half-a-HotDog.gif" },
-    "HotDog": { "img": "HotDog.gif" },
-    "KFC Meal": { "img": "KFC-Meal.gif" },
-    "Raw Potato": { "img": "Raw-Potato.gif" },
-    "Vanilla Ice Cream": { "img": "Vanilla-Ice-Cream.gif" },
-    "Chocolate Ice Cream": { "img": "Chocolate-Ice-Cream.gif" },
-    "Fresh Apple": { "img": "Fresh-Apple.gif" },
-    "Fighters Lunch": { "img": "Fighters-Lunch.gif" },
-    "Double-Double": { "img": "Double-Double.gif" },
-    "Bachelor Chow": { "img": "Bachelor-Chow.gif" },
-    "Smart Bread": { "img": "Smart-Bread.gif" },
-    "Day Old Coffee Naan": { "img": "Day-Old-Coffee-Naan.gif" },
-    "Half a Sandwich Naan": { "img": "Half-a-Sandwich-Naan.gif" },
-    "Discarded Taco Naan": { "img": "Discarded-Taco-Naan.gif" },
-    "Wonka Bar": { "img": "Wonka-Bar.gif" },
-    "Single-Single": { "img": "Single-Single.gif" },
-    "Wonka-stripe Candy Cane": { "img": "Wonka-stripe-Candy-Cane.gif" },
-    "Rainbow Drop": { "img": "Rainbow-Drop.gif" },
-    "Roast Beef": { "img": "Roast-Beef.gif" },
-    "Pre-Chewed Gum": { "img": "Pre-Chewed-Gum.gif" },
-    "Roast Beef Flavored Gum": { "img": "Roast-Beef-Flavored-Gum.gif" },
-    "Semi-Lasting Gobstopper": { "img": "Semi-Lasting-Gobstopper.gif" },
-    "Sweet Bomb": { "img": "Sweet-Bomb.gif" },
-    "Blueberry Blast Jelly Beans": { "img": "Blueberry-Blast-Jelly-Beans.gif" },
-    "Beef Mushroom Stew": { "img": "Beef-Mushroom-Stew.gif" },
-    "Texas Fajita Soup": { "img": "Texas-Fajita-Soup.gif" },
-    "Cream of Okra Soup": { "img": "Cream-of-Okra-Soup.gif" },
-    "Garlic Salmon Bisque": { "img": "Garlic-Salmon-Bisque.gif" },
-    "Beggars Bouillon": { "img": "Beggar%27s-Bouillon.gif" },
-    "Fizzy Lifting Soda": { "img": "Fizzy-Lifting-Soda.gif" },
-    "Wonkas Peppermint Spirits": { "img": "Wonka%27s-Peppermint-Spirits.gif" },
-    "Altoids": { "img": "Altoids.gif" },
-    "Junior Mints": { "img": "Junior-Mints.gif" },
-    "Red Hots": { "img": "Red-Hots.gif" },
-    "Crystal Pepsi": { "img": "Crystal-Pepsi.gif" },
-    "Chocolate Vanilla Swirl Ice Cream": { "img": "Chocolate-Vanilla-Swirl-Ice-Cream.gif" },
-    "Redder Hots": { "img": "Redder-Hots.gif" },
-    "Gas Soaked Red Hots": { "img": "Gas-Soaked-Red-Hots.gif" },
-    "Gummi Gorilla": { "img": "Gummi-Gorilla.gif" },
-    "Gummi Peregrine Falcon": { "img": "Gummi-Peregrine-Falcon.gif" },
-    "Gummi Raptor": { "img": "Gummi-Raptor.gif" },
-    "Quantum Candy": { "img": "Quantum-Candy.gif" },
-    "Gummi Spaghetti Monster": { "img": "Gummi-Spaghetti-Monster.gif" },
-    "Fruit by the Furlong": { "img": "Fruit-by-the-Furlong.gif" },
-    "Candy Cigarette": { "img": "Candy-Cigarette.gif" },
-    "Pack of Candy Cigarettes": { "img": "Pack-of-Candy-Cigarettes.gif" },
-    "Freeze-Packed Dippin Dots": { "img": "Freeze-Packed-Dippin-Dots.gif" },
-    "Dippin Dots": { "img": "Dippin-Dots.gif" },
-    "Military Rations": { "img": "Military-Rations.gif" },
-    "Can of Whipped Cream": { "img": "Can-of-Whipped-Cream.gif" },
-    "Faberge Cream Egg": { "img": "Faberge-Cream-Egg.gif" },
-    "Apple Flavored Gum": { "img": "Apple-Flavored-Gum.gif" },
-    "Cinnamon Flavored Gum": { "img": "Cinnamon-Flavored-Gum.gif" },
-    "Dark Chocolate Wonka Bar": { "img": "Dark-Chocolate-Wonka-Bar.gif" },
-    "Special Brownie": { "img": "Special-Brownie.gif" },
-    "Bacon Blast Jelly Beans": { "img": "Bacon-Blast-Jelly-Beans.gif" },
-    "Fizzy Falling Soda": { "img": "Fizzy-Falling-Soda.gif" },
-    "Caulipop": { "img": "Caulipop.gif" },
-    "Dalipop": { "img": "Dalipop.gif" },
-    "Volleypop": { "img": "Volleypop.gif" },
-    "Polypop": { "img": "Polypop.gif" },
-    "Mountain Honeydew Melon": { "img": "Mountain-Honeydew-Melon.gif" },
-    "Mountain Dew": { "img": "Mountain-Dew.gif" },
-    "Salmon": { "img": "Salmon.gif" },
-    "Catfish": { "img": "Catfish.gif" },
-    "Fish Sticks": { "img": "Fish-Sticks.gif" },
-    "Octopus": { "img": "Octopus.gif" },
-    "Blowfish": { "img": "Blowfish.gif" },
-    "Hobo Stew": { "img": "Hobo-Stew.gif" },
-    "Beggars Brunch": { "img": "Beggars-Brunch.gif" },
-    "Hangover Omelette": { "img": "Hangover-Omelette.gif" },
-    "Stomach Parasite": { "img": "Stomach-Parasite.gif" },
-    "Forest Shroom": { "img": "Forest-Shroom.gif" },
-    "Garlic Clove": { "img": "Garlic-Clove.gif" },
-    "Chili Pepper": { "img": "Chili-Pepper.gif" },
-    "Okra": { "img": "Okra.gif" },
-    "Gingerbread Bum": { "img": "Gingerbread-Bum.gif" },
-    "Bernard Burger": { "img": "Bernard-Burger.gif" },
-    "Flying Dutchman": { "img": "Flying-Dutchman.gif" },
-    "Animal Style Fries": { "img": "Animal-Style-Fries.gif" },
-    "Neapolitan Shake": { "img": "Neapolitan-Shake.gif" },
-    "SARS Bar": { "img": "SARS-Bar.gif" },
-    "Hobowarheads": { "img": "Hobowarheads.gif" },
-    "Mop Rocks": { "img": "Mop-Rocks.gif" },
-    "ICPeanut Butter Cup": { "img": "ICPeanut-Butter-Cup.gif" },
-    "Sugarfree Gum": { "img": "Sugarfree-Gum.gif" },
-    "Kit Rat Bar": { "img": "Kit-Rat-Bar.gif" },
-    "Butlerfinger": { "img": "Butlerfinger.gif" },
-    "Life Savers": { "img": "Life-Savers.gif" },
-    "Pay Day": { "img": "Pay-Day.gif" },
-    "Candycorn": { "img": "Candycorn.gif" },
-    "Sourpatch Bums": { "img": "Sourpatch-Bums.gif" },
-    "L&amp;Ls": { "img": "L&amp;Ls.gif" },
-    "Apple Surprise": { "img": "Apple-Surprise.gif" },
-    "Death Mints": { "img": "Death-Mints.gif" },
-    "Blow-Up Pop": { "img": "Blow-Up-Pop.gif" },
-    "Peppermint Burger Patties": { "img": "Peppermint-Burger-Patties.gif" },
-    "Rock Candy": { "img": "Rock-Candy.gif" },
-    "Walking Taco": { "img": "Walking-Taco.gif" },
-    "Freedom Fries": { "img": "Freedom-Fries.gif" },
-    "Jugger-Nut": { "img": "Jugger-Nut.gif" },
-    "Pizza Del Mare": { "img": "Pizza-Del-Mare.gif" },
-    "Bottle of Coke": { "img": "Bottle-of-Coke.gif" },
-    "Brains": { "img": "Brains.gif" },
-    "Death By Chocolate": { "img": "Death-By-Chocolate.gif" },
-    "Spooky Biscuit": { "img": "Spooky-Biscuit.gif" },
-    "Twozzlers": { "img": "Twozzlers.gif" },
-    "Red Hot Chili Pepper": { "img": "Red-Hot-Chili-Pepper.gif" },
-    "Longer-Lasting Gobstopper": { "img": "Longer-Lasting-Gobstopper.gif" },
-    "Double Gorillas": { "img": "Double-Gorillas.gif" },
-    "Double Falcons": { "img": "Double-Falcons.gif" },
-    "Double Raptors": { "img": "Double-Raptors.gif" },
-    "Triple Dipps": { "img": "Triple-Dipps.gif" },
-    "Rainbow Balls": { "img": "Rainbow-Balls.gif" },
-    "Wonka Quadra Candy Cane": { "img": "Wonka-Quadra-Candy-Cane.gif" },
-};
 
 const FoodHelper = {
     init: function() {
@@ -1033,313 +1035,6 @@ const FoodHelper = {
         }
     }
 };
-
-const SettingsHelper = {
-    init: function() {
-        if (!window.location.search.endsWith('cmd=preferences')) return;
-
-        const contentArea = document.querySelector('.content-area');
-        if (!contentArea) return;
-
-        console.log('Settings Helper loaded for preferences page');
-        
-        // Add divider and title
-        const headerContainer = document.createElement('div');
-        headerContainer.style.textAlign = 'center';
-        headerContainer.style.margin = '20px 0';
-        headerContainer.style.padding = '10px';
-        headerContainer.style.background = 'rgba(128, 128, 128, 0.1)';
-        headerContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
-        headerContainer.style.borderRadius = '5px';
-
-        const titleDiv = document.createElement('div');
-        titleDiv.innerHTML = "<h2 style='margin: 0; font-family: Arial, sans-serif; font-size: 20px; text-transform: uppercase; letter-spacing: 1px;'>Hobo Helper Settings</h2>";
-        headerContainer.appendChild(titleDiv);
-        contentArea.appendChild(headerContainer);
-
-        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
-        
-        // Helper function for toggles
-        const createToggle = (key, labelText, isGlobal = false, defaultValue = true) => {
-            const container = document.createElement('div');
-            container.style.marginBottom = '8px';
-            container.style.paddingLeft = isGlobal ? '0' : '5px';
-            container.style.display = 'flex';
-            container.style.alignItems = 'center';
-
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.id = `hw_helper_${key}`;
-            // default to true if undefined
-            checkbox.checked = savedSettings[key] !== undefined ? savedSettings[key] : defaultValue;
-            checkbox.style.cursor = 'pointer';
-            checkbox.style.transform = 'scale(1.2)';
-            checkbox.style.marginRight = '8px';
-            checkbox.style.accentColor = '#2196F3';
-
-            const label = document.createElement('label');
-            label.htmlFor = `hw_helper_${key}`;
-            label.innerHTML = ` ${labelText}`;
-            label.style.cursor = 'pointer';
-            label.style.fontFamily = 'Arial, sans-serif';
-            label.style.fontSize = '14px';
-
-            const toast = document.createElement('span');
-            toast.innerText = ' (Saved! Reload to apply)';
-            toast.style.color = 'green';
-            toast.style.fontSize = '12px';
-            toast.style.display = 'none';
-            label.appendChild(toast);
-
-            let toastTimeout;
-            checkbox.addEventListener('change', (e) => {
-                const settings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
-                settings[key] = e.target.checked;
-                localStorage.setItem('hw_helper_settings', JSON.stringify(settings));
-                
-                // Show saved toast or reload prompt
-                toast.style.display = 'inline';
-                clearTimeout(toastTimeout);
-                toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 2000);
-            });
-
-            container.appendChild(checkbox);
-            container.appendChild(label);
-            return container;
-        };
-
-        const createInput = (feature) => {
-            const { key, label: labelText, type: inputType, defaultValue, width, description } = feature;
-            const wrapper = document.createElement('div');
-            wrapper.style.marginBottom = '8px';
-            wrapper.style.paddingLeft = '5px';
-
-            const container = document.createElement('div');
-            container.style.display = 'flex';
-            if (width === '100%') {
-                container.style.flexDirection = 'column';
-                container.style.alignItems = 'flex-start';
-            } else {
-                container.style.alignItems = 'center';
-            }
-
-            const label = document.createElement('label');
-            label.htmlFor = `hw_helper_${key}`;
-            label.innerHTML = `${labelText}: `;
-            label.style.fontFamily = 'Arial, sans-serif';
-            label.style.fontSize = '14px';
-            label.style.marginRight = '8px';
-
-            const toast = document.createElement('span');
-            toast.innerText = ' (Saved! Reload to apply)';
-            toast.style.color = 'green';
-            toast.style.fontSize = '12px';
-            toast.style.display = 'none';
-            toast.style.marginLeft = '8px';
-
-            if (width === '100%') {
-                label.appendChild(toast);
-            }
-
-            const input = document.createElement('input');
-            input.type = inputType;
-            input.id = `hw_helper_${key}`;
-            input.style.width = width || (inputType === 'number' ? '60px' : '150px');
-            if (width === '100%') {
-                input.style.boxSizing = 'border-box';
-                input.style.marginTop = '4px';
-            }
-            input.value = savedSettings[key] !== undefined ? savedSettings[key] : defaultValue;
-            input.style.border = '1px solid #ccc';
-            input.style.borderRadius = '3px';
-            input.style.padding = '2px 5px';
-
-            let toastTimeout;
-            input.addEventListener('input', (e) => {
-                const settings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
-                settings[key] = e.target.value;
-                localStorage.setItem('hw_helper_settings', JSON.stringify(settings));
-                
-                toast.style.display = 'inline';
-                clearTimeout(toastTimeout);
-                toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 2000);
-            });
-
-            container.appendChild(label);
-            container.appendChild(input);
-            if (width !== '100%') {
-                container.appendChild(toast);
-            }
-            wrapper.appendChild(container);
-
-            if (description) {
-                const desc = document.createElement('div');
-                desc.innerHTML = description;
-                desc.style.fontSize = '11px';
-                desc.style.color = '#555';
-                desc.style.marginTop = '4px';
-                wrapper.appendChild(desc);
-            }
-
-            return wrapper;
-        };
-
-        const topDiv = document.createElement('div');
-        topDiv.style.background = 'rgba(128, 128, 128, 0.05)';
-        topDiv.style.border = '1px solid rgba(128, 128, 128, 0.2)';
-        topDiv.style.borderRadius = '5px';
-        topDiv.style.padding = '10px';
-        topDiv.style.marginBottom = '20px';
-
-        // Add global toggle
-        topDiv.appendChild(createToggle('global_enabled', 'Enable Hobo Helper (Global)', true));
-        contentArea.appendChild(topDiv);
-
-        const modsLabel = document.createElement('div');
-        modsLabel.innerText = "Active Modules:";
-        modsLabel.style.fontWeight = 'bold';
-        modsLabel.style.fontSize = '16px';
-        modsLabel.style.marginBottom = '10px';
-        modsLabel.style.borderBottom = '2px solid rgba(128, 128, 128, 0.3)';
-        modsLabel.style.paddingBottom = '5px';
-        contentArea.appendChild(modsLabel);
-
-        const subFeatures = {};
-        if (typeof Modules !== 'undefined') {
-            Object.keys(Modules).forEach(modName => {
-                if (Modules[modName].settings) {
-                    subFeatures[modName] = Modules[modName].settings;
-                }
-            });
-        }
-
-        const gridContainer = document.createElement('div');
-        gridContainer.style.display = 'flex';
-        gridContainer.style.justifyContent = 'space-between';
-        gridContainer.style.alignItems = 'flex-start';
-        contentArea.appendChild(gridContainer);
-
-        const col1 = document.createElement('div');
-        col1.style.width = '48%';
-        gridContainer.appendChild(col1);
-
-        const col2 = document.createElement('div');
-        col2.style.width = '48%';
-        gridContainer.appendChild(col2);
-
-        if (typeof Modules !== 'undefined') {
-            const activeModules = Object.keys(Modules).filter(modName => {
-                return modName !== 'SettingsHelper' && typeof Modules[modName].init === 'function';
-            });
-
-            activeModules.sort().forEach((modName) => {
-                const moduleBlock = document.createElement('div');
-                moduleBlock.style.marginBottom = '12px';
-                moduleBlock.style.padding = '8px 10px';
-                moduleBlock.style.background = 'rgba(128, 128, 128, 0.05)';
-                moduleBlock.style.border = '1px solid rgba(128, 128, 128, 0.2)';
-                moduleBlock.style.borderRadius = '6px';
-                moduleBlock.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
-
-                moduleBlock.appendChild(createToggle(modName, `<b>Enable ${modName}</b>`));
-
-                // Render sub-features if this module has them defined
-                if (subFeatures[modName]) {
-                    const subContainer = document.createElement('div');
-                    subContainer.style.paddingLeft = '25px';
-                    subContainer.style.marginTop = '8px';
-                    subContainer.style.borderLeft = '2px solid #2196F3';
-                    subFeatures[modName].forEach(feature => {
-                        let el;
-                        if (feature.type === 'number' || feature.type === 'text') {
-                            el = createInput(feature);
-                        } else {
-                            el = createToggle(feature.key, feature.label, false, feature.defaultValue !== false);
-                        }
-
-                        if (feature.parent) {
-                            const parentCheckbox = document.getElementById(`hw_helper_${feature.parent}`);
-                            if (parentCheckbox) {
-                                const containerDiv = el;
-                                const updateVisibility = () => {
-                                    containerDiv.style.opacity = parentCheckbox.checked ? '1' : '0.4';
-                                    containerDiv.style.pointerEvents = parentCheckbox.checked ? 'auto' : 'none';
-                                };
-                                parentCheckbox.addEventListener('change', updateVisibility);
-                                updateVisibility();
-                            }
-                        }
-
-                        subContainer.appendChild(el);
-                    });
-                    moduleBlock.appendChild(subContainer);
-                }
-
-                // Custom settings for FoodHelper
-                if (modName === 'FoodHelper') {
-                    const foodContainer = document.createElement('div');
-                    foodContainer.style.paddingLeft = '25px';
-                    foodContainer.style.marginTop = '10px';
-
-                    const label = document.createElement('b');
-                    label.innerText = 'Crap Foods List:';
-                    label.style.display = 'block';
-                    label.style.marginBottom = '5px';
-                    foodContainer.appendChild(label);
-
-                    const listContainer = document.createElement('div');
-                    listContainer.style.background = 'rgba(0, 0, 0, 0.05)';
-                    listContainer.style.padding = '10px';
-                    listContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
-                    listContainer.style.borderRadius = '4px';
-                    listContainer.style.maxWidth = '100%';
-
-                    const crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
-                    if (crapList.length === 0) {
-                        listContainer.innerText = 'No foods marked as crap.';
-                    } else {
-                        const ul = document.createElement('ul');
-                        ul.style.margin = '0';
-                        ul.style.paddingLeft = '20px';
-                        crapList.forEach(food => {
-                            const li = document.createElement('li');
-                            const a = document.createElement('a');
-                            a.href = '#';
-                            a.innerText = '[x]';
-                            a.style.color = 'red';
-                            a.style.textDecoration = 'none';
-                            a.style.marginRight = '5px';
-                            a.title = 'Remove from Crap list';
-                            a.onclick = (e) => {
-                                e.preventDefault();
-                                let currentList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
-                                const updatedList = currentList.filter(f => f !== food);
-                                localStorage.setItem('hw_helper_food_crap', JSON.stringify(updatedList));
-                                li.remove();
-                                if (updatedList.length === 0) {
-                                    listContainer.innerText = 'No foods marked as crap.';
-                                }
-                            };
-                            li.appendChild(a);
-                            li.appendChild(document.createTextNode(food));
-                            ul.appendChild(li);
-                        });
-                        listContainer.appendChild(ul);
-                    }
-                    foodContainer.appendChild(listContainer);
-                    moduleBlock.appendChild(foodContainer);
-                }
-
-                // Manually balance columns: FoodHelper's large box goes left, the rest goes right.
-                if (modName <= 'FoodHelper') {
-                    col1.appendChild(moduleBlock);
-                } else {
-                    col2.appendChild(moduleBlock);
-                }
-            });
-        }
-    }
-}
 
 const BankHelper = {
     cmds: 'bank',
@@ -1649,6 +1344,7 @@ const FortSlugworthHelper = {
 };
 
 const GangHelper = {
+    cmds: 'gang',
     settings: [
         { key: 'GangHelper_EnableFeature', label: 'Enable Gang Helper' }
     ],
@@ -1781,6 +1477,7 @@ const GangHelper = {
 };
 
 const GangLoansHelper = {
+    cmds: 'gang2',
     init: function() {
         const isLoans = window.location.search.includes('cmd=gang2') && window.location.search.includes('do=loans');
         const isLoanAdd = window.location.search.includes('cmd=gang2') && window.location.search.includes('do=loan_add');
@@ -2615,6 +2312,7 @@ const HitlistHelper = {
 };
 
 const KurtzCampHelper = {
+    cmds: 'camp_kurtz',
     init: function() {
         if (!Utils.isCurrentPage('cmd=camp_kurtz')) return;
         
@@ -3490,6 +3188,7 @@ const LockoutHelper = {
 };
 
 const MessageBoardHelper = {
+    cmds: 'gathering',
     settings: [
         { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
         { key: 'MessageBoardHelper_VoteButtons', label: 'Larger Vote Buttons' },
@@ -3998,6 +3697,7 @@ const MessageBoardHelper = {
 };
 
 const MixerHelper = {
+    cmds: 'mixer',
             init: function() {
                 const urlParams = new URLSearchParams(window.location.search);
                 if (urlParams.get('cmd') === 'mixer') {
@@ -4529,6 +4229,7 @@ const NorthernFenceHelper = {
         }
 
 const RatsHelper = {
+    cmds: 'rats',
     settings: [
         { key: 'RatsHelper_NewsFilter', label: 'Rat News Filter' }
     ],
@@ -4636,6 +4337,7 @@ const RatsHelper = {
 };
 
 const RecyclingBinHelper = {
+    cmds: 'recycling_bin',
     init: function() {
         if (!Utils.isCurrentPage('cmd=recycling_bin')) return;
 
@@ -4669,7 +4371,315 @@ const RecyclingBinHelper = {
     }
 };
 
+const SettingsHelper = {
+    init: function() {
+        if (!window.location.search.endsWith('cmd=preferences')) return;
+
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        console.log('Settings Helper loaded for preferences page');
+        
+        // Add divider and title
+        const headerContainer = document.createElement('div');
+        headerContainer.style.textAlign = 'center';
+        headerContainer.style.margin = '20px 0';
+        headerContainer.style.padding = '10px';
+        headerContainer.style.background = 'rgba(128, 128, 128, 0.1)';
+        headerContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
+        headerContainer.style.borderRadius = '5px';
+
+        const titleDiv = document.createElement('div');
+        titleDiv.innerHTML = "<h2 style='margin: 0; font-family: Arial, sans-serif; font-size: 20px; text-transform: uppercase; letter-spacing: 1px;'>Hobo Helper Settings</h2>";
+        headerContainer.appendChild(titleDiv);
+        contentArea.appendChild(headerContainer);
+
+        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        
+        // Helper function for toggles
+        const createToggle = (key, labelText, isGlobal = false, defaultValue = true) => {
+            const container = document.createElement('div');
+            container.style.marginBottom = '8px';
+            container.style.paddingLeft = isGlobal ? '0' : '5px';
+            container.style.display = 'flex';
+            container.style.alignItems = 'center';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = `hw_helper_${key}`;
+            // default to true if undefined
+            checkbox.checked = savedSettings[key] !== undefined ? savedSettings[key] : defaultValue;
+            checkbox.style.cursor = 'pointer';
+            checkbox.style.transform = 'scale(1.2)';
+            checkbox.style.marginRight = '8px';
+            checkbox.style.accentColor = '#2196F3';
+
+            const label = document.createElement('label');
+            label.htmlFor = `hw_helper_${key}`;
+            label.innerHTML = ` ${labelText}`;
+            label.style.cursor = 'pointer';
+            label.style.fontFamily = 'Arial, sans-serif';
+            label.style.fontSize = '14px';
+
+            const toast = document.createElement('span');
+            toast.innerText = ' (Saved! Reload to apply)';
+            toast.style.color = 'green';
+            toast.style.fontSize = '12px';
+            toast.style.display = 'none';
+            label.appendChild(toast);
+
+            let toastTimeout;
+            checkbox.addEventListener('change', (e) => {
+                const settings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+                settings[key] = e.target.checked;
+                localStorage.setItem('hw_helper_settings', JSON.stringify(settings));
+                
+                // Show saved toast or reload prompt
+                toast.style.display = 'inline';
+                clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 2000);
+            });
+
+            container.appendChild(checkbox);
+            container.appendChild(label);
+            return container;
+        };
+
+        const createInput = (feature) => {
+            const { key, label: labelText, type: inputType, defaultValue, width, description } = feature;
+            const wrapper = document.createElement('div');
+            wrapper.style.marginBottom = '8px';
+            wrapper.style.paddingLeft = '5px';
+
+            const container = document.createElement('div');
+            container.style.display = 'flex';
+            if (width === '100%') {
+                container.style.flexDirection = 'column';
+                container.style.alignItems = 'flex-start';
+            } else {
+                container.style.alignItems = 'center';
+            }
+
+            const label = document.createElement('label');
+            label.htmlFor = `hw_helper_${key}`;
+            label.innerHTML = `${labelText}: `;
+            label.style.fontFamily = 'Arial, sans-serif';
+            label.style.fontSize = '14px';
+            label.style.marginRight = '8px';
+
+            const toast = document.createElement('span');
+            toast.innerText = ' (Saved! Reload to apply)';
+            toast.style.color = 'green';
+            toast.style.fontSize = '12px';
+            toast.style.display = 'none';
+            toast.style.marginLeft = '8px';
+
+            if (width === '100%') {
+                label.appendChild(toast);
+            }
+
+            const input = document.createElement('input');
+            input.type = inputType;
+            input.id = `hw_helper_${key}`;
+            input.style.width = width || (inputType === 'number' ? '60px' : '150px');
+            if (width === '100%') {
+                input.style.boxSizing = 'border-box';
+                input.style.marginTop = '4px';
+            }
+            input.value = savedSettings[key] !== undefined ? savedSettings[key] : defaultValue;
+            input.style.border = '1px solid #ccc';
+            input.style.borderRadius = '3px';
+            input.style.padding = '2px 5px';
+
+            let toastTimeout;
+            input.addEventListener('input', (e) => {
+                const settings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+                settings[key] = e.target.value;
+                localStorage.setItem('hw_helper_settings', JSON.stringify(settings));
+                
+                toast.style.display = 'inline';
+                clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 2000);
+            });
+
+            container.appendChild(label);
+            container.appendChild(input);
+            if (width !== '100%') {
+                container.appendChild(toast);
+            }
+            wrapper.appendChild(container);
+
+            if (description) {
+                const desc = document.createElement('div');
+                desc.innerHTML = description;
+                desc.style.fontSize = '11px';
+                desc.style.color = '#555';
+                desc.style.marginTop = '4px';
+                wrapper.appendChild(desc);
+            }
+
+            return wrapper;
+        };
+
+        const topDiv = document.createElement('div');
+        topDiv.style.background = 'rgba(128, 128, 128, 0.05)';
+        topDiv.style.border = '1px solid rgba(128, 128, 128, 0.2)';
+        topDiv.style.borderRadius = '5px';
+        topDiv.style.padding = '10px';
+        topDiv.style.marginBottom = '20px';
+
+        // Add global toggle
+        topDiv.appendChild(createToggle('global_enabled', 'Enable Hobo Helper (Global)', true));
+        contentArea.appendChild(topDiv);
+
+        const modsLabel = document.createElement('div');
+        modsLabel.innerText = "Active Modules:";
+        modsLabel.style.fontWeight = 'bold';
+        modsLabel.style.fontSize = '16px';
+        modsLabel.style.marginBottom = '10px';
+        modsLabel.style.borderBottom = '2px solid rgba(128, 128, 128, 0.3)';
+        modsLabel.style.paddingBottom = '5px';
+        contentArea.appendChild(modsLabel);
+
+        const subFeatures = {};
+        if (typeof Modules !== 'undefined') {
+            Object.keys(Modules).forEach(modName => {
+                if (Modules[modName].settings) {
+                    subFeatures[modName] = Modules[modName].settings;
+                }
+            });
+        }
+
+        const gridContainer = document.createElement('div');
+        gridContainer.style.display = 'flex';
+        gridContainer.style.justifyContent = 'space-between';
+        gridContainer.style.alignItems = 'flex-start';
+        contentArea.appendChild(gridContainer);
+
+        const col1 = document.createElement('div');
+        col1.style.width = '48%';
+        gridContainer.appendChild(col1);
+
+        const col2 = document.createElement('div');
+        col2.style.width = '48%';
+        gridContainer.appendChild(col2);
+
+        if (typeof Modules !== 'undefined') {
+            const activeModules = Object.keys(Modules).filter(modName => {
+                return modName !== 'SettingsHelper' && typeof Modules[modName].init === 'function';
+            });
+
+            activeModules.sort().forEach((modName) => {
+                const moduleBlock = document.createElement('div');
+                moduleBlock.style.marginBottom = '12px';
+                moduleBlock.style.padding = '8px 10px';
+                moduleBlock.style.background = 'rgba(128, 128, 128, 0.05)';
+                moduleBlock.style.border = '1px solid rgba(128, 128, 128, 0.2)';
+                moduleBlock.style.borderRadius = '6px';
+                moduleBlock.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+
+                moduleBlock.appendChild(createToggle(modName, `<b>Enable ${modName}</b>`));
+
+                // Render sub-features if this module has them defined
+                if (subFeatures[modName]) {
+                    const subContainer = document.createElement('div');
+                    subContainer.style.paddingLeft = '25px';
+                    subContainer.style.marginTop = '8px';
+                    subContainer.style.borderLeft = '2px solid #2196F3';
+                    subFeatures[modName].forEach(feature => {
+                        let el;
+                        if (feature.type === 'number' || feature.type === 'text') {
+                            el = createInput(feature);
+                        } else {
+                            el = createToggle(feature.key, feature.label, false, feature.defaultValue !== false);
+                        }
+
+                        if (feature.parent) {
+                            const parentCheckbox = document.getElementById(`hw_helper_${feature.parent}`);
+                            if (parentCheckbox) {
+                                const containerDiv = el;
+                                const updateVisibility = () => {
+                                    containerDiv.style.opacity = parentCheckbox.checked ? '1' : '0.4';
+                                    containerDiv.style.pointerEvents = parentCheckbox.checked ? 'auto' : 'none';
+                                };
+                                parentCheckbox.addEventListener('change', updateVisibility);
+                                updateVisibility();
+                            }
+                        }
+
+                        subContainer.appendChild(el);
+                    });
+                    moduleBlock.appendChild(subContainer);
+                }
+
+                // Custom settings for FoodHelper
+                if (modName === 'FoodHelper') {
+                    const foodContainer = document.createElement('div');
+                    foodContainer.style.paddingLeft = '25px';
+                    foodContainer.style.marginTop = '10px';
+
+                    const label = document.createElement('b');
+                    label.innerText = 'Crap Foods List:';
+                    label.style.display = 'block';
+                    label.style.marginBottom = '5px';
+                    foodContainer.appendChild(label);
+
+                    const listContainer = document.createElement('div');
+                    listContainer.style.background = 'rgba(0, 0, 0, 0.05)';
+                    listContainer.style.padding = '10px';
+                    listContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
+                    listContainer.style.borderRadius = '4px';
+                    listContainer.style.maxWidth = '100%';
+
+                    const crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
+                    if (crapList.length === 0) {
+                        listContainer.innerText = 'No foods marked as crap.';
+                    } else {
+                        const ul = document.createElement('ul');
+                        ul.style.margin = '0';
+                        ul.style.paddingLeft = '20px';
+                        crapList.forEach(food => {
+                            const li = document.createElement('li');
+                            const a = document.createElement('a');
+                            a.href = '#';
+                            a.innerText = '[x]';
+                            a.style.color = 'red';
+                            a.style.textDecoration = 'none';
+                            a.style.marginRight = '5px';
+                            a.title = 'Remove from Crap list';
+                            a.onclick = (e) => {
+                                e.preventDefault();
+                                let currentList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
+                                const updatedList = currentList.filter(f => f !== food);
+                                localStorage.setItem('hw_helper_food_crap', JSON.stringify(updatedList));
+                                li.remove();
+                                if (updatedList.length === 0) {
+                                    listContainer.innerText = 'No foods marked as crap.';
+                                }
+                            };
+                            li.appendChild(a);
+                            li.appendChild(document.createTextNode(food));
+                            ul.appendChild(li);
+                        });
+                        listContainer.appendChild(ul);
+                    }
+                    foodContainer.appendChild(listContainer);
+                    moduleBlock.appendChild(foodContainer);
+                }
+
+                // Manually balance columns: FoodHelper's large box goes left, the rest goes right.
+                if (modName <= 'FoodHelper') {
+                    col1.appendChild(moduleBlock);
+                } else {
+                    col2.appendChild(moduleBlock);
+                }
+            });
+        }
+    }
+}
+
 const SoupKitchenHelper = {
+    cmds: 'soup_kitchen',
     init: function() {
         if (!window.location.search.includes('cmd=soup_kitchen')) return;
 
@@ -4765,6 +4775,7 @@ const SoupKitchenHelper = {
 };
 
 const TattooParlorHelper = {
+    cmds: 'tattoo_parlor',
             init: function() {
                 const urlParams = new URLSearchParams(window.location.search);
                 if (urlParams.get('cmd') === 'tattoo_parlor') {
@@ -4795,6 +4806,7 @@ const TattooParlorHelper = {
         }
 
 const UniversityHelper = {
+    cmds: 'uni',
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
         const cmd = urlParams.get('cmd');
@@ -4882,6 +4894,7 @@ const UniversityHelper = {
 };
 
 const WeaponsHelper = {
+    cmds: 'wep',
     settings: [
         { key: 'WeaponsHelper_EnableFeature', label: 'Enable Weapons Helper' }
     ],
@@ -4942,6 +4955,7 @@ const WeaponsHelper = {
 };
 
 const WellnessClinicHelper = {
+    cmds: 'wellness_clinic',
             init: function() {
                 const url = window.location.href;
 
@@ -5125,14 +5139,20 @@ const ChangelogData = {
         }
     ]
 };
-    const Modules = {
+    const DataModules = {
+        DrinksData,
+        FoodData,
+        ChangelogData
+    };
+
+    const GlobalModules = {
         BackpackHelper,
         DisplayHelper,
-        DrinksData,
         DrinksHelper,
-        FoodData,
         FoodHelper,
-        SettingsHelper,
+    };
+
+    const PageModules = {
         BankHelper,
         BernardsBasementHelper,
         CanDepoHelper,
@@ -5149,22 +5169,57 @@ const ChangelogData = {
         NorthernFenceHelper,
         RatsHelper,
         RecyclingBinHelper,
+        SettingsHelper,
         SoupKitchenHelper,
         TattooParlorHelper,
         UniversityHelper,
         WeaponsHelper,
         WellnessClinicHelper,
-        ChangelogData
     };
 
+    // Alias for easy access across helpers if needed
+    const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
+    if (typeof window !== 'undefined') {
+        window.HoboHelperModules = Modules;
+    }
+
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+
+    // Cache the settings globally so individual modules do not repeatedly block the main thread on synchronous LocalStorage I/O during initialization
+    if (typeof Utils !== 'undefined') {
+        Utils.getSettings = function() { return savedSettings; };
+    }
+
     const globalEnabled = savedSettings['global_enabled'] !== false;
     const urlParams = new URLSearchParams(window.location.search);
     const currentCmd = urlParams.get('cmd') || '';
 
-    // Initialize all modules
-    Object.keys(Modules).forEach(moduleName => {
-        const module = Modules[moduleName];
+    // Initialize Global Modules first
+    Object.values(GlobalModules).forEach(module => {
+        if (typeof module.alwaysInit === 'function') {
+            module.alwaysInit();
+        }
+
+        if (typeof module.init === 'function') {
+            const moduleName = Object.keys(GlobalModules).find(key => GlobalModules[key] === module);
+            const moduleEnabled = savedSettings[moduleName] !== false;
+            
+            if (globalEnabled && moduleEnabled) {
+                module.init();
+            }
+        }
+    });
+
+    // Filter and Initialize Page Modules
+    const matchingPageModules = Object.keys(PageModules).filter(moduleName => {
+        const module = PageModules[moduleName];
+        if (module.cmds === undefined || module.cmds === null) return true;
+        if (Array.isArray(module.cmds)) return module.cmds.includes(currentCmd);
+        return module.cmds === currentCmd;
+    });
+
+    matchingPageModules.forEach(moduleName => {
+        const module = PageModules[moduleName];
 
         if (typeof module.alwaysInit === 'function') {
             module.alwaysInit();
@@ -5173,22 +5228,7 @@ const ChangelogData = {
         if (typeof module.init === 'function') {
             const moduleEnabled = savedSettings[moduleName] !== false;
             
-            // Check if module specifies cmds constraint
-            const hasCmdRestriction = module.cmds !== undefined && module.cmds !== null;
-            let isCmdMatch = false;
-            
-            if (hasCmdRestriction) {
-                if (Array.isArray(module.cmds)) {
-                    isCmdMatch = module.cmds.includes(currentCmd);
-                } else if (typeof module.cmds === 'string') {
-                    isCmdMatch = module.cmds === currentCmd;
-                }
-            } else {
-                // If no cmds specified, assume it's a global module
-                isCmdMatch = true;
-            }
-
-            if (isCmdMatch && (moduleName === 'SettingsHelper' || (globalEnabled && moduleEnabled))) {
+            if (moduleName === 'SettingsHelper' || (globalEnabled && moduleEnabled)) {
                 module.init();
             }
         }

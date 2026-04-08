@@ -80,30 +80,49 @@ if ($Release) {
 }
 
 $templateContent = Get-Content -Path "src/template.js" -Raw
-$helpersContent = Get-Content -Path "src/utils.js" -Raw
+$utilsContent = Get-Content -Path "src/utils.js" -Raw
 
-$globalModules = Get-ChildItem -Path "src/modules/global/*.js"
-$pageModules = Get-ChildItem -Path "src/modules/page/*.js"
-$moduleFiles = $globalModules + $pageModules
+$dataModules = Get-ChildItem -Path "src/modules/data/*.js" -ErrorAction SilentlyContinue
+$globalModules = Get-ChildItem -Path "src/modules/global/*.js" -ErrorAction SilentlyContinue
+$pageModules = Get-ChildItem -Path "src/modules/page/*.js" -ErrorAction SilentlyContinue
 
 $modulesContent = ""
-$moduleExportsContent = ""
-for ($i = 0; $i -lt $moduleFiles.Count; $i++) {
-    $file = $moduleFiles[$i]
-    $moduleName = $file.BaseName
+$dataModuleExportsContent = ""
+$globalModuleExportsContent = ""
+$pageModuleExportsContent = ""
 
-    $modulesContent += (Get-Content -Path $file.FullName -Raw).TrimEnd()
-    $modulesContent += "`n`n"
+if ($dataModules) {
+    foreach ($file in $dataModules) {
+        $moduleName = $file.BaseName
+        $modulesContent += (Get-Content -Path $file.FullName -Raw).TrimEnd() + "`n`n"
+        $dataModuleExportsContent += "        ${moduleName},`n"
+    }
+}
 
-    $moduleExportsContent += "        ${moduleName},`n"
+if ($globalModules) {
+    foreach ($file in $globalModules) {
+        $moduleName = $file.BaseName
+        $modulesContent += (Get-Content -Path $file.FullName -Raw).TrimEnd() + "`n`n"
+        $globalModuleExportsContent += "        ${moduleName},`n"
+    }
+}
+
+if ($pageModules) {
+    foreach ($file in $pageModules) {
+        $moduleName = $file.BaseName
+        $modulesContent += (Get-Content -Path $file.FullName -Raw).TrimEnd() + "`n`n"
+        $pageModuleExportsContent += "        ${moduleName},`n"
+    }
 }
 
 $modulesContent += $changelogDataScript.TrimEnd() + "`n`n"
-$moduleExportsContent += "        ChangelogData`n"
+$dataModuleExportsContent += "        ChangelogData`n"
 
-$finalContent = $templateContent.Replace("// {{HELPERS}}", $helpersContent.TrimEnd())
+$finalContent = $templateContent.Replace("// {{UTILS}}", $utilsContent.TrimEnd())
 $finalContent = $finalContent.Replace("// {{MODULES}}", $modulesContent.TrimEnd())
-$finalContent = $finalContent.Replace("// {{MODULE_EXPORTS}}", $moduleExportsContent.TrimEnd())
+$finalContent = $finalContent.Replace("// {{DATA_MODULE_EXPORTS}}", $dataModuleExportsContent.TrimEnd())
+$finalContent = $finalContent.Replace("// {{GLOBAL_MODULE_EXPORTS}}", $globalModuleExportsContent.TrimEnd())
+$finalContent = $finalContent.Replace("// {{PAGE_MODULE_EXPORTS}}", $pageModuleExportsContent.TrimEnd())
 $finalContent = $finalContent.Replace("{{NAME}}", $scriptName)
 $finalContent = $finalContent.Replace("{{VERSION}}", $version)
 

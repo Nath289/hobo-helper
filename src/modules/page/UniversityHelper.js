@@ -1,15 +1,13 @@
 const UniversityHelper = {
+    cmds: 'uni',
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
-        const cmd = urlParams.get('cmd');
         const doParam = urlParams.get('do');
         
-        if (cmd === 'uni') {
-            if (['str', 'pow', 'spd'].includes(doParam)) {
-                this.updateStatsFromTrain();
-            }
-            this.displayNeededStats();
+        if (['str', 'pow', 'spd'].includes(doParam)) {
+            this.updateStatsFromTrain();
         }
+        this.displayNeededStats();
     },
 
     updateStatsFromTrain: function() {
@@ -84,3 +82,4 @@ const UniversityHelper = {
         });
     }
 };
+

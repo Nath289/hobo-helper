@@ -1,6 +1,6 @@
 const RecyclingBinHelper = {
+    cmds: 'recycling_bin',
     init: function() {
-        if (!Utils.isCurrentPage('cmd=recycling_bin')) return;
 
         const settings = Utils.getSettings();
         if (settings.global_enabled === false) return;
@@ -31,3 +31,4 @@ const RecyclingBinHelper = {
         }
     }
 };
+

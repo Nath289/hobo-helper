@@ -1,4 +1,5 @@
 const RatsHelper = {
+    cmds: 'rats',
     settings: [
         { key: 'RatsHelper_NewsFilter', label: 'Rat News Filter' }
     ],
@@ -104,4 +105,5 @@ const RatsHelper = {
         form.parentNode.insertBefore(filterContainer, form);
     }
 };
+
 

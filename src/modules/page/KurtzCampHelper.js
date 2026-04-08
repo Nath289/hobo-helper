@@ -1,7 +1,6 @@
 const KurtzCampHelper = {
+    cmds: 'camp_kurtz',
     init: function() {
-        if (!Utils.isCurrentPage('cmd=camp_kurtz')) return;
-        
         // Check Settings
         const settings = Utils.getSettings();
         if (settings.kurtzCampHelper === false) return;
@@ -61,3 +60,4 @@ const KurtzCampHelper = {
         });
     }
 };
+

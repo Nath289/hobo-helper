@@ -137,10 +137,6 @@ const LivingAreaHelper = {
     },
 
     initMixerLink: function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const cmd = urlParams.get('cmd');
-        if (cmd) return;
-
         const gearInfo = document.getElementById('gearInfo');
         if (!gearInfo) return;
         
