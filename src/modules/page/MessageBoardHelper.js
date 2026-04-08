@@ -1,7 +1,15 @@
 const MessageBoardHelper = {
     settings: [
         { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
-        { key: 'MessageBoardHelper_VoteButtons', label: 'Larger Vote Buttons' }
+        { key: 'MessageBoardHelper_VoteButtons', label: 'Larger Vote Buttons' },
+        {
+            key: 'MessageBoardHelper_AddPaidMessageTemplate',
+            label: 'Add Paid Message Text',
+            type: 'text',
+            defaultValue: '[hoboname={hoboId}][hex=777777][i]edit: [b]PAID[/b][/i][/hex]',
+            width: '100%',
+            description: 'Available variables: {hoboname}, {hoboId}, {date}'
+        }
     ],
     init: function() {
         if (!Utils.isCurrentPage('cmd=gathering')) return;
@@ -129,10 +137,10 @@ const MessageBoardHelper = {
             });
         }
 
-        this.addPaidMessageButton(messageArea);
+        this.addPaidMessageButton(messageArea, settings);
     },
 
-    addPaidMessageButton: function(messageArea) {
+    addPaidMessageButton: function(messageArea, settings) {
         const editButton = document.querySelector('input[type="submit"][value*="Edit Post"]');
         if (!editButton) return;
 
@@ -157,8 +165,19 @@ const MessageBoardHelper = {
         btn.style.display = 'inline-block';
         
         btn.addEventListener('click', () => {
-            const hoboName = Utils.getHoboName();
-            const appendText = `\n\n[i]${hoboName} Edit: Paid[/i]`;
+            const hoboName = Utils.getHoboName() || 'Unknown';
+            const hoboId = Utils.getHoboId() || 'Unknown';
+            const dateStr = Utils.getFormattedHoboDateTime ? Utils.getFormattedHoboDateTime() : new Date().toLocaleDateString();
+
+            let rawTemplate = settings?.MessageBoardHelper_AddPaidMessageTemplate;
+            if (rawTemplate === undefined || rawTemplate === null) {
+                rawTemplate = '[hoboname={hoboId}][hex=777777][i]edit: [b]PAID[/b][/i][/hex]';
+            }
+
+            const appendText = '\n\n' + String(rawTemplate)
+                .replace(/{hoboname}/gi, hoboName)
+                .replace(/{hoboId}/gi, hoboId)
+                .replace(/{date}/gi, dateStr);
 
             messageArea.value += appendText;
             messageArea.focus();

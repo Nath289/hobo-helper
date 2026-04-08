@@ -72,12 +72,20 @@ const SettingsHelper = {
             return container;
         };
 
-        const createInput = (key, labelText, inputType, defaultValue) => {
+        const createInput = (feature) => {
+            const { key, label: labelText, type: inputType, defaultValue, width, description } = feature;
+            const wrapper = document.createElement('div');
+            wrapper.style.marginBottom = '8px';
+            wrapper.style.paddingLeft = '5px';
+
             const container = document.createElement('div');
-            container.style.marginBottom = '8px';
-            container.style.paddingLeft = '5px';
             container.style.display = 'flex';
-            container.style.alignItems = 'center';
+            if (width === '100%') {
+                container.style.flexDirection = 'column';
+                container.style.alignItems = 'flex-start';
+            } else {
+                container.style.alignItems = 'center';
+            }
 
             const label = document.createElement('label');
             label.htmlFor = `hw_helper_${key}`;
@@ -86,21 +94,29 @@ const SettingsHelper = {
             label.style.fontSize = '14px';
             label.style.marginRight = '8px';
 
-            const input = document.createElement('input');
-            input.type = inputType;
-            input.id = `hw_helper_${key}`;
-            input.style.width = inputType === 'number' ? '60px' : '150px';
-            input.value = savedSettings[key] !== undefined ? savedSettings[key] : defaultValue;
-            input.style.border = '1px solid #ccc';
-            input.style.borderRadius = '3px';
-            input.style.padding = '2px 5px';
-
             const toast = document.createElement('span');
             toast.innerText = ' (Saved! Reload to apply)';
             toast.style.color = 'green';
             toast.style.fontSize = '12px';
             toast.style.display = 'none';
             toast.style.marginLeft = '8px';
+
+            if (width === '100%') {
+                label.appendChild(toast);
+            }
+
+            const input = document.createElement('input');
+            input.type = inputType;
+            input.id = `hw_helper_${key}`;
+            input.style.width = width || (inputType === 'number' ? '60px' : '150px');
+            if (width === '100%') {
+                input.style.boxSizing = 'border-box';
+                input.style.marginTop = '4px';
+            }
+            input.value = savedSettings[key] !== undefined ? savedSettings[key] : defaultValue;
+            input.style.border = '1px solid #ccc';
+            input.style.borderRadius = '3px';
+            input.style.padding = '2px 5px';
 
             let toastTimeout;
             input.addEventListener('input', (e) => {
@@ -115,8 +131,21 @@ const SettingsHelper = {
 
             container.appendChild(label);
             container.appendChild(input);
-            container.appendChild(toast);
-            return container;
+            if (width !== '100%') {
+                container.appendChild(toast);
+            }
+            wrapper.appendChild(container);
+
+            if (description) {
+                const desc = document.createElement('div');
+                desc.innerHTML = description;
+                desc.style.fontSize = '11px';
+                desc.style.color = '#555';
+                desc.style.marginTop = '4px';
+                wrapper.appendChild(desc);
+            }
+
+            return wrapper;
         };
 
         const topDiv = document.createElement('div');
@@ -187,7 +216,7 @@ const SettingsHelper = {
                     subFeatures[modName].forEach(feature => {
                         let el;
                         if (feature.type === 'number' || feature.type === 'text') {
-                            el = createInput(feature.key, feature.label, feature.type, feature.defaultValue);
+                            el = createInput(feature);
                         } else {
                             el = createToggle(feature.key, feature.label, false, feature.defaultValue !== false);
                         }

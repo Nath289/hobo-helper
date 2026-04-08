@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.04] - 2026-04-08
+### Added
+- Created a configurable interface for the `MessageBoardHelper` "Add Paid Message Text" append button. Users can now override the prepended message format using custom text combined with dynamic variables `{hoboname}`, `{hoboId}`, and `{date}`.
+### Changed
+- Expanded `SettingsHelper` layout architecture to handle fluid input scaling (e.g. `100%` width blocks) and trailing feature description texts natively.
+
 ## [8.03] - 2026-04-08
 ### Added
 - Added a visual indicator to the Living Area that applies a pale red background to the Special Item container when the item is inactive.

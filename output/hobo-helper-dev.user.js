@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.02.20260408.2152
+// @version      8.03.20260408.2210
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -1108,12 +1108,20 @@ const SettingsHelper = {
             return container;
         };
 
-        const createInput = (key, labelText, inputType, defaultValue) => {
+        const createInput = (feature) => {
+            const { key, label: labelText, type: inputType, defaultValue, width, description } = feature;
+            const wrapper = document.createElement('div');
+            wrapper.style.marginBottom = '8px';
+            wrapper.style.paddingLeft = '5px';
+
             const container = document.createElement('div');
-            container.style.marginBottom = '8px';
-            container.style.paddingLeft = '5px';
             container.style.display = 'flex';
-            container.style.alignItems = 'center';
+            if (width === '100%') {
+                container.style.flexDirection = 'column';
+                container.style.alignItems = 'flex-start';
+            } else {
+                container.style.alignItems = 'center';
+            }
 
             const label = document.createElement('label');
             label.htmlFor = `hw_helper_${key}`;
@@ -1122,21 +1130,29 @@ const SettingsHelper = {
             label.style.fontSize = '14px';
             label.style.marginRight = '8px';
 
-            const input = document.createElement('input');
-            input.type = inputType;
-            input.id = `hw_helper_${key}`;
-            input.style.width = inputType === 'number' ? '60px' : '150px';
-            input.value = savedSettings[key] !== undefined ? savedSettings[key] : defaultValue;
-            input.style.border = '1px solid #ccc';
-            input.style.borderRadius = '3px';
-            input.style.padding = '2px 5px';
-
             const toast = document.createElement('span');
             toast.innerText = ' (Saved! Reload to apply)';
             toast.style.color = 'green';
             toast.style.fontSize = '12px';
             toast.style.display = 'none';
             toast.style.marginLeft = '8px';
+
+            if (width === '100%') {
+                label.appendChild(toast);
+            }
+
+            const input = document.createElement('input');
+            input.type = inputType;
+            input.id = `hw_helper_${key}`;
+            input.style.width = width || (inputType === 'number' ? '60px' : '150px');
+            if (width === '100%') {
+                input.style.boxSizing = 'border-box';
+                input.style.marginTop = '4px';
+            }
+            input.value = savedSettings[key] !== undefined ? savedSettings[key] : defaultValue;
+            input.style.border = '1px solid #ccc';
+            input.style.borderRadius = '3px';
+            input.style.padding = '2px 5px';
 
             let toastTimeout;
             input.addEventListener('input', (e) => {
@@ -1151,8 +1167,21 @@ const SettingsHelper = {
 
             container.appendChild(label);
             container.appendChild(input);
-            container.appendChild(toast);
-            return container;
+            if (width !== '100%') {
+                container.appendChild(toast);
+            }
+            wrapper.appendChild(container);
+
+            if (description) {
+                const desc = document.createElement('div');
+                desc.innerHTML = description;
+                desc.style.fontSize = '11px';
+                desc.style.color = '#555';
+                desc.style.marginTop = '4px';
+                wrapper.appendChild(desc);
+            }
+
+            return wrapper;
         };
 
         const topDiv = document.createElement('div');
@@ -1223,7 +1252,7 @@ const SettingsHelper = {
                     subFeatures[modName].forEach(feature => {
                         let el;
                         if (feature.type === 'number' || feature.type === 'text') {
-                            el = createInput(feature.key, feature.label, feature.type, feature.defaultValue);
+                            el = createInput(feature);
                         } else {
                             el = createToggle(feature.key, feature.label, false, feature.defaultValue !== false);
                         }
@@ -3463,7 +3492,15 @@ const LockoutHelper = {
 const MessageBoardHelper = {
     settings: [
         { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
-        { key: 'MessageBoardHelper_VoteButtons', label: 'Larger Vote Buttons' }
+        { key: 'MessageBoardHelper_VoteButtons', label: 'Larger Vote Buttons' },
+        {
+            key: 'MessageBoardHelper_AddPaidMessageTemplate',
+            label: 'Add Paid Message Text',
+            type: 'text',
+            defaultValue: '[hoboname={hoboId}][hex=777777][i]edit: [b]PAID[/b][/i][/hex]',
+            width: '100%',
+            description: 'Available variables: {hoboname}, {hoboId}, {date}'
+        }
     ],
     init: function() {
         if (!Utils.isCurrentPage('cmd=gathering')) return;
@@ -3591,10 +3628,10 @@ const MessageBoardHelper = {
             });
         }
 
-        this.addPaidMessageButton(messageArea);
+        this.addPaidMessageButton(messageArea, settings);
     },
 
-    addPaidMessageButton: function(messageArea) {
+    addPaidMessageButton: function(messageArea, settings) {
         const editButton = document.querySelector('input[type="submit"][value*="Edit Post"]');
         if (!editButton) return;
 
@@ -3619,8 +3656,19 @@ const MessageBoardHelper = {
         btn.style.display = 'inline-block';
         
         btn.addEventListener('click', () => {
-            const hoboName = Utils.getHoboName();
-            const appendText = `\n\n[i]${hoboName} Edit: Paid[/i]`;
+            const hoboName = Utils.getHoboName() || 'Unknown';
+            const hoboId = Utils.getHoboId() || 'Unknown';
+            const dateStr = Utils.getFormattedHoboDateTime ? Utils.getFormattedHoboDateTime() : new Date().toLocaleDateString();
+
+            let rawTemplate = settings?.MessageBoardHelper_AddPaidMessageTemplate;
+            if (rawTemplate === undefined || rawTemplate === null) {
+                rawTemplate = '[hoboname={hoboId}][hex=777777][i]edit: [b]PAID[/b][/i][/hex]';
+            }
+
+            const appendText = '\n\n' + String(rawTemplate)
+                .replace(/{hoboname}/gi, hoboName)
+                .replace(/{hoboId}/gi, hoboId)
+                .replace(/{date}/gi, dateStr);
 
             messageArea.value += appendText;
             messageArea.focus();
@@ -5032,6 +5080,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.03",
+            date: "2026-04-08",
+            type: "Added",
+            notes: [
+                "Added a visual indicator to the Living Area that applies a pale red background to the Special Item container when the item is inactive."
+            ]
+        },
+        {
             version: "8.02",
             date: "2026-04-08",
             type: "Changed",
@@ -5064,17 +5120,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Improved layout and styling of \"Give a Loan\" and \"Clear a Loan\" forms in the Gang Loans helper."
-            ]
-        },
-        {
-            version: "7.98",
-            date: "2026-04-08",
-            type: "Added",
-            notes: [
-                "Added a \"Remove\" button to the `MessageBoardHelper` \"Add Payment\" panel to cleanly delete previously saved payments.",
-                "Added a \"Cancel\" button to easily dismiss the \"Add Payment\" panel without saving changes.",
-                "The `MessageBoardHelper` \"Add Payment\" logic has been refactored to act as an update for existing payments instead of creating duplicate records. The submit button now dynamically displays \"Update\" or \"Save\" based on the payment's saved status.",
-                "Fixed an issue where saving an already tracked post payment would endlessly duplicate the row within the `GangLoansHelper` dashboard instead of replacing the old record."
             ]
         }
     ]
