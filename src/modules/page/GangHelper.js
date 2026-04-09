@@ -31,6 +31,15 @@ const GangHelper = {
 
     initGangMemberList: function() {
         console.log("GangHelper loaded on member list page.");
+
+        const style = document.createElement('style');
+        style.textContent = `
+            #sortabletable tbody tr.even td { background-color: #f3f3f3; }
+            #sortabletable tbody tr.odd td { background-color: #ffffff; }
+            #sortabletable tbody tr:hover td { background-color: #e8f4f8; }
+        `;
+        document.head.appendChild(style);
+
         let mainNav = document.querySelector('a.nav.show1');
         let battleNav = document.querySelector('a.nav.show2');
         let otherNav = document.querySelector('a.nav.show3');

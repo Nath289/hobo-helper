@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.06] - 2026-04-09
+### Fixed
+- Fixed the Gang Member List table styling by re-injecting CSS to support native `.even`/`.odd` row background colours and an interactive `#e8f4f8` hover effect.
+
 ## [8.05] - 2026-04-09
 ### Added
 - Added a customizable column selector to the `GangHelper` Member List page (`cmd=gang&do=list_mem`), allowing users to toggle specific data columns on and off dynamically.

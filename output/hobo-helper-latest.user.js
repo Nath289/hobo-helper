@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.05
+// @version      8.06
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -1376,6 +1376,15 @@ const GangHelper = {
 
     initGangMemberList: function() {
         console.log("GangHelper loaded on member list page.");
+
+        const style = document.createElement('style');
+        style.textContent = `
+            #sortabletable tbody tr.even td { background-color: #f3f3f3; }
+            #sortabletable tbody tr.odd td { background-color: #ffffff; }
+            #sortabletable tbody tr:hover td { background-color: #e8f4f8; }
+        `;
+        document.head.appendChild(style);
+
         let mainNav = document.querySelector('a.nav.show1');
         let battleNav = document.querySelector('a.nav.show2');
         let otherNav = document.querySelector('a.nav.show3');
@@ -5263,6 +5272,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.06",
+            date: "2026-04-09",
+            type: "Fixed",
+            notes: [
+                "Fixed the Gang Member List table styling by re-injecting CSS to support native `.even`/`.odd` row background colours and an interactive `#e8f4f8` hover effect."
+            ]
+        },
+        {
             version: "8.05",
             date: "2026-04-09",
             type: "Added",
@@ -5296,15 +5313,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Refactored `BackpackHelper`'s Favourite Drinks logic to build a single DOM node map instead of relying on recursive query loops. This severely limits browser memory usage and prevents lag/stutters on accounts with massive inventories."
-            ]
-        },
-        {
-            version: "8.01",
-            date: "2026-04-08",
-            type: "Added",
-            notes: [
-                "Added a \"Favourite Drinks\" section that automatically displays your top 5 consumed drinks in the backpack and living area modes, increasing image sizes for quick tapping.",
-                "Drink consumption is now successfully tracked automatically when drank directly from backpack/living area locations."
             ]
         }
     ]
