@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.05.20260409.1259
+// @version      8.06.20260409.1320
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -4456,20 +4456,22 @@ const RatsHelper = {
             let ratName = 'Unknown';
             const strongTag = td.querySelector('b');
             if (strongTag) {
-                ratName = strongTag.innerText.trim();
-            } else if (td.innerText.includes('passed away')) {
+                ratName = strongTag.textContent.trim();
+            } else if (td.textContent.includes('passed away')) {
                 // Your rat Two Headed Rat passed away... etc
-                const match = td.innerText.match(/Your rat (.*?) passed away/);
+                const match = td.textContent.match(/Your rat (.*?) passed away/);
                 if (match && match[1]) {
                     ratName = match[1].trim();
                 }
             }
 
-            row.dataset.ratName = ratName;
-            ratNames.add(ratName);
+            if (ratName) {
+                row.dataset.ratName = ratName;
+                ratNames.add(ratName);
+            }
         });
 
-        if (ratNames.size === 0) return;
+        if (ratNames.size === 0 || (ratNames.size === 1 && ratNames.has(''))) return;
 
         // Build UI
         const filterContainer = document.createElement('div');
@@ -5272,6 +5274,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.06",
+            date: "2026-04-09",
+            type: "Fixed",
+            notes: [
+                "Fixed the Gang Member List table styling by re-injecting CSS to support native `.even`/`.odd` row background colours and an interactive `#e8f4f8` hover effect."
+            ]
+        },
+        {
             version: "8.05",
             date: "2026-04-09",
             type: "Added",
@@ -5305,15 +5315,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Refactored `BackpackHelper`'s Favourite Drinks logic to build a single DOM node map instead of relying on recursive query loops. This severely limits browser memory usage and prevents lag/stutters on accounts with massive inventories."
-            ]
-        },
-        {
-            version: "8.01",
-            date: "2026-04-08",
-            type: "Added",
-            notes: [
-                "Added a \"Favourite Drinks\" section that automatically displays your top 5 consumed drinks in the backpack and living area modes, increasing image sizes for quick tapping.",
-                "Drink consumption is now successfully tracked automatically when drank directly from backpack/living area locations."
             ]
         }
     ]

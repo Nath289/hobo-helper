@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.06
+// @version      8.07
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -4456,20 +4456,22 @@ const RatsHelper = {
             let ratName = 'Unknown';
             const strongTag = td.querySelector('b');
             if (strongTag) {
-                ratName = strongTag.innerText.trim();
-            } else if (td.innerText.includes('passed away')) {
+                ratName = strongTag.textContent.trim();
+            } else if (td.textContent.includes('passed away')) {
                 // Your rat Two Headed Rat passed away... etc
-                const match = td.innerText.match(/Your rat (.*?) passed away/);
+                const match = td.textContent.match(/Your rat (.*?) passed away/);
                 if (match && match[1]) {
                     ratName = match[1].trim();
                 }
             }
 
-            row.dataset.ratName = ratName;
-            ratNames.add(ratName);
+            if (ratName) {
+                row.dataset.ratName = ratName;
+                ratNames.add(ratName);
+            }
         });
 
-        if (ratNames.size === 0) return;
+        if (ratNames.size === 0 || (ratNames.size === 1 && ratNames.has(''))) return;
 
         // Build UI
         const filterContainer = document.createElement('div');
@@ -5272,6 +5274,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.07",
+            date: "2026-04-09",
+            type: "Fixed",
+            notes: [
+                "Fixed a bug in `RatsHelper` where the Rat News filter was failing to populate rat names. Switched to using `textContent` instead of `innerText` to reliably extract text from the DOM."
+            ]
+        },
+        {
             version: "8.06",
             date: "2026-04-09",
             type: "Fixed",
@@ -5305,14 +5315,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added a visual indicator to the Living Area that applies a pale red background to the Special Item container when the item is inactive."
-            ]
-        },
-        {
-            version: "8.02",
-            date: "2026-04-08",
-            type: "Changed",
-            notes: [
-                "Refactored `BackpackHelper`'s Favourite Drinks logic to build a single DOM node map instead of relying on recursive query loops. This severely limits browser memory usage and prevents lag/stutters on accounts with massive inventories."
             ]
         }
     ]

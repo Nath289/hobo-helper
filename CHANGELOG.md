@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.07] - 2026-04-09
+### Fixed
+- Fixed a bug in `RatsHelper` where the Rat News filter was failing to populate rat names. Switched to using `textContent` instead of `innerText` to reliably extract text from the DOM.
+
 ## [8.06] - 2026-04-09
 ### Fixed
 - Fixed the Gang Member List table styling by re-injecting CSS to support native `.even`/`.odd` row background colours and an interactive `#e8f4f8` hover effect.

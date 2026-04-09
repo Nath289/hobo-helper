@@ -38,20 +38,22 @@ const RatsHelper = {
             let ratName = 'Unknown';
             const strongTag = td.querySelector('b');
             if (strongTag) {
-                ratName = strongTag.innerText.trim();
-            } else if (td.innerText.includes('passed away')) {
+                ratName = strongTag.textContent.trim();
+            } else if (td.textContent.includes('passed away')) {
                 // Your rat Two Headed Rat passed away... etc
-                const match = td.innerText.match(/Your rat (.*?) passed away/);
+                const match = td.textContent.match(/Your rat (.*?) passed away/);
                 if (match && match[1]) {
                     ratName = match[1].trim();
                 }
             }
 
-            row.dataset.ratName = ratName;
-            ratNames.add(ratName);
+            if (ratName) {
+                row.dataset.ratName = ratName;
+                ratNames.add(ratName);
+            }
         });
 
-        if (ratNames.size === 0) return;
+        if (ratNames.size === 0 || (ratNames.size === 1 && ratNames.has(''))) return;
 
         // Build UI
         const filterContainer = document.createElement('div');
