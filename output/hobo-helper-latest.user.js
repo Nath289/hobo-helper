@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.04
+// @version      8.05
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
 // @grant        GM_notification
 // @noframes
-// @run-at       document-end
+// @run-at       document-start
 // ==/UserScript==
 
 (function() {
@@ -1041,92 +1041,92 @@ const BankHelper = {
     settings: [
         { key: 'BankHelper_5FightersLunches', label: "5 Fighter's Lunches Goal" }
     ],
-            getBankGoals: function() {
-                try {
-                    return JSON.parse(localStorage.getItem('hw_bank_goals') || '{}');
-                } catch(e) {
-                    return {};
-                }
-            },
-            addBankGoal: function(actionName, cost) {
-                const goals = this.getBankGoals();
-                if (cost === 0 || cost === null) {
-                    delete goals[actionName];
-                } else {
-                    goals[actionName] = cost;
-                }
-                if (Object.keys(goals).length === 0) {
-                    localStorage.removeItem('hw_bank_goals');
-                } else {
-                    localStorage.setItem('hw_bank_goals', JSON.stringify(goals));
-                }
-            },
-            init: function() {
-                const settings = Utils.getSettings();
-                const withdrawInput = document.getElementById('w_money');
-                const withdrawForm = document.querySelector('form[name="with"]');
-                const nativeWithdrawBtn = withdrawForm ? withdrawForm.querySelector('input[type="submit"]') : null;
+    getBankGoals: function() {
+        try {
+            return JSON.parse(localStorage.getItem('hw_bank_goals') || '{}');
+        } catch(e) {
+            return {};
+        }
+    },
+    addBankGoal: function(actionName, cost) {
+        const goals = this.getBankGoals();
+        if (cost === 0 || cost === null) {
+            delete goals[actionName];
+        } else {
+            goals[actionName] = cost;
+        }
+        if (Object.keys(goals).length === 0) {
+            localStorage.removeItem('hw_bank_goals');
+        } else {
+            localStorage.setItem('hw_bank_goals', JSON.stringify(goals));
+        }
+    },
+    init: function() {
+        const settings = Utils.getSettings();
+        const withdrawInput = document.getElementById('w_money');
+        const withdrawForm = document.querySelector('form[name="with"]');
+        const nativeWithdrawBtn = withdrawForm ? withdrawForm.querySelector('input[type="submit"]') : null;
 
-                if (!withdrawInput || !nativeWithdrawBtn) return;
+        if (!withdrawInput || !nativeWithdrawBtn) return;
 
-                if (settings.BankHelper_5FightersLunches !== false) {
-                    const level = Utils.getHoboLevel();
-                    const lunchCost = Utils.getFightersLunchCost(level);
-                    const totalCost = lunchCost * 5;
+        if (settings.BankHelper_5FightersLunches !== false) {
+            const level = Utils.getHoboLevel();
+            const lunchCost = Utils.getFightersLunchCost(level);
+            const totalCost = lunchCost * 5;
 
-                    if (totalCost > 0) {
-                        let clickCount = 0;
-                        const lunchBtn = document.createElement('input');
-                        lunchBtn.type = 'button';
-                        lunchBtn.value = ` + Add 5 Fighter's Lunches ($${totalCost.toLocaleString()}) `;
-                        lunchBtn.style.marginLeft = '10px';
-                        lunchBtn.style.cursor = 'pointer';
-                        lunchBtn.style.backgroundColor = '#e6f7ff';
-                        lunchBtn.style.border = '1px solid #91d5ff';
+            if (totalCost > 0) {
+                let clickCount = 0;
+                const lunchBtn = document.createElement('input');
+                lunchBtn.type = 'button';
+                lunchBtn.value = ` + Add 5 Fighter's Lunches ($${totalCost.toLocaleString()}) `;
+                lunchBtn.style.marginLeft = '10px';
+                lunchBtn.style.cursor = 'pointer';
+                lunchBtn.style.backgroundColor = '#e6f7ff';
+                lunchBtn.style.border = '1px solid #91d5ff';
 
-                        lunchBtn.onclick = function() {
-                            clickCount++;
-                            let currentVal = parseInt(withdrawInput.value.replace(/,/g, '')) || 0;
-                            withdrawInput.value = (currentVal + totalCost).toString();
-                            
-                            this.value = ` + Add 5 Fighter's Lunches ($${totalCost.toLocaleString()}) [Added ${clickCount * 5}] `;
-                        };
+                lunchBtn.onclick = function() {
+                    clickCount++;
+                    let currentVal = parseInt(withdrawInput.value.replace(/,/g, '')) || 0;
+                    withdrawInput.value = (currentVal + totalCost).toString();
 
-                        nativeWithdrawBtn.parentNode.insertBefore(lunchBtn, nativeWithdrawBtn.nextSibling);
-                    }
-                }
+                    this.value = ` + Add 5 Fighter's Lunches ($${totalCost.toLocaleString()}) [Added ${clickCount * 5}] `;
+                };
 
-                const goals = this.getBankGoals();
-                if (Object.keys(goals).length === 0) return;
-
-                Object.keys(goals).forEach(goalName => {
-                    const goalVal = parseInt(goals[goalName]);
-                    if (isNaN(goalVal) || goalVal <= 0) return;
-
-                    const btn = document.createElement('input');
-                    btn.type = 'button';
-                    btn.value = ` + Add ${goalName} ($${goalVal.toLocaleString()}) `;
-                    btn.style.marginLeft = '10px';
-                    btn.style.cursor = 'pointer';
-                    btn.style.backgroundColor = '#e6f7ff';
-                    btn.style.border = '1px solid #91d5ff';
-
-                    btn.onclick = function() {
-                        let currentVal = parseInt(withdrawInput.value.replace(/,/g, '')) || 0;
-                        withdrawInput.value = (currentVal + goalVal).toString();
-
-                        Modules.BankHelper.addBankGoal(goalName, 0);
-
-                        this.value = "Added!";
-                        this.disabled = true;
-                        this.style.backgroundColor = '#f5f5f5';
-                        this.style.border = '1px solid #d9d9d9';
-                    };
-
-                    nativeWithdrawBtn.parentNode.insertBefore(btn, nativeWithdrawBtn.nextSibling);
-                });
+                nativeWithdrawBtn.parentNode.insertBefore(lunchBtn, nativeWithdrawBtn.nextSibling);
             }
         }
+
+        const goals = this.getBankGoals();
+        if (Object.keys(goals).length === 0) return;
+
+        Object.keys(goals).forEach(goalName => {
+            const goalVal = parseInt(goals[goalName]);
+            if (isNaN(goalVal) || goalVal <= 0) return;
+
+            const btn = document.createElement('input');
+            btn.type = 'button';
+            btn.value = ` + Add ${goalName} ($${goalVal.toLocaleString()}) `;
+            btn.style.marginLeft = '10px';
+            btn.style.cursor = 'pointer';
+            btn.style.backgroundColor = '#e6f7ff';
+            btn.style.border = '1px solid #91d5ff';
+
+            btn.onclick = function() {
+                let currentVal = parseInt(withdrawInput.value.replace(/,/g, '')) || 0;
+                withdrawInput.value = (currentVal + goalVal).toString();
+
+                Modules.BankHelper.addBankGoal(goalName, 0);
+
+                this.value = "Added!";
+                this.disabled = true;
+                this.style.backgroundColor = '#f5f5f5';
+                this.style.border = '1px solid #d9d9d9';
+            };
+
+            nativeWithdrawBtn.parentNode.insertBefore(btn, nativeWithdrawBtn.nextSibling);
+        });
+    }
+}
 
 const BernardsBasementHelper = {
     cmds: 'bernards',
@@ -1350,21 +1350,21 @@ const GangHelper = {
     ],
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
-        const cmd = urlParams.get('cmd');
         const doParam = urlParams.get('do');
         const wParam = urlParams.get('w');
         
-        // Ensure we are on the Gang page
-        if (cmd !== 'gang' || doParam !== 'enter') return;
-
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
 
         if (savedSettings['GangHelper_EnableFeature'] !== false) {
-            // Check if we are viewing the last gang happenings
-            if (wParam === 'lastsh') {
-                this.initGangHappenings();
-            } else {
-                this.initGangFeature();
+            if (doParam === 'list_mem') {
+                this.initGangMemberList();
+            } else if (doParam === 'enter') {
+                // Check if we are viewing the last gang happenings
+                if (wParam === 'lastsh') {
+                    this.initGangHappenings();
+                } else {
+                    this.initGangFeature();
+                }
             }
         }
     },
@@ -1372,6 +1372,192 @@ const GangHelper = {
     initGangFeature: function() {
         console.log("GangHelper loaded on dashboard.");
         // TODO: Implement gang page specifics
+    },
+
+    initGangMemberList: function() {
+        console.log("GangHelper loaded on member list page.");
+        let mainNav = document.querySelector('a.nav.show1');
+        let battleNav = document.querySelector('a.nav.show2');
+        let otherNav = document.querySelector('a.nav.show3');
+        let hofNav = document.querySelector('a.nav.show4');
+
+        // Non-staff only have main and hall of fame, so only require mainNav
+        if (!mainNav) return;
+
+        const navParent = mainNav.parentNode;
+        Array.from(navParent.childNodes).forEach(node => {
+            if (node.nodeType === Node.TEXT_NODE && node.nodeValue.includes('-')) {
+                node.nodeValue = node.nodeValue.replace(/-/g, '');
+            }
+        });
+
+        const turnIntoButton = (nav) => {
+            if (!nav) return null;
+            const btn = document.createElement('button');
+            btn.textContent = nav.textContent;
+            btn.style.cssText = 'font-size: 11px; padding: 4px 8px; border: 1px solid #aaa; border-radius: 4px; cursor: pointer; margin: 0 4px; user-select: none; -webkit-user-select: none;';
+            
+            if (nav.style.fontWeight === 'bold') {
+                btn.style.fontWeight = 'bold';
+                btn.style.background = '#add8e6';
+                btn.style.borderColor = '#5f9ea0';
+            } else {
+                btn.style.fontWeight = 'normal';
+                btn.style.background = '#fff';
+                btn.style.borderColor = '#aaa';
+            }
+            
+            nav.replaceWith(btn);
+            return btn;
+        };
+
+        const availableNavs = [];
+        mainNav = turnIntoButton(mainNav); if (mainNav) availableNavs.push(mainNav);
+        battleNav = turnIntoButton(battleNav); if (battleNav) availableNavs.push(battleNav);
+        otherNav = turnIntoButton(otherNav); if (otherNav) availableNavs.push(otherNav);
+        hofNav = turnIntoButton(hofNav); if (hofNav) availableNavs.push(hofNav);
+
+        const table = document.getElementById('sortabletable');
+        if (!table) return;
+
+        const headers = Array.from(table.querySelectorAll('th'));
+        const cols = [];
+        headers.forEach((th, index) => {
+            const classList = Array.from(th.classList);
+            const tsClass = classList.find(c => c.startsWith('ts_'));
+            if (tsClass) {
+                // Use textContent instead of innerText because innerText is empty for display:none elements
+                let colName = th.textContent.replace(/↓/g, '').trim();
+                if (!colName) {
+                    colName = tsClass.replace('ts_', '');
+                }
+                cols.push({
+                    id: tsClass,
+                    name: colName,
+                    index: index
+                });
+            }
+        });
+
+        const panel = document.createElement('div');
+        panel.style.cssText = 'margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; background: #eee; font-family: Tahoma, sans-serif; text-align: left; display: flex; flex-wrap: wrap; gap: 8px;';
+        
+        const savedColsStr = localStorage.getItem('hw_helper_gang_cols');
+        const availableColIds = cols.map(c => c.id);
+        let selectedCols = savedColsStr ? JSON.parse(savedColsStr) : ['ts_name', 'ts_level', 'ts_age', 'ts_la', 'ts_chamber', 'ts_tired', 'ts_options'];
+        
+        // Filter out any columns that aren't available to this user
+        selectedCols = selectedCols.filter(id => availableColIds.includes(id));
+
+        const renderCols = () => {
+            cols.forEach(col => {
+                const isSelected = selectedCols.includes(col.id);
+                // The actual cells have the same class name
+                const cells = table.querySelectorAll(`.${col.id}`);
+                cells.forEach(cell => {
+                    cell.style.display = isSelected ? 'table-cell' : 'none';
+                });
+            });
+            localStorage.setItem('hw_helper_gang_cols', JSON.stringify(selectedCols));
+        };
+
+        const updateCheckboxes = () => {
+            cols.forEach(col => {
+                const cb = document.getElementById(`hh_col_${col.id}`);
+                if (cb) {
+                    cb.checked = selectedCols.includes(col.id);
+                    // Trigger change event to update button styles automatically
+                    cb.dispatchEvent(new Event('change'));
+                }
+            });
+        };
+
+        cols.forEach(col => {
+            const label = document.createElement('label');
+            label.style.cssText = 'font-size: 11px; display: inline-flex; align-items: center; cursor: pointer; user-select: none; -webkit-user-select: none; padding: 4px 8px; border: 1px solid #aaa; border-radius: 4px; background: #ddd; transition: background 0.2s, border-color 0.2s;';
+            
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.id = `hh_col_${col.id}`;
+            cb.style.marginRight = '5px';
+            cb.checked = selectedCols.includes(col.id);
+            if (col.id === 'ts_name') cb.disabled = true; // Always show name
+
+            const updateStyle = () => {
+                if (cb.checked) {
+                    label.style.background = '#add8e6';
+                    label.style.borderColor = '#5f9ea0';
+                } else {
+                    label.style.background = '#ddd';
+                    label.style.borderColor = '#aaa';
+                }
+            };
+            updateStyle();
+
+            cb.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    if (!selectedCols.includes(col.id)) selectedCols.push(col.id);
+                } else {
+                    selectedCols = selectedCols.filter(id => id !== col.id);
+                }
+                updateStyle();
+                renderCols();
+            });
+
+            label.appendChild(cb);
+            label.appendChild(document.createTextNode(col.name));
+            panel.appendChild(label);
+        });
+
+        const showAllBtn = document.createElement('button');
+        showAllBtn.textContent = 'Show All';
+        showAllBtn.style.cssText = 'font-size: 11px; padding: 4px 8px; border: 1px solid #aaa; border-radius: 4px; background: #fff; cursor: pointer; font-weight: normal; margin-left: auto;';
+        showAllBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            selectedCols = cols.map(c => c.id);
+            updateCheckboxes();
+            renderCols();
+            [...availableNavs, showAllBtn].forEach(n => {
+                n.style.fontWeight = 'normal';
+                n.style.background = '#fff';
+                n.style.borderColor = '#aaa';
+            });
+            showAllBtn.style.fontWeight = 'bold';
+            showAllBtn.style.background = '#add8e6';
+            showAllBtn.style.borderColor = '#5f9ea0';
+        });
+        panel.appendChild(showAllBtn);
+
+        table.parentElement.insertBefore(panel, table);
+        renderCols(); // initial render
+
+        const hookNav = (nav, presetCols) => {
+            if (!nav) return;
+            // override the onclick
+            nav.addEventListener('click', (e) => {
+                e.preventDefault();
+                selectedCols = presetCols.filter(c => availableColIds.includes(c));
+                updateCheckboxes();
+                renderCols();
+                
+                // update font weights
+                [...availableNavs, showAllBtn].forEach(n => {
+                    n.style.fontWeight = 'normal';
+                    n.style.background = '#fff';
+                    n.style.borderColor = '#aaa';
+                });
+                nav.style.fontWeight = 'bold';
+                nav.style.background = '#add8e6';
+                nav.style.borderColor = '#5f9ea0';
+            });
+        };
+
+        hookNav(mainNav, ['ts_name', 'ts_level', 'ts_age', 'ts_la', 'ts_chamber', 'ts_tired', 'ts_options']);
+        hookNav(battleNav, ['ts_name', 'ts_speed', 'ts_power', 'ts_strength', 'ts_tbs', 'ts_life', 'ts_options']);
+        hookNav(otherNav, ['ts_name', 'ts_beg', 'ts_intel', 'ts_drinking', 'ts_mining', 'ts_options']);
+        hookNav(hofNav, ['ts_name', 'ts_exp', 'ts_beg_income', 'ts_cash', 'ts_points', 'ts_tokens', 'ts_dps', 'ts_options']);
+        
+        // Remove the original script functions if possible, but overriding onclick and preventing default should be enough.
     },
 
     initGangHappenings: function() {
@@ -2314,8 +2500,6 @@ const HitlistHelper = {
 const KurtzCampHelper = {
     cmds: 'camp_kurtz',
     init: function() {
-        if (!Utils.isCurrentPage('cmd=camp_kurtz')) return;
-        
         // Check Settings
         const settings = Utils.getSettings();
         if (settings.kurtzCampHelper === false) return;
@@ -2378,138 +2562,138 @@ const KurtzCampHelper = {
 
 const LiquorStoreHelper = {
     cmds: 'liquor_store',
-            init: function() {
-                if (window.location.href.includes('cmd=liquor_store')) {
-                    try {
-                        const contentArea = document.querySelector('.content-area') || document.body;
-                        const spans = contentArea.querySelectorAll('span');
-                        let purchasedItem = null;
-                        let purchasedAmount = 0;
-                        
-                        for (let i = 0; i < spans.length; i++) {
-                            const span = spans[i];
-                            if (span.textContent.includes('You get') && span.querySelector('img')) {
-                                const img = span.querySelector('img');
-                                const itemName = img.title || img.alt;
-                                
-                                let amount = 1;
-                                const amountMatch = span.textContent.match(/\(\s*(\d+)\s*\)/);
-                                if (amountMatch) {
-                                    amount = Utils.parseNumber(amountMatch[1]);
-                                }
-                                
-                                if (itemName) {
-                                    purchasedItem = itemName.replace(/&amp;/g, '&').trim();
-                                    purchasedAmount = amount;
-                                    break;
-                                }
-                            }
+    init: function() {
+        if (window.location.href.includes('cmd=liquor_store')) {
+            try {
+                const contentArea = document.querySelector('.content-area') || document.body;
+                const spans = contentArea.querySelectorAll('span');
+                let purchasedItem = null;
+                let purchasedAmount = 0;
+
+                for (let i = 0; i < spans.length; i++) {
+                    const span = spans[i];
+                    if (span.textContent.includes('You get') && span.querySelector('img')) {
+                        const img = span.querySelector('img');
+                        const itemName = img.title || img.alt;
+
+                        let amount = 1;
+                        const amountMatch = span.textContent.match(/\(\s*(\d+)\s*\)/);
+                        if (amountMatch) {
+                            amount = Utils.parseNumber(amountMatch[1]);
                         }
 
-                        if (purchasedItem && purchasedAmount > 0) {
-                            const shoppingListStr = localStorage.getItem('hobowarsDrinkShoppingList');
-                            if (shoppingListStr) {
-                                let shoppingList = JSON.parse(shoppingListStr);
-                                if (shoppingList[purchasedItem]) {
-                                    shoppingList[purchasedItem] -= purchasedAmount;
-                                    if (shoppingList[purchasedItem] <= 0) {
-                                        delete shoppingList[purchasedItem];
-                                    }
-                                    if (Object.keys(shoppingList).length === 0) {
-                                        localStorage.removeItem('hobowarsDrinkShoppingList');
-                                        localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
-                                    } else {
-                                        localStorage.setItem('hobowarsDrinkShoppingList', JSON.stringify(shoppingList));
-                                    }
-                                }
-                            }
-                        }
-                    } catch (e) {
-                        console.error('Error handling purchase check', e);
-                    }
-
-                    const shoppingListStr = localStorage.getItem('hobowarsDrinkShoppingList');
-                    if (shoppingListStr) {
-                        try {
-                            const shoppingList = JSON.parse(shoppingListStr);
-                            const items = Object.keys(shoppingList);
-                            if (items.length > 0) {
-                                const targetDrink = localStorage.getItem('hobowarsDrinkShoppingList_TargetDrink');
-                                const titleText = targetDrink ? `🛍️ Mixer Shopping List - ${targetDrink}` : `🛍️ Mixer Shopping List`;
-
-                                let contentHtml = `
-                                    <div style="font-weight: bold; margin-bottom: 8px; font-size: 14px; display: flex; justify-content: space-between; align-items: center;">
-                                        <span>${titleText}</span>
-                                        <button id="clear-shopping-list" style="cursor: pointer; font-size: 11px; padding: 2px 6px;">Clear List</button>
-                                    </div>
-                                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-                                        <tbody>`;
-                                items.forEach(item => {
-                                    contentHtml += `
-                                        <tr style="border-bottom: 1px dotted #ccc;">
-                                            <td style="padding: 4px 0;"><strong>${item}</strong></td>
-                                            <td style="padding: 4px 0; text-align: right; color: #d9534f; font-weight: bold;">${shoppingList[item]} required</td>
-                                        </tr>`;
-                                });
-                                contentHtml += `</tbody></table>`;
-
-                                const listContainer = document.createElement('div');
-                                listContainer.style.cssText = 'margin: 10px auto 15px auto; border: 1px solid #ccc; padding: 10px; background-color: #f9f9f9; width: 80%; display: block;';
-                                listContainer.innerHTML = contentHtml;
-                                
-                                const contentArea = document.querySelector('.content-area') || document.body;
-                                const firstTable = contentArea.querySelector('table.shop-list') || contentArea.querySelector('table[width="100%"]');
-                                
-                                if (firstTable) {
-                                    firstTable.parentNode.insertBefore(listContainer, firstTable);
-                                } else {
-                                    contentArea.appendChild(listContainer);
-                                }
-
-                                document.getElementById('clear-shopping-list').addEventListener('click', function(e) {
-                                    e.preventDefault();
-                                    localStorage.removeItem('hobowarsDrinkShoppingList');
-                                    localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
-                                    listContainer.style.display = 'none';
-                                });
-
-                                // Highlight drinks in the shop that are on the shopping list
-                                const costs = contentArea.querySelectorAll('.shopCost');
-                                costs.forEach(costDiv => {
-                                    const td = costDiv.parentElement;
-                                    if (!td) return;
-
-                                    const textContent = td.textContent.trim();
-                                    let isMatch = false;
-                                    for (let i = 0; i < items.length; i++) {
-                                        if (textContent.startsWith(items[i])) {
-                                            isMatch = true;
-                                            break;
-                                        }
-                                    }
-
-                                    if (isMatch) {
-                                        const tr = td.closest('tr');
-                                        if (tr) {
-                                            const img = tr.querySelector('img.shopimg') || tr.querySelector('img');
-                                            if (img && img.parentElement && img.parentElement.tagName === 'TD') {
-                                                img.parentElement.style.backgroundColor = '#fff3cd';
-                                                img.parentElement.style.borderRadius = '5px';
-                                            } else {
-                                                td.style.backgroundColor = '#fff3cd';
-                                                td.style.borderRadius = '5px';
-                                            }
-                                        }
-                                    }
-                                });
-                            }
-                        } catch (e) {
-                            console.error('Error parsing shopping list', e);
+                        if (itemName) {
+                            purchasedItem = itemName.replace(/&amp;/g, '&').trim();
+                            purchasedAmount = amount;
+                            break;
                         }
                     }
                 }
+
+                if (purchasedItem && purchasedAmount > 0) {
+                    const shoppingListStr = localStorage.getItem('hobowarsDrinkShoppingList');
+                    if (shoppingListStr) {
+                        let shoppingList = JSON.parse(shoppingListStr);
+                        if (shoppingList[purchasedItem]) {
+                            shoppingList[purchasedItem] -= purchasedAmount;
+                            if (shoppingList[purchasedItem] <= 0) {
+                                delete shoppingList[purchasedItem];
+                            }
+                            if (Object.keys(shoppingList).length === 0) {
+                                localStorage.removeItem('hobowarsDrinkShoppingList');
+                                localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
+                            } else {
+                                localStorage.setItem('hobowarsDrinkShoppingList', JSON.stringify(shoppingList));
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Error handling purchase check', e);
+            }
+
+            const shoppingListStr = localStorage.getItem('hobowarsDrinkShoppingList');
+            if (shoppingListStr) {
+                try {
+                    const shoppingList = JSON.parse(shoppingListStr);
+                    const items = Object.keys(shoppingList);
+                    if (items.length > 0) {
+                        const targetDrink = localStorage.getItem('hobowarsDrinkShoppingList_TargetDrink');
+                        const titleText = targetDrink ? `🛍️ Mixer Shopping List - ${targetDrink}` : `🛍️ Mixer Shopping List`;
+
+                        let contentHtml = `
+                            <div style="font-weight: bold; margin-bottom: 8px; font-size: 14px; display: flex; justify-content: space-between; align-items: center;">
+                                <span>${titleText}</span>
+                                <button id="clear-shopping-list" style="cursor: pointer; font-size: 11px; padding: 2px 6px;">Clear List</button>
+                            </div>
+                            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                                <tbody>`;
+                        items.forEach(item => {
+                            contentHtml += `
+                                <tr style="border-bottom: 1px dotted #ccc;">
+                                    <td style="padding: 4px 0;"><strong>${item}</strong></td>
+                                    <td style="padding: 4px 0; text-align: right; color: #d9534f; font-weight: bold;">${shoppingList[item]} required</td>
+                                </tr>`;
+                        });
+                        contentHtml += `</tbody></table>`;
+
+                        const listContainer = document.createElement('div');
+                        listContainer.style.cssText = 'margin: 10px auto 15px auto; border: 1px solid #ccc; padding: 10px; background-color: #f9f9f9; width: 80%; display: block;';
+                        listContainer.innerHTML = contentHtml;
+
+                        const contentArea = document.querySelector('.content-area') || document.body;
+                        const firstTable = contentArea.querySelector('table.shop-list') || contentArea.querySelector('table[width="100%"]');
+
+                        if (firstTable) {
+                            firstTable.parentNode.insertBefore(listContainer, firstTable);
+                        } else {
+                            contentArea.appendChild(listContainer);
+                        }
+
+                        document.getElementById('clear-shopping-list').addEventListener('click', function(e) {
+                            e.preventDefault();
+                            localStorage.removeItem('hobowarsDrinkShoppingList');
+                            localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
+                            listContainer.style.display = 'none';
+                        });
+
+                        // Highlight drinks in the shop that are on the shopping list
+                        const costs = contentArea.querySelectorAll('.shopCost');
+                        costs.forEach(costDiv => {
+                            const td = costDiv.parentElement;
+                            if (!td) return;
+
+                            const textContent = td.textContent.trim();
+                            let isMatch = false;
+                            for (let i = 0; i < items.length; i++) {
+                                if (textContent.startsWith(items[i])) {
+                                    isMatch = true;
+                                    break;
+                                }
+                            }
+
+                            if (isMatch) {
+                                const tr = td.closest('tr');
+                                if (tr) {
+                                    const img = tr.querySelector('img.shopimg') || tr.querySelector('img');
+                                    if (img && img.parentElement && img.parentElement.tagName === 'TD') {
+                                        img.parentElement.style.backgroundColor = '#fff3cd';
+                                        img.parentElement.style.borderRadius = '5px';
+                                    } else {
+                                        td.style.backgroundColor = '#fff3cd';
+                                        td.style.borderRadius = '5px';
+                                    }
+                                }
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.error('Error parsing shopping list', e);
+                }
             }
         }
+    }
+}
 
 const LivingAreaHelper = {
     cmds: '',
@@ -2650,10 +2834,6 @@ const LivingAreaHelper = {
     },
 
     initMixerLink: function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const cmd = urlParams.get('cmd');
-        if (cmd) return;
-
         const gearInfo = document.getElementById('gearInfo');
         if (!gearInfo) return;
         
@@ -3202,7 +3382,6 @@ const MessageBoardHelper = {
         }
     ],
     init: function() {
-        if (!Utils.isCurrentPage('cmd=gathering')) return;
 
         const settings = Utils.getSettings();
         if (settings?.MessageBoardHelper?.enabled === false) return;
@@ -3698,535 +3877,535 @@ const MessageBoardHelper = {
 
 const MixerHelper = {
     cmds: 'mixer',
-            init: function() {
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('cmd') === 'mixer') {
-                    const makeManyInput = document.querySelector('input[name="make_many"]');
-                    if (makeManyInput) {
-                        const maxBtn = document.createElement('button');
-                        maxBtn.textContent = 'Max';
-                        maxBtn.style.marginLeft = '8px';
-                        maxBtn.style.fontSize = '10px';
-                        maxBtn.style.cursor = 'pointer';
+    init: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('cmd') === 'mixer') {
+            const makeManyInput = document.querySelector('input[name="make_many"]');
+            if (makeManyInput) {
+                const maxBtn = document.createElement('button');
+                maxBtn.textContent = 'Max';
+                maxBtn.style.marginLeft = '8px';
+                maxBtn.style.fontSize = '10px';
+                maxBtn.style.cursor = 'pointer';
 
-                        maxBtn.onclick = function(e) {
-                            e.preventDefault();
+                maxBtn.onclick = function(e) {
+                    e.preventDefault();
 
-                            const form = document.getElementById('mixer');
-                            if (!form) return;
+                    const form = document.getElementById('mixer');
+                    if (!form) return;
 
-                            const hiddenInputs = form.querySelectorAll('input[type="hidden"][name^="ingreds["]');
-                            if (hiddenInputs.length === 0) return;
+                    const hiddenInputs = form.querySelectorAll('input[type="hidden"][name^="ingreds["]');
+                    if (hiddenInputs.length === 0) return;
 
-                            let maxCanMake = Infinity;
+                    let maxCanMake = Infinity;
 
-                            hiddenInputs.forEach(input => {
-                                const id = input.value;
-                                const amountEl = document.getElementById('amnt_' + id);
-                                if (amountEl) {
-                                    // The game subtracts 1 from the innerHTML amount when you add it to the mixer.
-                                    // The true total inventory limit is the displayed amount + 1.
-                                    const available = parseInt(amountEl.textContent, 10) + 1;
-                                    if (!isNaN(available) && available < maxCanMake) {
-                                        maxCanMake = available;
-                                    }
-                                }
-                            });
-
-                            if (maxCanMake !== Infinity) {
-                                makeManyInput.value = maxCanMake.toString();
+                    hiddenInputs.forEach(input => {
+                        const id = input.value;
+                        const amountEl = document.getElementById('amnt_' + id);
+                        if (amountEl) {
+                            // The game subtracts 1 from the innerHTML amount when you add it to the mixer.
+                            // The true total inventory limit is the displayed amount + 1.
+                            const available = parseInt(amountEl.textContent, 10) + 1;
+                            if (!isNaN(available) && available < maxCanMake) {
+                                maxCanMake = available;
                             }
-                        };
+                        }
+                    });
 
-                        makeManyInput.parentNode.insertBefore(maxBtn, makeManyInput.nextSibling);
+                    if (maxCanMake !== Infinity) {
+                        makeManyInput.value = maxCanMake.toString();
                     }
+                };
 
-                    // --- Possible Drinks Helper ---
-                    const mixAwayBtn = document.querySelector('input[value="Mix Away"]');
-                    const myMixer = document.getElementById('myMixer');
-
-                    if (mixAwayBtn && myMixer) {
-                        // 1. Determine which drinks are unlocked by reading the Bartender Guide DOM
-                        let unlockedDrinks = [];
-                        const uTags = document.querySelectorAll('u');
-                        let guideContainer = null;
-
-                        uTags.forEach(u => {
-                            if (u.textContent.includes('Bartender Guide')) {
-                                // The <u> is inside a <div>, and the drinks are siblings to that <div> inside a <td>
-                                guideContainer = u.closest('td');
-                            }
-                        });
-
-                        if (guideContainer) {
-                            // Any img with a title in the guide container is considered unlocked here
-                            // even if it lacks an <a> tag (greyed out due to missing ingredients)
-                            const unlockedImgs = guideContainer.querySelectorAll('img[title], img[alt]');
-                            unlockedImgs.forEach(img => {
-                                let name = img.title || img.alt;
-                                if (name) {
-                                    name = name.replace(/&amp;/g, '&').trim();
-                                    // Make sure it's valid title and not empty
-                                    if (name && !unlockedDrinks.includes(name)) {
-                                        unlockedDrinks.push(name);
-                                    }
-                                }
-                            });
-                        }
-
-                        // 2. Setup the UI container above 'Mix Away'
-                        const possibleDrinksDiv = document.createElement('div');
-                        possibleDrinksDiv.id = 'possible-drinks-helper';
-                        possibleDrinksDiv.style.marginBottom = '5px';
-                        possibleDrinksDiv.style.fontWeight = 'bold';
-                        possibleDrinksDiv.style.fontSize = '13px';
-
-                        mixAwayBtn.parentNode.insertBefore(possibleDrinksDiv, mixAwayBtn);
-
-                        // 3. Update logic when ingredients change
-                        const updatePossibleDrinks = () => {
-                            const amtSpans = myMixer.querySelectorAll('span[id^="mix_amt_"]');
-                            let currentIngredients = [];
-
-                            amtSpans.forEach(span => {
-                                let text = span.textContent.trim();
-                                text = text.replace(/^\d+\s*x\s*/, '').trim();
-                                if (text) {
-                                    currentIngredients.push(text);
-                                }
-                            });
-
-                            if (currentIngredients.length === 0) {
-                                possibleDrinksDiv.innerHTML = '';
-                                return;
-                            }
-
-                            const mixedDrinksData = Modules.DrinksData.drinks.mixed || [];
-                            let possibleDrinkNames = [];
-
-                            mixedDrinksData.forEach(drink => {
-                                // Must be previously unlocked AND contain all current ingredients in its recipe
-                                if (unlockedDrinks.includes(drink.name) && drink.ingredients && Array.isArray(drink.ingredients)) {
-                                    let isPossible = currentIngredients.every(ing => drink.ingredients.includes(ing));
-                                    if (isPossible) {
-                                        possibleDrinkNames.push(drink.name);
-                                    }
-                                }
-                            });
-
-                            if (possibleDrinkNames.length > 0) {
-                                possibleDrinksDiv.innerHTML = `<span style="color: #666;">Possible Drinks:</span> <span style="color: #000;">${possibleDrinkNames.join(', ')}</span><br><br>`;
-                            } else {
-                                possibleDrinksDiv.innerHTML = `<span style="color: #888; font-style: italic;">No unlocked drinks match these ingredients.</span><br><br>`;
-                            }
-                        };
-
-                        // 4. Setup an observer to watch for additions/removals in the virtual mixer
-                        const observer = new MutationObserver((mutations) => {
-                            updatePossibleDrinks();
-                            if (!window.isAutomatedMixerChange) {
-                                window.lastClickedRecipe = null;
-                            }
-                            if (typeof window.updateShoppingList === 'function') {
-                                window.updateShoppingList();
-                            }
-                        });
-                        observer.observe(myMixer, { childList: true, subtree: true });
-
-                        // Initial update on load
-                        updatePossibleDrinks();
-
-                        // Build map of items to IDs and counts
-                        const inventoryMap = {};
-                        document.querySelectorAll('div[id^="itemimg_"]').forEach(div => {
-                            const b = div.querySelector('b[id^="amnt_"]');
-                            const img = div.querySelector('img');
-                            if (b && img) {
-                                const idMatch = b.id.match(/amnt_(\d+)/);
-                                if (idMatch) {
-                                    const id = idMatch[1];
-                                    let nameMatch = img.getAttribute('onmouseover')?.match(/ShowName\('([^']+)'\)/);
-                                    if (nameMatch) {
-                                        const name = nameMatch[1].replace(/&amp;/g, '&');
-                                        inventoryMap[name] = id;
-                                    }
-                                }
-                            }
-                        });
-
-                        if (guideContainer) {
-                            // Find all gray icons (images not wrapped in an <a> tag)
-                            const grayImgs = Array.from(guideContainer.querySelectorAll('img')).filter(img => img.parentElement.tagName.toLowerCase() !== 'a');
-                            grayImgs.forEach(img => {
-                                img.style.cursor = 'pointer';
-                                img.onclick = function() {
-                                    window.isAutomatedMixerChange = true;
-
-                                    const drinkName = img.title || img.alt;
-                                    const mixedDrinksData = Modules.DrinksData.drinks.mixed || [];
-                                    const drink = mixedDrinksData.find(d => d.name === drinkName);
-
-                                    window.lastClickedRecipe = drink;
-
-                                    let scriptAdd = ["if (typeof deleteAll === 'function') deleteAll();"];
-
-                                    if (drink && drink.ingredients) {
-                                        drink.ingredients.forEach(ing => {
-                                            const id = inventoryMap[ing];
-                                            let available = false;
-                                            if (id) {
-                                                const amountEl = document.getElementById('amnt_' + id);
-                                                if (amountEl) {
-                                                    const amount = parseInt(amountEl.textContent, 10);
-                                                    if (amount > 0) {
-                                                        available = true;
-                                                        scriptAdd.push(`if (typeof AddDrink === 'function') AddDrink(${id}, "${ing}");`);
-                                                    }
-                                                }
-                                            }
-                                        });
-                                    }
-
-                                    if (scriptAdd.length > 0) {
-                                        const script = document.createElement('script');
-                                        script.textContent = scriptAdd.join('\n');
-                                        document.body.appendChild(script);
-                                        script.remove();
-                                    }
-
-                                    setTimeout(() => { window.isAutomatedMixerChange = false; }, 100);
-                                };
-                            });
-
-                            // Also clear tracking state when clicking a normal (colored) drink link
-                            const normalLinks = guideContainer.querySelectorAll('a[href*="AddDrink"]');
-                            normalLinks.forEach(link => {
-                                link.addEventListener('click', () => {
-                                    window.isAutomatedMixerChange = true;
-
-                                    const img = link.querySelector('img');
-                                    const drinkName = img ? (img.title || img.alt) : '';
-                                    const mixedDrinksData = Modules.DrinksData.drinks.mixed || [];
-                                    const drink = mixedDrinksData.find(d => d.name === drinkName);
-                                    window.lastClickedRecipe = drink;
-
-                                    setTimeout(() => { window.isAutomatedMixerChange = false; }, 100);
-                                });
-                            });
-                        }
-
-                        const startOverLink = document.querySelector('a[href$="cmd=mixer"]');
-                        if (startOverLink) {
-                            startOverLink.addEventListener('click', () => {
-                                window.lastClickedRecipe = null;
-                                if (typeof window.updateShoppingList === 'function') window.updateShoppingList();
-                            });
-                        }
-
-                        // --- Shopping List Helper ---
-                        const makeManyInput = document.querySelector('input[name="make_many"]');
-                        if (mixAwayBtn && makeManyInput) {
-                            const shoppingListContainer = document.createElement('div');
-                            shoppingListContainer.id = 'shopping-list-container';
-                            shoppingListContainer.style.marginBottom = '15px';
-                            shoppingListContainer.style.display = 'none';
-                            shoppingListContainer.innerHTML = `<div class="style1" style="font-weight:bold; margin-bottom:5px;"><u>Shopping List:</u></div>
-                                                               <div id="shopping_list_items" style="font-size: 13px; color:#555; text-align: left; display: inline-block;"></div>`;
-
-                            // Insert above "Mix Away" button
-                            mixAwayBtn.parentNode.insertBefore(shoppingListContainer, mixAwayBtn);
-
-                            const shoppingListContent = shoppingListContainer.querySelector('#shopping_list_items');
-
-                            window.updateShoppingList = function() {
-                                let ingredientsNeeded = [];
-
-                                if (window.lastClickedRecipe && window.lastClickedRecipe.ingredients) {
-                                    ingredientsNeeded = window.lastClickedRecipe.ingredients;
-                                } else {
-                                    // Extract from items currently in mixer
-                                    const amtSpans = myMixer.querySelectorAll('span[id^="mix_amt_"]');
-                                    amtSpans.forEach(span => {
-                                        let text = span.textContent.trim();
-                                        text = text.replace(/^\d+\s*x\s*/, '').trim();
-                                        if (text && !ingredientsNeeded.includes(text)) {
-                                            ingredientsNeeded.push(text);
-                                        }
-                                    });
-                                }
-
-                                let makeMany = parseInt(makeManyInput.value, 10);
-                                if (isNaN(makeMany) || makeMany < 1) makeMany = 1;
-
-                                let missingTableRows = [];
-                                let totalFixed = 0;
-
-                                ingredientsNeeded.forEach(ingName => {
-                                    const id = inventoryMap[ingName];
-                                    let hasCount = 0;
-
-                                    if (id) {
-                                        const amountEl = document.getElementById('amnt_' + id);
-                                        if (amountEl) {
-                                            hasCount = parseInt(amountEl.textContent, 10);
-                                            if (document.getElementById('mix_amt_' + id)) {
-                                                hasCount += 1;
-                                            }
-                                        }
-                                    }
-
-                                    const neededAmount = makeMany - hasCount;
-                                    if (neededAmount > 0) {
-                                        const allDrinks = [
-                                            ...(Modules.DrinksData.drinks.alcoholic || []),
-                                            ...(Modules.DrinksData.drinks.non_alcoholic || [])
-                                        ];
-                                        const baseDrink = allDrinks.find(d => d.name === ingName);
-
-                                        let itemCostStr = '';
-
-                                        if (baseDrink && baseDrink.cost) {
-                                            let hasDiscount = false;
-                                            
-                                            if (baseDrink.cost.type === 'cw_multiplier') {
-                                                const costVal = baseDrink.cost.value * neededAmount;
-                                                const cwPrice = Utils.getCWPrice();
-                                                let dollarCost = Math.round(costVal * cwPrice);
-                                                
-                                                if (baseDrink.location === 'Liquor Store') {
-                                                    dollarCost = Math.round(dollarCost * 0.9);
-                                                    hasDiscount = true;
-                                                }
-
-                                                totalFixed += dollarCost;
-                                                itemCostStr = `$${dollarCost.toLocaleString()}${hasDiscount ? '*' : ''}`;
-                                            } else if (baseDrink.cost.type === 'fixed' && typeof baseDrink.cost.value === 'number') {
-                                                let costVal = baseDrink.cost.value * neededAmount;
-                                                
-                                                if (baseDrink.location === 'Liquor Store') {
-                                                    costVal = Math.round(costVal * 0.9);
-                                                    hasDiscount = true;
-                                                }
-
-                                                totalFixed += costVal;
-                                                itemCostStr = `$${costVal.toLocaleString()}${hasDiscount ? '*' : ''}`;
-                                            } else if (baseDrink.cost.type === 'fixed' && typeof baseDrink.cost.value === 'string') {
-                                                itemCostStr = `${neededAmount}x ${baseDrink.cost.value}`;
-                                            }
-                                        }
-
-                                        missingTableRows.push(`
-                                            <tr>
-                                                <td style="padding: 2px 8px 2px 0;"><span style="color:#d9534f; font-weight:bold;">✗</span></td>
-                                                <td style="padding: 2px 15px 2px 0; color:#000;">${neededAmount} x ${ingName} <span style="color:#888; font-size:11px;">(Have: ${hasCount})</span></td>
-                                                <td style="padding: 2px 0; color:#666; text-align: right; white-space: nowrap;">${itemCostStr}</td>
-                                            </tr>
-                                        `);
-                                    }
-                                });
-
-                                if (missingTableRows.length > 0 && ingredientsNeeded.length > 0) {
-                                    let listHtml = `<table style="border-collapse: collapse; font-size: 13px; min-width: 200px;">${missingTableRows.join('')}</table>`;
-                                    
-                                    if (totalFixed > 0) {
-                                        listHtml += `<div style="margin-top: 5px; font-weight: bold; color: #333; border-top: 1px dashed #ccc; padding-top: 3px;">Estimated Cost: <span style="color:red;">$${totalFixed.toLocaleString()}</span> <span id="bank-btn-container"></span></div>`;
-                                        listHtml += `<div style="margin-top: 2px; font-size: 10px; color: #888;">* 10% Bartender's Guide discount applied</div>`;
-                                    }
-
-                                    shoppingListContent.innerHTML = listHtml;
-                                    shoppingListContainer.style.display = 'block';
-
-                                    const bankBtnContainer = document.getElementById('bank-btn-container');
-                                    if (bankBtnContainer) {
-                                        const bankBtn = Utils.createBankButton('Drink Ingredients', totalFixed);
-                                        bankBtn.addEventListener('click', function() {
-                                            let saveObj = {};
-                                            ingredientsNeeded.forEach(ingName => {
-                                                const id = inventoryMap[ingName];
-                                                let hasCount = 0;
-                                                if (id) {
-                                                    const amountEl = document.getElementById('amnt_' + id);
-                                                    if (amountEl) {
-                                                        hasCount = parseInt(amountEl.textContent, 10);
-                                                        if (document.getElementById('mix_amt_' + id)) {
-                                                            hasCount += 1;
-                                                        }
-                                                    }
-                                                }
-                                                const neededAmount = makeMany - hasCount;
-                                                if (neededAmount > 0) {
-                                                    saveObj[ingName] = neededAmount;
-                                                }
-                                            });
-
-                                            localStorage.setItem('hobowarsDrinkShoppingList', JSON.stringify(saveObj));
-                                            if (window.lastClickedRecipe && window.lastClickedRecipe.name) {
-                                                localStorage.setItem('hobowarsDrinkShoppingList_TargetDrink', window.lastClickedRecipe.name);
-                                            } else {
-                                                localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
-                                            }
-                                        });
-                                        bankBtnContainer.appendChild(bankBtn);
-                                    }
-                                } else {
-                                    shoppingListContent.innerHTML = '';
-                                    shoppingListContainer.style.display = 'none';
-                                }
-                            };
-
-                            makeManyInput.addEventListener('input', () => {
-                                if (typeof window.updateShoppingList === 'function') window.updateShoppingList();
-                            });
-                        }
-                    }
-                }
+                makeManyInput.parentNode.insertBefore(maxBtn, makeManyInput.nextSibling);
             }
-        }
 
-const NorthernFenceHelper = {
-    cmds: 'hill3',
-            init: function() {
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('cmd') === 'hill3') {
-                    if (urlParams.get('do') === 'npc') {
-                        this.initNpcRacingHelper();
-                    } else if (urlParams.get('do') === 'hof') {
-                        this.initHallOfFameHelper();
-                    }
-                }
-            },
+            // --- Possible Drinks Helper ---
+            const mixAwayBtn = document.querySelector('input[value="Mix Away"]');
+            const myMixer = document.getElementById('myMixer');
 
-            initNpcRacingHelper: function() {
-                const table = document.querySelector('.content-area table');
-                if (!table) return;
+            if (mixAwayBtn && myMixer) {
+                // 1. Determine which drinks are unlocked by reading the Bartender Guide DOM
+                let unlockedDrinks = [];
+                const uTags = document.querySelectorAll('u');
+                let guideContainer = null;
 
-                const rows = table.querySelectorAll('tr');
-                rows.forEach(row => {
-                    const cells = row.querySelectorAll('td');
-                    if (cells.length >= 6) {
-                        const costCell = cells[4];
-                        const costText = costCell.textContent.trim();
-                        if (costText.startsWith('$')) {
-                            const costMatch = costText.match(/\$?([0-9,]+)/);
-                            if (costMatch) {
-                                const cost = Utils.parseNumber(costMatch[1]);
-                                if (!isNaN(cost)) {
-                                    const totalCost = cost * 2; // Can race twice
-                                    const name = cells[0].textContent.trim();
-
-                                    const actionCell = cells[5];
-
-                                    // Parse original race link
-                                    const raceLink = actionCell.querySelector('a');
-                                    let raceHref = '';
-                                    if (raceLink) {
-                                        raceHref = raceLink.getAttribute('href');
-                                    }
-
-                                    // Replace inner text with clear flex layout for buttons
-                                    actionCell.innerHTML = '';
-                                    actionCell.style.display = 'flex';
-                                    actionCell.style.alignItems = 'center';
-                                    actionCell.style.justifyContent = 'center';
-
-                                    const commonBtnStyle = '-webkit-font-smoothing: antialiased; color: #636363; background: #ddd; font-weight: bold; text-decoration: none; padding: 0; width: 80px; height: 26px; line-height: 26px; text-align: center; border-radius: 3px; border: none; cursor: pointer; margin: 3px 2px; -webkit-appearance: none; display: inline-block; user-select: none; -webkit-user-select: none; font-family: inherit; font-size: 13px; box-sizing: border-box; vertical-align: middle;';
-
-                                    if (raceHref) {
-                                        const raceBtn = document.createElement('a');
-                                        raceBtn.href = raceHref;
-                                        raceBtn.textContent = 'Race';
-
-                                        raceBtn.className = 'btn';
-                                        raceBtn.style.cssText = commonBtnStyle;
-
-                                        raceBtn.addEventListener('mouseover', () => raceBtn.style.background = '#ccc');
-                                        raceBtn.addEventListener('mouseout', () => raceBtn.style.background = '#ddd');
-
-                                        actionCell.appendChild(raceBtn);
-                                    }
-
-                                    const btn = Utils.createBankButton(`Pikies (${name})`, totalCost);
-                                    btn.className = 'btn';
-                                    btn.style.cssText = commonBtnStyle;
-
-                                    btn.addEventListener('mouseover', () => { if (!btn.disabled) btn.style.background = '#ccc'; });
-                                    btn.addEventListener('mouseout', () => { if (!btn.disabled) btn.style.background = '#ddd'; });
-                                    // Make sure disabled state looks reasonable when clicked
-                                    const originalOnclick = btn.onclick;
-                                    btn.onclick = function(e) {
-                                        if (originalOnclick) originalOnclick.call(this, e);
-                                        this.style.background = '#eee';
-                                        this.style.color = '#aaa';
-                                        this.style.cursor = 'not-allowed';
-                                    };
-
-                                    actionCell.appendChild(btn);
-                                }
-                            }
-                        }
+                uTags.forEach(u => {
+                    if (u.textContent.includes('Bartender Guide')) {
+                        // The <u> is inside a <div>, and the drinks are siblings to that <div> inside a <td>
+                        guideContainer = u.closest('td');
                     }
                 });
-            },
-            
-            initHallOfFameHelper: function() {
-                const playerId = Utils.getHoboId();
-                const table = document.querySelector('.content-area table');
-                let foundPlayer = false;
 
-                if (table && playerId !== 'Unknown') {
-                    const rows = table.querySelectorAll('tr');
-                    rows.forEach(row => {
-                        const cells = row.querySelectorAll('td');
-                        if (cells.length >= 3) {
-                            const hoboLink = cells[0].querySelector('a');
-                            if (hoboLink && hoboLink.href.includes(`ID=${playerId}`)) {
-                                row.style.fontWeight = 'bold';
-                                foundPlayer = true;
+                if (guideContainer) {
+                    // Any img with a title in the guide container is considered unlocked here
+                    // even if it lacks an <a> tag (greyed out due to missing ingredients)
+                    const unlockedImgs = guideContainer.querySelectorAll('img[title], img[alt]');
+                    unlockedImgs.forEach(img => {
+                        let name = img.title || img.alt;
+                        if (name) {
+                            name = name.replace(/&amp;/g, '&').trim();
+                            // Make sure it's valid title and not empty
+                            if (name && !unlockedDrinks.includes(name)) {
+                                unlockedDrinks.push(name);
                             }
                         }
                     });
                 }
 
-                const urlParams = new URLSearchParams(window.location.search);
-                const urlPage = urlParams.get('page');
-                const currentPageNum = urlPage ? parseInt(urlPage) + 1 : 1;
+                // 2. Setup the UI container above 'Mix Away'
+                const possibleDrinksDiv = document.createElement('div');
+                possibleDrinksDiv.id = 'possible-drinks-helper';
+                possibleDrinksDiv.style.marginBottom = '5px';
+                possibleDrinksDiv.style.fontWeight = 'bold';
+                possibleDrinksDiv.style.fontSize = '13px';
 
-                if (foundPlayer) {
-                    localStorage.setItem('hof_player_page', currentPageNum);
-                }
+                mixAwayBtn.parentNode.insertBefore(possibleDrinksDiv, mixAwayBtn);
 
-                const savedPageNum = localStorage.getItem('hof_player_page');
-                if (savedPageNum) {
-                    const strongs = document.querySelectorAll('.content-area strong');
-                    let pagesContainer = null;
-                    for (const s of strongs) {
-                        if (s.textContent.trim() === 'Pages:') {
-                            pagesContainer = s.parentNode;
-                            break;
+                // 3. Update logic when ingredients change
+                const updatePossibleDrinks = () => {
+                    const amtSpans = myMixer.querySelectorAll('span[id^="mix_amt_"]');
+                    let currentIngredients = [];
+
+                    amtSpans.forEach(span => {
+                        let text = span.textContent.trim();
+                        text = text.replace(/^\d+\s*x\s*/, '').trim();
+                        if (text) {
+                            currentIngredients.push(text);
+                        }
+                    });
+
+                    if (currentIngredients.length === 0) {
+                        possibleDrinksDiv.innerHTML = '';
+                        return;
+                    }
+
+                    const mixedDrinksData = Modules.DrinksData.drinks.mixed || [];
+                    let possibleDrinkNames = [];
+
+                    mixedDrinksData.forEach(drink => {
+                        // Must be previously unlocked AND contain all current ingredients in its recipe
+                        if (unlockedDrinks.includes(drink.name) && drink.ingredients && Array.isArray(drink.ingredients)) {
+                            let isPossible = currentIngredients.every(ing => drink.ingredients.includes(ing));
+                            if (isPossible) {
+                                possibleDrinkNames.push(drink.name);
+                            }
+                        }
+                    });
+
+                    if (possibleDrinkNames.length > 0) {
+                        possibleDrinksDiv.innerHTML = `<span style="color: #666;">Possible Drinks:</span> <span style="color: #000;">${possibleDrinkNames.join(', ')}</span><br><br>`;
+                    } else {
+                        possibleDrinksDiv.innerHTML = `<span style="color: #888; font-style: italic;">No unlocked drinks match these ingredients.</span><br><br>`;
+                    }
+                };
+
+                // 4. Setup an observer to watch for additions/removals in the virtual mixer
+                const observer = new MutationObserver((mutations) => {
+                    updatePossibleDrinks();
+                    if (!window.isAutomatedMixerChange) {
+                        window.lastClickedRecipe = null;
+                    }
+                    if (typeof window.updateShoppingList === 'function') {
+                        window.updateShoppingList();
+                    }
+                });
+                observer.observe(myMixer, { childList: true, subtree: true });
+
+                // Initial update on load
+                updatePossibleDrinks();
+
+                // Build map of items to IDs and counts
+                const inventoryMap = {};
+                document.querySelectorAll('div[id^="itemimg_"]').forEach(div => {
+                    const b = div.querySelector('b[id^="amnt_"]');
+                    const img = div.querySelector('img');
+                    if (b && img) {
+                        const idMatch = b.id.match(/amnt_(\d+)/);
+                        if (idMatch) {
+                            const id = idMatch[1];
+                            let nameMatch = img.getAttribute('onmouseover')?.match(/ShowName\('([^']+)'\)/);
+                            if (nameMatch) {
+                                const name = nameMatch[1].replace(/&amp;/g, '&');
+                                inventoryMap[name] = id;
+                            }
                         }
                     }
+                });
 
-                    if (pagesContainer) {
-                        const links = pagesContainer.querySelectorAll('a');
-                        links.forEach(link => {
-                            if (link.href && link.href.includes('do=hof') && link.textContent.trim() === savedPageNum.toString()) {
-                                link.style.fontWeight = 'bold';
-                                link.style.color = '#008000';
-                                link.style.textDecoration = 'underline';
+                if (guideContainer) {
+                    // Find all gray icons (images not wrapped in an <a> tag)
+                    const grayImgs = Array.from(guideContainer.querySelectorAll('img')).filter(img => img.parentElement.tagName.toLowerCase() !== 'a');
+                    grayImgs.forEach(img => {
+                        img.style.cursor = 'pointer';
+                        img.onclick = function() {
+                            window.isAutomatedMixerChange = true;
+
+                            const drinkName = img.title || img.alt;
+                            const mixedDrinksData = Modules.DrinksData.drinks.mixed || [];
+                            const drink = mixedDrinksData.find(d => d.name === drinkName);
+
+                            window.lastClickedRecipe = drink;
+
+                            let scriptAdd = ["if (typeof deleteAll === 'function') deleteAll();"];
+
+                            if (drink && drink.ingredients) {
+                                drink.ingredients.forEach(ing => {
+                                    const id = inventoryMap[ing];
+                                    let available = false;
+                                    if (id) {
+                                        const amountEl = document.getElementById('amnt_' + id);
+                                        if (amountEl) {
+                                            const amount = parseInt(amountEl.textContent, 10);
+                                            if (amount > 0) {
+                                                available = true;
+                                                scriptAdd.push(`if (typeof AddDrink === 'function') AddDrink(${id}, "${ing}");`);
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+
+                            if (scriptAdd.length > 0) {
+                                const script = document.createElement('script');
+                                script.textContent = scriptAdd.join('\n');
+                                document.body.appendChild(script);
+                                script.remove();
+                            }
+
+                            setTimeout(() => { window.isAutomatedMixerChange = false; }, 100);
+                        };
+                    });
+
+                    // Also clear tracking state when clicking a normal (colored) drink link
+                    const normalLinks = guideContainer.querySelectorAll('a[href*="AddDrink"]');
+                    normalLinks.forEach(link => {
+                        link.addEventListener('click', () => {
+                            window.isAutomatedMixerChange = true;
+
+                            const img = link.querySelector('img');
+                            const drinkName = img ? (img.title || img.alt) : '';
+                            const mixedDrinksData = Modules.DrinksData.drinks.mixed || [];
+                            const drink = mixedDrinksData.find(d => d.name === drinkName);
+                            window.lastClickedRecipe = drink;
+
+                            setTimeout(() => { window.isAutomatedMixerChange = false; }, 100);
+                        });
+                    });
+                }
+
+                const startOverLink = document.querySelector('a[href$="cmd=mixer"]');
+                if (startOverLink) {
+                    startOverLink.addEventListener('click', () => {
+                        window.lastClickedRecipe = null;
+                        if (typeof window.updateShoppingList === 'function') window.updateShoppingList();
+                    });
+                }
+
+                // --- Shopping List Helper ---
+                const makeManyInput = document.querySelector('input[name="make_many"]');
+                if (mixAwayBtn && makeManyInput) {
+                    const shoppingListContainer = document.createElement('div');
+                    shoppingListContainer.id = 'shopping-list-container';
+                    shoppingListContainer.style.marginBottom = '15px';
+                    shoppingListContainer.style.display = 'none';
+                    shoppingListContainer.innerHTML = `<div class="style1" style="font-weight:bold; margin-bottom:5px;"><u>Shopping List:</u></div>
+                                                       <div id="shopping_list_items" style="font-size: 13px; color:#555; text-align: left; display: inline-block;"></div>`;
+
+                    // Insert above "Mix Away" button
+                    mixAwayBtn.parentNode.insertBefore(shoppingListContainer, mixAwayBtn);
+
+                    const shoppingListContent = shoppingListContainer.querySelector('#shopping_list_items');
+
+                    window.updateShoppingList = function() {
+                        let ingredientsNeeded = [];
+
+                        if (window.lastClickedRecipe && window.lastClickedRecipe.ingredients) {
+                            ingredientsNeeded = window.lastClickedRecipe.ingredients;
+                        } else {
+                            // Extract from items currently in mixer
+                            const amtSpans = myMixer.querySelectorAll('span[id^="mix_amt_"]');
+                            amtSpans.forEach(span => {
+                                let text = span.textContent.trim();
+                                text = text.replace(/^\d+\s*x\s*/, '').trim();
+                                if (text && !ingredientsNeeded.includes(text)) {
+                                    ingredientsNeeded.push(text);
+                                }
+                            });
+                        }
+
+                        let makeMany = parseInt(makeManyInput.value, 10);
+                        if (isNaN(makeMany) || makeMany < 1) makeMany = 1;
+
+                        let missingTableRows = [];
+                        let totalFixed = 0;
+
+                        ingredientsNeeded.forEach(ingName => {
+                            const id = inventoryMap[ingName];
+                            let hasCount = 0;
+
+                            if (id) {
+                                const amountEl = document.getElementById('amnt_' + id);
+                                if (amountEl) {
+                                    hasCount = parseInt(amountEl.textContent, 10);
+                                    if (document.getElementById('mix_amt_' + id)) {
+                                        hasCount += 1;
+                                    }
+                                }
+                            }
+
+                            const neededAmount = makeMany - hasCount;
+                            if (neededAmount > 0) {
+                                const allDrinks = [
+                                    ...(Modules.DrinksData.drinks.alcoholic || []),
+                                    ...(Modules.DrinksData.drinks.non_alcoholic || [])
+                                ];
+                                const baseDrink = allDrinks.find(d => d.name === ingName);
+
+                                let itemCostStr = '';
+
+                                if (baseDrink && baseDrink.cost) {
+                                    let hasDiscount = false;
+
+                                    if (baseDrink.cost.type === 'cw_multiplier') {
+                                        const costVal = baseDrink.cost.value * neededAmount;
+                                        const cwPrice = Utils.getCWPrice();
+                                        let dollarCost = Math.round(costVal * cwPrice);
+
+                                        if (baseDrink.location === 'Liquor Store') {
+                                            dollarCost = Math.round(dollarCost * 0.9);
+                                            hasDiscount = true;
+                                        }
+
+                                        totalFixed += dollarCost;
+                                        itemCostStr = `$${dollarCost.toLocaleString()}${hasDiscount ? '*' : ''}`;
+                                    } else if (baseDrink.cost.type === 'fixed' && typeof baseDrink.cost.value === 'number') {
+                                        let costVal = baseDrink.cost.value * neededAmount;
+
+                                        if (baseDrink.location === 'Liquor Store') {
+                                            costVal = Math.round(costVal * 0.9);
+                                            hasDiscount = true;
+                                        }
+
+                                        totalFixed += costVal;
+                                        itemCostStr = `$${costVal.toLocaleString()}${hasDiscount ? '*' : ''}`;
+                                    } else if (baseDrink.cost.type === 'fixed' && typeof baseDrink.cost.value === 'string') {
+                                        itemCostStr = `${neededAmount}x ${baseDrink.cost.value}`;
+                                    }
+                                }
+
+                                missingTableRows.push(`
+                                    <tr>
+                                        <td style="padding: 2px 8px 2px 0;"><span style="color:#d9534f; font-weight:bold;">✗</span></td>
+                                        <td style="padding: 2px 15px 2px 0; color:#000;">${neededAmount} x ${ingName} <span style="color:#888; font-size:11px;">(Have: ${hasCount})</span></td>
+                                        <td style="padding: 2px 0; color:#666; text-align: right; white-space: nowrap;">${itemCostStr}</td>
+                                    </tr>
+                                `);
                             }
                         });
 
-                        const pagesStrongs = pagesContainer.querySelectorAll('strong');
-                        pagesStrongs.forEach(s => {
-                            if (s.textContent.trim() === savedPageNum.toString()) {
-                                s.style.color = '#008000';
-                                s.style.textDecoration = 'underline';
+                        if (missingTableRows.length > 0 && ingredientsNeeded.length > 0) {
+                            let listHtml = `<table style="border-collapse: collapse; font-size: 13px; min-width: 200px;">${missingTableRows.join('')}</table>`;
+
+                            if (totalFixed > 0) {
+                                listHtml += `<div style="margin-top: 5px; font-weight: bold; color: #333; border-top: 1px dashed #ccc; padding-top: 3px;">Estimated Cost: <span style="color:red;">$${totalFixed.toLocaleString()}</span> <span id="bank-btn-container"></span></div>`;
+                                listHtml += `<div style="margin-top: 2px; font-size: 10px; color: #888;">* 10% Bartender's Guide discount applied</div>`;
                             }
-                        });
-                    }
+
+                            shoppingListContent.innerHTML = listHtml;
+                            shoppingListContainer.style.display = 'block';
+
+                            const bankBtnContainer = document.getElementById('bank-btn-container');
+                            if (bankBtnContainer) {
+                                const bankBtn = Utils.createBankButton('Drink Ingredients', totalFixed);
+                                bankBtn.addEventListener('click', function() {
+                                    let saveObj = {};
+                                    ingredientsNeeded.forEach(ingName => {
+                                        const id = inventoryMap[ingName];
+                                        let hasCount = 0;
+                                        if (id) {
+                                            const amountEl = document.getElementById('amnt_' + id);
+                                            if (amountEl) {
+                                                hasCount = parseInt(amountEl.textContent, 10);
+                                                if (document.getElementById('mix_amt_' + id)) {
+                                                    hasCount += 1;
+                                                }
+                                            }
+                                        }
+                                        const neededAmount = makeMany - hasCount;
+                                        if (neededAmount > 0) {
+                                            saveObj[ingName] = neededAmount;
+                                        }
+                                    });
+
+                                    localStorage.setItem('hobowarsDrinkShoppingList', JSON.stringify(saveObj));
+                                    if (window.lastClickedRecipe && window.lastClickedRecipe.name) {
+                                        localStorage.setItem('hobowarsDrinkShoppingList_TargetDrink', window.lastClickedRecipe.name);
+                                    } else {
+                                        localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
+                                    }
+                                });
+                                bankBtnContainer.appendChild(bankBtn);
+                            }
+                        } else {
+                            shoppingListContent.innerHTML = '';
+                            shoppingListContainer.style.display = 'none';
+                        }
+                    };
+
+                    makeManyInput.addEventListener('input', () => {
+                        if (typeof window.updateShoppingList === 'function') window.updateShoppingList();
+                    });
                 }
             }
         }
+    }
+}
+
+const NorthernFenceHelper = {
+    cmds: 'hill3',
+    init: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('cmd') === 'hill3') {
+            if (urlParams.get('do') === 'npc') {
+                this.initNpcRacingHelper();
+            } else if (urlParams.get('do') === 'hof') {
+                this.initHallOfFameHelper();
+            }
+        }
+    },
+
+    initNpcRacingHelper: function() {
+        const table = document.querySelector('.content-area table');
+        if (!table) return;
+
+        const rows = table.querySelectorAll('tr');
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length >= 6) {
+                const costCell = cells[4];
+                const costText = costCell.textContent.trim();
+                if (costText.startsWith('$')) {
+                    const costMatch = costText.match(/\$?([0-9,]+)/);
+                    if (costMatch) {
+                        const cost = Utils.parseNumber(costMatch[1]);
+                        if (!isNaN(cost)) {
+                            const totalCost = cost * 2; // Can race twice
+                            const name = cells[0].textContent.trim();
+
+                            const actionCell = cells[5];
+
+                            // Parse original race link
+                            const raceLink = actionCell.querySelector('a');
+                            let raceHref = '';
+                            if (raceLink) {
+                                raceHref = raceLink.getAttribute('href');
+                            }
+
+                            // Replace inner text with clear flex layout for buttons
+                            actionCell.innerHTML = '';
+                            actionCell.style.display = 'flex';
+                            actionCell.style.alignItems = 'center';
+                            actionCell.style.justifyContent = 'center';
+
+                            const commonBtnStyle = '-webkit-font-smoothing: antialiased; color: #636363; background: #ddd; font-weight: bold; text-decoration: none; padding: 0; width: 80px; height: 26px; line-height: 26px; text-align: center; border-radius: 3px; border: none; cursor: pointer; margin: 3px 2px; -webkit-appearance: none; display: inline-block; user-select: none; -webkit-user-select: none; font-family: inherit; font-size: 13px; box-sizing: border-box; vertical-align: middle;';
+
+                            if (raceHref) {
+                                const raceBtn = document.createElement('a');
+                                raceBtn.href = raceHref;
+                                raceBtn.textContent = 'Race';
+
+                                raceBtn.className = 'btn';
+                                raceBtn.style.cssText = commonBtnStyle;
+
+                                raceBtn.addEventListener('mouseover', () => raceBtn.style.background = '#ccc');
+                                raceBtn.addEventListener('mouseout', () => raceBtn.style.background = '#ddd');
+
+                                actionCell.appendChild(raceBtn);
+                            }
+
+                            const btn = Utils.createBankButton(`Pikies (${name})`, totalCost);
+                            btn.className = 'btn';
+                            btn.style.cssText = commonBtnStyle;
+
+                            btn.addEventListener('mouseover', () => { if (!btn.disabled) btn.style.background = '#ccc'; });
+                            btn.addEventListener('mouseout', () => { if (!btn.disabled) btn.style.background = '#ddd'; });
+                            // Make sure disabled state looks reasonable when clicked
+                            const originalOnclick = btn.onclick;
+                            btn.onclick = function(e) {
+                                if (originalOnclick) originalOnclick.call(this, e);
+                                this.style.background = '#eee';
+                                this.style.color = '#aaa';
+                                this.style.cursor = 'not-allowed';
+                            };
+
+                            actionCell.appendChild(btn);
+                        }
+                    }
+                }
+            }
+        });
+    },
+
+    initHallOfFameHelper: function() {
+        const playerId = Utils.getHoboId();
+        const table = document.querySelector('.content-area table');
+        let foundPlayer = false;
+
+        if (table && playerId !== 'Unknown') {
+            const rows = table.querySelectorAll('tr');
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 3) {
+                    const hoboLink = cells[0].querySelector('a');
+                    if (hoboLink && hoboLink.href.includes(`ID=${playerId}`)) {
+                        row.style.fontWeight = 'bold';
+                        foundPlayer = true;
+                    }
+                }
+            });
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlPage = urlParams.get('page');
+        const currentPageNum = urlPage ? parseInt(urlPage) + 1 : 1;
+
+        if (foundPlayer) {
+            localStorage.setItem('hof_player_page', currentPageNum);
+        }
+
+        const savedPageNum = localStorage.getItem('hof_player_page');
+        if (savedPageNum) {
+            const strongs = document.querySelectorAll('.content-area strong');
+            let pagesContainer = null;
+            for (const s of strongs) {
+                if (s.textContent.trim() === 'Pages:') {
+                    pagesContainer = s.parentNode;
+                    break;
+                }
+            }
+
+            if (pagesContainer) {
+                const links = pagesContainer.querySelectorAll('a');
+                links.forEach(link => {
+                    if (link.href && link.href.includes('do=hof') && link.textContent.trim() === savedPageNum.toString()) {
+                        link.style.fontWeight = 'bold';
+                        link.style.color = '#008000';
+                        link.style.textDecoration = 'underline';
+                    }
+                });
+
+                const pagesStrongs = pagesContainer.querySelectorAll('strong');
+                pagesStrongs.forEach(s => {
+                    if (s.textContent.trim() === savedPageNum.toString()) {
+                        s.style.color = '#008000';
+                        s.style.textDecoration = 'underline';
+                    }
+                });
+            }
+        }
+    }
+}
 
 const RatsHelper = {
     cmds: 'rats',
@@ -4339,7 +4518,6 @@ const RatsHelper = {
 const RecyclingBinHelper = {
     cmds: 'recycling_bin',
     init: function() {
-        if (!Utils.isCurrentPage('cmd=recycling_bin')) return;
 
         const settings = Utils.getSettings();
         if (settings.global_enabled === false) return;
@@ -4372,8 +4550,8 @@ const RecyclingBinHelper = {
 };
 
 const SettingsHelper = {
+    cmds: 'preferences',
     init: function() {
-        if (!window.location.search.endsWith('cmd=preferences')) return;
 
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
@@ -4681,7 +4859,6 @@ const SettingsHelper = {
 const SoupKitchenHelper = {
     cmds: 'soup_kitchen',
     init: function() {
-        if (!window.location.search.includes('cmd=soup_kitchen')) return;
 
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
@@ -4776,48 +4953,42 @@ const SoupKitchenHelper = {
 
 const TattooParlorHelper = {
     cmds: 'tattoo_parlor',
-            init: function() {
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('cmd') === 'tattoo_parlor') {
-                    const links = document.querySelectorAll('a[href*="tattoo_parlor"]');
-                    links.forEach(link => {
-                        const text = link.textContent;
-                        if (text.includes('Retouch') || text.includes('Remove')) {
-                            const costMatch = text.match(/\$?([0-9,]+)/);
-                            if (costMatch) {
-                                const cost = Utils.parseNumber(costMatch[1]);
-                                if (!isNaN(cost) && cost > 0) {
-                                    const actionName = text.includes('Retouch') ? 'Tattoo Retouch' : 'Tattoo Remove';
+    init: function() {
+        const links = document.querySelectorAll('a[href*="tattoo_parlor"]');
+        links.forEach(link => {
+            const text = link.textContent;
+            if (text.includes('Retouch') || text.includes('Remove')) {
+                const costMatch = text.match(/\$?([0-9,]+)/);
+                if (costMatch) {
+                    const cost = Utils.parseNumber(costMatch[1]);
+                    if (!isNaN(cost) && cost > 0) {
+                        const actionName = text.includes('Retouch') ? 'Tattoo Retouch' : 'Tattoo Remove';
 
-                                    const btn = Utils.createBankButton(actionName, cost);
+                        const btn = Utils.createBankButton(actionName, cost);
 
-                                    // Move button outside the link's parent if it's wrapped in square brackets
-                                    if (link.nextSibling && link.nextSibling.nodeType === Node.TEXT_NODE && link.nextSibling.textContent.includes(']')) {
-                                        link.parentNode.insertBefore(btn, link.nextSibling.nextSibling);
-                                    } else {
-                                        link.parentNode.insertBefore(btn, link.nextSibling);
-                                    }
-                                }
-                            }
+                        // Move button outside the link's parent if it's wrapped in square brackets
+                        if (link.nextSibling && link.nextSibling.nodeType === Node.TEXT_NODE && link.nextSibling.textContent.includes(']')) {
+                            link.parentNode.insertBefore(btn, link.nextSibling.nextSibling);
+                        } else {
+                            link.parentNode.insertBefore(btn, link.nextSibling);
                         }
-                    });
+                    }
                 }
             }
-        }
+        });
+    }
+};
 
 const UniversityHelper = {
     cmds: 'uni',
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
-        const cmd = urlParams.get('cmd');
         const doParam = urlParams.get('do');
         
-        if (cmd === 'uni') {
-            if (['str', 'pow', 'spd'].includes(doParam)) {
-                this.updateStatsFromTrain();
-            }
-            this.displayNeededStats();
+        if (['str', 'pow', 'spd'].includes(doParam)) {
+            this.updateStatsFromTrain();
         }
+        this.displayNeededStats();
     },
 
     updateStatsFromTrain: function() {
@@ -4956,143 +5127,152 @@ const WeaponsHelper = {
 
 const WellnessClinicHelper = {
     cmds: 'wellness_clinic',
-            init: function() {
-                const url = window.location.href;
+    init: function() {
+        const url = window.location.href;
 
-                const clinicData = [
-                    {lv: 1, fee: 2500}, {lv: 2, fee: 12500}, {lv: 3, fee: 42500}, {lv: 4, fee: 92500}, {lv: 5, fee: 162500},
-                    {lv: 6, fee: 252500}, {lv: 7, fee: 362500}, {lv: 8, fee: 492500}, {lv: 9, fee: 642500}, {lv: 10, fee: 812500},
-                    {lv: 11, fee: 1002500}, {lv: 12, fee: 1212500}, {lv: 13, fee: 1442500}, {lv: 14, fee: 1692500}, {lv: 15, fee: 1962500},
-                    {lv: 16, fee: 2252500}, {lv: 17, fee: 2562500}, {lv: 18, fee: 2892500}, {lv: 19, fee: 3242500}, {lv: 20, fee: 3612500},
-                    {lv: 21, fee: 4002500}, {lv: 22, fee: 4412500}, {lv: 23, fee: 4842500}, {lv: 24, fee: 5292500}, {lv: 25, fee: 5762500},
-                    {lv: 26, fee: 6252500}, {lv: 27, fee: 6762500}, {lv: 28, fee: 7292500}, {lv: 29, fee: 7842500}, {lv: 30, fee: 8412500},
-                    {lv: 31, fee: 9002500}, {lv: 32, fee: 9612500}, {lv: 33, fee: 10242500}, {lv: 34, fee: 10892500}, {lv: 35, fee: 11562500},
-                    {lv: 36, fee: 12252500}, {lv: 37, fee: 12962500}, {lv: 38, fee: 13692500}, {lv: 39, fee: 14442500}, {lv: 40, fee: 15212500},
-                    {lv: 41, fee: 16002500}, {lv: 42, fee: 16812500}, {lv: 43, fee: 17642500}, {lv: 44, fee: 18492500}, {lv: 45, fee: 19362500},
-                    {lv: 46, fee: 20252500}, {lv: 47, fee: 21162500}, {lv: 48, fee: 22092500}, {lv: 49, fee: 23042500}, {lv: 50, fee: 24012500},
-                    {lv: 51, fee: 25002500}, {lv: 52, fee: 26012500}, {lv: 53, fee: 27042500}, {lv: 54, fee: 28092500}, {lv: 55, fee: 29162500},
-                    {lv: 56, fee: 30252500}, {lv: 57, fee: 31362500}, {lv: 58, fee: 32492500}, {lv: 59, fee: 33642500}, {lv: 60, fee: 34812500},
-                    {lv: 61, fee: 36002500}, {lv: 62, fee: 37212500}, {lv: 63, fee: 38442500}, {lv: 64, fee: 39692500}, {lv: 65, fee: 40962500},
-                    {lv: 66, fee: 42252500}, {lv: 67, fee: 43562500}, {lv: 68, fee: 44892500}, {lv: 69, fee: 46242500}, {lv: 70, fee: 47612500},
-                    {lv: 71, fee: 49002500}, {lv: 72, fee: 50412500}, {lv: 73, fee: 51842500}, {lv: 74, fee: 53292500}, {lv: 75, fee: 54762500},
-                    {lv: 76, fee: 56252500}, {lv: 77, fee: 57762500}, {lv: 78, fee: 59292500}, {lv: 79, fee: 60842500}, {lv: 80, fee: 62412500},
-                    {lv: 81, fee: 64002500}, {lv: 82, fee: 65612500}, {lv: 83, fee: 67242500}, {lv: 84, fee: 68892500}, {lv: 85, fee: 70562500},
-                    {lv: 86, fee: 72252500}, {lv: 87, fee: 73962500}, {lv: 88, fee: 75692500}, {lv: 89, fee: 77442500}, {lv: 90, fee: 79212500},
-                    {lv: 91, fee: 81002500}, {lv: 92, fee: 82812500}, {lv: 93, fee: 84642500}, {lv: 94, fee: 86492500}, {lv: 95, fee: 88362500},
-                    {lv: 96, fee: 90252500}, {lv: 97, fee: 92162500}, {lv: 98, fee: 94092500}, {lv: 99, fee: 96042500}, {lv: 100, fee: 98012500}
-                ];
+        const clinicData = [
+            {lv: 1, fee: 2500}, {lv: 2, fee: 12500}, {lv: 3, fee: 42500}, {lv: 4, fee: 92500}, {lv: 5, fee: 162500},
+            {lv: 6, fee: 252500}, {lv: 7, fee: 362500}, {lv: 8, fee: 492500}, {lv: 9, fee: 642500}, {lv: 10, fee: 812500},
+            {lv: 11, fee: 1002500}, {lv: 12, fee: 1212500}, {lv: 13, fee: 1442500}, {lv: 14, fee: 1692500}, {lv: 15, fee: 1962500},
+            {lv: 16, fee: 2252500}, {lv: 17, fee: 2562500}, {lv: 18, fee: 2892500}, {lv: 19, fee: 3242500}, {lv: 20, fee: 3612500},
+            {lv: 21, fee: 4002500}, {lv: 22, fee: 4412500}, {lv: 23, fee: 4842500}, {lv: 24, fee: 5292500}, {lv: 25, fee: 5762500},
+            {lv: 26, fee: 6252500}, {lv: 27, fee: 6762500}, {lv: 28, fee: 7292500}, {lv: 29, fee: 7842500}, {lv: 30, fee: 8412500},
+            {lv: 31, fee: 9002500}, {lv: 32, fee: 9612500}, {lv: 33, fee: 10242500}, {lv: 34, fee: 10892500}, {lv: 35, fee: 11562500},
+            {lv: 36, fee: 12252500}, {lv: 37, fee: 12962500}, {lv: 38, fee: 13692500}, {lv: 39, fee: 14442500}, {lv: 40, fee: 15212500},
+            {lv: 41, fee: 16002500}, {lv: 42, fee: 16812500}, {lv: 43, fee: 17642500}, {lv: 44, fee: 18492500}, {lv: 45, fee: 19362500},
+            {lv: 46, fee: 20252500}, {lv: 47, fee: 21162500}, {lv: 48, fee: 22092500}, {lv: 49, fee: 23042500}, {lv: 50, fee: 24012500},
+            {lv: 51, fee: 25002500}, {lv: 52, fee: 26012500}, {lv: 53, fee: 27042500}, {lv: 54, fee: 28092500}, {lv: 55, fee: 29162500},
+            {lv: 56, fee: 30252500}, {lv: 57, fee: 31362500}, {lv: 58, fee: 32492500}, {lv: 59, fee: 33642500}, {lv: 60, fee: 34812500},
+            {lv: 61, fee: 36002500}, {lv: 62, fee: 37212500}, {lv: 63, fee: 38442500}, {lv: 64, fee: 39692500}, {lv: 65, fee: 40962500},
+            {lv: 66, fee: 42252500}, {lv: 67, fee: 43562500}, {lv: 68, fee: 44892500}, {lv: 69, fee: 46242500}, {lv: 70, fee: 47612500},
+            {lv: 71, fee: 49002500}, {lv: 72, fee: 50412500}, {lv: 73, fee: 51842500}, {lv: 74, fee: 53292500}, {lv: 75, fee: 54762500},
+            {lv: 76, fee: 56252500}, {lv: 77, fee: 57762500}, {lv: 78, fee: 59292500}, {lv: 79, fee: 60842500}, {lv: 80, fee: 62412500},
+            {lv: 81, fee: 64002500}, {lv: 82, fee: 65612500}, {lv: 83, fee: 67242500}, {lv: 84, fee: 68892500}, {lv: 85, fee: 70562500},
+            {lv: 86, fee: 72252500}, {lv: 87, fee: 73962500}, {lv: 88, fee: 75692500}, {lv: 89, fee: 77442500}, {lv: 90, fee: 79212500},
+            {lv: 91, fee: 81002500}, {lv: 92, fee: 82812500}, {lv: 93, fee: 84642500}, {lv: 94, fee: 86492500}, {lv: 95, fee: 88362500},
+            {lv: 96, fee: 90252500}, {lv: 97, fee: 92162500}, {lv: 98, fee: 94092500}, {lv: 99, fee: 96042500}, {lv: 100, fee: 98012500}
+        ];
 
-                if (url.includes('cmd=wellness_clinic')) {
-                    const contentArea = document.querySelector('.content-area');
-                    if (!contentArea) return;
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
 
-                    const text = contentArea.innerText;
-                    const costMatch = text.match(/\$?([0-9]{1,3}(,[0-9]{3})+|[0-9]{4,})/);
-                    let detectedCost = 0;
-                    if (costMatch) detectedCost = Utils.parseNumber(costMatch[0]);
+        const text = contentArea.innerText;
+        const costMatch = text.match(/\$?([0-9]{1,3}(,[0-9]{3})+|[0-9]{4,})/);
+        let detectedCost = 0;
+        if (costMatch) detectedCost = Utils.parseNumber(costMatch[0]);
 
-                    const hasPaid = url.includes('do=pay');
-                    let currentIndex = clinicData.findIndex(row => row.fee === detectedCost);
-                    if (hasPaid && currentIndex !== -1 && currentIndex < clinicData.length - 1) currentIndex += 1;
+        const hasPaid = url.includes('do=pay');
+        let currentIndex = clinicData.findIndex(row => row.fee === detectedCost);
+        if (hasPaid && currentIndex !== -1 && currentIndex < clinicData.length - 1) currentIndex += 1;
 
-                    let runningTotalSpentDay = 0;
-                    let runningFutureCost = 0;
-                    let tableRows = "";
+        let runningTotalSpentDay = 0;
+        let runningFutureCost = 0;
+        let tableRows = "";
 
-                    let savedGoals = Modules.BankHelper.getBankGoals();
-                    const savedGoal = savedGoals['Wellness'];
+        let savedGoals = Modules.BankHelper.getBankGoals();
+        const savedGoal = savedGoals['Wellness'];
 
-                    clinicData.forEach((row, index) => {
-                        runningTotalSpentDay += row.fee;
-                        const isCurrentOrFuture = (index >= currentIndex && currentIndex !== -1);
-                        if (isCurrentOrFuture) runningFutureCost += row.fee;
+        clinicData.forEach((row, index) => {
+            runningTotalSpentDay += row.fee;
+            const isCurrentOrFuture = (index >= currentIndex && currentIndex !== -1);
+            if (isCurrentOrFuture) runningFutureCost += row.fee;
 
-                        const isCurrentRow = (index === currentIndex);
-                        const rowID = isCurrentRow ? 'id="hw-current-row"' : '';
-                        const bg = isCurrentRow ? 'rgba(255, 255, 153, 0.4)' : 'transparent';
-                        const isBlue = (savedGoal && parseInt(savedGoal) === runningFutureCost);
-                        const activeClass = isBlue ? 'active' : '';
-                        const interactiveClass = isCurrentOrFuture ? 'interactive' : '';
-                        const cellClasses = `hw-wellness-finish-cell ${interactiveClass} ${activeClass}`.trim();
-                        const interactiveStyle = isCurrentOrFuture ? 'cursor: pointer; color: #800;' : 'color: #888;';
+            const isCurrentRow = (index === currentIndex);
+            const rowID = isCurrentRow ? 'id="hw-current-row"' : '';
+            const bg = isCurrentRow ? 'rgba(255, 255, 153, 0.4)' : 'transparent';
+            const isBlue = (savedGoal && parseInt(savedGoal) === runningFutureCost);
+            const activeClass = isBlue ? 'active' : '';
+            const interactiveClass = isCurrentOrFuture ? 'interactive' : '';
+            const cellClasses = `hw-wellness-finish-cell ${interactiveClass} ${activeClass}`.trim();
+            const interactiveStyle = isCurrentOrFuture ? 'cursor: pointer; color: #800;' : 'color: #888;';
 
-                        tableRows += `
-                            <tr ${rowID} style="background-color: ${bg}; border-bottom: 1px solid #ddd;">
-                                <td style="padding: 4px; text-align: center; border-right: 1px solid #bbb;">${row.lv}</td>
-                                <td style="padding: 4px; text-align: right; border-right: 1px solid #bbb;">$${row.fee.toLocaleString()}</td>
-                                <td style="padding: 4px; text-align: right; border-right: 1px solid #bbb;">$${runningTotalSpentDay.toLocaleString()}</td>
-                                <td class="${cellClasses}" data-val="${runningFutureCost}" style="padding: 4px; text-align: right; ${interactiveStyle}">
-                                    ${isCurrentOrFuture ? `$${runningFutureCost.toLocaleString()}` : '-'}
-                                </td>
-                            </tr>
-                        `;
-                    });
+            tableRows += `
+                <tr ${rowID} style="background-color: ${bg}; border-bottom: 1px solid #ddd;">
+                    <td style="padding: 4px; text-align: center; border-right: 1px solid #bbb;">${row.lv}</td>
+                    <td style="padding: 4px; text-align: right; border-right: 1px solid #bbb;">$${row.fee.toLocaleString()}</td>
+                    <td style="padding: 4px; text-align: right; border-right: 1px solid #bbb;">$${runningTotalSpentDay.toLocaleString()}</td>
+                    <td class="${cellClasses}" data-val="${runningFutureCost}" style="padding: 4px; text-align: right; ${interactiveStyle}">
+                        ${isCurrentOrFuture ? `$${runningFutureCost.toLocaleString()}` : '-'}
+                    </td>
+                </tr>
+            `;
+        });
 
-                    const spentToday = (currentIndex !== -1) ? (runningTotalSpentDay - runningFutureCost) : 0;
+        const spentToday = (currentIndex !== -1) ? (runningTotalSpentDay - runningFutureCost) : 0;
 
-                    const trackerHtml = `
-                        <style>
-                            .hw-wellness-finish-cell.interactive:hover:not(.active) {
-                                background-color: #e0f0ff !important;
-                            }
-                            .hw-wellness-finish-cell.active {
-                                background-color: lightblue !important;
-                                font-weight: bold;
-                            }
-                        </style>
-                        <div id="hw-tracker-container" style="margin: 20px auto; width: 95%; max-width: 580px; font-family: Verdana, sans-serif;">
-                            <div id="hw-scroll-box" style="max-height: 350px; overflow-y: auto; border: 1px solid #666; border-radius: 4px; background-color: rgba(255,255,255,0.7);">
-                                <table style="width: 100%; border-collapse: collapse; color: #000; font-size: 11px;">
-                                    <thead style="position: sticky; top: 0; background: #f0f0f0; z-index: 10; border-bottom: 2px solid #999;">
-                                        <tr>
-                                            <th style="padding: 6px; border-right: 1px solid #bbb;">Lv</th>
-                                            <th style="padding: 6px; border-right: 1px solid #bbb;">Fee</th>
-                                            <th style="padding: 6px; border-right: 1px solid #bbb;">Total Spent Day</th>
-                                            <th style="padding: 6px; background: #f9f9e8;">Cumulative Spend</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>${tableRows}</tbody>
-                                </table>
-                            </div>
-                            <div style="font-size: 11px; font-style: italic; color: #555; margin-top: 4px; text-align: center;">
-                               💡 Click any amount in the <b>Cumulative Spend</b> column to set it as a Bank Withdraw Goal.
-                            </div>
-                            <div style="font-size: 12px; margin-top: 8px; color: #333; text-align: right; font-weight: bold;">
-                               Total Spent Today: <span style="color: #800;">$${spentToday.toLocaleString()}</span>
-                            </div>
-                        </div>
-                    `;
-
-                    contentArea.insertAdjacentHTML('beforeend', trackerHtml);
-
-                    document.querySelectorAll('.hw-wellness-finish-cell').forEach(cell => {
-                        cell.addEventListener('click', function() {
-                            if (!this.classList.contains('interactive')) return;
-                            const val = this.getAttribute('data-val');
-                            if (val === "0") return;
-                            const isAlreadyActive = this.classList.contains('active');
-                            document.querySelectorAll('.hw-wellness-finish-cell').forEach(c => c.classList.remove('active'));
-
-                            if (!isAlreadyActive) {
-                                this.classList.add('active');
-                                Modules.BankHelper.addBankGoal('Wellness', parseInt(val));
-                            } else {
-                                Modules.BankHelper.addBankGoal('Wellness', 0);
-                            }
-                        });
-                    });
-
-                    setTimeout(() => {
-                        const row = document.getElementById('hw-current-row');
-                        const box = document.getElementById('hw-scroll-box');
-                        if (row && box) box.scrollTop = row.offsetTop - 100;
-                    }, 150);
+        const trackerHtml = `
+            <style>
+                .hw-wellness-finish-cell.interactive:hover:not(.active) {
+                    background-color: #e0f0ff !important;
                 }
-            }
-        }
+                .hw-wellness-finish-cell.active {
+                    background-color: lightblue !important;
+                    font-weight: bold;
+                }
+            </style>
+            <div id="hw-tracker-container" style="margin: 20px auto; width: 95%; max-width: 580px; font-family: Verdana, sans-serif;">
+                <div id="hw-scroll-box" style="max-height: 350px; overflow-y: auto; border: 1px solid #666; border-radius: 4px; background-color: rgba(255,255,255,0.7);">
+                    <table style="width: 100%; border-collapse: collapse; color: #000; font-size: 11px;">
+                        <thead style="position: sticky; top: 0; background: #f0f0f0; z-index: 10; border-bottom: 2px solid #999;">
+                            <tr>
+                                <th style="padding: 6px; border-right: 1px solid #bbb;">Lv</th>
+                                <th style="padding: 6px; border-right: 1px solid #bbb;">Fee</th>
+                                <th style="padding: 6px; border-right: 1px solid #bbb;">Total Spent Day</th>
+                                <th style="padding: 6px; background: #f9f9e8;">Cumulative Spend</th>
+                            </tr>
+                        </thead>
+                        <tbody>${tableRows}</tbody>
+                    </table>
+                </div>
+                <div style="font-size: 11px; font-style: italic; color: #555; margin-top: 4px; text-align: center;">
+                   💡 Click any amount in the <b>Cumulative Spend</b> column to set it as a Bank Withdraw Goal.
+                </div>
+                <div style="font-size: 12px; margin-top: 8px; color: #333; text-align: right; font-weight: bold;">
+                   Total Spent Today: <span style="color: #800;">$${spentToday.toLocaleString()}</span>
+                </div>
+            </div>
+        `;
+
+        contentArea.insertAdjacentHTML('beforeend', trackerHtml);
+
+        document.querySelectorAll('.hw-wellness-finish-cell').forEach(cell => {
+            cell.addEventListener('click', function() {
+                if (!this.classList.contains('interactive')) return;
+                const val = this.getAttribute('data-val');
+                if (val === "0") return;
+                const isAlreadyActive = this.classList.contains('active');
+                document.querySelectorAll('.hw-wellness-finish-cell').forEach(c => c.classList.remove('active'));
+
+                if (!isAlreadyActive) {
+                    this.classList.add('active');
+                    Modules.BankHelper.addBankGoal('Wellness', parseInt(val));
+                } else {
+                    Modules.BankHelper.addBankGoal('Wellness', 0);
+                }
+            });
+        });
+
+        setTimeout(() => {
+            const row = document.getElementById('hw-current-row');
+            const box = document.getElementById('hw-scroll-box');
+            if (row && box) box.scrollTop = row.offsetTop - 100;
+        }, 150);
+    }
+}
 
 const ChangelogData = {
     changes: [
+        {
+            version: "8.05",
+            date: "2026-04-09",
+            type: "Added",
+            notes: [
+                "Added a customizable column selector to the `GangHelper` Member List page (`cmd=gang&do=list_mem`), allowing users to toggle specific data columns on and off dynamically.",
+                "The Member List top navigation links (Main, Battle Stats, Other Stats, Hall of Fame) have been converted into pill buttons that act as automatic presets to quickly toggle relevant column sets without losing stored custom configurations.",
+                "Included an adaptive \"Show All\" toggle button to instantly display every strictly accessible column constraint for the active user account.",
+                "Column configurations securely persist via browser local storage and gracefully filter out unavailable selections when switching between regular User and Gang Staff account access levels."
+            ]
+        },
         {
             version: "8.04",
             date: "2026-04-08",
@@ -5125,16 +5305,6 @@ const ChangelogData = {
             notes: [
                 "Added a \"Favourite Drinks\" section that automatically displays your top 5 consumed drinks in the backpack and living area modes, increasing image sizes for quick tapping.",
                 "Drink consumption is now successfully tracked automatically when drank directly from backpack/living area locations."
-            ]
-        },
-        {
-            version: "8.00",
-            date: "2026-04-08",
-            type: "Added",
-            notes: [
-                "Added a \"Swipeable Topbar Menu\" feature to `DisplayHelper` that automatically makes the natively wide topbar menu (Dirt Road, Recycling Bin, etc.) horizontally scrollable (swipeable) on mobile devices to prevent it from clipping off-screen. Can be disabled via settings.",
-                "Desktop users also gain an invisible drag-to-scroll interactivity across the topbar menu for testing and accessibility.",
-                "Improved the styling of \"Race\" and \"Pikies\" action buttons in the Northern Fence racing page for a cleaner layout."
             ]
         }
     ]
@@ -5194,44 +5364,63 @@ const ChangelogData = {
     const urlParams = new URLSearchParams(window.location.search);
     const currentCmd = urlParams.get('cmd') || '';
 
-    // Initialize Global Modules first
-    Object.values(GlobalModules).forEach(module => {
-        if (typeof module.alwaysInit === 'function') {
-            module.alwaysInit();
-        }
+    // To prevent DOM flash, run script at document-start, hide the document visually, apply modifications, then show it.
+    if (document.documentElement) {
+        document.documentElement.style.visibility = 'hidden';
+    }
 
-        if (typeof module.init === 'function') {
-            const moduleName = Object.keys(GlobalModules).find(key => GlobalModules[key] === module);
-            const moduleEnabled = savedSettings[moduleName] !== false;
-            
-            if (globalEnabled && moduleEnabled) {
-                module.init();
+    const initModules = () => {
+        // Initialize Global Modules first
+        Object.entries(GlobalModules).forEach(([moduleName, module]) => {
+            if (typeof module.alwaysInit === 'function') {
+                module.alwaysInit();
             }
-        }
-    });
 
-    // Filter and Initialize Page Modules
-    const matchingPageModules = Object.keys(PageModules).filter(moduleName => {
-        const module = PageModules[moduleName];
-        if (module.cmds === undefined || module.cmds === null) return true;
-        if (Array.isArray(module.cmds)) return module.cmds.includes(currentCmd);
-        return module.cmds === currentCmd;
-    });
-
-    matchingPageModules.forEach(moduleName => {
-        const module = PageModules[moduleName];
-
-        if (typeof module.alwaysInit === 'function') {
-            module.alwaysInit();
-        }
-
-        if (typeof module.init === 'function') {
-            const moduleEnabled = savedSettings[moduleName] !== false;
-            
-            if (moduleName === 'SettingsHelper' || (globalEnabled && moduleEnabled)) {
-                module.init();
+            if (typeof module.init === 'function') {
+                const moduleEnabled = savedSettings[moduleName] !== false;
+                
+                if (globalEnabled && moduleEnabled) {
+                    module.init();
+                }
             }
+        });
+
+        // Filter and Initialize Page Modules in a single pass
+        Object.entries(PageModules).forEach(([moduleName, module]) => {
+            let isMatch = false;
+            if (module.cmds === undefined || module.cmds === null) {
+                isMatch = true;
+            } else if (Array.isArray(module.cmds)) {
+                isMatch = module.cmds.includes(currentCmd);
+            } else {
+                isMatch = module.cmds === currentCmd;
+            }
+
+            if (isMatch) {
+                if (typeof module.alwaysInit === 'function') {
+                    module.alwaysInit();
+                }
+
+                if (typeof module.init === 'function') {
+                    const moduleEnabled = savedSettings[moduleName] !== false;
+
+                    if (moduleName === 'SettingsHelper' || (globalEnabled && moduleEnabled)) {
+                        module.init();
+                    }
+                }
+            }
+        });
+
+        // Show document again after modifications
+        if (document.documentElement) {
+            document.documentElement.style.visibility = '';
         }
-    });
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initModules);
+    } else {
+        initModules();
+    }
 })();
 

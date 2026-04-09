@@ -93,10 +93,15 @@ A new helper designed to operate on the Weapons page (`cmd=wep`).
 - **Highlight Equipped Items**: Automatically highlights weapons, armor, and rings that you currently have equipped in your inventory list.
 - **Quick Equip/Unequip**: Converts item images into clickable links that will instantly equip or unequip the item based on its current state.
 
-### 23. Drink Helpers
+### 23. Gang Helper (`GangHelper.js`)
+Helper designed to function on Gang-related pages (`cmd=gang`).
+- **Gang Event Data Save**: Injects an admin-only dashboard specifically within the event stats for events like "Gangsters Sunday = Funday", dynamically tracking and storing custom event payments.
+- **Member List Columns**: Exposes a completely configurable column selection UI right above the "list members" table so users aren't locked into the rigid pre-set columns. Fully integrated with LocalStorage and safely adapts between User and Staff column restrictions.
+
+### 24. Drink Helpers
 - [x] Automatically inject stat and effect data as tooltips to all drinks when hovering your mouse over them inside of your backpack and living area page.
 
-### 24. Food Helpers
+### 25. Food Helpers
 - [x] Food Menu Management: Add a "Mark as Crap" button to mark selected foods as "crap". Unchecked foods will be removed from the list.
 - [x] Add a "Select Crap" button to automatically select all foods you have marked as crap, making it easy to throw them away.
 - [x] Works both in the main Food page and within the Living Area Food tab.

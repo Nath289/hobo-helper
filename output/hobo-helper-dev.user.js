@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.04.20260409.0018
+// @version      8.04.20260409.1248
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -822,7 +822,6 @@ const DisplayHelper = {
 
 const DrinksHelper = {
             init: function() {
-                return; 
                 function getInventory() {
                     const inventory = {};
                     document.querySelectorAll('.bp-itm').forEach(item => {
@@ -1354,17 +1353,18 @@ const GangHelper = {
         const doParam = urlParams.get('do');
         const wParam = urlParams.get('w');
         
-        // Ensure we are on the Gang do=enter page
-        if (doParam !== 'enter') return;
-
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
 
         if (savedSettings['GangHelper_EnableFeature'] !== false) {
-            // Check if we are viewing the last gang happenings
-            if (wParam === 'lastsh') {
-                this.initGangHappenings();
-            } else {
-                this.initGangFeature();
+            if (doParam === 'list_mem') {
+                this.initGangMemberList();
+            } else if (doParam === 'enter') {
+                // Check if we are viewing the last gang happenings
+                if (wParam === 'lastsh') {
+                    this.initGangHappenings();
+                } else {
+                    this.initGangFeature();
+                }
             }
         }
     },
@@ -1372,6 +1372,192 @@ const GangHelper = {
     initGangFeature: function() {
         console.log("GangHelper loaded on dashboard.");
         // TODO: Implement gang page specifics
+    },
+
+    initGangMemberList: function() {
+        console.log("GangHelper loaded on member list page.");
+        let mainNav = document.querySelector('a.nav.show1');
+        let battleNav = document.querySelector('a.nav.show2');
+        let otherNav = document.querySelector('a.nav.show3');
+        let hofNav = document.querySelector('a.nav.show4');
+
+        // Non-staff only have main and hall of fame, so only require mainNav
+        if (!mainNav) return;
+
+        const navParent = mainNav.parentNode;
+        Array.from(navParent.childNodes).forEach(node => {
+            if (node.nodeType === Node.TEXT_NODE && node.nodeValue.includes('-')) {
+                node.nodeValue = node.nodeValue.replace(/-/g, '');
+            }
+        });
+
+        const turnIntoButton = (nav) => {
+            if (!nav) return null;
+            const btn = document.createElement('button');
+            btn.textContent = nav.textContent;
+            btn.style.cssText = 'font-size: 11px; padding: 4px 8px; border: 1px solid #aaa; border-radius: 4px; cursor: pointer; margin: 0 4px; user-select: none; -webkit-user-select: none;';
+            
+            if (nav.style.fontWeight === 'bold') {
+                btn.style.fontWeight = 'bold';
+                btn.style.background = '#add8e6';
+                btn.style.borderColor = '#5f9ea0';
+            } else {
+                btn.style.fontWeight = 'normal';
+                btn.style.background = '#fff';
+                btn.style.borderColor = '#aaa';
+            }
+            
+            nav.replaceWith(btn);
+            return btn;
+        };
+
+        const availableNavs = [];
+        mainNav = turnIntoButton(mainNav); if (mainNav) availableNavs.push(mainNav);
+        battleNav = turnIntoButton(battleNav); if (battleNav) availableNavs.push(battleNav);
+        otherNav = turnIntoButton(otherNav); if (otherNav) availableNavs.push(otherNav);
+        hofNav = turnIntoButton(hofNav); if (hofNav) availableNavs.push(hofNav);
+
+        const table = document.getElementById('sortabletable');
+        if (!table) return;
+
+        const headers = Array.from(table.querySelectorAll('th'));
+        const cols = [];
+        headers.forEach((th, index) => {
+            const classList = Array.from(th.classList);
+            const tsClass = classList.find(c => c.startsWith('ts_'));
+            if (tsClass) {
+                // Use textContent instead of innerText because innerText is empty for display:none elements
+                let colName = th.textContent.replace(/↓/g, '').trim();
+                if (!colName) {
+                    colName = tsClass.replace('ts_', '');
+                }
+                cols.push({
+                    id: tsClass,
+                    name: colName,
+                    index: index
+                });
+            }
+        });
+
+        const panel = document.createElement('div');
+        panel.style.cssText = 'margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; background: #eee; font-family: Tahoma, sans-serif; text-align: left; display: flex; flex-wrap: wrap; gap: 8px;';
+        
+        const savedColsStr = localStorage.getItem('hw_helper_gang_cols');
+        const availableColIds = cols.map(c => c.id);
+        let selectedCols = savedColsStr ? JSON.parse(savedColsStr) : ['ts_name', 'ts_level', 'ts_age', 'ts_la', 'ts_chamber', 'ts_tired', 'ts_options'];
+        
+        // Filter out any columns that aren't available to this user
+        selectedCols = selectedCols.filter(id => availableColIds.includes(id));
+
+        const renderCols = () => {
+            cols.forEach(col => {
+                const isSelected = selectedCols.includes(col.id);
+                // The actual cells have the same class name
+                const cells = table.querySelectorAll(`.${col.id}`);
+                cells.forEach(cell => {
+                    cell.style.display = isSelected ? 'table-cell' : 'none';
+                });
+            });
+            localStorage.setItem('hw_helper_gang_cols', JSON.stringify(selectedCols));
+        };
+
+        const updateCheckboxes = () => {
+            cols.forEach(col => {
+                const cb = document.getElementById(`hh_col_${col.id}`);
+                if (cb) {
+                    cb.checked = selectedCols.includes(col.id);
+                    // Trigger change event to update button styles automatically
+                    cb.dispatchEvent(new Event('change'));
+                }
+            });
+        };
+
+        cols.forEach(col => {
+            const label = document.createElement('label');
+            label.style.cssText = 'font-size: 11px; display: inline-flex; align-items: center; cursor: pointer; user-select: none; -webkit-user-select: none; padding: 4px 8px; border: 1px solid #aaa; border-radius: 4px; background: #ddd; transition: background 0.2s, border-color 0.2s;';
+            
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.id = `hh_col_${col.id}`;
+            cb.style.marginRight = '5px';
+            cb.checked = selectedCols.includes(col.id);
+            if (col.id === 'ts_name') cb.disabled = true; // Always show name
+
+            const updateStyle = () => {
+                if (cb.checked) {
+                    label.style.background = '#add8e6';
+                    label.style.borderColor = '#5f9ea0';
+                } else {
+                    label.style.background = '#ddd';
+                    label.style.borderColor = '#aaa';
+                }
+            };
+            updateStyle();
+
+            cb.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    if (!selectedCols.includes(col.id)) selectedCols.push(col.id);
+                } else {
+                    selectedCols = selectedCols.filter(id => id !== col.id);
+                }
+                updateStyle();
+                renderCols();
+            });
+
+            label.appendChild(cb);
+            label.appendChild(document.createTextNode(col.name));
+            panel.appendChild(label);
+        });
+
+        const showAllBtn = document.createElement('button');
+        showAllBtn.textContent = 'Show All';
+        showAllBtn.style.cssText = 'font-size: 11px; padding: 4px 8px; border: 1px solid #aaa; border-radius: 4px; background: #fff; cursor: pointer; font-weight: normal; margin-left: auto;';
+        showAllBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            selectedCols = cols.map(c => c.id);
+            updateCheckboxes();
+            renderCols();
+            [...availableNavs, showAllBtn].forEach(n => {
+                n.style.fontWeight = 'normal';
+                n.style.background = '#fff';
+                n.style.borderColor = '#aaa';
+            });
+            showAllBtn.style.fontWeight = 'bold';
+            showAllBtn.style.background = '#add8e6';
+            showAllBtn.style.borderColor = '#5f9ea0';
+        });
+        panel.appendChild(showAllBtn);
+
+        table.parentElement.insertBefore(panel, table);
+        renderCols(); // initial render
+
+        const hookNav = (nav, presetCols) => {
+            if (!nav) return;
+            // override the onclick
+            nav.addEventListener('click', (e) => {
+                e.preventDefault();
+                selectedCols = presetCols.filter(c => availableColIds.includes(c));
+                updateCheckboxes();
+                renderCols();
+                
+                // update font weights
+                [...availableNavs, showAllBtn].forEach(n => {
+                    n.style.fontWeight = 'normal';
+                    n.style.background = '#fff';
+                    n.style.borderColor = '#aaa';
+                });
+                nav.style.fontWeight = 'bold';
+                nav.style.background = '#add8e6';
+                nav.style.borderColor = '#5f9ea0';
+            });
+        };
+
+        hookNav(mainNav, ['ts_name', 'ts_level', 'ts_age', 'ts_la', 'ts_chamber', 'ts_tired', 'ts_options']);
+        hookNav(battleNav, ['ts_name', 'ts_speed', 'ts_power', 'ts_strength', 'ts_tbs', 'ts_life', 'ts_options']);
+        hookNav(otherNav, ['ts_name', 'ts_beg', 'ts_intel', 'ts_drinking', 'ts_mining', 'ts_options']);
+        hookNav(hofNav, ['ts_name', 'ts_exp', 'ts_beg_income', 'ts_cash', 'ts_points', 'ts_tokens', 'ts_dps', 'ts_options']);
+        
+        // Remove the original script functions if possible, but overriding onclick and preventing default should be enough.
     },
 
     initGangHappenings: function() {
