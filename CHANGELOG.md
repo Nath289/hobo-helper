@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.10] - 2026-04-09
+### Added
+- Added the ability to successfully parse and render inline CSV data into fully styled HTML tables within Message Board posts utilizing the custom `[hobo-helper-table]` tag system. 
+- Formatted rendered table rows with alternating cell highlighting for easier reading of large data sheets. Can be toggled on or off via the new "Render Data Tables in Posts" setting within the Helper Settings menu.
+
 ## [8.09] - 2026-04-09
 ### Added
 - Added the ability to remove statistics for individual drinks within the `BackpackHelper` Favourite Drinks stats modal, alongside the existing reset all capability.

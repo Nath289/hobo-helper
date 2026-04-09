@@ -2,6 +2,7 @@ const MessageBoardHelper = {
     cmds: 'gathering',
     settings: [
         { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
+        { key: 'MessageBoardHelper_RenderTables', label: 'Render Data Tables in Posts' },
         { key: 'MessageBoardHelper_VoteButtons', label: 'Larger Vote Buttons' },
         {
             key: 'MessageBoardHelper_AddPaidMessageTemplate',
@@ -27,10 +28,66 @@ const MessageBoardHelper = {
     initMessageBoardFeatures: function(settings) {
         this.enhanceMessageEditor(settings);
         
+        if (settings?.MessageBoardHelper_RenderTables !== false) {
+            this.parseTablesInPosts();
+        }
+
         if (settings?.MessageBoardHelper_VoteButtons !== false) {
             this.enhanceVoteButtons();
             this.fixVoteTooltipBug();
         }
+    },
+
+    parseTablesInPosts: function() {
+        const posts = document.querySelectorAll('span[id^="post-content-"]');
+        posts.forEach(post => {
+            let html = post.innerHTML;
+            if (!html.includes('[hobo-helper-table]')) return;
+
+            const tableRegex = /\[hobo-helper-table\]([\s\S]*?)\[\/hobo-helper-table\]/gi;
+
+            html = html.replace(tableRegex, (match, content) => {
+                let lines = content.replace(/<br\s*\/?>/gi, '\n').split('\n').filter(l => l.trim() !== '');
+
+                let tableHtml = '<table class="hobo-helper-rendered-table" style="border-collapse: collapse; width: 100%; border: 1px solid #ccc; margin: 10px 0; font-size: 11px;">';
+
+                let rowIndex = 0;
+
+                lines.forEach(line => {
+                    line = line.trim();
+                    if (!line) return;
+
+                    let headerMatch = line.match(/^\[header\](.*)\[\/header\]$/i);
+                    let footerMatch = line.match(/^\[footer\](.*)\[\/footer\]$/i);
+
+                    if (headerMatch) {
+                        tableHtml += '<tr>';
+                        headerMatch[1].split(',').forEach(cell => {
+                            tableHtml += `<th style="border: 1px solid #ccc; padding: 4px; background: #eee; font-weight: bold; text-align: center;">${cell.trim()}</th>`;
+                        });
+                        tableHtml += '</tr>';
+                    } else if (footerMatch) {
+                        tableHtml += '<tr>';
+                        footerMatch[1].split(',').forEach(cell => {
+                            tableHtml += `<td style="border: 1px solid #ccc; padding: 4px; background: #f9f9f9; font-weight: bold;">${cell.trim()}</td>`;
+                        });
+                        tableHtml += '</tr>';
+                    } else {
+                        let bg = rowIndex % 2 === 0 ? '' : '#f5f5f5';
+                        tableHtml += `<tr style="background-color: ${bg};">`;
+                        line.split(',').forEach(cell => {
+                            tableHtml += `<td style="border: 1px solid #ccc; padding: 4px;">${cell.trim()}</td>`;
+                        });
+                        tableHtml += '</tr>';
+                        rowIndex++;
+                    }
+                });
+
+                tableHtml += '</table>';
+                return tableHtml;
+            });
+            post.innerHTML = html;
+        });
     },
 
     enhanceVoteButtons: function() {

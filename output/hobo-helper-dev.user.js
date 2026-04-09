@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.08.20260409.2203
+// @version      8.09.20260409.2248
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -3395,6 +3395,7 @@ const MessageBoardHelper = {
     cmds: 'gathering',
     settings: [
         { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
+        { key: 'MessageBoardHelper_RenderTables', label: 'Render Data Tables in Posts' },
         { key: 'MessageBoardHelper_VoteButtons', label: 'Larger Vote Buttons' },
         {
             key: 'MessageBoardHelper_AddPaidMessageTemplate',
@@ -3420,10 +3421,66 @@ const MessageBoardHelper = {
     initMessageBoardFeatures: function(settings) {
         this.enhanceMessageEditor(settings);
         
+        if (settings?.MessageBoardHelper_RenderTables !== false) {
+            this.parseTablesInPosts();
+        }
+
         if (settings?.MessageBoardHelper_VoteButtons !== false) {
             this.enhanceVoteButtons();
             this.fixVoteTooltipBug();
         }
+    },
+
+    parseTablesInPosts: function() {
+        const posts = document.querySelectorAll('span[id^="post-content-"]');
+        posts.forEach(post => {
+            let html = post.innerHTML;
+            if (!html.includes('[hobo-helper-table]')) return;
+
+            const tableRegex = /\[hobo-helper-table\]([\s\S]*?)\[\/hobo-helper-table\]/gi;
+
+            html = html.replace(tableRegex, (match, content) => {
+                let lines = content.replace(/<br\s*\/?>/gi, '\n').split('\n').filter(l => l.trim() !== '');
+
+                let tableHtml = '<table class="hobo-helper-rendered-table" style="border-collapse: collapse; width: 100%; border: 1px solid #ccc; margin: 10px 0; font-size: 11px;">';
+
+                let rowIndex = 0;
+
+                lines.forEach(line => {
+                    line = line.trim();
+                    if (!line) return;
+
+                    let headerMatch = line.match(/^\[header\](.*)\[\/header\]$/i);
+                    let footerMatch = line.match(/^\[footer\](.*)\[\/footer\]$/i);
+
+                    if (headerMatch) {
+                        tableHtml += '<tr>';
+                        headerMatch[1].split(',').forEach(cell => {
+                            tableHtml += `<th style="border: 1px solid #ccc; padding: 4px; background: #eee; font-weight: bold; text-align: center;">${cell.trim()}</th>`;
+                        });
+                        tableHtml += '</tr>';
+                    } else if (footerMatch) {
+                        tableHtml += '<tr>';
+                        footerMatch[1].split(',').forEach(cell => {
+                            tableHtml += `<td style="border: 1px solid #ccc; padding: 4px; background: #f9f9f9; font-weight: bold;">${cell.trim()}</td>`;
+                        });
+                        tableHtml += '</tr>';
+                    } else {
+                        let bg = rowIndex % 2 === 0 ? '' : '#f5f5f5';
+                        tableHtml += `<tr style="background-color: ${bg};">`;
+                        line.split(',').forEach(cell => {
+                            tableHtml += `<td style="border: 1px solid #ccc; padding: 4px;">${cell.trim()}</td>`;
+                        });
+                        tableHtml += '</tr>';
+                        rowIndex++;
+                    }
+                });
+
+                tableHtml += '</table>';
+                return tableHtml;
+            });
+            post.innerHTML = html;
+        });
     },
 
     enhanceVoteButtons: function() {
@@ -5289,6 +5346,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.09",
+            date: "2026-04-09",
+            type: "Added",
+            notes: [
+                "Added the ability to remove statistics for individual drinks within the `BackpackHelper` Favourite Drinks stats modal, alongside the existing reset all capability."
+            ]
+        },
+        {
             version: "8.08",
             date: "2026-04-09",
             type: "Fixed",
@@ -5322,15 +5387,6 @@ const ChangelogData = {
                 "The Member List top navigation links (Main, Battle Stats, Other Stats, Hall of Fame) have been converted into pill buttons that act as automatic presets to quickly toggle relevant column sets without losing stored custom configurations.",
                 "Included an adaptive \"Show All\" toggle button to instantly display every strictly accessible column constraint for the active user account.",
                 "Column configurations securely persist via browser local storage and gracefully filter out unavailable selections when switching between regular User and Gang Staff account access levels."
-            ]
-        },
-        {
-            version: "8.04",
-            date: "2026-04-08",
-            type: "Added",
-            notes: [
-                "Created a configurable interface for the `MessageBoardHelper` \"Add Paid Message Text\" append button. Users can now override the prepended message format using custom text combined with dynamic variables `{hoboname}`, `{hoboId}`, and `{date}`.",
-                "Expanded `SettingsHelper` layout architecture to handle fluid input scaling (e.g. `100%` width blocks) and trailing feature description texts natively."
             ]
         }
     ]
