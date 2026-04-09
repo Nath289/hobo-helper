@@ -219,7 +219,7 @@ const LivingAreaHelper = {
         modal.appendChild(closeBtn);
 
         const title = document.createElement("h2");
-        title.innerText = "Hobo Helper - Recent Updates";
+        title.textContent = "Hobo Helper - Recent Updates";
         title.style.margin = "0 0 10px 0";
         title.style.borderBottom = "1px solid #ccc";
         title.style.paddingBottom = "5px";
@@ -541,15 +541,15 @@ const LivingAreaHelper = {
 
         if (headerLine) {
             const copyBtn = document.createElement('button');
-            copyBtn.innerText = '📋 Copy';
+            copyBtn.textContent = '📋 Copy';
             copyBtn.title = "Copy Stats to Clipboard";
             copyBtn.style.cssText = 'margin-left: 5px; cursor: pointer; font-size: 10px; padding: 1px 4px; border: 1px solid #ccc; background: #fff; border-radius: 3px; user-select: none; -webkit-user-select: none; width: 62px; text-align: left;';
 
             copyBtn.onclick = (e) => {
                 e.preventDefault();
                 const getLineText = (label) => {
-                    const target = lines.find(l => l.innerText.startsWith(label));
-                    return target ? target.innerText.replace(/\s+/g, ' ').trim() : "";
+                    const target = lines.find(l => l.textContent.startsWith(label));
+                    return target ? target.textContent.replace(/\s+/g, ' ').trim() : "";
                 };
 
                 const spdStr = getLineText('Speed:');
@@ -560,9 +560,9 @@ const LivingAreaHelper = {
                 if (spdStr && pwrStr && strStr) {
                     const copyText = `Combat Stats\n${spdStr}\n${pwrStr}\n${strStr}\n${totStr}`;
                     navigator.clipboard.writeText(copyText).then(() => {
-                        const originalText = copyBtn.innerText;
-                        copyBtn.innerText = '✅ Copied';
-                        setTimeout(() => { copyBtn.innerText = originalText; }, 1500);
+                        const originalText = copyBtn.textContent;
+                        copyBtn.textContent = '✅ Copied';
+                        setTimeout(() => { copyBtn.textContent = originalText; }, 1500);
                     });
                 }
             };

@@ -6,7 +6,7 @@ const LockoutHelper = {
         // The game auto-locks during the 12-hour reset.
         // We detect this specific screen via document title or body text.
         const titleText = document.title || "";
-        const bodyText = document.body.innerText || "";
+        const bodyText = document.body.textContent || "";
         const isLockoutScreen = titleText.includes("Closed for daily maintenance") || 
                                 bodyText.includes("Temporary Lockout");
 
@@ -33,7 +33,7 @@ const LockoutHelper = {
         container.style.cssText = "margin: 20px auto; padding: 15px; max-width: 600px; background-color: #f9f9f9; border: 1px dashed #777; border-radius: 8px; text-align: left; font-family: Tahoma, Arial, sans-serif; color: #333; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);";
 
         const title = document.createElement("h2");
-        title.innerText = "Hobo Helper - Recent Updates";
+        title.textContent = "Hobo Helper - Recent Updates";
         title.style.margin = "0 0 10px 0";
         title.style.borderBottom = "1px solid #ccc";
         title.style.paddingBottom = "5px";

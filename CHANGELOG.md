@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.08] - 2026-04-09
+### Fixed
+- Globally replaced `.innerText` with `.textContent` across all helper scripts to permanently eradicate a widespread bug where HoboWars' Responsive Layout hiding elements from view caused JavaScript text scraping to fail and return blank strings. 
+- Restored broken functionality to the `WellnessClinicHelper` cumulative spend tracker logic directly resulting from this bug.
+
 ## [8.07] - 2026-04-09
 ### Fixed
 - Fixed a bug in `RatsHelper` where the Rat News filter was failing to populate rat names. Switched to using `textContent` instead of `innerText` to reliably extract text from the DOM.

@@ -29,10 +29,10 @@ const WellnessClinicHelper = {
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
 
-        const text = contentArea.innerText;
-        const costMatch = text.match(/\$?([0-9]{1,3}(,[0-9]{3})+|[0-9]{4,})/);
+        const text = contentArea.textContent;
+        const costMatch = text.match(/\$([0-9,]+)/);
         let detectedCost = 0;
-        if (costMatch) detectedCost = Utils.parseNumber(costMatch[0]);
+        if (costMatch) detectedCost = Utils.parseNumber(costMatch[1]);
 
         const hasPaid = url.includes('do=pay');
         let currentIndex = clinicData.findIndex(row => row.fee === detectedCost);

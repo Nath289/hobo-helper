@@ -1,4 +1,4 @@
-﻿const FoodData = {
+const FoodData = {
     "Apple Core": { "img": "Apple-Core.gif" },
     "Half a Donut": { "img": "Half-a-Donut.gif" },
     "Piece of Bread": { "img": "Piece-of-Bread.gif" },

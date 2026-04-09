@@ -283,11 +283,11 @@ const GangHelper = {
                 const link = cells[0].querySelector('a');
                 if (!link) return;
 
-                const nameText = link.innerText.trim();
+                const nameText = link.textContent.trim();
                 const urlParams = new URLSearchParams(link.href.split('?')[1]);
                 const hoboId = urlParams.get('ID');
 
-                const scoreText = cells[1].innerText.replace(/,/g, '').trim();
+                const scoreText = cells[1].textContent.replace(/,/g, '').trim();
                 const score = parseInt(scoreText, 10);
 
                 if (hoboId && !isNaN(score) && score > 0) {
@@ -319,8 +319,8 @@ const GangHelper = {
                 localStorage.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
                 
                 const statusEl = document.getElementById('hh_sf_status');
-                statusEl.innerText = `✅ Saved ${payments.length} payouts to Gang Loans dashboard!`;
-                setTimeout(() => { statusEl.innerText = ''; }, 3000);
+                statusEl.textContent = `✅ Saved ${payments.length} payouts to Gang Loans dashboard!`;
+                setTimeout(() => { statusEl.textContent = ''; }, 3000);
             }
         });
     }

@@ -192,7 +192,7 @@ const MessageBoardHelper = {
         if (titleEl) {
             topicName = titleEl.textContent.trim();
         } else {
-            const pageText = document.body.innerText || "";
+            const pageText = document.body.textContent || "";
             const breadcrumbMatch = pageText.match(/Board Selection\s*\/\s*Gang Board\s*\/\s*Topic:\s*(.*)/i);
             if (!breadcrumbMatch) return;
             topicName = breadcrumbMatch[1].split(/(\[Page:|Jump to Bottom|Gang:)/)[0].trim();
@@ -326,12 +326,12 @@ const MessageBoardHelper = {
                         if (idMatch) hoboId = idMatch[1];
                     }
                     if (!hoboId) {
-                        const idTextMatch = firstTd.innerText.match(/ID:\s*(\d+)/i);
+                        const idTextMatch = firstTd.textContent.match(/ID:\s*(\d+)/i);
                         if (idTextMatch) hoboId = idTextMatch[1];
                     }
 
                     let parsedAmount = '';
-                    const messageText = secondTd.innerText || "";
+                    const messageText = secondTd.textContent || "";
                     const amountRegex = /(?:\$([\d,]+(?:\.\d+)?)\s*(k|m|mil|mill|million)?\b)|(?:([\d,]+(?:\.\d+)?)\s*(k|m|mil|mill|million)\b)/gi;
 
                     let dollarMatch = null;
@@ -364,7 +364,7 @@ const MessageBoardHelper = {
                         document.getElementById(`pay-desc-${postId}`).value = existingPayment ? existingPayment.description : '';
                         document.getElementById(`pay-amt-${postId}`).value = existingPayment ? existingPayment.amount : parsedAmount;
                         document.getElementById(`pay-remove-${postId}`).style.display = existingPayment ? 'inline-block' : 'none';
-                        document.getElementById(`pay-save-${postId}`).innerText = existingPayment ? 'Update' : 'Save';
+                        document.getElementById(`pay-save-${postId}`).textContent = existingPayment ? 'Update' : 'Save';
                         return;
                     }
 

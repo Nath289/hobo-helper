@@ -10,7 +10,7 @@ const GangLoansHelper = {
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
 
-        if (isLoanAdd && contentArea.innerText.includes('You have successfully completed the transfer')) {
+        if (isLoanAdd && contentArea.textContent.includes('You have successfully completed the transfer')) {
             const pendingStr = sessionStorage.getItem('hw_helper_pending_loan');
             if (pendingStr) {
                 try {
@@ -31,7 +31,7 @@ const GangLoansHelper = {
             }
         }
 
-        if (isLoanDel && contentArea.innerText.includes('This loan has been removed')) {
+        if (isLoanDel && contentArea.textContent.includes('This loan has been removed')) {
             const pendingClearStr = sessionStorage.getItem('hw_helper_pending_clear');
             if (pendingClearStr) {
                 try {
@@ -153,7 +153,7 @@ const GangLoansHelper = {
             const emptyMsg = document.createElement('div');
             emptyMsg.style.fontStyle = 'italic';
             emptyMsg.style.color = '#555';
-            emptyMsg.innerText = 'No saved gang posts or payments found.';
+            emptyMsg.textContent = 'No saved gang posts or payments found.';
             panel.appendChild(emptyMsg);
         } else {
             const listContainer = document.createElement('div');
@@ -236,7 +236,7 @@ const GangLoansHelper = {
                     const emptyRecord = document.createElement('div');
                     emptyRecord.style.fontStyle = 'italic';
                     emptyRecord.style.color = '#999';
-                    emptyRecord.innerText = 'Empty record.';
+                    emptyRecord.textContent = 'Empty record.';
                     item.appendChild(emptyRecord);
                 }
 
@@ -414,7 +414,7 @@ const GangLoansHelper = {
                             totalNow += (topicHobos.length * parsedBulk);
                         }
 
-                        topicSpan.innerText = totalNow > 0 ? '$' + totalNow.toLocaleString() : '$0';
+                        topicSpan.textContent = totalNow > 0 ? '$' + totalNow.toLocaleString() : '$0';
                     }
                 }
             });
@@ -469,9 +469,9 @@ const GangLoansHelper = {
                     d[topic].bulkMemo = bulkMemoInput ? bulkMemoInput.value.substring(0, 60) : '';
                     localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
                     
-                    const oldText = e.target.innerText;
-                    e.target.innerText = 'Saved!';
-                    setTimeout(() => { e.target.innerText = oldText; }, 2000);
+                    const oldText = e.target.textContent;
+                    e.target.textContent = 'Saved!';
+                    setTimeout(() => { e.target.textContent = oldText; }, 2000);
                 }
             });
         });
@@ -497,7 +497,7 @@ const GangLoansHelper = {
                     bankField.value = d[topic].bankAccount;
                 }
 
-                e.target.innerText = 'Inserted';
+                e.target.textContent = 'Inserted';
                 window.scrollTo(0, document.body.scrollHeight);
             });
         });
@@ -557,7 +557,7 @@ const GangLoansHelper = {
                     bankField.value = d[topic].bankAccount;
                 }
 
-                e.target.innerText = 'Inserted';
+                e.target.textContent = 'Inserted';
                 window.scrollTo(0, document.body.scrollHeight);
             });
         });
@@ -594,9 +594,9 @@ const GangLoansHelper = {
         const copyToCb = (text, btn) => {
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(text).then(() => {
-                    const oldText = btn.innerText;
-                    btn.innerText = 'Copied!';
-                    setTimeout(() => { btn.innerText = oldText; }, 2000);
+                    const oldText = btn.textContent;
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => { btn.textContent = oldText; }, 2000);
                 }).catch(err => {
                     console.error("Clipboard export failed", err);
                     alert("Clipboard export failed. Here is your text:\n\n" + text);
@@ -611,9 +611,9 @@ const GangLoansHelper = {
                 ta.select();
                 try {
                     document.execCommand('copy');
-                    const oldText = btn.innerText;
-                    btn.innerText = 'Copied!';
-                    setTimeout(() => { btn.innerText = oldText; }, 2000);
+                    const oldText = btn.textContent;
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => { btn.textContent = oldText; }, 2000);
                 } catch (e) {
                     alert("Clipboard export failed. Here is your text:\n\n" + text);
                 }
@@ -736,7 +736,7 @@ const GangLoansHelper = {
                                 const tds = row.querySelectorAll('td');
                                 if (tds.length >= 3 && cleanTargetAmt) {
                                     // Parse only the text before a slash to avoid merging with limits
-                                    const cellAmtText = tds[2].innerText.split('/')[0];
+                                    const cellAmtText = tds[2].textContent.split('/')[0];
                                     const cleanRowAmt = cellAmtText.replace(/[^0-9]/g, '');
 
                                     if (cleanRowAmt === cleanTargetAmt) {
@@ -755,9 +755,9 @@ const GangLoansHelper = {
                     if (select) {
                         select.value = bestMatchId;
                         window.scrollTo(0, select.offsetTop - 100);
-                        const oldText = e.target.innerText;
-                        e.target.innerText = 'Selected!';
-                        setTimeout(() => { e.target.innerText = oldText; }, 2000);
+                        const oldText = e.target.textContent;
+                        e.target.textContent = 'Selected!';
+                        setTimeout(() => { e.target.textContent = oldText; }, 2000);
 
                         const topic = e.target.getAttribute('data-topic');
                         const index = parseInt(e.target.getAttribute('data-index'), 10);

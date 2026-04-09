@@ -70,7 +70,7 @@ const FoodHelper = {
                 return img.title.trim();
             }
             // Fallback: extract text directly
-            return nextLink.innerText.trim();
+            return nextLink.textContent.trim();
         }
         return null;
     },

@@ -146,7 +146,7 @@ const DisplayHelper = {
         const awakeSpan = document.getElementById('awakeValue');
         if (!awakeSpan) return;
 
-        const awakeMatch = awakeSpan.innerText.match(/(\d+)\/(\d+)/);
+        const awakeMatch = awakeSpan.textContent.match(/(\d+)\/(\d+)/);
         if (!awakeMatch) return;
 
         const currentAwake = parseInt(awakeMatch[1], 10);

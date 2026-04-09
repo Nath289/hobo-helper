@@ -49,7 +49,7 @@ const SettingsHelper = {
             label.style.fontSize = '14px';
 
             const toast = document.createElement('span');
-            toast.innerText = ' (Saved! Reload to apply)';
+            toast.textContent = ' (Saved! Reload to apply)';
             toast.style.color = 'green';
             toast.style.fontSize = '12px';
             toast.style.display = 'none';
@@ -95,7 +95,7 @@ const SettingsHelper = {
             label.style.marginRight = '8px';
 
             const toast = document.createElement('span');
-            toast.innerText = ' (Saved! Reload to apply)';
+            toast.textContent = ' (Saved! Reload to apply)';
             toast.style.color = 'green';
             toast.style.fontSize = '12px';
             toast.style.display = 'none';
@@ -160,7 +160,7 @@ const SettingsHelper = {
         contentArea.appendChild(topDiv);
 
         const modsLabel = document.createElement('div');
-        modsLabel.innerText = "Active Modules:";
+        modsLabel.textContent = "Active Modules:";
         modsLabel.style.fontWeight = 'bold';
         modsLabel.style.fontSize = '16px';
         modsLabel.style.marginBottom = '10px';
@@ -246,7 +246,7 @@ const SettingsHelper = {
                     foodContainer.style.marginTop = '10px';
 
                     const label = document.createElement('b');
-                    label.innerText = 'Crap Foods List:';
+                    label.textContent = 'Crap Foods List:';
                     label.style.display = 'block';
                     label.style.marginBottom = '5px';
                     foodContainer.appendChild(label);
@@ -260,7 +260,7 @@ const SettingsHelper = {
 
                     const crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
                     if (crapList.length === 0) {
-                        listContainer.innerText = 'No foods marked as crap.';
+                        listContainer.textContent = 'No foods marked as crap.';
                     } else {
                         const ul = document.createElement('ul');
                         ul.style.margin = '0';
@@ -269,7 +269,7 @@ const SettingsHelper = {
                             const li = document.createElement('li');
                             const a = document.createElement('a');
                             a.href = '#';
-                            a.innerText = '[x]';
+                            a.textContent = '[x]';
                             a.style.color = 'red';
                             a.style.textDecoration = 'none';
                             a.style.marginRight = '5px';
@@ -281,7 +281,7 @@ const SettingsHelper = {
                                 localStorage.setItem('hw_helper_food_crap', JSON.stringify(updatedList));
                                 li.remove();
                                 if (updatedList.length === 0) {
-                                    listContainer.innerText = 'No foods marked as crap.';
+                                    listContainer.textContent = 'No foods marked as crap.';
                                 }
                             };
                             li.appendChild(a);

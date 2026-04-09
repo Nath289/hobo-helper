@@ -61,7 +61,7 @@ const RatsHelper = {
         
         const label = document.createElement('span');
         label.style.fontWeight = 'bold';
-        label.innerText = 'Filter News by Rat:';
+        label.textContent = 'Filter News by Rat:';
         filterContainer.appendChild(label);
 
         const checkboxes = [];
@@ -94,7 +94,7 @@ const RatsHelper = {
         });
 
         const toggleAllBtn = document.createElement('button');
-        toggleAllBtn.innerText = 'Toggle All';
+        toggleAllBtn.textContent = 'Toggle All';
         toggleAllBtn.style.cssText = 'cursor: pointer; background: #e6f3ff; border: 1px solid #99c2ff; border-radius: 3px; padding: 3px 8px; font-size: 11px; color: #0055aa; user-select: none; -webkit-user-select: none;';
         toggleAllBtn.addEventListener('click', (e) => {
             e.preventDefault();

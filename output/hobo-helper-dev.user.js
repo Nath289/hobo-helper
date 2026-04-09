@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.06.20260409.1320
+// @version      8.07.20260409.1327
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -766,7 +766,7 @@ const DisplayHelper = {
         const awakeSpan = document.getElementById('awakeValue');
         if (!awakeSpan) return;
 
-        const awakeMatch = awakeSpan.innerText.match(/(\d+)\/(\d+)/);
+        const awakeMatch = awakeSpan.textContent.match(/(\d+)\/(\d+)/);
         if (!awakeMatch) return;
 
         const currentAwake = parseInt(awakeMatch[1], 10);
@@ -980,7 +980,7 @@ const FoodHelper = {
                 return img.title.trim();
             }
             // Fallback: extract text directly
-            return nextLink.innerText.trim();
+            return nextLink.textContent.trim();
         }
         return null;
     },
@@ -1628,11 +1628,11 @@ const GangHelper = {
                 const link = cells[0].querySelector('a');
                 if (!link) return;
 
-                const nameText = link.innerText.trim();
+                const nameText = link.textContent.trim();
                 const urlParams = new URLSearchParams(link.href.split('?')[1]);
                 const hoboId = urlParams.get('ID');
 
-                const scoreText = cells[1].innerText.replace(/,/g, '').trim();
+                const scoreText = cells[1].textContent.replace(/,/g, '').trim();
                 const score = parseInt(scoreText, 10);
 
                 if (hoboId && !isNaN(score) && score > 0) {
@@ -1664,8 +1664,8 @@ const GangHelper = {
                 localStorage.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
                 
                 const statusEl = document.getElementById('hh_sf_status');
-                statusEl.innerText = `✅ Saved ${payments.length} payouts to Gang Loans dashboard!`;
-                setTimeout(() => { statusEl.innerText = ''; }, 3000);
+                statusEl.textContent = `✅ Saved ${payments.length} payouts to Gang Loans dashboard!`;
+                setTimeout(() => { statusEl.textContent = ''; }, 3000);
             }
         });
     }
@@ -1683,7 +1683,7 @@ const GangLoansHelper = {
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
 
-        if (isLoanAdd && contentArea.innerText.includes('You have successfully completed the transfer')) {
+        if (isLoanAdd && contentArea.textContent.includes('You have successfully completed the transfer')) {
             const pendingStr = sessionStorage.getItem('hw_helper_pending_loan');
             if (pendingStr) {
                 try {
@@ -1704,7 +1704,7 @@ const GangLoansHelper = {
             }
         }
 
-        if (isLoanDel && contentArea.innerText.includes('This loan has been removed')) {
+        if (isLoanDel && contentArea.textContent.includes('This loan has been removed')) {
             const pendingClearStr = sessionStorage.getItem('hw_helper_pending_clear');
             if (pendingClearStr) {
                 try {
@@ -1826,7 +1826,7 @@ const GangLoansHelper = {
             const emptyMsg = document.createElement('div');
             emptyMsg.style.fontStyle = 'italic';
             emptyMsg.style.color = '#555';
-            emptyMsg.innerText = 'No saved gang posts or payments found.';
+            emptyMsg.textContent = 'No saved gang posts or payments found.';
             panel.appendChild(emptyMsg);
         } else {
             const listContainer = document.createElement('div');
@@ -1909,7 +1909,7 @@ const GangLoansHelper = {
                     const emptyRecord = document.createElement('div');
                     emptyRecord.style.fontStyle = 'italic';
                     emptyRecord.style.color = '#999';
-                    emptyRecord.innerText = 'Empty record.';
+                    emptyRecord.textContent = 'Empty record.';
                     item.appendChild(emptyRecord);
                 }
 
@@ -2087,7 +2087,7 @@ const GangLoansHelper = {
                             totalNow += (topicHobos.length * parsedBulk);
                         }
 
-                        topicSpan.innerText = totalNow > 0 ? '$' + totalNow.toLocaleString() : '$0';
+                        topicSpan.textContent = totalNow > 0 ? '$' + totalNow.toLocaleString() : '$0';
                     }
                 }
             });
@@ -2142,9 +2142,9 @@ const GangLoansHelper = {
                     d[topic].bulkMemo = bulkMemoInput ? bulkMemoInput.value.substring(0, 60) : '';
                     localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
                     
-                    const oldText = e.target.innerText;
-                    e.target.innerText = 'Saved!';
-                    setTimeout(() => { e.target.innerText = oldText; }, 2000);
+                    const oldText = e.target.textContent;
+                    e.target.textContent = 'Saved!';
+                    setTimeout(() => { e.target.textContent = oldText; }, 2000);
                 }
             });
         });
@@ -2170,7 +2170,7 @@ const GangLoansHelper = {
                     bankField.value = d[topic].bankAccount;
                 }
 
-                e.target.innerText = 'Inserted';
+                e.target.textContent = 'Inserted';
                 window.scrollTo(0, document.body.scrollHeight);
             });
         });
@@ -2230,7 +2230,7 @@ const GangLoansHelper = {
                     bankField.value = d[topic].bankAccount;
                 }
 
-                e.target.innerText = 'Inserted';
+                e.target.textContent = 'Inserted';
                 window.scrollTo(0, document.body.scrollHeight);
             });
         });
@@ -2267,9 +2267,9 @@ const GangLoansHelper = {
         const copyToCb = (text, btn) => {
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(text).then(() => {
-                    const oldText = btn.innerText;
-                    btn.innerText = 'Copied!';
-                    setTimeout(() => { btn.innerText = oldText; }, 2000);
+                    const oldText = btn.textContent;
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => { btn.textContent = oldText; }, 2000);
                 }).catch(err => {
                     console.error("Clipboard export failed", err);
                     alert("Clipboard export failed. Here is your text:\n\n" + text);
@@ -2284,9 +2284,9 @@ const GangLoansHelper = {
                 ta.select();
                 try {
                     document.execCommand('copy');
-                    const oldText = btn.innerText;
-                    btn.innerText = 'Copied!';
-                    setTimeout(() => { btn.innerText = oldText; }, 2000);
+                    const oldText = btn.textContent;
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => { btn.textContent = oldText; }, 2000);
                 } catch (e) {
                     alert("Clipboard export failed. Here is your text:\n\n" + text);
                 }
@@ -2409,7 +2409,7 @@ const GangLoansHelper = {
                                 const tds = row.querySelectorAll('td');
                                 if (tds.length >= 3 && cleanTargetAmt) {
                                     // Parse only the text before a slash to avoid merging with limits
-                                    const cellAmtText = tds[2].innerText.split('/')[0];
+                                    const cellAmtText = tds[2].textContent.split('/')[0];
                                     const cleanRowAmt = cellAmtText.replace(/[^0-9]/g, '');
 
                                     if (cleanRowAmt === cleanTargetAmt) {
@@ -2428,9 +2428,9 @@ const GangLoansHelper = {
                     if (select) {
                         select.value = bestMatchId;
                         window.scrollTo(0, select.offsetTop - 100);
-                        const oldText = e.target.innerText;
-                        e.target.innerText = 'Selected!';
-                        setTimeout(() => { e.target.innerText = oldText; }, 2000);
+                        const oldText = e.target.textContent;
+                        e.target.textContent = 'Selected!';
+                        setTimeout(() => { e.target.textContent = oldText; }, 2000);
 
                         const topic = e.target.getAttribute('data-topic');
                         const index = parseInt(e.target.getAttribute('data-index'), 10);
@@ -2925,7 +2925,7 @@ const LivingAreaHelper = {
         modal.appendChild(closeBtn);
 
         const title = document.createElement("h2");
-        title.innerText = "Hobo Helper - Recent Updates";
+        title.textContent = "Hobo Helper - Recent Updates";
         title.style.margin = "0 0 10px 0";
         title.style.borderBottom = "1px solid #ccc";
         title.style.paddingBottom = "5px";
@@ -3247,15 +3247,15 @@ const LivingAreaHelper = {
 
         if (headerLine) {
             const copyBtn = document.createElement('button');
-            copyBtn.innerText = '📋 Copy';
+            copyBtn.textContent = '📋 Copy';
             copyBtn.title = "Copy Stats to Clipboard";
             copyBtn.style.cssText = 'margin-left: 5px; cursor: pointer; font-size: 10px; padding: 1px 4px; border: 1px solid #ccc; background: #fff; border-radius: 3px; user-select: none; -webkit-user-select: none; width: 62px; text-align: left;';
 
             copyBtn.onclick = (e) => {
                 e.preventDefault();
                 const getLineText = (label) => {
-                    const target = lines.find(l => l.innerText.startsWith(label));
-                    return target ? target.innerText.replace(/\s+/g, ' ').trim() : "";
+                    const target = lines.find(l => l.textContent.startsWith(label));
+                    return target ? target.textContent.replace(/\s+/g, ' ').trim() : "";
                 };
 
                 const spdStr = getLineText('Speed:');
@@ -3266,9 +3266,9 @@ const LivingAreaHelper = {
                 if (spdStr && pwrStr && strStr) {
                     const copyText = `Combat Stats\n${spdStr}\n${pwrStr}\n${strStr}\n${totStr}`;
                     navigator.clipboard.writeText(copyText).then(() => {
-                        const originalText = copyBtn.innerText;
-                        copyBtn.innerText = '✅ Copied';
-                        setTimeout(() => { copyBtn.innerText = originalText; }, 1500);
+                        const originalText = copyBtn.textContent;
+                        copyBtn.textContent = '✅ Copied';
+                        setTimeout(() => { copyBtn.textContent = originalText; }, 1500);
                     });
                 }
             };
@@ -3286,7 +3286,7 @@ const LockoutHelper = {
         // The game auto-locks during the 12-hour reset.
         // We detect this specific screen via document title or body text.
         const titleText = document.title || "";
-        const bodyText = document.body.innerText || "";
+        const bodyText = document.body.textContent || "";
         const isLockoutScreen = titleText.includes("Closed for daily maintenance") || 
                                 bodyText.includes("Temporary Lockout");
 
@@ -3313,7 +3313,7 @@ const LockoutHelper = {
         container.style.cssText = "margin: 20px auto; padding: 15px; max-width: 600px; background-color: #f9f9f9; border: 1px dashed #777; border-radius: 8px; text-align: left; font-family: Tahoma, Arial, sans-serif; color: #333; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);";
 
         const title = document.createElement("h2");
-        title.innerText = "Hobo Helper - Recent Updates";
+        title.textContent = "Hobo Helper - Recent Updates";
         title.style.margin = "0 0 10px 0";
         title.style.borderBottom = "1px solid #ccc";
         title.style.paddingBottom = "5px";
@@ -3570,7 +3570,7 @@ const MessageBoardHelper = {
         if (titleEl) {
             topicName = titleEl.textContent.trim();
         } else {
-            const pageText = document.body.innerText || "";
+            const pageText = document.body.textContent || "";
             const breadcrumbMatch = pageText.match(/Board Selection\s*\/\s*Gang Board\s*\/\s*Topic:\s*(.*)/i);
             if (!breadcrumbMatch) return;
             topicName = breadcrumbMatch[1].split(/(\[Page:|Jump to Bottom|Gang:)/)[0].trim();
@@ -3704,12 +3704,12 @@ const MessageBoardHelper = {
                         if (idMatch) hoboId = idMatch[1];
                     }
                     if (!hoboId) {
-                        const idTextMatch = firstTd.innerText.match(/ID:\s*(\d+)/i);
+                        const idTextMatch = firstTd.textContent.match(/ID:\s*(\d+)/i);
                         if (idTextMatch) hoboId = idTextMatch[1];
                     }
 
                     let parsedAmount = '';
-                    const messageText = secondTd.innerText || "";
+                    const messageText = secondTd.textContent || "";
                     const amountRegex = /(?:\$([\d,]+(?:\.\d+)?)\s*(k|m|mil|mill|million)?\b)|(?:([\d,]+(?:\.\d+)?)\s*(k|m|mil|mill|million)\b)/gi;
 
                     let dollarMatch = null;
@@ -3742,7 +3742,7 @@ const MessageBoardHelper = {
                         document.getElementById(`pay-desc-${postId}`).value = existingPayment ? existingPayment.description : '';
                         document.getElementById(`pay-amt-${postId}`).value = existingPayment ? existingPayment.amount : parsedAmount;
                         document.getElementById(`pay-remove-${postId}`).style.display = existingPayment ? 'inline-block' : 'none';
-                        document.getElementById(`pay-save-${postId}`).innerText = existingPayment ? 'Update' : 'Save';
+                        document.getElementById(`pay-save-${postId}`).textContent = existingPayment ? 'Update' : 'Save';
                         return;
                     }
 
@@ -4479,7 +4479,7 @@ const RatsHelper = {
         
         const label = document.createElement('span');
         label.style.fontWeight = 'bold';
-        label.innerText = 'Filter News by Rat:';
+        label.textContent = 'Filter News by Rat:';
         filterContainer.appendChild(label);
 
         const checkboxes = [];
@@ -4512,7 +4512,7 @@ const RatsHelper = {
         });
 
         const toggleAllBtn = document.createElement('button');
-        toggleAllBtn.innerText = 'Toggle All';
+        toggleAllBtn.textContent = 'Toggle All';
         toggleAllBtn.style.cssText = 'cursor: pointer; background: #e6f3ff; border: 1px solid #99c2ff; border-radius: 3px; padding: 3px 8px; font-size: 11px; color: #0055aa; user-select: none; -webkit-user-select: none;';
         toggleAllBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -4611,7 +4611,7 @@ const SettingsHelper = {
             label.style.fontSize = '14px';
 
             const toast = document.createElement('span');
-            toast.innerText = ' (Saved! Reload to apply)';
+            toast.textContent = ' (Saved! Reload to apply)';
             toast.style.color = 'green';
             toast.style.fontSize = '12px';
             toast.style.display = 'none';
@@ -4657,7 +4657,7 @@ const SettingsHelper = {
             label.style.marginRight = '8px';
 
             const toast = document.createElement('span');
-            toast.innerText = ' (Saved! Reload to apply)';
+            toast.textContent = ' (Saved! Reload to apply)';
             toast.style.color = 'green';
             toast.style.fontSize = '12px';
             toast.style.display = 'none';
@@ -4722,7 +4722,7 @@ const SettingsHelper = {
         contentArea.appendChild(topDiv);
 
         const modsLabel = document.createElement('div');
-        modsLabel.innerText = "Active Modules:";
+        modsLabel.textContent = "Active Modules:";
         modsLabel.style.fontWeight = 'bold';
         modsLabel.style.fontSize = '16px';
         modsLabel.style.marginBottom = '10px';
@@ -4808,7 +4808,7 @@ const SettingsHelper = {
                     foodContainer.style.marginTop = '10px';
 
                     const label = document.createElement('b');
-                    label.innerText = 'Crap Foods List:';
+                    label.textContent = 'Crap Foods List:';
                     label.style.display = 'block';
                     label.style.marginBottom = '5px';
                     foodContainer.appendChild(label);
@@ -4822,7 +4822,7 @@ const SettingsHelper = {
 
                     const crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
                     if (crapList.length === 0) {
-                        listContainer.innerText = 'No foods marked as crap.';
+                        listContainer.textContent = 'No foods marked as crap.';
                     } else {
                         const ul = document.createElement('ul');
                         ul.style.margin = '0';
@@ -4831,7 +4831,7 @@ const SettingsHelper = {
                             const li = document.createElement('li');
                             const a = document.createElement('a');
                             a.href = '#';
-                            a.innerText = '[x]';
+                            a.textContent = '[x]';
                             a.style.color = 'red';
                             a.style.textDecoration = 'none';
                             a.style.marginRight = '5px';
@@ -4843,7 +4843,7 @@ const SettingsHelper = {
                                 localStorage.setItem('hw_helper_food_crap', JSON.stringify(updatedList));
                                 li.remove();
                                 if (updatedList.length === 0) {
-                                    listContainer.innerText = 'No foods marked as crap.';
+                                    listContainer.textContent = 'No foods marked as crap.';
                                 }
                             };
                             li.appendChild(a);
@@ -5167,10 +5167,10 @@ const WellnessClinicHelper = {
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
 
-        const text = contentArea.innerText;
-        const costMatch = text.match(/\$?([0-9]{1,3}(,[0-9]{3})+|[0-9]{4,})/);
+        const text = contentArea.textContent;
+        const costMatch = text.match(/\$([0-9,]+)/);
         let detectedCost = 0;
-        if (costMatch) detectedCost = Utils.parseNumber(costMatch[0]);
+        if (costMatch) detectedCost = Utils.parseNumber(costMatch[1]);
 
         const hasPaid = url.includes('do=pay');
         let currentIndex = clinicData.findIndex(row => row.fee === detectedCost);
@@ -5274,6 +5274,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.07",
+            date: "2026-04-09",
+            type: "Fixed",
+            notes: [
+                "Fixed a bug in `RatsHelper` where the Rat News filter was failing to populate rat names. Switched to using `textContent` instead of `innerText` to reliably extract text from the DOM."
+            ]
+        },
+        {
             version: "8.06",
             date: "2026-04-09",
             type: "Fixed",
@@ -5307,14 +5315,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added a visual indicator to the Living Area that applies a pale red background to the Special Item container when the item is inactive."
-            ]
-        },
-        {
-            version: "8.02",
-            date: "2026-04-08",
-            type: "Changed",
-            notes: [
-                "Refactored `BackpackHelper`'s Favourite Drinks logic to build a single DOM node map instead of relying on recursive query loops. This severely limits browser memory usage and prevents lag/stutters on accounts with massive inventories."
             ]
         }
     ]
