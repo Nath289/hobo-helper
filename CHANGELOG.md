@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.11] - 2026-04-09
+### Changed
+- Replaced the flat payment rate for `Gangsters Sunday = Funday` payouts via `GangHelper` with a highly configurable multi-tier dynamic payout system. Users can now define minimum, maximum point brackets, and uniquely corresponding price-per-point tier rates.
+- Automatically formatted Max Payout and tier rate input values, as well as generated payout amounts, with comma separation and dollar signs for clean data presentation.
+
 ## [8.10] - 2026-04-09
 ### Added
 - Added the ability to successfully parse and render inline CSV data into fully styled HTML tables within Message Board posts utilizing the custom `[hobo-helper-table]` tag system. 

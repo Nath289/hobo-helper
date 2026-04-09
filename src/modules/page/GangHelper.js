@@ -249,30 +249,119 @@ const GangHelper = {
         if (!table) return;
 
         const panel = document.createElement('div');
-        panel.style.cssText = 'margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; background: #eee; font-family: Tahoma, sans-serif; text-align: left;';
-        
-        panel.innerHTML = `
-            <div style="font-weight: bold; margin-bottom: 5px;">Gangsters Sunday = Funday Payouts</div>
-            <label style="font-size: 11px; margin-right: 10px;">
-                Amount per Point ($): 
-                <input type="number" id="hh_sf_rate" value="1000" style="width: 80px; padding: 2px;">
-            </label>
-            <label style="font-size: 11px; margin-right: 10px;">
-                Max Payout per Hobo ($): 
-                <input type="number" id="hh_sf_max" value="500000" style="width: 100px; padding: 2px;">
-            </label>
-            <button type="button" id="hh_sf_save_btn" style="padding: 3px 8px; cursor: pointer; font-weight: bold; background: #ddd; border: 1px solid #999; border-radius: 3px;">
-                💾 Save Event Payouts
-            </button>
-            <span id="hh_sf_status" style="font-size: 11px; font-weight: bold; color: green; margin-left: 10px;"></span>
-        `;
+        panel.style.cssText = 'margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; background: #eee; font-family: Tahoma, sans-serif; text-align: left; max-width: 600px;';
 
+        let savedTiers = JSON.parse(localStorage.getItem('hw_helper_sf_tiers') || '[]');
+        if (savedTiers.length === 0) {
+            savedTiers = [
+                { min: 0, max: 100, rate: 60000 },
+                { min: 100, max: 200, rate: 80000 },
+                { min: 200, max: 300, rate: 100000 }
+            ];
+        }
+        let maxPayout = parseInt(localStorage.getItem('hw_helper_sf_max') || '5000000', 10);
+
+        let panelHtml = `
+            <div style="font-weight: bold; margin-bottom: 10px; font-size: 14px;">Gangsters Sunday = Funday Payouts</div>
+            <div id="hh_sf_tiers_container" style="margin-bottom: 10px;">
+            </div>
+            <div style="margin-bottom: 10px;">
+                <button type="button" id="hh_sf_add_tier_btn" style="padding: 2px 6px; cursor: pointer; font-size: 11px;">+ Add Tier</button>
+            </div>
+            <label style="font-size: 11px; margin-right: 10px; font-weight: bold;">
+                Max Payout per Hobo ($): 
+                <input type="text" id="hh_sf_max" value="${maxPayout.toLocaleString()}" style="width: 100px; padding: 2px;">
+            </label>
+            <div style="margin-top: 15px;">
+                <button type="button" id="hh_sf_save_btn" style="padding: 4px 10px; cursor: pointer; font-weight: bold; background: #ddd; border: 1px solid #999; border-radius: 3px;">
+                    💾 Save Event Payouts
+                </button>
+                <span id="hh_sf_status" style="font-size: 11px; font-weight: bold; color: green; margin-left: 10px;"></span>
+            </div>
+        `;
+        panel.innerHTML = panelHtml;
         table.parentElement.insertBefore(panel, table);
 
+        const tiersContainer = document.getElementById('hh_sf_tiers_container');
+
+        const renderTiers = () => {
+            tiersContainer.innerHTML = '';
+            savedTiers.forEach((tier, idx) => {
+                const row = document.createElement('div');
+                row.style.marginBottom = '5px';
+                row.innerHTML = `
+                    <span style="font-size: 11px; display: inline-block; width: 45px;">Tier ${idx + 1}:</span>
+                    <input type="number" class="hh-sf-min" value="${tier.min}" style="width: 60px; padding: 2px; font-size: 11px;" placeholder="Min">
+                    <span style="font-size: 11px;"> - </span>
+                    <input type="number" class="hh-sf-max" value="${tier.max}" style="width: 60px; padding: 2px; font-size: 11px;" placeholder="Max">
+                    <span style="font-size: 11px;"> pts @ $ </span>
+                    <input type="text" class="hh-sf-rate" value="${tier.rate.toLocaleString()}" style="width: 80px; padding: 2px; font-size: 11px;" placeholder="Rate / pt">
+                    <span style="font-size: 11px;"> per point </span>
+                    <button type="button" class="hh-sf-del-tier" data-idx="${idx}" style="cursor:pointer; font-size:10px; margin-left:5px; color:red; border:1px solid red; background:none; border-radius:3px; user-select:none; -webkit-user-select:none;">X</button>
+                `;
+                tiersContainer.appendChild(row);
+            });
+
+            // Bind delete buttons
+            tiersContainer.querySelectorAll('.hh-sf-del-tier').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = parseInt(e.target.getAttribute('data-idx'), 10);
+                    savedTiers.splice(idx, 1);
+                    saveAndRenderTiers();
+                });
+            });
+
+            // Bind inputs to update model on change
+            tiersContainer.querySelectorAll('input').forEach(input => {
+                input.addEventListener('change', () => {
+                    updateTiersFromDOM();
+                    saveAndRenderTiers();
+                });
+            });
+        };
+
+        const updateTiersFromDOM = () => {
+            savedTiers = [];
+            const rows = tiersContainer.children;
+            for (let i = 0; i < rows.length; i++) {
+                const min = parseInt(rows[i].querySelector('.hh-sf-min').value, 10) || 0;
+                const max = parseInt(rows[i].querySelector('.hh-sf-max').value, 10) || 0;
+                const rate = parseInt(rows[i].querySelector('.hh-sf-rate').value.replace(/,/g, ''), 10) || 0;
+                savedTiers.push({ min, max, rate });
+            }
+        };
+
+        const saveAndRenderTiers = () => {
+            localStorage.setItem('hw_helper_sf_tiers', JSON.stringify(savedTiers));
+            renderTiers();
+        };
+
+        document.getElementById('hh_sf_add_tier_btn').addEventListener('click', () => {
+            updateTiersFromDOM();
+            let nextMin = 0;
+            if (savedTiers.length > 0) {
+                nextMin = savedTiers[savedTiers.length - 1].max;
+            }
+            savedTiers.push({ min: nextMin, max: nextMin + 100, rate: 0 });
+            saveAndRenderTiers();
+        });
+
+        document.getElementById('hh_sf_max').addEventListener('change', (e) => {
+            const val = parseInt(e.target.value.replace(/,/g, ''), 10) || 0;
+            localStorage.setItem('hw_helper_sf_max', val.toString());
+            e.target.value = val.toLocaleString();
+        });
+
+        renderTiers();
+
         document.getElementById('hh_sf_save_btn').addEventListener('click', () => {
+            updateTiersFromDOM();
+            localStorage.setItem('hw_helper_sf_tiers', JSON.stringify(savedTiers));
+            const currentMaxPayoutStr = document.getElementById('hh_sf_max').value;
+            const currentMaxPayout = parseInt(currentMaxPayoutStr.replace(/,/g, ''), 10) || 0;
+            localStorage.setItem('hw_helper_sf_max', currentMaxPayout.toString());
+
             const rows = table.querySelectorAll('tr[bgcolor="#F3F3F3"], tr[bgcolor="#DCDCDC"]');
-            const rate = parseInt(document.getElementById('hh_sf_rate').value, 10) || 1000;
-            const maxPayout = parseInt(document.getElementById('hh_sf_max').value, 10) || 500000;
 
             const payments = [];
 
@@ -291,18 +380,31 @@ const GangHelper = {
                 const score = parseInt(scoreText, 10);
 
                 if (hoboId && !isNaN(score) && score > 0) {
-                    let payout = score * rate;
-                    if (payout > maxPayout) payout = maxPayout;
+                    let payout = 0;
 
-                    payments.push({
-                        id: hoboId,
-                        name: nameText,
-                        description: `Stats: Sunday=Funday (Score: ${score})`,
-                        amount: payout.toString(),
-                        timestamp: Date.now(),
-                        completed: false,
-                        cleared: false
+                    savedTiers.forEach(tier => {
+                        if (score > tier.min) {
+                            const ptsInTier = Math.min(score, tier.max) - tier.min;
+                            if (ptsInTier > 0) {
+                                payout += ptsInTier * tier.rate;
+                            }
+                        }
                     });
+
+                    if (payout > currentMaxPayout) payout = currentMaxPayout;
+
+                    // Only generate payment if payout is greater than 0
+                    if (payout > 0) {
+                        payments.push({
+                            id: hoboId,
+                            name: nameText,
+                            description: `Stats: Sunday=Funday (Score: ${score})`,
+                            amount: '$' + payout.toLocaleString(),
+                            timestamp: Date.now(),
+                            completed: false,
+                            cleared: false
+                        });
+                    }
                 }
             });
 
@@ -321,6 +423,11 @@ const GangHelper = {
                 const statusEl = document.getElementById('hh_sf_status');
                 statusEl.textContent = `✅ Saved ${payments.length} payouts to Gang Loans dashboard!`;
                 setTimeout(() => { statusEl.textContent = ''; }, 3000);
+            } else {
+                const statusEl = document.getElementById('hh_sf_status');
+                statusEl.style.color = 'red';
+                statusEl.textContent = `❌ No payouts to save (check if scores/tiers yield $0).`;
+                setTimeout(() => { statusEl.textContent = ''; statusEl.style.color = 'green'; }, 3000);
             }
         });
     }
