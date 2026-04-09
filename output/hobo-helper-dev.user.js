@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.07.20260409.1327
+// @version      8.08.20260409.2203
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -595,6 +595,9 @@ const BackpackHelper = {
                     <td style="padding: 5px; width: 30px;"><img src="${getSrc(d, stats[d])}" alt="${d}" width="25" height="25" onerror="this.style.display='none'"></td>
                     <td style="padding: 5px; font-weight: bold;">${d}</td>
                     <td style="padding: 5px; text-align: right;">${getCount(stats[d])}</td>
+                    <td style="padding: 5px; text-align: right; width: 30px;">
+                        <button class="bh-drink-stats-remove" data-drink="${d.replace(/"/g, '&quot;')}" style="cursor: pointer; padding: 2px 6px; font-size: 10px; color: red; background: transparent; border: 1px solid red; border-radius: 3px; user-select: none; -webkit-user-select: none;" title="Remove this drink">X</button>
+                    </td>
                 </tr>`).join('')}
             </table>
             <br>
@@ -615,6 +618,18 @@ const BackpackHelper = {
                 }
             });
         }
+
+        document.querySelectorAll('.bh-drink-stats-remove').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                let drink = e.target.getAttribute('data-drink');
+                if (confirm(`Are you sure you want to remove stats for: ${drink}?`)) {
+                    let currentStats = JSON.parse(localStorage.getItem('bh_drink_stats') || '{}');
+                    delete currentStats[drink];
+                    localStorage.setItem('bh_drink_stats', JSON.stringify(currentStats));
+                    this.showStatsModal();
+                }
+            });
+        });
     }
 };
 
@@ -5274,6 +5289,15 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.08",
+            date: "2026-04-09",
+            type: "Fixed",
+            notes: [
+                "Globally replaced `.innerText` with `.textContent` across all helper scripts to permanently eradicate a widespread bug where HoboWars' Responsive Layout hiding elements from view caused JavaScript text scraping to fail and return blank strings. ",
+                "Restored broken functionality to the `WellnessClinicHelper` cumulative spend tracker logic directly resulting from this bug."
+            ]
+        },
+        {
             version: "8.07",
             date: "2026-04-09",
             type: "Fixed",
@@ -5307,14 +5331,6 @@ const ChangelogData = {
             notes: [
                 "Created a configurable interface for the `MessageBoardHelper` \"Add Paid Message Text\" append button. Users can now override the prepended message format using custom text combined with dynamic variables `{hoboname}`, `{hoboId}`, and `{date}`.",
                 "Expanded `SettingsHelper` layout architecture to handle fluid input scaling (e.g. `100%` width blocks) and trailing feature description texts natively."
-            ]
-        },
-        {
-            version: "8.03",
-            date: "2026-04-08",
-            type: "Added",
-            notes: [
-                "Added a visual indicator to the Living Area that applies a pale red background to the Special Item container when the item is inactive."
             ]
         }
     ]

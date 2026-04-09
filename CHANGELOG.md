@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.09] - 2026-04-09
+### Added
+- Added the ability to remove statistics for individual drinks within the `BackpackHelper` Favourite Drinks stats modal, alongside the existing reset all capability.
+
 ## [8.08] - 2026-04-09
 ### Fixed
 - Globally replaced `.innerText` with `.textContent` across all helper scripts to permanently eradicate a widespread bug where HoboWars' Responsive Layout hiding elements from view caused JavaScript text scraping to fail and return blank strings. 

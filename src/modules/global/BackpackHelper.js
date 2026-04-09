@@ -232,6 +232,9 @@ const BackpackHelper = {
                     <td style="padding: 5px; width: 30px;"><img src="${getSrc(d, stats[d])}" alt="${d}" width="25" height="25" onerror="this.style.display='none'"></td>
                     <td style="padding: 5px; font-weight: bold;">${d}</td>
                     <td style="padding: 5px; text-align: right;">${getCount(stats[d])}</td>
+                    <td style="padding: 5px; text-align: right; width: 30px;">
+                        <button class="bh-drink-stats-remove" data-drink="${d.replace(/"/g, '&quot;')}" style="cursor: pointer; padding: 2px 6px; font-size: 10px; color: red; background: transparent; border: 1px solid red; border-radius: 3px; user-select: none; -webkit-user-select: none;" title="Remove this drink">X</button>
+                    </td>
                 </tr>`).join('')}
             </table>
             <br>
@@ -252,5 +255,17 @@ const BackpackHelper = {
                 }
             });
         }
+
+        document.querySelectorAll('.bh-drink-stats-remove').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                let drink = e.target.getAttribute('data-drink');
+                if (confirm(`Are you sure you want to remove stats for: ${drink}?`)) {
+                    let currentStats = JSON.parse(localStorage.getItem('bh_drink_stats') || '{}');
+                    delete currentStats[drink];
+                    localStorage.setItem('bh_drink_stats', JSON.stringify(currentStats));
+                    this.showStatsModal();
+                }
+            });
+        });
     }
 };
