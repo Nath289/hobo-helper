@@ -72,6 +72,40 @@ const GangHelper = {
         
         if (records.length === 0) return;
         
+        const style = document.createElement('style');
+        style.textContent = `
+            .mail-btn {
+                -webkit-font-smoothing: antialiased;
+                color: #636363;
+                background: #ddd;
+                font-weight: bold;
+                text-decoration: none;
+                padding: 5px 16px;
+                border-radius: 3px;
+                border: 0;
+                cursor: pointer;
+                margin: 3px 2px;
+                -webkit-appearance: none;
+                display: inline-block;
+            }
+            .mail-btn:hover {
+                color: #fff;
+                background: #1b9eff;
+                box-shadow: 0 0 0 rgba(0,0,0,.4);
+                animation: pulse 1.5s infinite;
+            }
+            .mail-btn.active {
+                background: #bbb;
+                color: #222;
+            }
+            @keyframes pulse {
+                0% { box-shadow: 0 0 0 0 rgba(27, 158, 255, 0.7); }
+                70% { box-shadow: 0 0 0 10px rgba(27, 158, 255, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(27, 158, 255, 0); }
+            }
+        `;
+        document.head.appendChild(style);
+
         const container = document.createElement('div');
         container.style.marginTop = '10px';
         container.style.userSelect = 'none';
@@ -89,9 +123,9 @@ const GangHelper = {
         const filterDiv = document.createElement('div');
         filterDiv.style.marginBottom = '10px';
         filterDiv.innerHTML = `
-            <button id="show-all-mail" style="margin-right: 5px; cursor: pointer;">Show All</button>
-            <button id="show-read-mail" style="margin-right: 5px; cursor: pointer;">Show Read</button>
-            <button id="show-unread-mail" style="margin-right: 5px; cursor: pointer;">Show Unread</button>
+            <button id="show-all-mail" class="mail-btn active">Show All</button>
+            <button id="show-read-mail" class="mail-btn">Show Read</button>
+            <button id="show-unread-mail" class="mail-btn">Show Unread</button>
         `;
         
         const table = document.createElement('table');
@@ -127,15 +161,32 @@ const GangHelper = {
         // Replace the ul with our new container
         ulTag.replaceWith(container);
         
+        const updateButtonStyles = (activeId) => {
+            const btns = [
+                sentToTd.querySelector('#show-all-mail'),
+                sentToTd.querySelector('#show-read-mail'),
+                sentToTd.querySelector('#show-unread-mail')
+            ];
+            btns.forEach(btn => {
+                if (btn.id === activeId) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        };
+        
         // Add event listeners for filters
         sentToTd.querySelector('#show-all-mail').addEventListener('click', (e) => {
             e.preventDefault();
+            updateButtonStyles('show-all-mail');
             sentToTd.querySelectorAll('.mail-row').forEach(row => row.style.display = '');
             this.recolorRows(sentToTd);
         });
         
         sentToTd.querySelector('#show-read-mail').addEventListener('click', (e) => {
             e.preventDefault();
+            updateButtonStyles('show-read-mail');
             sentToTd.querySelectorAll('.mail-row').forEach(row => {
                 row.style.display = row.classList.contains('read') ? '' : 'none';
             });
@@ -144,6 +195,7 @@ const GangHelper = {
         
         sentToTd.querySelector('#show-unread-mail').addEventListener('click', (e) => {
             e.preventDefault();
+            updateButtonStyles('show-unread-mail');
             sentToTd.querySelectorAll('.mail-row').forEach(row => {
                 row.style.display = row.classList.contains('unread') ? '' : 'none';
             });

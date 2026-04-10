@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.13] - 2026-04-11
+### Changed
+- Improved the visual styling of the newly added "Mass Mails" filter buttons in `GangHelper`, converting them into polished, interactive pill-style buttons with active state indicators.
+
 ## [8.12] - 2026-04-10
 ### Added
 - Added formatting to the Mass Mails list on the Gang Read Mail page via `GangHelper`. Converts the text list into a readable table with colored read/unread status, numeric counts, and table row filtering options.

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.11.20260410.2321
+// @version      8.13.20260411.0025
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -1432,6 +1432,40 @@ const GangHelper = {
         
         if (records.length === 0) return;
         
+        const style = document.createElement('style');
+        style.textContent = `
+            .mail-btn {
+                -webkit-font-smoothing: antialiased;
+                color: #636363;
+                background: #ddd;
+                font-weight: bold;
+                text-decoration: none;
+                padding: 5px 16px;
+                border-radius: 3px;
+                border: 0;
+                cursor: pointer;
+                margin: 3px 2px;
+                -webkit-appearance: none;
+                display: inline-block;
+            }
+            .mail-btn:hover {
+                color: #fff;
+                background: #1b9eff;
+                box-shadow: 0 0 0 rgba(0,0,0,.4);
+                animation: pulse 1.5s infinite;
+            }
+            .mail-btn.active {
+                background: #bbb;
+                color: #222;
+            }
+            @keyframes pulse {
+                0% { box-shadow: 0 0 0 0 rgba(27, 158, 255, 0.7); }
+                70% { box-shadow: 0 0 0 10px rgba(27, 158, 255, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(27, 158, 255, 0); }
+            }
+        `;
+        document.head.appendChild(style);
+
         const container = document.createElement('div');
         container.style.marginTop = '10px';
         container.style.userSelect = 'none';
@@ -1449,9 +1483,9 @@ const GangHelper = {
         const filterDiv = document.createElement('div');
         filterDiv.style.marginBottom = '10px';
         filterDiv.innerHTML = `
-            <button id="show-all-mail" style="margin-right: 5px; cursor: pointer;">Show All</button>
-            <button id="show-read-mail" style="margin-right: 5px; cursor: pointer;">Show Read</button>
-            <button id="show-unread-mail" style="margin-right: 5px; cursor: pointer;">Show Unread</button>
+            <button id="show-all-mail" class="mail-btn active">Show All</button>
+            <button id="show-read-mail" class="mail-btn">Show Read</button>
+            <button id="show-unread-mail" class="mail-btn">Show Unread</button>
         `;
         
         const table = document.createElement('table');
@@ -1487,15 +1521,32 @@ const GangHelper = {
         // Replace the ul with our new container
         ulTag.replaceWith(container);
         
+        const updateButtonStyles = (activeId) => {
+            const btns = [
+                sentToTd.querySelector('#show-all-mail'),
+                sentToTd.querySelector('#show-read-mail'),
+                sentToTd.querySelector('#show-unread-mail')
+            ];
+            btns.forEach(btn => {
+                if (btn.id === activeId) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        };
+        
         // Add event listeners for filters
         sentToTd.querySelector('#show-all-mail').addEventListener('click', (e) => {
             e.preventDefault();
+            updateButtonStyles('show-all-mail');
             sentToTd.querySelectorAll('.mail-row').forEach(row => row.style.display = '');
             this.recolorRows(sentToTd);
         });
         
         sentToTd.querySelector('#show-read-mail').addEventListener('click', (e) => {
             e.preventDefault();
+            updateButtonStyles('show-read-mail');
             sentToTd.querySelectorAll('.mail-row').forEach(row => {
                 row.style.display = row.classList.contains('read') ? '' : 'none';
             });
@@ -1504,6 +1555,7 @@ const GangHelper = {
         
         sentToTd.querySelector('#show-unread-mail').addEventListener('click', (e) => {
             e.preventDefault();
+            updateButtonStyles('show-unread-mail');
             sentToTd.querySelectorAll('.mail-row').forEach(row => {
                 row.style.display = row.classList.contains('unread') ? '' : 'none';
             });
@@ -5591,6 +5643,22 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.13",
+            date: "2026-04-11",
+            type: "Changed",
+            notes: [
+                "Improved the visual styling of the newly added \"Mass Mails\" filter buttons in `GangHelper`, converting them into polished, interactive pill-style buttons with active state indicators."
+            ]
+        },
+        {
+            version: "8.12",
+            date: "2026-04-10",
+            type: "Added",
+            notes: [
+                "Added formatting to the Mass Mails list on the Gang Read Mail page via `GangHelper`. Converts the text list into a readable table with colored read/unread status, numeric counts, and table row filtering options."
+            ]
+        },
+        {
             version: "8.11",
             date: "2026-04-09",
             type: "Changed",
@@ -5614,23 +5682,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added the ability to remove statistics for individual drinks within the `BackpackHelper` Favourite Drinks stats modal, alongside the existing reset all capability."
-            ]
-        },
-        {
-            version: "8.08",
-            date: "2026-04-09",
-            type: "Fixed",
-            notes: [
-                "Globally replaced `.innerText` with `.textContent` across all helper scripts to permanently eradicate a widespread bug where HoboWars' Responsive Layout hiding elements from view caused JavaScript text scraping to fail and return blank strings. ",
-                "Restored broken functionality to the `WellnessClinicHelper` cumulative spend tracker logic directly resulting from this bug."
-            ]
-        },
-        {
-            version: "8.07",
-            date: "2026-04-09",
-            type: "Fixed",
-            notes: [
-                "Fixed a bug in `RatsHelper` where the Rat News filter was failing to populate rat names. Switched to using `textContent` instead of `innerText` to reliably extract text from the DOM."
             ]
         }
     ]

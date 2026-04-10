@@ -19,7 +19,37 @@ Welcome to the `hobo-helper` project! Since this project uses a custom build pro
 3. Create your new module file in `src/modules/page/` (e.g., `src/modules/page/JobHelper.js`). If the module needs to run on every single page, place it in `src/modules/global/`.
 4. Ensure the code inside is formatted as a valid constant variable allocation. For page modules, you **must include a `cmds` property** containing the string or array of strings matching the `cmd=` parameter of the URLs it applies to (e.g., `const JobHelper = { cmds: 'job', init: function() { ... } }` or `cmds: ['job', 'job2']`).
 5. **Settings Helper Integration:** Always add the ability to disable the new helper sub-features via the `SettingsHelper`. To do this, include a `settings` array directly inside the module object definition containing the toggle keys and labels (e.g., `const JobHelper = { cmds: 'job', settings: [{ key: 'JobHelper_EnableFeature', label: 'Enable Feature' }], init: ... }`). The `SettingsHelper` will automatically detect and render them in the preferences page.
-6. **UI Best Practices:** When creating custom interactive UI elements like buttons, toggle pills, or custom checkboxes, always add `user-select: none; -webkit-user-select: none;` to the CSS to prevent annoying text highlighting during rapid clicking.
+6. **UI Best Practices:** 
+   - When creating custom interactive UI elements like buttons, toggle pills, or custom checkboxes, always add `user-select: none; -webkit-user-select: none;` to the CSS to prevent annoying text highlighting during rapid clicking.
+   - When creating buttons, always use or match the site's native `.btn` class styling. If you need to inject custom CSS for buttons, use the following pattern to match the game's native style (typically by injecting a `<style>` block):
+     ```css
+     input[type="button"], input[type="submit"], .btn {
+         -webkit-font-smoothing: antialiased;
+         color: #636363;
+         background: #ddd;
+         font-weight: bold;
+         text-decoration: none;
+         padding: 5px 16px;
+         border-radius: 3px;
+         border: 0;
+         cursor: pointer;
+         margin: 3px 2px;
+         -webkit-appearance: none;
+         display: inline-block;
+     }
+
+     a.btn {
+         line-height: 1em
+     }
+
+     input[type="button"]:hover,input[type="submit"]:hover,.btn:hover {
+         color: #fff;
+         background: #1b9eff;
+         box-shadow: 0 0 0 rgba(0,0,0,.4);
+         animation: pulse 1.5s infinite
+     }
+     ```
+     *(Make sure to include the `@keyframes pulse` animation if not already present in the context, though it's usually defined natively.)*
 7. **Update Documentation:** Whenever you create a new module or add a new feature to an existing module, you must update the `FEATURES.md` file to reflect the new functionality.
 The build script automatically detects and includes all JavaScript files in the `src/modules/global/` and `src/modules/page/` directories, loading globals first.
 
