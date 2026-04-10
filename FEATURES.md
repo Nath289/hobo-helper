@@ -97,6 +97,7 @@ A new helper designed to operate on the Weapons page (`cmd=wep`).
 Helper designed to function on Gang-related pages (`cmd=gang`).
 - **Gang Event Data Save**: Injects an admin-only dashboard specifically within the event stats for events like "Gangsters Sunday = Funday", dynamically tracking and storing custom event payments.
 - **Member List Columns**: Exposes a completely configurable column selection UI right above the "list members" table so users aren't locked into the rigid pre-set columns. Fully integrated with LocalStorage and safely adapts between User and Staff column restrictions.
+- **Format Mass Mails**: Formats the list of recipients on the mass mail reading page into an easy-to-read table with read/unread status filters and total counts.
 
 ### 24. Drink Helpers
 - [x] Automatically inject stat and effect data as tooltips to all drinks when hovering your mouse over them inside of your backpack and living area page.

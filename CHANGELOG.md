@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.12] - 2026-04-10
+### Added
+- Added formatting to the Mass Mails list on the Gang Read Mail page via `GangHelper`. Converts the text list into a readable table with colored read/unread status, numeric counts, and table row filtering options.
+
 ## [8.11] - 2026-04-09
 ### Changed
 - Replaced the flat payment rate for `Gangsters Sunday = Funday` payouts via `GangHelper` with a highly configurable multi-tier dynamic payout system. Users can now define minimum, maximum point brackets, and uniquely corresponding price-per-point tier rates.

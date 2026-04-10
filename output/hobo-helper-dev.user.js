@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.10.20260409.2356
+// @version      8.11.20260410.2321
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -1359,9 +1359,10 @@ const FortSlugworthHelper = {
 };
 
 const GangHelper = {
-    cmds: 'gang',
+    cmds: ['gang', 'gang2'],
     settings: [
-        { key: 'GangHelper_EnableFeature', label: 'Enable Gang Helper' }
+        { key: 'GangHelper_EnableFeature', label: 'Enable Gang Helper' },
+        { key: 'GangHelper_FormatMassMails', label: 'Format Mass Mails' }
     ],
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -1380,8 +1381,145 @@ const GangHelper = {
                 } else {
                     this.initGangFeature();
                 }
+            } else if (doParam === 'read_mail') {
+                if (savedSettings['GangHelper_FormatMassMails'] !== false) {
+                    this.formatMassMail();
+                }
             }
         }
+    },
+    
+    formatMassMail: function() {
+        const bTags = document.querySelectorAll('td > b, div > b');
+        let sentToTd = null;
+        for (const b of bTags) {
+            if (b.textContent.includes('Sent to:')) {
+                sentToTd = b.parentElement;
+                break;
+            }
+        }
+        
+        if (!sentToTd) return;
+        
+        const htmlContent = sentToTd.innerHTML;
+        const sentToPrefix = '<b>Sent to:</b>';
+        if (!htmlContent.includes(sentToPrefix)) return;
+        
+        // Find the ul tag that contains the list
+        const ulTag = sentToTd.querySelector('ul');
+        if (!ulTag) return;
+        
+        let allUnread = 0;
+        let allRead = 0;
+        const records = [];
+        
+        // Parse the list items
+        const liElements = ulTag.querySelectorAll('li');
+        liElements.forEach(li => {
+            const link = li.querySelector('a');
+            if (link) {
+                const url = link.getAttribute('href');
+                const name = link.textContent.trim();
+                const isUnread = li.textContent.includes('(unread)');
+                const status = isUnread ? 'unread' : 'read';
+                
+                if (status === 'read') allRead++;
+                else allUnread++;
+                
+                records.push({ url, name, status, originalHtml: link.innerHTML });
+            }
+        });
+        
+        if (records.length === 0) return;
+        
+        const container = document.createElement('div');
+        container.style.marginTop = '10px';
+        container.style.userSelect = 'none';
+        container.style.WebkitUserSelect = 'none';
+        
+        const headerDiv = document.createElement('div');
+        headerDiv.style.marginBottom = '10px';
+        headerDiv.innerHTML = `
+            <strong>Mass Mail Status:</strong> 
+            <span style="color: green;">Read: ${allRead}</span> | 
+            <span style="color: red;">Unread: ${allUnread}</span> | 
+            Total: ${allRead + allUnread}
+        `;
+        
+        const filterDiv = document.createElement('div');
+        filterDiv.style.marginBottom = '10px';
+        filterDiv.innerHTML = `
+            <button id="show-all-mail" style="margin-right: 5px; cursor: pointer;">Show All</button>
+            <button id="show-read-mail" style="margin-right: 5px; cursor: pointer;">Show Read</button>
+            <button id="show-unread-mail" style="margin-right: 5px; cursor: pointer;">Show Unread</button>
+        `;
+        
+        const table = document.createElement('table');
+        table.className = 'table gang-mail-table';
+        table.style.width = '100%';
+        table.style.marginTop = '10px';
+        
+        const thead = document.createElement('thead');
+        thead.innerHTML = `
+            <tr class="header">
+                <th style="text-align: left; padding: 5px;">Hobo</th>
+                <th style="text-align: left; padding: 5px;">Status</th>
+            </tr>
+        `;
+        table.appendChild(thead);
+        
+        const tbody = document.createElement('tbody');
+        records.forEach((r, i) => {
+            const tr = document.createElement('tr');
+            tr.className = `mail-row ${r.status} ${i % 2 === 0 ? 'even' : 'odd'}`;
+            tr.innerHTML = `
+                <td style="padding: 5px;"><a href="${r.url}">${r.originalHtml}</a></td>
+                <td style="padding: 5px; color: ${r.status === 'read' ? 'green' : 'red'}; font-weight: bold;">${r.status.toUpperCase()}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        
+        container.appendChild(headerDiv);
+        container.appendChild(filterDiv);
+        container.appendChild(table);
+        
+        // Replace the ul with our new container
+        ulTag.replaceWith(container);
+        
+        // Add event listeners for filters
+        sentToTd.querySelector('#show-all-mail').addEventListener('click', (e) => {
+            e.preventDefault();
+            sentToTd.querySelectorAll('.mail-row').forEach(row => row.style.display = '');
+            this.recolorRows(sentToTd);
+        });
+        
+        sentToTd.querySelector('#show-read-mail').addEventListener('click', (e) => {
+            e.preventDefault();
+            sentToTd.querySelectorAll('.mail-row').forEach(row => {
+                row.style.display = row.classList.contains('read') ? '' : 'none';
+            });
+            this.recolorRows(sentToTd);
+        });
+        
+        sentToTd.querySelector('#show-unread-mail').addEventListener('click', (e) => {
+            e.preventDefault();
+            sentToTd.querySelectorAll('.mail-row').forEach(row => {
+                row.style.display = row.classList.contains('unread') ? '' : 'none';
+            });
+            this.recolorRows(sentToTd);
+        });
+    },
+    
+    recolorRows: function(container) {
+        let visibleIndex = 0;
+        container.querySelectorAll('.mail-row').forEach(row => {
+            if (row.style.display !== 'none') {
+                row.className = row.className.replace(/\b(even|odd)\b/g, '').trim();
+                row.classList.add(visibleIndex % 2 === 0 ? 'even' : 'odd');
+                visibleIndex++;
+            }
+        });
     },
     
     initGangFeature: function() {
@@ -5453,6 +5591,15 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.11",
+            date: "2026-04-09",
+            type: "Changed",
+            notes: [
+                "Replaced the flat payment rate for `Gangsters Sunday = Funday` payouts via `GangHelper` with a highly configurable multi-tier dynamic payout system. Users can now define minimum, maximum point brackets, and uniquely corresponding price-per-point tier rates.",
+                "Automatically formatted Max Payout and tier rate input values, as well as generated payout amounts, with comma separation and dollar signs for clean data presentation."
+            ]
+        },
+        {
             version: "8.10",
             date: "2026-04-09",
             type: "Added",
@@ -5484,14 +5631,6 @@ const ChangelogData = {
             type: "Fixed",
             notes: [
                 "Fixed a bug in `RatsHelper` where the Rat News filter was failing to populate rat names. Switched to using `textContent` instead of `innerText` to reliably extract text from the DOM."
-            ]
-        },
-        {
-            version: "8.06",
-            date: "2026-04-09",
-            type: "Fixed",
-            notes: [
-                "Fixed the Gang Member List table styling by re-injecting CSS to support native `.even`/`.odd` row background colours and an interactive `#e8f4f8` hover effect."
             ]
         }
     ]
