@@ -1,3 +1,21 @@
+/**
+ * Feeding Rats
+ * The only way for rats to level up or increase their lifespan is to feed them. Foods give different exp and life gains, these gains can be affected by the Vegetarianism upgrade. Rats can only eat when they have a meal available. If you do not wish to manually feed a rat, you can purchase a Rat Trough to automatically feed them. Your rat gains a meal based on the HoboWars clock; A meal is gained at 00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00.
+ *
+ * Food Bonuses
+ * Awake	Exp	Life
+ * 0T	1	11
+ * 1T	3	10
+ * 2-4T	5	9
+ * 5-9T	7	8
+ * 10-15T	9	7
+ * 16-25T	11	6
+ * 26-49T	13	5
+ * 50-99T*	17	2
+ * 100T	21	1
+ * *Exception: Fruit by the Furlong (55T) exp = 17, life = -7
+ * **Vegetarianism Upgrade will add +1 to exp and life, but will restrict food intake to vegetarian meals only.
+ */
 const FoodData = {
     "Apple Core": { "img": "Apple-Core.gif" },
     "Half a Donut": { "img": "Half-a-Donut.gif" },

@@ -13,6 +13,9 @@ Welcome to the `hobo-helper` project! Since this project uses a custom build pro
 - `tools/` - PowerShell scripts for extracting static game data (e.g., wiki data) into JSON format.
 - `output/` - The destination for compiled userscripts. The build script automatically manages this folder by keeping only the 5 most recent versioned files and the latest build.
 
+## Game Knowledge
+Whenever you handle a user request, always review the `GAME_KNOWLEDGE.md` file to understand game mechanics, UI rules, and layout logic. Furthermore, whenever the user provides new facts or you discover new game constraints, you must add them to `GAME_KNOWLEDGE.md` so that future agents have the same information.
+
 ## Adding a New Module / Helper
 1. **Always ask the user** for the URL of the page they want to create the new helper for if they have not provided it. **Do not guess or try to determine the URL yourself.** You must ask the user for the URL in order to proceed with the change. When they provide it, the important part to match is after and including `cmd=`. For example, in `https://www.hobowars.com/game/game.php?sr=141&cmd=preferences`, the `sr` number changes, so it cannot be hardcoded (use `cmd=preferences` to identify the page).
 2. **Context Gathering:** Use PowerShell to search through the `html/` directory to find the specific layout file (e.g., `Select-String -Path "html\*.html" -Pattern "cmd=rats"` or search for unique text headers) to understand the DOM.
