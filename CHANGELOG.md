@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.22] - 2026-04-12
+### Added
+- Added an "Attack Range" checkbox filter to `ActiveListHelper` that instantly restricts the viewable opponent list exclusively to players falling within your immediate combat level range (±200 levels of your current Hobo level). Filter persistently saves to local storage.
+
 ## [8.21] - 2026-04-12
 ### Added
 - Added `ActiveListHelper` module for the Recently Active players list page (`cmd=active`).

@@ -80,6 +80,12 @@ const ActiveListHelper = {
                 if (node.nodeName === 'BR') {
                     if (isAlive) currentWrapper.classList.add('hobo-helper-alive');
                     if (isDead) currentWrapper.classList.add('hobo-helper-dead');
+                    
+                    const lvlMatch = currentWrapper.textContent.match(/\(Lvl:\s*(\d+)\)/);
+                    if (lvlMatch) {
+                        currentWrapper.setAttribute('data-level', lvlMatch[1]);
+                    }
+                    
                     currentWrapper = null;
                 }
             }
@@ -87,6 +93,7 @@ const ActiveListHelper = {
 
         // Retrieve saved filter
         const savedFilter = localStorage.getItem('ActiveListHelper_CurrentFilter') || 'all';
+        const savedRange = localStorage.getItem('ActiveListHelper_CurrentRangeFilter') === 'true';
 
         // Create UI Filter Buttons
         const filterContainer = document.createElement('div');
@@ -97,9 +104,49 @@ const ActiveListHelper = {
             <button class="btn ${savedFilter === 'all' ? 'active' : ''}" data-filter="all">All</button>
             <button class="btn ${savedFilter === 'alive' ? 'active' : ''}" data-filter="alive">Alive</button>
             <button class="btn ${savedFilter === 'dead' ? 'active' : ''}" data-filter="dead">Dead</button>
+            <label style="margin-left: 15px; cursor: pointer; user-select: none;">
+                <input type="checkbox" id="hobo-helper-range-checkbox" ${savedRange ? 'checked' : ''} style="vertical-align: middle;"> Attack Range
+            </label>
         `;
 
         contentArea.insertBefore(filterContainer, contentArea.firstChild);
+
+        const playerLevel = typeof Utils.getHoboLevel === 'function' ? Utils.getHoboLevel() : 0;
+
+        const applyFilters = () => {
+            const activeBtn = filterContainer.querySelector('.btn.active');
+            const filter = activeBtn ? activeBtn.getAttribute('data-filter') : 'all';
+            const rangeOnly = filterContainer.querySelector('#hobo-helper-range-checkbox').checked;
+
+            localStorage.setItem('ActiveListHelper_CurrentFilter', filter);
+            localStorage.setItem('ActiveListHelper_CurrentRangeFilter', rangeOnly);
+
+            const allRows = contentArea.querySelectorAll('.hobo-helper-player-row');
+
+            allRows.forEach(row => {
+                row.classList.remove('hobo-helper-hidden');
+                
+                // Status Filter
+                if (filter === 'alive' && !row.classList.contains('hobo-helper-alive')) {
+                    row.classList.add('hobo-helper-hidden');
+                    return;
+                }
+                if (filter === 'dead' && !row.classList.contains('hobo-helper-dead')) {
+                    row.classList.add('hobo-helper-hidden');
+                    return;
+                }
+
+                // Range Filter
+                if (rangeOnly && playerLevel > 0) {
+                    const targetLvl = parseInt(row.getAttribute('data-level'), 10);
+                    if (!isNaN(targetLvl)) {
+                        if (targetLvl < playerLevel - 200 || targetLvl > playerLevel + 200) {
+                            row.classList.add('hobo-helper-hidden');
+                        }
+                    }
+                }
+            });
+        };
 
         // Bind filter events
         const buttons = filterContainer.querySelectorAll('.btn');
@@ -108,27 +155,16 @@ const ActiveListHelper = {
                 // Update active state
                 buttons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-
-                const filter = btn.getAttribute('data-filter');
-                localStorage.setItem('ActiveListHelper_CurrentFilter', filter);
-                
-                const allRows = contentArea.querySelectorAll('.hobo-helper-player-row');
-
-                allRows.forEach(row => {
-                    row.classList.remove('hobo-helper-hidden');
-                    if (filter === 'alive' && !row.classList.contains('hobo-helper-alive')) {
-                        row.classList.add('hobo-helper-hidden');
-                    } else if (filter === 'dead' && !row.classList.contains('hobo-helper-dead')) {
-                        row.classList.add('hobo-helper-hidden');
-                    }
-                });
+                applyFilters();
             });
         });
 
-        // Apply saved filter on load if it's not 'all'
-        if (savedFilter !== 'all') {
-            const activeBtn = filterContainer.querySelector(`.btn[data-filter="${savedFilter}"]`);
-            if (activeBtn) activeBtn.click();
+        const rangeCheckbox = filterContainer.querySelector('#hobo-helper-range-checkbox');
+        if (rangeCheckbox) {
+            rangeCheckbox.addEventListener('change', applyFilters);
         }
+
+        // Apply saved filter on load
+        applyFilters();
     }
 };

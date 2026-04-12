@@ -114,7 +114,8 @@ Helper designed to function on Gang-related pages (`cmd=gang`).
 
 ### 27. Active List Helper (`ActiveListHelper.js`)
 Helper functionality for the Active List page (`cmd=active`).
-- Foundation prepared for future features.
+- **Interactive Alive/Dead Filter**: Adds pill-styled buttons allowing users to dynamically hide dead players or show everyone.
+- **Attack Range Filter**: Automatically restricts the opponent list to players within your immediate attackable level range (± 200 levels).
 
 ---
 *Note: We are constantly updating and tweaking these modules. If you encounter any bugs, please report them!*
