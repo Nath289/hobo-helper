@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.13.20260411.1421
+// @version      8.13.20260412.0031
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -4807,12 +4807,14 @@ const RatsHelper = {
     cmds: 'rats',
     settings: [
         { key: 'RatsHelper_NewsFilter', label: 'Rat News Filter' },
-        { key: 'RatsHelper_ExpBar', label: 'Show Exp Progress Indicator' }
+        { key: 'RatsHelper_ExpBar', label: 'Show Exp Progress Indicator' },
+        { key: 'RatsHelper_ActionButtons', label: 'Convert Action Links to Buttons' }
     ],
     init: function() {
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
         const enableNewsFilter = savedSettings['RatsHelper_NewsFilter'] !== false;
         const enableExpBar = savedSettings['RatsHelper_ExpBar'] !== false;
+        const enableActionButtons = savedSettings['RatsHelper_ActionButtons'] !== false;
 
         const style = document.createElement('style');
         style.textContent = `
@@ -4931,6 +4933,36 @@ const RatsHelper = {
                 cursor: not-allowed;
                 color: #999;
             }
+
+            /* Main Rat Actions container */
+            .rat-actions-container {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-items: center;
+                gap: 10px;
+                margin: 15px auto;
+                padding: 12px;
+                background: #f8f9fc;
+                border: 1px solid #d3e0f0;
+                border-radius: 6px;
+                max-width: 800px;
+            }
+            .rat-actions-container a.btn {
+                margin: 0;
+                font-size: 13px;
+                padding: 6px 14px;
+            }
+            .rat-actions-container a.btn.news-on {
+                color: #fff;
+                background: #5cb85c;
+                border: 1px solid #4cae4c;
+            }
+            .rat-actions-container a.btn.news-off {
+                color: #fff;
+                background: #d9534f;
+                border: 1px solid #d43f3a;
+            }
         `;
         document.head.appendChild(style);
 
@@ -4984,9 +5016,70 @@ const RatsHelper = {
             this.initExpBars(contentArea);
         }
 
+        if (enableActionButtons) {
+            this.initActionButtons(contentArea);
+        }
+
         if (window.location.search.includes('do=feed')) {
             this.initFeedUI();
         }
+    },
+
+    initActionButtons: function(contentArea) {
+        // Find the "Choose active rat" or similar link in the bottom ul list
+        const activeRatLink = contentArea.querySelector('a[href*="do=hobo_fights"]');
+        if (!activeRatLink) return;
+        const ul = activeRatLink.closest('ul');
+        if (!ul) return;
+
+        const container = document.createElement('div');
+        container.className = 'rat-actions-container';
+
+        const listItems = Array.from(ul.querySelectorAll('li'));
+        listItems.forEach(li => {
+            const link = li.querySelector('a');
+            if (!link) return;
+
+            const btn = document.createElement('a');
+            btn.className = 'btn';
+            btn.href = link.href;
+            if (link.onclick) {
+                btn.onclick = link.onclick;
+            }
+
+            const text = li.textContent.replace(/\s+/g, ' ').trim();
+
+            if (text.includes('Choose active rat')) {
+                btn.innerHTML = 'Choose Active Rat <span style="font-weight:normal;font-size:11px;">(Hobo Fights)</span>';
+            } else if (text.includes('Visit the Pet Cemetery')) {
+                btn.textContent = 'Pet Cemetery';
+            } else if (text.includes('Visit the Pet Store')) {
+                btn.textContent = 'Pet Store';
+            } else if (text.includes('More Information')) {
+                btn.textContent = 'More Information';
+            } else if (text.includes('Add to Rat Fund')) {
+                btn.textContent = 'Add to Rat Fund';
+            } else if (text.includes('Living area news alerts')) {
+                const isOn = li.querySelector('font[color="green"]');
+                btn.textContent = isOn ? 'News: ON' : 'News: OFF';
+                btn.classList.add(isOn ? 'news-on' : 'news-off');
+            } else {
+                // Fallback for unknown links
+                btn.textContent = link.textContent.trim();
+            }
+
+            container.appendChild(btn);
+        });
+
+        // Clean up any extraneous <br> elements right before the ul
+        let prev = ul.previousSibling;
+        while (prev && (prev.tagName === 'BR' || prev.nodeType === Node.TEXT_NODE)) {
+            const nextPrev = prev.previousSibling;
+            prev.remove();
+            prev = nextPrev;
+        }
+
+        ul.parentNode.replaceChild(container, ul);
     },
 
     initExpBars: function(contentArea) {

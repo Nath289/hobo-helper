@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.14] - 2026-04-12
+### Changed
+- Improved the visual presentation of the rat experience bars on the `RatsHelper` feed page by adding a distinct border to clearly indicate 100% capacity.
+- Compacted the "Feed" buttons on the `RatsHelper` feed page to reduce vertical footprint and improve readability.
+- Converted the main navigation text links on the primary Rat page (Active rat, Pet Cemetery, Pet Store, More Information, Rat Fund, News alerts) into a unified, button-based UI layout for a more tactile experience.
+
 ## [8.13] - 2026-04-11
 ### Changed
 - Improved the visual styling of the newly added "Mass Mails" filter buttons in `GangHelper`, converting them into polished, interactive pill-style buttons with active state indicators.
