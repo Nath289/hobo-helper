@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.15] - 2026-04-12
+### Added
+- Added the projected Event Payout Manager to the current gang happenings page on Sundays, restricted to users with Gang Staff access.
+### Changed
+- Unified the Event Payout Manager UI between the last happenings and current happenings page, displaying projected totals autonomously.
+- Split the Event Payout Manager's save functionality so 'Save Tier Settings' operates independently of 'Push Payouts to Dashboard'.
+
 ## [8.14] - 2026-04-12
 ### Changed
 - Improved the visual presentation of the rat experience bars on the `RatsHelper` feed page by adding a distinct border to clearly indicate 100% capacity.

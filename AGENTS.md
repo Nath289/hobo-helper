@@ -22,6 +22,7 @@ Whenever you handle a user request, always review the `GAME_KNOWLEDGE.md` file t
 3. Create your new module file in `src/modules/page/` (e.g., `src/modules/page/JobHelper.js`). If the module needs to run on every single page, place it in `src/modules/global/`.
 4. Ensure the code inside is formatted as a valid constant variable allocation. For page modules, you **must include a `cmds` property** containing the string or array of strings matching the `cmd=` parameter of the URLs it applies to (e.g., `const JobHelper = { cmds: 'job', init: function() { ... } }` or `cmds: ['job', 'job2']`).
 5. **Settings Helper Integration:** Always add the ability to disable the new helper sub-features via the `SettingsHelper`. To do this, include a `settings` array directly inside the module object definition containing the toggle keys and labels (e.g., `const JobHelper = { cmds: 'job', settings: [{ key: 'JobHelper_EnableFeature', label: 'Enable Feature' }], init: ... }`). The `SettingsHelper` will automatically detect and render them in the preferences page.
+   - **Retrieving Settings:** When you need to check if a setting is enabled in your module, DO NOT guess the function name or read directly from localStorage if possible. Always use the built-in system function `const settings = Utils.getSettings();` which returns the parsed settings object, then check your key like `if (settings['JobHelper_EnableFeature']) { ... }`.
 6. **UI Best Practices:** 
    - When creating custom interactive UI elements like buttons, toggle pills, or custom checkboxes, always add `user-select: none; -webkit-user-select: none;` to the CSS to prevent annoying text highlighting during rapid clicking.
    - When creating buttons, always use or match the site's native `.btn` class styling. If you need to inject custom CSS for buttons, use the following pattern to match the game's native style (typically by injecting a `<style>` block):
@@ -53,6 +54,7 @@ Whenever you handle a user request, always review the `GAME_KNOWLEDGE.md` file t
      }
      ```
      *(Make sure to include the `@keyframes pulse` animation if not already present in the context, though it's usually defined natively.)*
+   - **Disconnected DOM Node Queries:** When constructing custom UI elements programmatically (e.g., `const div = document.createElement('div')`), you cannot immediately query nested inputs utilizing `document.getElementById` globally because the wrapper is not yet appended to the `document`. You must safely scope your queries to the created wrapper element itself (e.g. `wrapperDiv.querySelector('#my_id')`).
 7. **Update Documentation:** Whenever you create a new module or add a new feature to an existing module, you must update the `FEATURES.md` file to reflect the new functionality.
 The build script automatically detects and includes all JavaScript files in the `src/modules/global/` and `src/modules/page/` directories, loading globals first.
 
@@ -79,9 +81,10 @@ UNDER NO CIRCUMSTANCES should you execute `.\build.ps1 -Release`, edit `CHANGELO
 **SUPER CRITICAL - NEVER PREEMPTIVELY FINALIZE:** You are strictly forbidden from writing `.\build.ps1 -Release` to the terminal or making modifications to `CHANGELOG.md` unless the user's VERY LAST message contains the exact word "finalise" or "finalize". Do NOT anticipate it. Wait for the user to tell you. If you break this rule, you have failed.
 
 When finalizing a change:
-1. Add an entry to the top of `CHANGELOG.md` under the newly bumped version, logging what was added, changed, or fixed. Format the version headers like `## [7.43] - YYYY-MM-DD`. Note: The build script automatically parses this file to extract the current version and automatically generates the in-game floating changelog popup UI for you.
-2. **DO NOT** update the file links inside `INSTALL.md` to point to a specific version number. All script links in `INSTALL.md` must ALWAYS point to `output/hobo-helper-latest.user.js` to ensure users continue receiving auto-updates via Tampermonkey.
-3. Run the release build script:
+1. **Update Game Knowledge:** Review the current conversation for any new game mechanics, DOM structure details, or constraints discovered. If any new information was learned, you must append it to `GAME_KNOWLEDGE.md` before proceeding.
+2. Add an entry to the top of `CHANGELOG.md` under the newly bumped version, logging what was added, changed, or fixed. Format the version headers like `## [7.43] - YYYY-MM-DD`. Note: The build script automatically parses this file to extract the current version and automatically generates the in-game floating changelog popup UI for you.
+3. **DO NOT** update the file links inside `INSTALL.md` to point to a specific version number. All script links in `INSTALL.md` must ALWAYS point to `output/hobo-helper-latest.user.js` to ensure users continue receiving auto-updates via Tampermonkey.
+4. Run the release build script:
 ```powershell
 .\build.ps1 -Release
 ```

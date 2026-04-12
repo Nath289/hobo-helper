@@ -4,11 +4,19 @@ const GangHelper = {
         { key: 'GangHelper_EnableFeature', label: 'Enable Gang Helper' },
         { key: 'GangHelper_FormatMassMails', label: 'Format Mass Mails' }
     ],
-    init: function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const doParam = urlParams.get('do');
-        const wParam = urlParams.get('w');
-        
+    init: function () {
+        const queryParams = new URLSearchParams(window.location.search);
+        const doParam = queryParams.get('do');
+        const wParam = queryParams.get('w');
+
+        if (doParam === 'enter') {
+            this.handleGangEnter();
+            this.handleCurrentHappenings();
+        }
+        if (doParam === 'loans') {
+            this.initGangLoans();
+        }
+
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
 
         if (savedSettings['GangHelper_EnableFeature'] !== false) {
@@ -438,6 +446,10 @@ const GangHelper = {
         const table = document.querySelector('table[cellspacing="2"][cellpadding="3"]');
         if (!table) return;
 
+        this.renderTierSettingsPanel(table, false);
+    },
+
+    renderTierSettingsPanel: function(table, isCurrent) {
         const panel = document.createElement('div');
         panel.style.cssText = 'margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; background: #eee; font-family: Tahoma, sans-serif; text-align: left; max-width: 600px;';
 
@@ -452,27 +464,94 @@ const GangHelper = {
         let maxPayout = parseInt(localStorage.getItem('hw_helper_sf_max') || '5000000', 10);
 
         let panelHtml = `
-            <div style="font-weight: bold; margin-bottom: 10px; font-size: 14px;">Gangsters Sunday = Funday Payouts</div>
-            <div id="hh_sf_tiers_container" style="margin-bottom: 10px;">
+            <div style="font-weight: bold; margin-bottom: 10px; font-size: 14px;">Gangsters Sunday = Funday Payouts ${isCurrent ? '(Projected)' : ''}</div>
+            <div class="hh_sf_tiers_container" style="margin-bottom: 10px;">
             </div>
             <div style="margin-bottom: 10px;">
-                <button type="button" id="hh_sf_add_tier_btn" style="padding: 2px 6px; cursor: pointer; font-size: 11px;">+ Add Tier</button>
+                <button type="button" class="hh_sf_add_tier_btn" style="padding: 2px 6px; cursor: pointer; font-size: 11px;">+ Add Tier</button>
             </div>
             <label style="font-size: 11px; margin-right: 10px; font-weight: bold;">
                 Max Payout per Hobo ($): 
-                <input type="text" id="hh_sf_max" value="${maxPayout.toLocaleString()}" style="width: 100px; padding: 2px;">
+                <input type="text" class="hh_sf_max" value="${maxPayout.toLocaleString()}" style="width: 100px; padding: 2px;">
             </label>
-            <div style="margin-top: 15px;">
-                <button type="button" id="hh_sf_save_btn" style="padding: 4px 10px; cursor: pointer; font-weight: bold; background: #ddd; border: 1px solid #999; border-radius: 3px;">
-                    💾 Save Event Payouts
+            <div style="margin-top: 15px;" class="hh_sf_action_area">
+                <button type="button" class="hh_sf_save_tiers_btn" style="padding: 4px 10px; cursor: pointer; font-weight: bold; background: #ddd; border: 1px solid #999; border-radius: 3px;">
+                    💾 Save Tier Settings
                 </button>
-                <span id="hh_sf_status" style="font-size: 11px; font-weight: bold; color: green; margin-left: 10px;"></span>
+                <span class="hh_sf_tiers_status" style="font-size: 11px; font-weight: bold; color: green; margin-left: 10px;"></span>
+            </div>
+            <div style="margin-top: 10px;" class="hh_sf_payout_area">
+                ${isCurrent ? 
+                    `<div style="font-size: 13px; font-weight: bold; color: green;" class="hh_sf_projected_total">Projected Total: calculating...</div>` :
+                    `<button type="button" class="hh_sf_save_btn" style="padding: 4px 10px; cursor: pointer; font-weight: bold; background: #ddd; border: 1px solid #999; border-radius: 3px;">
+                        💰 Push Payouts to Dashboard
+                    </button>
+                    <span class="hh_sf_status" style="font-size: 11px; font-weight: bold; color: green; margin-left: 10px;"></span>`
+                }
             </div>
         `;
         panel.innerHTML = panelHtml;
         table.parentElement.insertBefore(panel, table);
 
-        const tiersContainer = document.getElementById('hh_sf_tiers_container');
+        const tiersContainer = panel.querySelector('.hh_sf_tiers_container');
+
+        const calculateTotalPayout = () => {
+            const currentMaxPayoutStr = panel.querySelector('.hh_sf_max').value;
+            const currentMaxPayout = parseInt(currentMaxPayoutStr.replace(/,/g, ''), 10) || 0;
+            let total = 0;
+
+            const payments = [];
+            const isScoresTable = isCurrent;
+
+            // Handle both table formats
+            let rows;
+            if (isScoresTable) {
+                 rows = table.querySelectorAll('tr'); // First row is header, but points will parse NaN so it's safe
+            } else {
+                 rows = table.querySelectorAll('tr[bgcolor="#F3F3F3"], tr[bgcolor="#DCDCDC"]');
+            }
+
+            Array.from(rows).forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length < 2) return;
+
+                const link = cells[0].querySelector('a');
+                if (!link) return;
+
+                const nameText = link.textContent.trim();
+                const urlParams = new URLSearchParams(link.href.split('?')[1]);
+                const hoboId = urlParams.get('ID');
+
+                const scoreText = cells[1].textContent.replace(/,/g, '').trim();
+                const score = parseInt(scoreText, 10);
+
+                if (hoboId && !isNaN(score) && score > 0) {
+                    let payout = 0;
+                    savedTiers.forEach(tier => {
+                        if (score > tier.min) {
+                            const ptsInTier = Math.min(score, tier.max) - tier.min;
+                            if (ptsInTier > 0) {
+                                payout += ptsInTier * tier.rate;
+                            }
+                        }
+                    });
+                    if (payout > currentMaxPayout) payout = currentMaxPayout;
+                    if (payout > 0) {
+                        total += payout;
+                        payments.push({
+                            id: hoboId,
+                            name: nameText,
+                            description: `Stats: Sunday=Funday (Score: ${score})`,
+                            amount: '$' + payout.toLocaleString(),
+                            timestamp: Date.now(),
+                            completed: false,
+                            cleared: false
+                        });
+                    }
+                }
+            });
+            return { total, payments };
+        };
 
         const renderTiers = () => {
             tiersContainer.innerHTML = '';
@@ -508,6 +587,11 @@ const GangHelper = {
                     saveAndRenderTiers();
                 });
             });
+
+            if (isCurrent) {
+                const { total } = calculateTotalPayout();
+                panel.querySelector('.hh_sf_projected_total').textContent = `Projected Total: $${total.toLocaleString()}`;
+            }
         };
 
         const updateTiersFromDOM = () => {
@@ -526,7 +610,7 @@ const GangHelper = {
             renderTiers();
         };
 
-        document.getElementById('hh_sf_add_tier_btn').addEventListener('click', () => {
+        panel.querySelector('.hh_sf_add_tier_btn').addEventListener('click', () => {
             updateTiersFromDOM();
             let nextMin = 0;
             if (savedTiers.length > 0) {
@@ -536,89 +620,113 @@ const GangHelper = {
             saveAndRenderTiers();
         });
 
-        document.getElementById('hh_sf_max').addEventListener('change', (e) => {
+        panel.querySelector('.hh_sf_max').addEventListener('change', (e) => {
             const val = parseInt(e.target.value.replace(/,/g, ''), 10) || 0;
             localStorage.setItem('hw_helper_sf_max', val.toString());
             e.target.value = val.toLocaleString();
+            if (isCurrent) {
+                const { total } = calculateTotalPayout();
+                panel.querySelector('.hh_sf_projected_total').textContent = `Projected Total: $${total.toLocaleString()}`;
+            }
         });
 
         renderTiers();
 
-        document.getElementById('hh_sf_save_btn').addEventListener('click', () => {
+        panel.querySelector('.hh_sf_save_tiers_btn').addEventListener('click', () => {
             updateTiersFromDOM();
             localStorage.setItem('hw_helper_sf_tiers', JSON.stringify(savedTiers));
-            const currentMaxPayoutStr = document.getElementById('hh_sf_max').value;
+            const currentMaxPayoutStr = panel.querySelector('.hh_sf_max').value;
             const currentMaxPayout = parseInt(currentMaxPayoutStr.replace(/,/g, ''), 10) || 0;
             localStorage.setItem('hw_helper_sf_max', currentMaxPayout.toString());
+            
+            const statusEl = panel.querySelector('.hh_sf_tiers_status');
+            statusEl.textContent = `✅ Saved settings!`;
+            setTimeout(() => { statusEl.textContent = ''; }, 3000);
 
-            const rows = table.querySelectorAll('tr[bgcolor="#F3F3F3"], tr[bgcolor="#DCDCDC"]');
-
-            const payments = [];
-
-            Array.from(rows).forEach(row => {
-                const cells = row.querySelectorAll('td');
-                if (cells.length < 2) return;
-                
-                const link = cells[0].querySelector('a');
-                if (!link) return;
-
-                const nameText = link.textContent.trim();
-                const urlParams = new URLSearchParams(link.href.split('?')[1]);
-                const hoboId = urlParams.get('ID');
-
-                const scoreText = cells[1].textContent.replace(/,/g, '').trim();
-                const score = parseInt(scoreText, 10);
-
-                if (hoboId && !isNaN(score) && score > 0) {
-                    let payout = 0;
-
-                    savedTiers.forEach(tier => {
-                        if (score > tier.min) {
-                            const ptsInTier = Math.min(score, tier.max) - tier.min;
-                            if (ptsInTier > 0) {
-                                payout += ptsInTier * tier.rate;
-                            }
-                        }
-                    });
-
-                    if (payout > currentMaxPayout) payout = currentMaxPayout;
-
-                    // Only generate payment if payout is greater than 0
-                    if (payout > 0) {
-                        payments.push({
-                            id: hoboId,
-                            name: nameText,
-                            description: `Stats: Sunday=Funday (Score: ${score})`,
-                            amount: '$' + payout.toLocaleString(),
-                            timestamp: Date.now(),
-                            completed: false,
-                            cleared: false
-                        });
-                    }
-                }
-            });
-
-            if (payments.length > 0) {
-                const topicName = "Gangsters Sunday = Funday Payouts";
-                const savedPosts = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
-                savedPosts[topicName] = {
-                    timestamp: Date.now(),
-                    topic: topicName,
-                    totalHobos: 0,
-                    hobos: [],
-                    paymentsToHobos: payments
-                };
-                localStorage.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
-                
-                const statusEl = document.getElementById('hh_sf_status');
-                statusEl.textContent = `✅ Saved ${payments.length} payouts to Gang Loans dashboard!`;
-                setTimeout(() => { statusEl.textContent = ''; }, 3000);
-            } else {
-                const statusEl = document.getElementById('hh_sf_status');
-                statusEl.style.color = 'red';
-                statusEl.textContent = `❌ No payouts to save (check if scores/tiers yield $0).`;
-                setTimeout(() => { statusEl.textContent = ''; statusEl.style.color = 'green'; }, 3000);
+            if (isCurrent) {
+                const { total } = calculateTotalPayout();
+                panel.querySelector('.hh_sf_projected_total').textContent = `Projected Total: $${total.toLocaleString()}`;
             }
         });
+
+        if (!isCurrent) {
+            panel.querySelector('.hh_sf_save_btn').addEventListener('click', () => {
+                updateTiersFromDOM();
+                localStorage.setItem('hw_helper_sf_tiers', JSON.stringify(savedTiers));
+                const currentMaxPayoutStr = panel.querySelector('.hh_sf_max').value;
+                const currentMaxPayout = parseInt(currentMaxPayoutStr.replace(/,/g, ''), 10) || 0;
+                localStorage.setItem('hw_helper_sf_max', currentMaxPayout.toString());
+
+                const { payments } = calculateTotalPayout();
+
+                if (payments.length > 0) {
+                    const topicName = "Gangsters Sunday = Funday Payouts";
+                    const savedPosts = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                    savedPosts[topicName] = {
+                        timestamp: Date.now(),
+                        topic: topicName,
+                        totalHobos: 0,
+                        hobos: [],
+                        paymentsToHobos: payments
+                    };
+                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
+
+                    const statusEl = panel.querySelector('.hh_sf_status');
+                    statusEl.textContent = `✅ Saved ${payments.length} payouts to Gang Loans dashboard!`;
+                    setTimeout(() => { statusEl.textContent = ''; }, 3000);
+                } else {
+                    const statusEl = panel.querySelector('.hh_sf_status');
+                    statusEl.style.color = 'red';
+                    statusEl.textContent = `❌ No payouts to save.`;
+                    setTimeout(() => { statusEl.textContent = ''; statusEl.style.color = 'green'; }, 3000);
+                }
+            });
+        }
+    },
+
+    handleGangEnter: function() {
+        const settings = Utils.getSettings();
+        if (settings['GangHelper_MailList']) {
+            const mailLink = document.querySelector('a[href="?sr=101&cmd=gang&w=mail"]');
+            if (mailLink) {
+                mailLink.click();
+                return true;
+            }
+        }
+        return false;
+    },
+
+    handleCurrentHappenings: function() {
+        const settings = Utils.getSettings();
+        if (settings['GangHelper_EventPayouts'] === false) return;
+
+        // Verify user is Gang Staff by checking for Manage Loans access
+        const isStaff = !!document.querySelector('a[href*="cmd=gang2&do=loans"]');
+        if (!isStaff) {
+            console.log("GangHelper (Current Happenings): User is not Gang Staff. Aborting projected payouts panel.");
+            return;
+        }
+
+        const uElements = Array.from(document.querySelectorAll('u'));
+        const statsHeader = uElements.find(u => u.textContent.trim() === 'Current Gang Happening Stats:');
+
+        if (!statsHeader) return;
+
+        let currentElement = statsHeader.closest('b') || statsHeader;
+        let scoresTable = null;
+        while (currentElement) {
+            if (currentElement.tagName === 'TABLE') {
+                const firstRow = currentElement.querySelector('tr');
+                if (firstRow && firstRow.textContent.includes('Hobo') && firstRow.textContent.includes('Score')) {
+                    scoresTable = currentElement;
+                    break;
+                }
+            }
+            currentElement = currentElement.nextElementSibling;
+        }
+
+        if (!scoresTable) return;
+
+        this.renderTierSettingsPanel(scoresTable, true);
     }
 };
