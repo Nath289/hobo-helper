@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.15.20260412.1501
+// @version      8.16.20260412.1511
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -765,7 +765,7 @@ const DisplayHelper = {
             return;
         }
 
-        const nextPrime = PrimesData.find(p => p > currentLevel);
+        const nextPrime = PrimesData.find(p => p >= currentLevel);
         if (!nextPrime) return;
 
         const nextLvlSpan = document.createElement('span');
@@ -6208,6 +6208,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.16",
+            date: "2026-04-12",
+            type: "Added",
+            notes: [
+                "Added a \"Show Next Interesting Level\" feature to `DisplayHelper` that automatically displays the next prime level next to your current level on the UI. This can be toggled via settings."
+            ]
+        },
+        {
             version: "8.15",
             date: "2026-04-12",
             type: "Added",
@@ -6241,15 +6249,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added formatting to the Mass Mails list on the Gang Read Mail page via `GangHelper`. Converts the text list into a readable table with colored read/unread status, numeric counts, and table row filtering options."
-            ]
-        },
-        {
-            version: "8.11",
-            date: "2026-04-09",
-            type: "Changed",
-            notes: [
-                "Replaced the flat payment rate for `Gangsters Sunday = Funday` payouts via `GangHelper` with a highly configurable multi-tier dynamic payout system. Users can now define minimum, maximum point brackets, and uniquely corresponding price-per-point tier rates.",
-                "Automatically formatted Max Payout and tier rate input values, as well as generated payout amounts, with comma separation and dollar signs for clean data presentation."
             ]
         }
     ]

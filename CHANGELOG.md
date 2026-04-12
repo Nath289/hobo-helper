@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.17] - 2026-04-12
+### Changed
+- Refined the "Show Next Interesting Level" feature to use your current level as the goal indicator if you are currently at a prime level, instead of skipping to the subsequent prime.
+
 ## [8.16] - 2026-04-12
 ### Added
 - Added a "Show Next Interesting Level" feature to `DisplayHelper` that automatically displays the next prime level next to your current level on the UI. This can be toggled via settings.

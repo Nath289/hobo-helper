@@ -110,7 +110,7 @@ const DisplayHelper = {
             return;
         }
 
-        const nextPrime = PrimesData.find(p => p > currentLevel);
+        const nextPrime = PrimesData.find(p => p >= currentLevel);
         if (!nextPrime) return;
 
         const nextLvlSpan = document.createElement('span');
