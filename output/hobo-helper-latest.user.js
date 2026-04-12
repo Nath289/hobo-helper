@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.18
+// @version      8.19
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -1101,7 +1101,8 @@ const FoodHelper = {
 const BankHelper = {
     cmds: 'bank',
     settings: [
-        { key: 'BankHelper_5FightersLunches', label: "5 Fighter's Lunches Goal" }
+        { key: 'BankHelper_5FightersLunches', label: "5 Fighter's Lunches Goal" },
+        { key: 'BankHelper_FixedGoals', label: "Fixed Bank Goals (+5k, +10k, +50k)" }
     ],
     getBankGoals: function() {
         try {
@@ -1131,13 +1132,32 @@ const BankHelper = {
 
         if (!withdrawInput || !nativeWithdrawBtn) return;
 
+        if (settings.BankHelper_FixedGoals !== false) {
+            const fixedAmounts = [5000, 10000, 50000];
+            fixedAmounts.reverse().forEach(amount => {
+                const btn = document.createElement('input');
+                btn.type = 'button';
+                btn.value = ` +$${amount.toLocaleString()} `;
+                btn.style.marginLeft = '10px';
+                btn.style.cursor = 'pointer';
+                btn.style.backgroundColor = '#e6f7ff';
+                btn.style.border = '1px solid #91d5ff';
+
+                btn.onclick = function() {
+                    let currentVal = parseInt(withdrawInput.value.replace(/,/g, '')) || 0;
+                    withdrawInput.value = (currentVal + amount).toString();
+                };
+
+                nativeWithdrawBtn.parentNode.insertBefore(btn, nativeWithdrawBtn.nextSibling);
+            });
+        }
+
         if (settings.BankHelper_5FightersLunches !== false) {
             const level = Utils.getHoboLevel();
             const lunchCost = Utils.getFightersLunchCost(level);
             const totalCost = lunchCost * 5;
 
             if (totalCost > 0) {
-                let clickCount = 0;
                 const lunchBtn = document.createElement('input');
                 lunchBtn.type = 'button';
                 lunchBtn.value = ` + Add 5 Fighter's Lunches ($${totalCost.toLocaleString()}) `;
@@ -1147,11 +1167,8 @@ const BankHelper = {
                 lunchBtn.style.border = '1px solid #91d5ff';
 
                 lunchBtn.onclick = function() {
-                    clickCount++;
                     let currentVal = parseInt(withdrawInput.value.replace(/,/g, '')) || 0;
                     withdrawInput.value = (currentVal + totalCost).toString();
-
-                    this.value = ` + Add 5 Fighter's Lunches ($${totalCost.toLocaleString()}) [Added ${clickCount * 5}] `;
                 };
 
                 nativeWithdrawBtn.parentNode.insertBefore(lunchBtn, nativeWithdrawBtn.nextSibling);
@@ -6208,6 +6225,15 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.19",
+            date: "2026-04-12",
+            type: "Added",
+            notes: [
+                "Added permanent Bank Goal shortcut buttons (+5k, +10k, +50k) to the Bank withdraw interface. These can be toggled via the new `BankHelper_FixedGoals` setting.",
+                "Removed the inline click-count tracking text on the 5 Fighter's Lunches Bank Goal button, as the main dollar amount input field clearly shows the total progress."
+            ]
+        },
+        {
             version: "8.18",
             date: "2026-04-12",
             type: "Changed",
@@ -6239,16 +6265,6 @@ const ChangelogData = {
                 "Added the projected Event Payout Manager to the current gang happenings page on Sundays, restricted to users with Gang Staff access.",
                 "Unified the Event Payout Manager UI between the last happenings and current happenings page, displaying projected totals autonomously.",
                 "Split the Event Payout Manager's save functionality so 'Save Tier Settings' operates independently of 'Push Payouts to Dashboard'."
-            ]
-        },
-        {
-            version: "8.14",
-            date: "2026-04-12",
-            type: "Changed",
-            notes: [
-                "Improved the visual presentation of the rat experience bars on the `RatsHelper` feed page by adding a distinct border to clearly indicate 100% capacity.",
-                "Compacted the \"Feed\" buttons on the `RatsHelper` feed page to reduce vertical footprint and improve readability.",
-                "Converted the main navigation text links on the primary Rat page (Active rat, Pet Cemetery, Pet Store, More Information, Rat Fund, News alerts) into a unified, button-based UI layout for a more tactile experience."
             ]
         }
     ]

@@ -1,7 +1,8 @@
 const BankHelper = {
     cmds: 'bank',
     settings: [
-        { key: 'BankHelper_5FightersLunches', label: "5 Fighter's Lunches Goal" }
+        { key: 'BankHelper_5FightersLunches', label: "5 Fighter's Lunches Goal" },
+        { key: 'BankHelper_FixedGoals', label: "Fixed Bank Goals (+5k, +10k, +50k)" }
     ],
     getBankGoals: function() {
         try {
@@ -31,13 +32,32 @@ const BankHelper = {
 
         if (!withdrawInput || !nativeWithdrawBtn) return;
 
+        if (settings.BankHelper_FixedGoals !== false) {
+            const fixedAmounts = [5000, 10000, 50000];
+            fixedAmounts.reverse().forEach(amount => {
+                const btn = document.createElement('input');
+                btn.type = 'button';
+                btn.value = ` +$${amount.toLocaleString()} `;
+                btn.style.marginLeft = '10px';
+                btn.style.cursor = 'pointer';
+                btn.style.backgroundColor = '#e6f7ff';
+                btn.style.border = '1px solid #91d5ff';
+
+                btn.onclick = function() {
+                    let currentVal = parseInt(withdrawInput.value.replace(/,/g, '')) || 0;
+                    withdrawInput.value = (currentVal + amount).toString();
+                };
+
+                nativeWithdrawBtn.parentNode.insertBefore(btn, nativeWithdrawBtn.nextSibling);
+            });
+        }
+
         if (settings.BankHelper_5FightersLunches !== false) {
             const level = Utils.getHoboLevel();
             const lunchCost = Utils.getFightersLunchCost(level);
             const totalCost = lunchCost * 5;
 
             if (totalCost > 0) {
-                let clickCount = 0;
                 const lunchBtn = document.createElement('input');
                 lunchBtn.type = 'button';
                 lunchBtn.value = ` + Add 5 Fighter's Lunches ($${totalCost.toLocaleString()}) `;
@@ -47,11 +67,8 @@ const BankHelper = {
                 lunchBtn.style.border = '1px solid #91d5ff';
 
                 lunchBtn.onclick = function() {
-                    clickCount++;
                     let currentVal = parseInt(withdrawInput.value.replace(/,/g, '')) || 0;
                     withdrawInput.value = (currentVal + totalCost).toString();
-
-                    this.value = ` + Add 5 Fighter's Lunches ($${totalCost.toLocaleString()}) [Added ${clickCount * 5}] `;
                 };
 
                 nativeWithdrawBtn.parentNode.insertBefore(lunchBtn, nativeWithdrawBtn.nextSibling);

@@ -2,9 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.19] - 2026-04-12
+### Added
+- Added permanent Bank Goal shortcut buttons (+5k, +10k, +50k) to the Bank withdraw interface. These can be toggled via the new `BankHelper_FixedGoals` setting.
+### Changed
+- Removed the inline click-count tracking text on the 5 Fighter's Lunches Bank Goal button, as the main dollar amount input field clearly shows the total progress.
+
 ## [8.18] - 2026-04-12
 ### Changed
-- Capped the "Show Next Interesting Level" feature by removing primes over 1000 from the local data registry, as higher values are no longer needed.
+- Capped the "Show Next Interesting Level" feature by removing primes over 1000 from the local data registry, as higher values are not needed.
 
 ## [8.17] - 2026-04-12
 ### Changed
