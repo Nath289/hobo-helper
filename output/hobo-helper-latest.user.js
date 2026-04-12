@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.16
+// @version      8.17
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -765,7 +765,7 @@ const DisplayHelper = {
             return;
         }
 
-        const nextPrime = PrimesData.find(p => p > currentLevel);
+        const nextPrime = PrimesData.find(p => p >= currentLevel);
         if (!nextPrime) return;
 
         const nextLvlSpan = document.createElement('span');
@@ -6208,6 +6208,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.17",
+            date: "2026-04-12",
+            type: "Changed",
+            notes: [
+                "Refined the \"Show Next Interesting Level\" feature to use your current level as the goal indicator if you are currently at a prime level, instead of skipping to the subsequent prime."
+            ]
+        },
+        {
             version: "8.16",
             date: "2026-04-12",
             type: "Added",
@@ -6241,14 +6249,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Improved the visual styling of the newly added \"Mass Mails\" filter buttons in `GangHelper`, converting them into polished, interactive pill-style buttons with active state indicators."
-            ]
-        },
-        {
-            version: "8.12",
-            date: "2026-04-10",
-            type: "Added",
-            notes: [
-                "Added formatting to the Mass Mails list on the Gang Read Mail page via `GangHelper`. Converts the text list into a readable table with colored read/unread status, numeric counts, and table row filtering options."
             ]
         }
     ]
