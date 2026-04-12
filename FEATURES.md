@@ -100,10 +100,14 @@ Helper designed to function on Gang-related pages (`cmd=gang`).
 - **Member List Columns**: Exposes a completely configurable column selection UI right above the "list members" table so users aren't locked into the rigid pre-set columns. Fully integrated with LocalStorage and safely adapts between User and Staff column restrictions.
 - **Format Mass Mails**: Formats the list of recipients on the mass mail reading page into an easy-to-read table with read/unread status filters and total counts.
 
-### 24. Drink Helpers
+### 24. Market Helper (`MarketHelper`)
+- Converts plain-text inline "Buy" links and Market navigation headers into large, interactive button elements for an improved desktop/mobile marketplace experience.
+- Cross-references the HoboWars wiki to dynamically inject highly-visible 40x40 item thumbnails natively into the Market listings for Weapons, Armor, and Cart Parts.
+
+### 25. Drink Helpers
 - [x] Automatically inject stat and effect data as tooltips to all drinks when hovering your mouse over them inside of your backpack and living area page.
 
-### 25. Food Helpers
+### 26. Food Helpers
 - [x] Food Menu Management: Add a "Mark as Crap" button to mark selected foods as "crap". Unchecked foods will be removed from the list.
 - [x] Add a "Select Crap" button to automatically select all foods you have marked as crap, making it easy to throw them away.
 - [x] Works both in the main Food page and within the Living Area Food tab.

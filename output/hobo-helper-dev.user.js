@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.18.20260412.1922
+// @version      8.19.20260412.2022
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -228,6 +228,8 @@ const DrinksData = {
                 ]
             }
         }
+
+const EquipmentData = {"Plastic Bag":"/images/items/gifs/Plastic-Bag.gif","Mithril Garbage Bin":"/images/items/gifs/Mithril-Garbage-Bin.gif","Garbage Bag":"/images/items/gifs/Garbage-Bag.gif","Plastic Spoon":"/images/items/gifs/Plastic-Spoon.gif","Power Glove":"/images/items/gifs/Power-Glove.gif","Respect Ring":"/images/items/gifs/Respect-Ring.gif","Large Stick":"/images/items/gifs/Large-Stick.gif","Ak-47":"/images/items/gifs/Ak-47.gif","Double Hobos":"/images/items/gifs/Double-Hobos.gif","Full-Body Trap":"/images/items/gifs/Full-Body-Trap.gif","Jester\u0027s Cap":"/images/items/gifs/Jesters-Cap.gif","Bling Necklace":"/images/items/gifs/Bling-Necklace.gif","Plastic Helmet":"/images/items/gifs/Plastic-Helmet.gif","Plastic Ring":"/images/items/gifs/Plastic-Ring.gif","Nippled Breastplate":"/images/items/gifs/Nippled-Breastplate.gif","Shot-Gun":"/images/items/gifs/Shot-Gun.gif","Adamantium Pasties":"/images/items/gifs/Adamantium-Pasties.gif","Ratarang":"/images/items/gifs/Ratarang.gif","Fight Club Ring":"/images/items/gifs/Fight-Club-Ring.gif","Paper Cup":"/images/items/gifs/Paper-Cup.gif","Gold Ring":"/images/items/gifs/Gold-Ring.gif","Filthy Socks":"/images/items/gifs/Filthy-Socks.gif","Gold Ring with Diamond":"/images/items/gifs/Gold-Ring-with-Diamond.gif","Iron Man Armor":"/images/items/gifs/Iron-Man-Armor.gif","Ring of Revelation":"/images/items/gifs/Ring-of-Revelation.gif","Potato Gun":"/images/items/gifs/Potato-Gun.gif","Symbiote":"/images/items/gifs/Symbiote.gif","Bloody Knife":"/images/items/gifs/Bloody-Knife.gif","Hi-Tech Tuxedo":"/images/items/gifs/Hi-Tech-Tuxedo.gif","Silver Ring":"/images/items/gifs/Silver-Ring.gif","Water Cannon":"/images/items/gifs/Water-Cannon.gif","Utility Belt":"/images/items/gifs/Utility-Belt.gif","Balltop Cane":"/images/items/gifs/Balltop-Cane.gif","Mystery Hat":"/images/items/gifs/Mystery-Hat.gif","Revolver":"/images/items/gifs/Revolver.gif","Singlet":"/images/items/gifs/Singlet.gif","Tron Armor":"/images/items/gifs/Tron-Armor.gif","Yellow Jumpsuit":"/images/items/gifs/Yellow-Jumpsuit.gif","Championship Belt":"/images/items/gifs/Championship-Belt.gif","Metal Ring":"/images/items/gifs/Metal-Ring.gif","Long Black Trenchcoat":"/images/items/gifs/Long-Black-Trenchcoat.gif","Diamond Tuxedo":"/images/items/gifs/Diamond-Tuxedo.gif","Metal Knife":"/images/items/gifs/Metal-Knife.gif","Hybrid Ring":"/images/items/gifs/Hybrid-Ring.gif","Diamond Shuriken":"/images/items/gifs/Diamond-Shuriken.gif","Can Cannon":"/images/items/gifs/Can-Cannon.gif","Gold Folding Chair":"/images/items/gifs/Gold-Folding-Chair.gif","Valyrian Steel Blade":"/images/items/gifs/Valyrian-Steel-Blade.gif","Bulletproof Shield":"/images/items/gifs/Bulletproof-Shield.gif","Gang Ring":"/images/items/gifs/Gang-Ring.gif","Blaster":"/images/items/gifs/Blaster.gif","Gold Pickaxe":"/images/items/gifs/Gold-Pickaxe.gif","Livestrong Ring":"/images/items/gifs/Livestrong-Ring.gif","Cricket Bat":"/images/items/gifs/Cricket-Bat.gif","Hazmat Suit":"/images/items/gifs/Hazmat-Suit.gif","Chest Armor":"/images/items/gifs/Chest-Armor.gif","Juggernaut Helmet":"/images/items/gifs/Juggernaut-Helmet.gif","Kobayashi Ring":"/images/items/gifs/Kobayashi-Ring.gif","Beggar Ring":"/images/items/gifs/Beggar-Ring.gif","Pipe":"/images/items/gifs/Pipe.gif","Dress":"/images/items/gifs/Dress.gif","MHGA Hat":"/images/items/gifs/MHGA-Hat.gif","Wooden Bat":"/images/items/gifs/Wooden-Bat.gif","Bin Lid":"/images/items/gifs/Bin-Lid.gif","Rodent Ring":"/images/items/gifs/Rodent-Ring.gif","Hackeysack":"/images/items/gifs/Hackeysack.gif","Paper Bag":"/images/items/gifs/Paper-Bag.gif","Engagement Ring":"/images/items/gifs/Engagement-Ring.gif","Sting":"/images/items/gifs/Sting.gif","Green Lantern Ring":"/images/items/gifs/Green-Lantern-Ring.gif","Slurpee Cup":"/images/items/gifs/Slurpee-Cup.gif","Police Baton":"/images/items/gifs/Police-Baton.gif","Coffee-Soaked Mop":"/images/items/gifs/Coffee-Soaked-Mop.gif","Metal Rod":"/images/items/gifs/Metal-Rod.gif","Ring Pop":"/images/items/gifs/Ring-Pop.gif","Phaser":"/images/items/gifs/Phaser.gif","Nights Watch Cloak":"/images/items/gifs/Nights-Watch-Cloak.gif","BFG":"/images/items/gifs/BFG.gif","Water Pistol":"/images/items/gifs/Water-Pistol.gif","Onion Ring":"/images/items/gifs/Onion-Ring.gif","Full-Body Armor":"/images/items/gifs/Full-Body-Armor.gif","Grizzly Armor":"/images/items/gifs/Grizzly-Armor.gif","Small Stick":"/images/items/gifs/Small-Stick.gif","Vest":"/images/items/gifs/Vest.gif","HK G11":"/images/items/gifs/HK-G11.gif","Lightsaber":"/images/items/gifs/Lightsaber.gif","Rocks":"/images/items/gifs/Rocks.gif","Crow-bar":"/images/items/gifs/Crow-bar.gif","Thor\u0027s Hammer":"/images/items/gifs/Thors-Hammer.gif","T-Shirt":"/images/items/gifs/T-Shirt.gif","Bad to the Bone T-Shirt":"/images/items/gifs/Bad-to-the-Bone-T-Shirt.gif","Metal Helmet":"/images/items/gifs/Metal-Helmet.gif","Beggar\u0027s Bludgeon":"/images/items/gifs/Beggars-Bludgeon.gif","Amish Hat":"/images/items/gifs/Amish-Hat.gif","BB-Gun":"/images/items/gifs/BB-Gun.gif","Chainsaw":"/images/items/gifs/Chainsaw.gif","Wolf Shirt":"/images/items/gifs/Wolf-Shirt.gif","Hacksaw":"/images/items/gifs/Hacksaw.gif","Hattori-Hanzo Sword":"/images/items/gifs/Hattori-Hanzo-Sword.gif","Mithril Grocery Bag":"/images/items/gifs/Mithril-Grocery-Bag.gif","MHGA Sign":"/images/items/gifs/MHGA-Sign.gif","Metal Shield":"/images/items/gifs/Metal-Shield.gif","Weaponized Bindle":"/images/items/gifs/Weaponized-Bindle.gif","Rubber Knife":"/images/items/gifs/Rubber-Knife.gif","Fat Suit":"/images/items/gifs/Fat-Suit.gif","Golden Rod":"/images/items/gifs/Golden-Rod.gif","Wonka Ring":"/images/items/gifs/Wonka-Ring.gif","Rags":"/images/items/gifs/Rags.gif","Ad Sign":"/images/items/gifs/Ad-Sign.gif","Jacket":"/images/items/gifs/Jacket.gif","Another Hobo":"/images/items/gifs/Another-Hobo.gif","Steel Bat":"/images/items/gifs/Steel-Bat.gif","Bloody Prisoner Uniform":"/images/items/gifs/Bloody-Prisoner-Uniform.gif","Gemini Ring":"/images/items/gifs/Gemini-Ring.gif","Eagle Shirt":"/images/items/gifs/Eagle-Shirt.gif","Mac-10":"/images/items/gifs/Mac-10.gif","Wooden Shield":"/images/items/gifs/Wooden-Shield.gif","Suicide Ring":"/images/items/gifs/Suicide-Ring.gif","Adamantium Claws":"/images/items/gifs/Adamantium-Claws.gif","Viking Helmet":"/images/items/gifs/Viking-Helmet.gif","Bulletproof Vest":"/images/items/gifs/Bulletproof-Vest.gif","Desert-Eagle":"/images/items/gifs/Desert-Eagle.gif","Excalibur":"/images/items/gifs/Excalibur.gif","M16":"/images/items/gifs/M16.gif","Riot Shield":"/images/items/gifs/Riot-Shield.gif"};
 
 /**
  * Feeding Rats
@@ -3860,6 +3862,170 @@ const LockoutHelper = {
     }
 };
 
+const MarketHelper = {
+    cmds: 'mart',
+    settings: [
+        { key: 'MarketHelper_Enable', label: 'Enable Market Helper' },
+        { key: 'MarketHelper_ButtonBuy', label: 'Convert "Buy" links to Buttons' },
+        { key: 'MarketHelper_FormatSwitchLinks', label: 'Convert "Switch to" links to Buttons' },
+        { key: 'MarketHelper_WeaponImages', label: 'Show Weapon Images' },
+        { key: 'MarketHelper_ArmorImages', label: 'Show Armor Images' },
+        { key: 'MarketHelper_CartPartImages', label: 'Show Cart Part Images' }
+    ],
+    init: function() {
+        const settings = Utils.getSettings();
+        if (settings.MarketHelper_Enable === false) return;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const action = urlParams.get('do');
+        const type = urlParams.get('type');
+
+        if (settings.MarketHelper_ButtonBuy !== false) {
+            const buyLinks = document.querySelectorAll('a[href*="&buy="]');
+            if (buyLinks.length > 0) {
+                this.ensureBtnStyle();
+
+                buyLinks.forEach(link => {
+                    const text = link.textContent.trim().toLowerCase();
+                    if (text === 'buy') {
+                        // Apply button styling
+                        link.classList.add('btn');
+
+                        // Remove surrounding brackets if they exist in the parent text node
+                        const parent = link.parentNode;
+                        if (parent && parent.tagName !== 'A') {
+                            parent.childNodes.forEach(node => {
+                                if (node.nodeType === Node.TEXT_NODE) {
+                                    node.textContent = node.textContent.replace(/\[/g, '').replace(/\]/g, '');
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        }
+
+        if (settings.MarketHelper_FormatSwitchLinks !== false) {
+            const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+                acceptNode: function(node) {
+                    if (node.textContent.includes('Switch to:')) {
+                        return NodeFilter.FILTER_ACCEPT;
+                    }
+                    return NodeFilter.FILTER_SKIP;
+                }
+            }, false);
+
+            const switchNode = walk.nextNode();
+            if (switchNode) {
+                this.ensureBtnStyle();
+
+                let current = switchNode.nextSibling;
+                while (current) {
+                    if (current.nodeType === Node.ELEMENT_NODE && current.tagName === 'A') {
+                        current.classList.add('btn');
+                    } else if (current.nodeType === Node.TEXT_NODE && current.textContent.trim() === ',') {
+                        current.textContent = ' ';
+                    } else if (current.nodeName === 'BR') {
+                        break; // Stop iteration when we hit the break after the links
+                    }
+                    current = current.nextSibling;
+                }
+            }
+        }
+
+        // Page specific routing
+        if (action === 'list') {
+            switch(type) {
+                case '4': // Weapons
+                    this.initItemsPage(settings.MarketHelper_WeaponImages, typeof EquipmentData !== 'undefined' ? EquipmentData : null);
+                    break;
+                case '5': // Armor
+                    this.initItemsPage(settings.MarketHelper_ArmorImages, typeof EquipmentData !== 'undefined' ? EquipmentData : null);
+                    break;
+                case '6': // Cart Parts
+                    this.initItemsPage(settings.MarketHelper_CartPartImages, '/images/xcart_parts.gif.pagespeed.ic.S-Xl1EpX3o.webp');
+                    break;
+                // Add more cases here
+            }
+        }
+    },
+
+    ensureBtnStyle: function() {
+        if (!document.getElementById('hobo-helper-btn-style')) {
+            const style = document.createElement('style');
+            style.id = 'hobo-helper-btn-style';
+            style.innerHTML = `
+                input[type="button"], input[type="submit"], .btn {
+                    -webkit-font-smoothing: antialiased;
+                    color: #636363;
+                    background: #ddd;
+                    font-weight: bold;
+                    text-decoration: none;
+                    padding: 5px 16px;
+                    border-radius: 3px;
+                    border: 0;
+                    cursor: pointer;
+                    margin: 3px 2px;
+                    -webkit-appearance: none;
+                    display: inline-block;
+                }
+                a.btn {
+                    line-height: 1em
+                }
+                input[type="button"]:hover,input[type="submit"]:hover,.btn:hover {
+                    color: #fff;
+                    background: #1b9eff;
+                    box-shadow: 0 0 0 rgba(0,0,0,.4);
+                    animation: pulse 1.5s infinite
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    },
+
+    initItemsPage: function(settingToggle, itemData) {
+        if (settingToggle !== false && itemData) {
+            const headerLink = document.querySelector('a[href*="order=item"]');
+            if (headerLink) {
+                const headerRow = headerLink.closest('tr');
+                const table = headerRow.closest('table');
+
+                if (table) {
+                    const imgHeader = document.createElement('td');
+                    imgHeader.width = "40";
+                    headerRow.insertBefore(imgHeader, headerRow.firstElementChild);
+
+                    const rows = table.querySelectorAll('tr');
+                    for (let i = 1; i < rows.length; i++) {
+                        const row = rows[i];
+                        const firstTd = row.firstElementChild;
+                        if (!firstTd) continue;
+
+                        const nameMatch = firstTd.textContent.trim().match(/^([^(]+)/);
+                        const newTd = document.createElement('td');
+                        newTd.align = 'center';
+                        newTd.style.verticalAlign = 'middle';
+
+                        if (nameMatch) {
+                            const itemName = nameMatch[1].trim();
+                            const imgUrl = typeof itemData === 'string' ? itemData : itemData[itemName];
+                            if (imgUrl) {
+                                const img = document.createElement('img');
+                                img.src = imgUrl;
+                                img.style.maxWidth = '40px';
+                                img.style.maxHeight = '40px';
+                                newTd.appendChild(img);
+                            }
+                        }
+
+                        row.insertBefore(newTd, firstTd);
+                    }
+                }
+            }
+        }
+    }
+};
+
 const MessageBoardHelper = {
     cmds: 'gathering',
     settings: [
@@ -6225,11 +6391,20 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.19",
+            date: "2026-04-12",
+            type: "Added",
+            notes: [
+                "Added permanent Bank Goal shortcut buttons (+5k, +10k, +50k) to the Bank withdraw interface. These can be toggled via the new `BankHelper_FixedGoals` setting.",
+                "Removed the inline click-count tracking text on the 5 Fighter's Lunches Bank Goal button, as the main dollar amount input field clearly shows the total progress."
+            ]
+        },
+        {
             version: "8.18",
             date: "2026-04-12",
             type: "Changed",
             notes: [
-                "Capped the \"Show Next Interesting Level\" feature by removing primes over 1000 from the local data registry, as higher values are no longer needed."
+                "Capped the \"Show Next Interesting Level\" feature by removing primes over 1000 from the local data registry, as higher values are not needed."
             ]
         },
         {
@@ -6257,21 +6432,12 @@ const ChangelogData = {
                 "Unified the Event Payout Manager UI between the last happenings and current happenings page, displaying projected totals autonomously.",
                 "Split the Event Payout Manager's save functionality so 'Save Tier Settings' operates independently of 'Push Payouts to Dashboard'."
             ]
-        },
-        {
-            version: "8.14",
-            date: "2026-04-12",
-            type: "Changed",
-            notes: [
-                "Improved the visual presentation of the rat experience bars on the `RatsHelper` feed page by adding a distinct border to clearly indicate 100% capacity.",
-                "Compacted the \"Feed\" buttons on the `RatsHelper` feed page to reduce vertical footprint and improve readability.",
-                "Converted the main navigation text links on the primary Rat page (Active rat, Pet Cemetery, Pet Store, More Information, Rat Fund, News alerts) into a unified, button-based UI layout for a more tactile experience."
-            ]
         }
     ]
 };
     const DataModules = {
         DrinksData,
+        EquipmentData,
         FoodData,
         PrimesData,
         ChangelogData
@@ -6296,6 +6462,7 @@ const ChangelogData = {
         LiquorStoreHelper,
         LivingAreaHelper,
         LockoutHelper,
+        MarketHelper,
         MessageBoardHelper,
         MixerHelper,
         NorthernFenceHelper,

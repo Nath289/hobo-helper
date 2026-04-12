@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.20] - 2026-04-12
+### Added
+- Added `MarketHelper` for the marketplace, enabling new customized features inside the SuperGlobalHyperMart.
+- Added visual injections for the marketplace table to dynamically embed 40x40 item thumbnails alongside their text entry. Automatically fetches visuals for Weapons, Armor, and Cart Parts.
+- Upgraded the Market navigation UI: "Switch to:" destination links (Points, Tokens, DPS, Weapons, Armor, Cart Parts) and individual row `[Buy]` text links have been stripped of brackets/commas and stylized as native platform buttons instead of small links for improved clicking experience.
+
 ## [8.19] - 2026-04-12
 ### Added
 - Added permanent Bank Goal shortcut buttons (+5k, +10k, +50k) to the Bank withdraw interface. These can be toggled via the new `BankHelper_FixedGoals` setting.
