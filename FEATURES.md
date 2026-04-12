@@ -71,6 +71,7 @@ Helper functionality activated during the game's 12-hour resets (lockout periods
 A core helper that runs display improvement related functions.
 - **Enable Improved Avatars**: Custom styled shapes and online indicators for avatars.
 - **Enable the Fake Qwee**: Places a "The Fake" prefix label in front of all player links referencing ID 2924510.
+- **Show Next Interesting Level**: Automatically displays the next prime level next to your current level on the UI.
 
 ### 18. Gang Loans Helper (`GangLoansHelper.js`)
 A gang management tool that creates a specialized dashboard within the Gang Loans page (`cmd=gang2&do=loans`).

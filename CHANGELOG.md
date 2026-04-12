@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.16] - 2026-04-12
+### Added
+- Added a "Show Next Interesting Level" feature to `DisplayHelper` that automatically displays the next prime level next to your current level on the UI. This can be toggled via settings.
+
 ## [8.15] - 2026-04-12
 ### Added
 - Added the projected Event Payout Manager to the current gang happenings page on Sundays, restricted to users with Gang Staff access.

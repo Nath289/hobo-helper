@@ -6,7 +6,8 @@ const DisplayHelper = {
         { key: 'DisplayHelper_WidenPage', label: 'Widen Content Area' },
         { key: 'DisplayHelper_PageWidth', label: 'Page Width (px)', type: 'number', defaultValue: 660, parent: 'DisplayHelper_WidenPage' },
         { key: 'DisplayHelper_AwakeNotify', label: 'Awake Full Notification (Desktop)', defaultValue: false },
-        { key: 'DisplayHelper_AwakeNotifyInactive', label: 'Notify Only if Inactive (mins)', type: 'number', defaultValue: 30, parent: 'DisplayHelper_AwakeNotify' }
+        { key: 'DisplayHelper_AwakeNotifyInactive', label: 'Notify Only if Inactive (mins)', type: 'number', defaultValue: 30, parent: 'DisplayHelper_AwakeNotify' },
+        { key: 'DisplayHelper_InterestingLevel', label: 'Show Next Interesting Level', defaultValue: true }
     ],
     init: function() {
         const settings = Utils.getSettings();
@@ -28,6 +29,9 @@ const DisplayHelper = {
         if (settings['DisplayHelper_AwakeNotify'] === true) {
             const waitMins = parseInt(settings['DisplayHelper_AwakeNotifyInactive'] || 30, 10);
             this.initAwakeNotification(waitMins);
+        }
+        if (settings['DisplayHelper_InterestingLevel'] !== false) {
+            this.initInterestingLevel();
         }
     },
     initWidenPage: function(width) {
@@ -94,6 +98,29 @@ const DisplayHelper = {
             }
         });
     },
+    initInterestingLevel: function() {
+        const levelSpan = document.getElementById('statValueLvl');
+        if (!levelSpan) return;
+
+        const currentLevel = parseInt(levelSpan.textContent, 10);
+        if (isNaN(currentLevel)) return;
+
+        if (typeof PrimesData === 'undefined') {
+            console.log("DisplayHelper: PrimesData is not defined.");
+            return;
+        }
+
+        const nextPrime = PrimesData.find(p => p > currentLevel);
+        if (!nextPrime) return;
+
+        const nextLvlSpan = document.createElement('span');
+        nextLvlSpan.style.cssText = 'font-size: 11px; color: #555; margin-left: 4px; font-style: italic; white-space: nowrap;';
+        nextLvlSpan.title = 'The next interesting level';
+        nextLvlSpan.innerHTML = `(<strong style="color: #333;">${nextPrime}</strong>)`;
+
+        levelSpan.appendChild(nextLvlSpan);
+    },
+
     initImprovedAvatars: function() {
         const style = document.createElement('style');
         style.innerHTML = `
