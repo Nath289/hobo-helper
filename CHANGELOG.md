@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.21] - 2026-04-12
+### Added
+- Added `ActiveListHelper` module for the Recently Active players list page (`cmd=active`).
+- Added an interactive "Alive / Dead" filtering button system to the Active List page, allowing users to dynamically hide dead players or show everyone. The selected filter state is automatically saved securely via local storage to persist between page reloads.
+
 ## [8.20] - 2026-04-12
 ### Added
 - Added `MarketHelper` for the marketplace, enabling new customized features inside the SuperGlobalHyperMart.

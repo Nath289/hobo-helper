@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.19.20260412.2022
+// @version      8.20.20260412.2306
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -1096,6 +1096,141 @@ const FoodHelper = {
         if (btn) {
             btn.value = `✅ Updated Crap!`;
             setTimeout(() => { btn.value = 'Mark as Crap'; }, 3000);
+        }
+    }
+};
+
+const ActiveListHelper = {
+    cmds: 'active',
+    settings: [
+        { key: 'ActiveListHelper_Enable', label: 'Enable Active List Helper' },
+        { key: 'ActiveListHelper_Filter', label: 'Enable Alive/Dead Filters' }
+    ],
+    init: function() {
+        const settings = Utils.getSettings();
+        if (settings.ActiveListHelper_Enable === false) return;
+
+        if (settings.ActiveListHelper_Filter !== false) {
+            this.initFilters();
+        }
+    },
+
+    initFilters: function() {
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        // Ensure button styling
+        if (!document.getElementById('hobo-helper-btn-style')) {
+            const style = document.createElement('style');
+            style.id = 'hobo-helper-btn-style';
+            style.innerHTML = `
+                input[type="button"], input[type="submit"], .btn {
+                    -webkit-font-smoothing: antialiased;
+                    color: #636363;
+                    background: #ddd;
+                    font-weight: bold;
+                    text-decoration: none;
+                    padding: 5px 16px;
+                    border-radius: 3px;
+                    border: 0;
+                    cursor: pointer;
+                    margin: 3px 2px;
+                    -webkit-appearance: none;
+                    display: inline-block;
+                    user-select: none;
+                    -webkit-user-select: none;
+                }
+                a.btn {
+                    line-height: 1em
+                }
+                input[type="button"]:hover,input[type="submit"]:hover,.btn:hover, .btn.active {
+                    color: #fff;
+                    background: #1b9eff;
+                    box-shadow: 0 0 0 rgba(0,0,0,.4);
+                }
+                .hobo-helper-hidden {
+                    display: none !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Parse and group players
+        let currentWrapper = null;
+        let isAlive = false;
+        let isDead = false;
+        const nodes = Array.from(contentArea.childNodes);
+
+        nodes.forEach(node => {
+            // Check if node is the start of a player line (date pattern e.g., "4/12 11:01.27 PM: ")
+            if (node.nodeType === Node.TEXT_NODE && /^\s*\d{1,2}\/\d{1,2} \d{1,2}:\d{2}\.\d{2} [AP]M:/.test(node.textContent)) {
+                currentWrapper = document.createElement('span');
+                currentWrapper.className = 'hobo-helper-player-row';
+                // Span is used instead of div to avoid unexpected block spacing since they end with BR natively
+                contentArea.insertBefore(currentWrapper, node);
+                currentWrapper.appendChild(node);
+                isAlive = false;
+                isDead = false;
+            } else if (currentWrapper) {
+                // Include node in the wrapper
+                currentWrapper.appendChild(node);
+                
+                if (node.textContent && node.textContent.includes('Alive')) isAlive = true;
+                if (node.textContent && node.textContent.includes('Dead')) isDead = true;
+
+                // Stop at the first line break which ends the player line
+                if (node.nodeName === 'BR') {
+                    if (isAlive) currentWrapper.classList.add('hobo-helper-alive');
+                    if (isDead) currentWrapper.classList.add('hobo-helper-dead');
+                    currentWrapper = null;
+                }
+            }
+        });
+
+        // Retrieve saved filter
+        const savedFilter = localStorage.getItem('ActiveListHelper_CurrentFilter') || 'all';
+
+        // Create UI Filter Buttons
+        const filterContainer = document.createElement('div');
+        filterContainer.style.marginBottom = '15px';
+        filterContainer.style.textAlign = 'center';
+        filterContainer.innerHTML = `
+            <strong style="margin-right:10px;">Filter:</strong>
+            <button class="btn ${savedFilter === 'all' ? 'active' : ''}" data-filter="all">All</button>
+            <button class="btn ${savedFilter === 'alive' ? 'active' : ''}" data-filter="alive">Alive</button>
+            <button class="btn ${savedFilter === 'dead' ? 'active' : ''}" data-filter="dead">Dead</button>
+        `;
+
+        contentArea.insertBefore(filterContainer, contentArea.firstChild);
+
+        // Bind filter events
+        const buttons = filterContainer.querySelectorAll('.btn');
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update active state
+                buttons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const filter = btn.getAttribute('data-filter');
+                localStorage.setItem('ActiveListHelper_CurrentFilter', filter);
+                
+                const allRows = contentArea.querySelectorAll('.hobo-helper-player-row');
+
+                allRows.forEach(row => {
+                    row.classList.remove('hobo-helper-hidden');
+                    if (filter === 'alive' && !row.classList.contains('hobo-helper-alive')) {
+                        row.classList.add('hobo-helper-hidden');
+                    } else if (filter === 'dead' && !row.classList.contains('hobo-helper-dead')) {
+                        row.classList.add('hobo-helper-hidden');
+                    }
+                });
+            });
+        });
+
+        // Apply saved filter on load if it's not 'all'
+        if (savedFilter !== 'all') {
+            const activeBtn = filterContainer.querySelector(`.btn[data-filter="${savedFilter}"]`);
+            if (activeBtn) activeBtn.click();
         }
     }
 };
@@ -6391,6 +6526,16 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.20",
+            date: "2026-04-12",
+            type: "Added",
+            notes: [
+                "Added `MarketHelper` for the marketplace, enabling new customized features inside the SuperGlobalHyperMart.",
+                "Added visual injections for the marketplace table to dynamically embed 40x40 item thumbnails alongside their text entry. Automatically fetches visuals for Weapons, Armor, and Cart Parts.",
+                "Upgraded the Market navigation UI: \"Switch to:\" destination links (Points, Tokens, DPS, Weapons, Armor, Cart Parts) and individual row `[Buy]` text links have been stripped of brackets/commas and stylized as native platform buttons instead of small links for improved clicking experience."
+            ]
+        },
+        {
             version: "8.19",
             date: "2026-04-12",
             type: "Added",
@@ -6422,16 +6567,6 @@ const ChangelogData = {
             notes: [
                 "Added a \"Show Next Interesting Level\" feature to `DisplayHelper` that automatically displays the next prime level next to your current level on the UI. This can be toggled via settings."
             ]
-        },
-        {
-            version: "8.15",
-            date: "2026-04-12",
-            type: "Added",
-            notes: [
-                "Added the projected Event Payout Manager to the current gang happenings page on Sundays, restricted to users with Gang Staff access.",
-                "Unified the Event Payout Manager UI between the last happenings and current happenings page, displaying projected totals autonomously.",
-                "Split the Event Payout Manager's save functionality so 'Save Tier Settings' operates independently of 'Push Payouts to Dashboard'."
-            ]
         }
     ]
 };
@@ -6451,6 +6586,7 @@ const ChangelogData = {
     };
 
     const PageModules = {
+        ActiveListHelper,
         BankHelper,
         BernardsBasementHelper,
         CanDepoHelper,

@@ -112,5 +112,9 @@ Helper designed to function on Gang-related pages (`cmd=gang`).
 - [x] Add a "Select Crap" button to automatically select all foods you have marked as crap, making it easy to throw them away.
 - [x] Works both in the main Food page and within the Living Area Food tab.
 
+### 27. Active List Helper (`ActiveListHelper.js`)
+Helper functionality for the Active List page (`cmd=active`).
+- Foundation prepared for future features.
+
 ---
 *Note: We are constantly updating and tweaking these modules. If you encounter any bugs, please report them!*
