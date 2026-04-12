@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.18] - 2026-04-12
+### Changed
+- Capped the "Show Next Interesting Level" feature by removing primes over 1000 from the local data registry, as higher values are no longer needed.
+
 ## [8.17] - 2026-04-12
 ### Changed
 - Refined the "Show Next Interesting Level" feature to use your current level as the goal indicator if you are currently at a prime level, instead of skipping to the subsequent prime.
