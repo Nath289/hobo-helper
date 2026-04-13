@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.26] - 2026-04-14
+### Added
+- Added multi-column interactive client-side sorting for the Hitlist table (`HitlistHelper`), replacing the slow native server-refresh sorting links. Sorting configurations securely persist via browser local storage.
+- Implemented a combat window highlighter within the `HitlistHelper` that automatically shades rows an alerting light red if an opponent's level drastically falls outside the player's immediate attack limits (±200 combat levels).
+### Changed
+- Updated `AGENTS.md` instructions specifically to mandate the continued usage and expansion of centralized internal game value retrieval methods located within the `Utils` class instead of continuously duplicating generic operations within separate modules.
+
 ## [8.25] - 2026-04-13
 ### Changed
 - Updated the "Next Interesting Level" display to indicate when your current level is a prime number.

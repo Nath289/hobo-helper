@@ -23,7 +23,8 @@ Whenever you handle a user request, always review the `GAME_KNOWLEDGE.md` file t
 4. Ensure the code inside is formatted as a valid constant variable allocation. For page modules, you **must include a `cmds` property** containing the string or array of strings matching the `cmd=` parameter of the URLs it applies to (e.g., `const JobHelper = { cmds: 'job', init: function() { ... } }` or `cmds: ['job', 'job2']`).
 5. **Settings Helper Integration:** Always add the ability to disable the new helper sub-features via the `SettingsHelper`. To do this, include a `settings` array directly inside the module object definition containing the toggle keys and labels (e.g., `const JobHelper = { cmds: 'job', settings: [{ key: 'JobHelper_EnableFeature', label: 'Enable Feature' }], init: ... }`). The `SettingsHelper` will automatically detect and render them in the preferences page.
    - **Retrieving Settings:** When you need to check if a setting is enabled in your module, DO NOT guess the function name or read directly from localStorage if possible. Always use the built-in system function `const settings = Utils.getSettings();` which returns the parsed settings object, then check your key like `if (settings['JobHelper_EnableFeature']) { ... }`.
-6. **UI Best Practices:** 
+6. **Utilizing `src/utils.js`:** Always use and expand upon the core functions located within the `Utils` class where possible rather than duplicating common logic across modules. For example, grabbing standard user values (`Utils.getHoboLevel()`, `Utils.getHoboAgeInDays()`, etc.) or formatting standard data displays. If an operation acts on standard game mechanics spanning multiple generic pages, abstract it into `src/utils.js`.
+7. **UI Best Practices:** 
    - When creating custom interactive UI elements like buttons, toggle pills, or custom checkboxes, always add `user-select: none; -webkit-user-select: none;` to the CSS to prevent annoying text highlighting during rapid clicking.
    - When creating buttons, always use or match the site's native `.btn` class styling. If you need to inject custom CSS for buttons, use the following pattern to match the game's native style (typically by injecting a `<style>` block):
      ```css
@@ -55,7 +56,7 @@ Whenever you handle a user request, always review the `GAME_KNOWLEDGE.md` file t
      ```
      *(Make sure to include the `@keyframes pulse` animation if not already present in the context, though it's usually defined natively.)*
    - **Disconnected DOM Node Queries:** When constructing custom UI elements programmatically (e.g., `const div = document.createElement('div')`), you cannot immediately query nested inputs utilizing `document.getElementById` globally because the wrapper is not yet appended to the `document`. You must safely scope your queries to the created wrapper element itself (e.g. `wrapperDiv.querySelector('#my_id')`).
-7. **Update Documentation:** Whenever you create a new module or add a new feature to an existing module, you must update the `FEATURES.md` file to reflect the new functionality.
+8. **Update Documentation:** Whenever you create a new module or add a new feature to an existing module, you must update the `FEATURES.md` file to reflect the new functionality.
 The build script automatically detects and includes all JavaScript files in the `src/modules/global/` and `src/modules/page/` directories, loading globals first.
 
 ## Supported Layouts
