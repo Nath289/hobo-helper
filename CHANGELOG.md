@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.25] - 2026-04-13
+### Changed
+- Updated the "Next Interesting Level" display to indicate when your current level is a prime number.
+- Optimised the underlying primes data set to only track primes up to level 1000.
+
 ## [8.24] - 2026-04-13
 ### Added
 - Added functionality to explicitly display the calculated Total Payout amount directly within the "Push Payouts to Dashboard" panel on completed 'Gangsters Sunday = Funday' event summary pages.

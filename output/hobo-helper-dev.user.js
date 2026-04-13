@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.23.20260413.1256
+// @version      8.24.20260413.2208
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -771,9 +771,9 @@ const DisplayHelper = {
         if (!nextPrime) return;
 
         const nextLvlSpan = document.createElement('span');
-        nextLvlSpan.style.cssText = 'font-size: 11px; color: #555; margin-left: 4px; font-style: italic; white-space: nowrap;';
+        nextLvlSpan.style.cssText = 'font-size: 11px; margin-left: 4px; font-style: italic; white-space: nowrap;';
         nextLvlSpan.title = 'The next interesting level';
-        nextLvlSpan.innerHTML = `(<strong style="color: #333;">${nextPrime}</strong>)`;
+        nextLvlSpan.innerHTML = `(<strong>${nextPrime}</strong>)`;
 
         levelSpan.appendChild(nextLvlSpan);
     },
@@ -6557,6 +6557,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.24",
+            date: "2026-04-13",
+            type: "Added",
+            notes: [
+                "Added functionality to explicitly display the calculated Total Payout amount directly within the \"Push Payouts to Dashboard\" panel on completed 'Gangsters Sunday = Funday' event summary pages."
+            ]
+        },
+        {
             version: "8.23",
             date: "2026-04-13",
             type: "Fixed",
@@ -6589,15 +6597,6 @@ const ChangelogData = {
                 "Added `MarketHelper` for the marketplace, enabling new customized features inside the SuperGlobalHyperMart.",
                 "Added visual injections for the marketplace table to dynamically embed 40x40 item thumbnails alongside their text entry. Automatically fetches visuals for Weapons, Armor, and Cart Parts.",
                 "Upgraded the Market navigation UI: \"Switch to:\" destination links (Points, Tokens, DPS, Weapons, Armor, Cart Parts) and individual row `[Buy]` text links have been stripped of brackets/commas and stylized as native platform buttons instead of small links for improved clicking experience."
-            ]
-        },
-        {
-            version: "8.19",
-            date: "2026-04-12",
-            type: "Added",
-            notes: [
-                "Added permanent Bank Goal shortcut buttons (+5k, +10k, +50k) to the Bank withdraw interface. These can be toggled via the new `BankHelper_FixedGoals` setting.",
-                "Removed the inline click-count tracking text on the 5 Fighter's Lunches Bank Goal button, as the main dollar amount input field clearly shows the total progress."
             ]
         }
     ]

@@ -114,9 +114,9 @@ const DisplayHelper = {
         if (!nextPrime) return;
 
         const nextLvlSpan = document.createElement('span');
-        nextLvlSpan.style.cssText = 'font-size: 11px; color: #555; margin-left: 4px; font-style: italic; white-space: nowrap;';
+        nextLvlSpan.style.cssText = 'font-size: 11px; margin-left: 4px; font-style: italic; white-space: nowrap;';
         nextLvlSpan.title = 'The next interesting level';
-        nextLvlSpan.innerHTML = `(<strong style="color: #333;">${nextPrime}</strong>)`;
+        nextLvlSpan.innerHTML = `(<strong>${nextPrime}</strong>)`;
 
         levelSpan.appendChild(nextLvlSpan);
     },

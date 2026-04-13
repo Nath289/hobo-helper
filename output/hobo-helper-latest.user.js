@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.24
+// @version      8.25
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -771,9 +771,9 @@ const DisplayHelper = {
         if (!nextPrime) return;
 
         const nextLvlSpan = document.createElement('span');
-        nextLvlSpan.style.cssText = 'font-size: 11px; color: #555; margin-left: 4px; font-style: italic; white-space: nowrap;';
+        nextLvlSpan.style.cssText = 'font-size: 11px; margin-left: 4px; font-style: italic; white-space: nowrap;';
         nextLvlSpan.title = 'The next interesting level';
-        nextLvlSpan.innerHTML = `(<strong style="color: #333;">${nextPrime}</strong>)`;
+        nextLvlSpan.innerHTML = `(<strong>${nextPrime}</strong>)`;
 
         levelSpan.appendChild(nextLvlSpan);
     },
@@ -6557,6 +6557,15 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.25",
+            date: "2026-04-13",
+            type: "Changed",
+            notes: [
+                "Updated the \"Next Interesting Level\" display to indicate when your current level is a prime number.",
+                "Optimised the underlying primes data set to only track primes up to level 1000."
+            ]
+        },
+        {
             version: "8.24",
             date: "2026-04-13",
             type: "Added",
@@ -6587,16 +6596,6 @@ const ChangelogData = {
             notes: [
                 "Added `ActiveListHelper` module for the Recently Active players list page (`cmd=active`).",
                 "Added an interactive \"Alive / Dead\" filtering button system to the Active List page, allowing users to dynamically hide dead players or show everyone. The selected filter state is automatically saved securely via local storage to persist between page reloads."
-            ]
-        },
-        {
-            version: "8.20",
-            date: "2026-04-12",
-            type: "Added",
-            notes: [
-                "Added `MarketHelper` for the marketplace, enabling new customized features inside the SuperGlobalHyperMart.",
-                "Added visual injections for the marketplace table to dynamically embed 40x40 item thumbnails alongside their text entry. Automatically fetches visuals for Weapons, Armor, and Cart Parts.",
-                "Upgraded the Market navigation UI: \"Switch to:\" destination links (Points, Tokens, DPS, Weapons, Armor, Cart Parts) and individual row `[Buy]` text links have been stripped of brackets/commas and stylized as native platform buttons instead of small links for improved clicking experience."
             ]
         }
     ]
