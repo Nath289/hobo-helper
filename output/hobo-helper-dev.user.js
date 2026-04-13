@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.21.20260412.2325
+// @version      8.23.20260413.1256
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -1610,9 +1610,6 @@ const GangHelper = {
             this.handleGangEnter();
             this.handleCurrentHappenings();
         }
-        if (doParam === 'loans') {
-            this.initGangLoans();
-        }
 
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
 
@@ -2078,12 +2075,14 @@ const GangHelper = {
                 <span class="hh_sf_tiers_status" style="font-size: 11px; font-weight: bold; color: green; margin-left: 10px;"></span>
             </div>
             <div style="margin-top: 10px;" class="hh_sf_payout_area">
-                ${isCurrent ? 
-                    `<div style="font-size: 13px; font-weight: bold; color: green;" class="hh_sf_projected_total">Projected Total: calculating...</div>` :
+                <div style="font-size: 13px; font-weight: bold; color: green; margin-bottom: 5px;" class="hh_sf_projected_total">
+                    ${isCurrent ? 'Projected Total' : 'Final Total'}: calculating...
+                </div>
+                ${!isCurrent ? 
                     `<button type="button" class="hh_sf_save_btn" style="padding: 4px 10px; cursor: pointer; font-weight: bold; background: #ddd; border: 1px solid #999; border-radius: 3px;">
                         💰 Push Payouts to Dashboard
                     </button>
-                    <span class="hh_sf_status" style="font-size: 11px; font-weight: bold; color: green; margin-left: 10px;"></span>`
+                    <span class="hh_sf_status" style="font-size: 11px; font-weight: bold; color: green; margin-left: 10px;"></span>` : ''
                 }
             </div>
         `;
@@ -2138,7 +2137,7 @@ const GangHelper = {
                         payments.push({
                             id: hoboId,
                             name: nameText,
-                            description: `Stats: Sunday=Funday (Score: ${score})`,
+                            description: `Sunday Funday(Score: ${score})`,
                             amount: '$' + payout.toLocaleString(),
                             timestamp: Date.now(),
                             completed: false,
@@ -2148,6 +2147,11 @@ const GangHelper = {
                 }
             });
             return { total, payments };
+        };
+
+        const updateProjectedTotal = () => {
+            const { total } = calculateTotalPayout();
+            panel.querySelector('.hh_sf_projected_total').textContent = `${isCurrent ? 'Projected Total' : 'Final Total'}: $${total.toLocaleString()}`;
         };
 
         const renderTiers = () => {
@@ -2185,10 +2189,7 @@ const GangHelper = {
                 });
             });
 
-            if (isCurrent) {
-                const { total } = calculateTotalPayout();
-                panel.querySelector('.hh_sf_projected_total').textContent = `Projected Total: $${total.toLocaleString()}`;
-            }
+            updateProjectedTotal();
         };
 
         const updateTiersFromDOM = () => {
@@ -2221,10 +2222,7 @@ const GangHelper = {
             const val = parseInt(e.target.value.replace(/,/g, ''), 10) || 0;
             localStorage.setItem('hw_helper_sf_max', val.toString());
             e.target.value = val.toLocaleString();
-            if (isCurrent) {
-                const { total } = calculateTotalPayout();
-                panel.querySelector('.hh_sf_projected_total').textContent = `Projected Total: $${total.toLocaleString()}`;
-            }
+            updateProjectedTotal();
         });
 
         renderTiers();
@@ -2240,10 +2238,7 @@ const GangHelper = {
             statusEl.textContent = `✅ Saved settings!`;
             setTimeout(() => { statusEl.textContent = ''; }, 3000);
 
-            if (isCurrent) {
-                const { total } = calculateTotalPayout();
-                panel.querySelector('.hh_sf_projected_total').textContent = `Projected Total: $${total.toLocaleString()}`;
-            }
+            updateProjectedTotal();
         });
 
         if (!isCurrent) {
@@ -6562,6 +6557,22 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.23",
+            date: "2026-04-13",
+            type: "Fixed",
+            notes: [
+                "Fixed an issue where the `GangHelper` incorrectly attempted to run non-existent loans logic on the gang loans page instead of cleanly deferring to `GangLoansHelper`."
+            ]
+        },
+        {
+            version: "8.22",
+            date: "2026-04-12",
+            type: "Added",
+            notes: [
+                "Added an \"Attack Range\" checkbox filter to `ActiveListHelper` that instantly restricts the viewable opponent list exclusively to players falling within your immediate combat level range (±200 levels of your current Hobo level). Filter persistently saves to local storage."
+            ]
+        },
+        {
             version: "8.21",
             date: "2026-04-12",
             type: "Added",
@@ -6587,22 +6598,6 @@ const ChangelogData = {
             notes: [
                 "Added permanent Bank Goal shortcut buttons (+5k, +10k, +50k) to the Bank withdraw interface. These can be toggled via the new `BankHelper_FixedGoals` setting.",
                 "Removed the inline click-count tracking text on the 5 Fighter's Lunches Bank Goal button, as the main dollar amount input field clearly shows the total progress."
-            ]
-        },
-        {
-            version: "8.18",
-            date: "2026-04-12",
-            type: "Changed",
-            notes: [
-                "Capped the \"Show Next Interesting Level\" feature by removing primes over 1000 from the local data registry, as higher values are not needed."
-            ]
-        },
-        {
-            version: "8.17",
-            date: "2026-04-12",
-            type: "Changed",
-            notes: [
-                "Refined the \"Show Next Interesting Level\" feature to use your current level as the goal indicator if you are currently at a prime level, instead of skipping to the subsequent prime."
             ]
         }
     ]

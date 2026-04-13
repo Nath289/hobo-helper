@@ -13,9 +13,6 @@ const GangHelper = {
             this.handleGangEnter();
             this.handleCurrentHappenings();
         }
-        if (doParam === 'loans') {
-            this.initGangLoans();
-        }
 
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
 
@@ -481,12 +478,14 @@ const GangHelper = {
                 <span class="hh_sf_tiers_status" style="font-size: 11px; font-weight: bold; color: green; margin-left: 10px;"></span>
             </div>
             <div style="margin-top: 10px;" class="hh_sf_payout_area">
-                ${isCurrent ? 
-                    `<div style="font-size: 13px; font-weight: bold; color: green;" class="hh_sf_projected_total">Projected Total: calculating...</div>` :
+                <div style="font-size: 13px; font-weight: bold; color: green; margin-bottom: 5px;" class="hh_sf_projected_total">
+                    ${isCurrent ? 'Projected Total' : 'Final Total'}: calculating...
+                </div>
+                ${!isCurrent ? 
                     `<button type="button" class="hh_sf_save_btn" style="padding: 4px 10px; cursor: pointer; font-weight: bold; background: #ddd; border: 1px solid #999; border-radius: 3px;">
                         💰 Push Payouts to Dashboard
                     </button>
-                    <span class="hh_sf_status" style="font-size: 11px; font-weight: bold; color: green; margin-left: 10px;"></span>`
+                    <span class="hh_sf_status" style="font-size: 11px; font-weight: bold; color: green; margin-left: 10px;"></span>` : ''
                 }
             </div>
         `;
@@ -541,7 +540,7 @@ const GangHelper = {
                         payments.push({
                             id: hoboId,
                             name: nameText,
-                            description: `Stats: Sunday=Funday (Score: ${score})`,
+                            description: `Sunday Funday(Score: ${score})`,
                             amount: '$' + payout.toLocaleString(),
                             timestamp: Date.now(),
                             completed: false,
@@ -551,6 +550,11 @@ const GangHelper = {
                 }
             });
             return { total, payments };
+        };
+
+        const updateProjectedTotal = () => {
+            const { total } = calculateTotalPayout();
+            panel.querySelector('.hh_sf_projected_total').textContent = `${isCurrent ? 'Projected Total' : 'Final Total'}: $${total.toLocaleString()}`;
         };
 
         const renderTiers = () => {
@@ -588,10 +592,7 @@ const GangHelper = {
                 });
             });
 
-            if (isCurrent) {
-                const { total } = calculateTotalPayout();
-                panel.querySelector('.hh_sf_projected_total').textContent = `Projected Total: $${total.toLocaleString()}`;
-            }
+            updateProjectedTotal();
         };
 
         const updateTiersFromDOM = () => {
@@ -624,10 +625,7 @@ const GangHelper = {
             const val = parseInt(e.target.value.replace(/,/g, ''), 10) || 0;
             localStorage.setItem('hw_helper_sf_max', val.toString());
             e.target.value = val.toLocaleString();
-            if (isCurrent) {
-                const { total } = calculateTotalPayout();
-                panel.querySelector('.hh_sf_projected_total').textContent = `Projected Total: $${total.toLocaleString()}`;
-            }
+            updateProjectedTotal();
         });
 
         renderTiers();
@@ -643,10 +641,7 @@ const GangHelper = {
             statusEl.textContent = `✅ Saved settings!`;
             setTimeout(() => { statusEl.textContent = ''; }, 3000);
 
-            if (isCurrent) {
-                const { total } = calculateTotalPayout();
-                panel.querySelector('.hh_sf_projected_total').textContent = `Projected Total: $${total.toLocaleString()}`;
-            }
+            updateProjectedTotal();
         });
 
         if (!isCurrent) {

@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.24] - 2026-04-13
+### Added
+- Added functionality to explicitly display the calculated Total Payout amount directly within the "Push Payouts to Dashboard" panel on completed 'Gangsters Sunday = Funday' event summary pages.
+
+## [8.23] - 2026-04-13
+### Fixed
+- Fixed an issue where the `GangHelper` incorrectly attempted to run non-existent loans logic on the gang loans page instead of cleanly deferring to `GangLoansHelper`.
+
 ## [8.22] - 2026-04-12
 ### Added
 - Added an "Attack Range" checkbox filter to `ActiveListHelper` that instantly restricts the viewable opponent list exclusively to players falling within your immediate combat level range (±200 levels of your current Hobo level). Filter persistently saves to local storage.
@@ -46,7 +54,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Improved the visual presentation of the rat experience bars on the `RatsHelper` feed page by adding a distinct border to clearly indicate 100% capacity.
 - Compacted the "Feed" buttons on the `RatsHelper` feed page to reduce vertical footprint and improve readability.
-- Converted the main navigation text links on the primary Rat page (Active rat, Pet Cemetery, Pet Store, More Information, Rat Fund, News alerts) into a unified, button-based UI layout for a more tactile experience.
+- Converted the main navigation text links on the primary Rat page (Active rat, Pet Cemetery, Rat Store, More Information, Rat Fund, News alerts) into a unified, button-based UI layout for a more tactile experience.
 
 ## [8.13] - 2026-04-11
 ### Changed
