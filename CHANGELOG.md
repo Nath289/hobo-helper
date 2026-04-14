@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.27] - 2026-04-14
+### Added
+- Added a clickable copy link icon next to user IDs in the Message Board to quickly format and copy their [hoboname=ID] for replies, integrating the game's native tipTip tooltip, within \MessageBoardHelper.js\.
+
 ## [8.26] - 2026-04-14
 ### Added
 - Added multi-column interactive client-side sorting for the Hitlist table (`HitlistHelper`), replacing the slow native server-refresh sorting links. Sorting configurations securely persist via browser local storage.

@@ -4,6 +4,7 @@ const MessageBoardHelper = {
         { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
         { key: 'MessageBoardHelper_RenderTables', label: 'Render Data Tables in Posts' },
         { key: 'MessageBoardHelper_VoteButtons', label: 'Larger Vote Buttons' },
+        { key: 'MessageBoardHelper_CopyHoboName', label: 'Show Copy [hoboname] Link' },
         {
             key: 'MessageBoardHelper_AddPaidMessageTemplate',
             label: 'Add Paid Message Text',
@@ -36,6 +37,100 @@ const MessageBoardHelper = {
             this.enhanceVoteButtons();
             this.fixVoteTooltipBug();
         }
+
+        if (settings?.MessageBoardHelper_CopyHoboName !== false) {
+            this.addCopyHoboNameLinks();
+        }
+    },
+
+    addCopyHoboNameLinks: function() {
+        const tds = document.querySelectorAll('td[bgcolor="#EEEEEE"]');
+
+        // Grab the native linkcopy image if available to use the same asset
+        const existingLinkCopy = document.querySelector('img.linkcopy');
+        const imgSrc = (existingLinkCopy && existingLinkCopy.src)
+            ? existingLinkCopy.src
+            : 'data:image/webp;base64,UklGRswAAABXRUJQVlA4TMAAAAAvDYABAK/BoJEkRRk6hjf1/kX9i1DQRpIay9IzmXoFbSSpsSw9k6mf/zq8/weApCRse95jm20kSUISACQlAQBJpRRJkCQJSZIAAABJktgmyZyTbQCQRFLv3a8YYwDAtiRI+oreu1IKAEgiSRIwDACwaHRGtm27iP7Hf9de6h6Xl3r1/b9pcO5dkKz7EKRvay4OZqHBsFOZrW/PD2rGPkfPbPuZOlkAEgKBNanZzqOyiFU9LsqI799GhSK7WVME3T4=';
+
+        tds.forEach(td => {
+            Array.from(td.childNodes).some(node => {
+                if (node.nodeType === 3) {
+                    const match = node.nodeValue.match(/ID:\s*(\d+)/i);
+                    if (match) {
+                        const hoboId = match[1];
+
+                        const textBefore = node.nodeValue.substring(0, match.index);
+                        const matchedText = match[0];
+                        const textAfter = node.nodeValue.substring(match.index + matchedText.length);
+
+                        const wrapper = document.createElement('span');
+                        wrapper.style.display = 'inline-flex';
+                        wrapper.style.alignItems = 'center';
+                        wrapper.style.gap = '4px';
+
+                        wrapper.appendChild(document.createTextNode(matchedText));
+
+                        const copyImg = document.createElement('img');
+                        copyImg.src = imgSrc;
+                        copyImg.style.cursor = 'pointer';
+                        copyImg.title = `Copy [hoboname=${hoboId}]`;
+                        copyImg.className = 'tooltip';
+                        copyImg.id = `copy-hobo-${hoboId}-${Math.random().toString(36).substring(2,8)}`;
+                        copyImg.style.verticalAlign = 'middle';
+
+                        copyImg.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const textToCopy = `[hoboname=${hoboId}]`;
+
+                            if (navigator.clipboard) {
+                                navigator.clipboard.writeText(textToCopy).catch(err => {
+                                    prompt("Copy to clipboard: Ctrl+C, Enter", textToCopy);
+                                });
+                            } else {
+                                prompt("Copy to clipboard: Ctrl+C, Enter", textToCopy);
+                            }
+
+                            const oldTitle = copyImg.title;
+                            copyImg.title = 'Copied!';
+                            copyImg.style.filter = 'brightness(0.5) sepia(1) hue-rotate(90deg) saturate(3)';
+
+                            const tipContent = document.getElementById('tiptip_content');
+                            if (tipContent) {
+                                tipContent.innerHTML = '<span style="color:#4caf50;font-weight:bold;">Copied!</span>';
+                            }
+
+                            setTimeout(() => {
+                                copyImg.title = oldTitle;
+                                copyImg.style.filter = '';
+                                if (tipContent && tipContent.textContent === 'Copied!') {
+                                    tipContent.innerHTML = oldTitle;
+                                }
+                            }, 1000);
+                        });
+
+                        wrapper.appendChild(copyImg);
+
+                        const fragment = document.createDocumentFragment();
+                        if (textBefore) fragment.appendChild(document.createTextNode(textBefore));
+                        fragment.appendChild(wrapper);
+                        if (textAfter) fragment.appendChild(document.createTextNode(textAfter));
+
+                        td.replaceChild(fragment, node);
+
+                        // Bind the native tipTip plugin to our new image
+                        if (typeof jQuery !== 'undefined' && jQuery.fn.tipTip) {
+                            // setTimeout ensures element is in DOM
+                            setTimeout(() => {
+                                jQuery('#' + copyImg.id).tipTip({delay: 10, edgeOffset: 12});
+                            }, 10);
+                        }
+
+                        return true;
+                    }
+                }
+                return false;
+            });
+        });
     },
 
     parseTablesInPosts: function() {

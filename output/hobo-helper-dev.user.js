@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.25.20260414.0030
+// @version      8.26.20260414.2039
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -4405,6 +4405,7 @@ const MessageBoardHelper = {
         { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
         { key: 'MessageBoardHelper_RenderTables', label: 'Render Data Tables in Posts' },
         { key: 'MessageBoardHelper_VoteButtons', label: 'Larger Vote Buttons' },
+        { key: 'MessageBoardHelper_CopyHoboName', label: 'Show Copy [hoboname] Link' },
         {
             key: 'MessageBoardHelper_AddPaidMessageTemplate',
             label: 'Add Paid Message Text',
@@ -4437,6 +4438,100 @@ const MessageBoardHelper = {
             this.enhanceVoteButtons();
             this.fixVoteTooltipBug();
         }
+
+        if (settings?.MessageBoardHelper_CopyHoboName !== false) {
+            this.addCopyHoboNameLinks();
+        }
+    },
+
+    addCopyHoboNameLinks: function() {
+        const tds = document.querySelectorAll('td[bgcolor="#EEEEEE"]');
+
+        // Grab the native linkcopy image if available to use the same asset
+        const existingLinkCopy = document.querySelector('img.linkcopy');
+        const imgSrc = (existingLinkCopy && existingLinkCopy.src)
+            ? existingLinkCopy.src
+            : 'data:image/webp;base64,UklGRswAAABXRUJQVlA4TMAAAAAvDYABAK/BoJEkRRk6hjf1/kX9i1DQRpIay9IzmXoFbSSpsSw9k6mf/zq8/weApCRse95jm20kSUISACQlAQBJpRRJkCQJSZIAAABJktgmyZyTbQCQRFLv3a8YYwDAtiRI+oreu1IKAEgiSRIwDACwaHRGtm27iP7Hf9de6h6Xl3r1/b9pcO5dkKz7EKRvay4OZqHBsFOZrW/PD2rGPkfPbPuZOlkAEgKBNanZzqOyiFU9LsqI799GhSK7WVME3T4=';
+
+        tds.forEach(td => {
+            Array.from(td.childNodes).some(node => {
+                if (node.nodeType === 3) {
+                    const match = node.nodeValue.match(/ID:\s*(\d+)/i);
+                    if (match) {
+                        const hoboId = match[1];
+
+                        const textBefore = node.nodeValue.substring(0, match.index);
+                        const matchedText = match[0];
+                        const textAfter = node.nodeValue.substring(match.index + matchedText.length);
+
+                        const wrapper = document.createElement('span');
+                        wrapper.style.display = 'inline-flex';
+                        wrapper.style.alignItems = 'center';
+                        wrapper.style.gap = '4px';
+
+                        wrapper.appendChild(document.createTextNode(matchedText));
+
+                        const copyImg = document.createElement('img');
+                        copyImg.src = imgSrc;
+                        copyImg.style.cursor = 'pointer';
+                        copyImg.title = `Copy [hoboname=${hoboId}]`;
+                        copyImg.className = 'tooltip';
+                        copyImg.id = `copy-hobo-${hoboId}-${Math.random().toString(36).substring(2,8)}`;
+                        copyImg.style.verticalAlign = 'middle';
+
+                        copyImg.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const textToCopy = `[hoboname=${hoboId}]`;
+
+                            if (navigator.clipboard) {
+                                navigator.clipboard.writeText(textToCopy).catch(err => {
+                                    prompt("Copy to clipboard: Ctrl+C, Enter", textToCopy);
+                                });
+                            } else {
+                                prompt("Copy to clipboard: Ctrl+C, Enter", textToCopy);
+                            }
+
+                            const oldTitle = copyImg.title;
+                            copyImg.title = 'Copied!';
+                            copyImg.style.filter = 'brightness(0.5) sepia(1) hue-rotate(90deg) saturate(3)';
+
+                            const tipContent = document.getElementById('tiptip_content');
+                            if (tipContent) {
+                                tipContent.innerHTML = '<span style="color:#4caf50;font-weight:bold;">Copied!</span>';
+                            }
+
+                            setTimeout(() => {
+                                copyImg.title = oldTitle;
+                                copyImg.style.filter = '';
+                                if (tipContent && tipContent.textContent === 'Copied!') {
+                                    tipContent.innerHTML = oldTitle;
+                                }
+                            }, 1000);
+                        });
+
+                        wrapper.appendChild(copyImg);
+
+                        const fragment = document.createDocumentFragment();
+                        if (textBefore) fragment.appendChild(document.createTextNode(textBefore));
+                        fragment.appendChild(wrapper);
+                        if (textAfter) fragment.appendChild(document.createTextNode(textAfter));
+
+                        td.replaceChild(fragment, node);
+
+                        // Bind the native tipTip plugin to our new image
+                        if (typeof jQuery !== 'undefined' && jQuery.fn.tipTip) {
+                            // setTimeout ensures element is in DOM
+                            setTimeout(() => {
+                                jQuery('#' + copyImg.id).tipTip({delay: 10, edgeOffset: 12});
+                            }, 10);
+                        }
+
+                        return true;
+                    }
+                }
+                return false;
+            });
+        });
     },
 
     parseTablesInPosts: function() {
@@ -6764,6 +6859,16 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.26",
+            date: "2026-04-14",
+            type: "Added",
+            notes: [
+                "Added multi-column interactive client-side sorting for the Hitlist table (`HitlistHelper`), replacing the slow native server-refresh sorting links. Sorting configurations securely persist via browser local storage.",
+                "Implemented a combat window highlighter within the `HitlistHelper` that automatically shades rows an alerting light red if an opponent's level drastically falls outside the player's immediate attack limits (±200 combat levels).",
+                "Updated `AGENTS.md` instructions specifically to mandate the continued usage and expansion of centralized internal game value retrieval methods located within the `Utils` class instead of continuously duplicating generic operations within separate modules."
+            ]
+        },
+        {
             version: "8.25",
             date: "2026-04-13",
             type: "Changed",
@@ -6794,15 +6899,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added an \"Attack Range\" checkbox filter to `ActiveListHelper` that instantly restricts the viewable opponent list exclusively to players falling within your immediate combat level range (±200 levels of your current Hobo level). Filter persistently saves to local storage."
-            ]
-        },
-        {
-            version: "8.21",
-            date: "2026-04-12",
-            type: "Added",
-            notes: [
-                "Added `ActiveListHelper` module for the Recently Active players list page (`cmd=active`).",
-                "Added an interactive \"Alive / Dead\" filtering button system to the Active List page, allowing users to dynamically hide dead players or show everyone. The selected filter state is automatically saved securely via local storage to persist between page reloads."
             ]
         }
     ]
