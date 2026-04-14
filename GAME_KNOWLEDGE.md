@@ -37,3 +37,5 @@ This document contains a general knowledge base about the mechanics, layout, and
 ## Automation Rules
 - Automation of game activities (Macros, Refreshers, Autonomous Scripts) is strictly forbidden by the game rules. Always use manual user interaction like buttons instead of fully automated tasks. Never create a feature that clicks buttons or refreshes pages on a timer without direct user input.
 - Message Board side panels displaying the user ID and avatar are contained within `<td width="140" bgcolor="#EEEEEE">`
+
+- Player profile pages (cmd=player) contain the user details under a bolded 'Citizen Information:' text section.

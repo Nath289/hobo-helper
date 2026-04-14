@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.29] - 2026-04-14
+### Added
+- **Player Helper**: Added a clickable icon to user profiles (cmd=player) that easily copies the user's [hoboname=ID] tag to the clipboard.
 ## [8.28] - 2026-04-14
 ### Added
 - Added a \[hoboname=]\ formatting insertion button to the message editor toolbars (MessageBoardHelper.js).

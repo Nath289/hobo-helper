@@ -119,3 +119,6 @@ Helper functionality for the Active List page (`cmd=active`).
 
 ---
 *Note: We are constantly updating and tweaking these modules. If you encounter any bugs, please report them!*
+### 28. Player Helper (\PlayerHelper.js\)
+Provides enhanced functionality and specific shortcuts when viewing the \cmd=player\ profiles.
+- **Copy Hoboname**: Embeds a clickable icon under the "Citizen Information" box that allows for quickly copying the player's formatted \[hoboname=ID]\ tag. Can be disabled in Settings.

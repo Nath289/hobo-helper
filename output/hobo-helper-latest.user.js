@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.28
+// @version      8.29
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -5609,6 +5609,99 @@ const NorthernFenceHelper = {
     }
 }
 
+const PlayerHelper = {
+    cmds: 'player',
+    settings: [
+        { key: 'PlayerHelper_EnableFeature', label: 'Enable Player Features' },
+        { key: 'PlayerHelper_CopyHoboName', label: 'Show Copy [hoboname] Link' }
+    ],
+    init: function() {
+        const settings = Utils.getSettings();
+        if (settings['PlayerHelper_EnableFeature'] === false) return;
+
+        if (settings['PlayerHelper_CopyHoboName'] !== false) {
+            this.addCopyHoboNameLink();
+        }
+    },
+
+    addCopyHoboNameLink: function() {
+        // Find the "Citizen Information" section
+        const citizenB = Array.from(document.querySelectorAll('b')).find(el => el.textContent.trim() === 'Citizen Information:');
+        if (!citizenB) return;
+
+        const container = citizenB.closest('div');
+        if (!container) return;
+
+        // Find the player's name link inside that container
+        const playerLink = container.querySelector('a[href*="cmd=player&ID="]');
+        if (!playerLink) return;
+
+        const match = playerLink.href.match(/ID=(\d+)/i);
+        if (!match) return;
+        const hoboId = match[1];
+
+        // The text node containing ` (107380)` usually comes right after the <a> tag
+        let insertAfterNode = playerLink;
+        if (playerLink.nextSibling && playerLink.nextSibling.nodeType === 3) {
+            insertAfterNode = playerLink.nextSibling;
+        }
+
+        const existingLinkCopy = document.querySelector('img.linkcopy');
+        const imgSrc = (existingLinkCopy && existingLinkCopy.src)
+            ? existingLinkCopy.src
+            : 'data:image/webp;base64,UklGRswAAABXRUJQVlA4TMAAAAAvDYABAK/BoJEkRRk6hjf1/kX9i1DQRpIay9IzmXoFbSSpsSw9k6mf/zq8/weApCRse95jm20kSUISACQlAQBJpRRJkCQJSZIAAABJktgmyZyTbQCQRFLv3a8YYwDAtiRI+oreu1IKAEgiSRIwDACwaHRGtm27iP7Hf9de6h6Xl3r1/b9pcO5dkKz7EKRvay4OZqHBsFOZrW/PD2rGPkfPbPuZOlkAEgKBNanZzqOyiFU9LsqI799GhSK7WVME3T4=';
+
+        const copyImg = document.createElement('img');
+        copyImg.src = imgSrc;
+        copyImg.style.cursor = 'pointer';
+        copyImg.title = `Copy [hoboname=${hoboId}]`;
+        copyImg.className = 'tooltip';
+        copyImg.id = `copy-hobo-${hoboId}-${Math.random().toString(36).substring(2,8)}`;
+        copyImg.style.verticalAlign = 'middle';
+        copyImg.style.marginLeft = '4px';
+
+        copyImg.addEventListener('click', (e) => {
+            e.preventDefault();
+            const textToCopy = `[hoboname=${hoboId}]`;
+
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(textToCopy).catch(err => {
+                    prompt("Copy to clipboard: Ctrl+C, Enter", textToCopy);
+                });
+            } else {
+                prompt("Copy to clipboard: Ctrl+C, Enter", textToCopy);
+            }
+
+            const oldTitle = copyImg.title;
+            copyImg.title = 'Copied!';
+            copyImg.style.filter = 'brightness(0.5) sepia(1) hue-rotate(90deg) saturate(3)';
+
+            const tipContent = document.getElementById('tiptip_content');
+            if (tipContent) {
+                tipContent.innerHTML = '<span style="color:#4caf50;font-weight:bold;">Copied!</span>';
+            }
+
+            setTimeout(() => {
+                copyImg.title = oldTitle;
+                copyImg.style.filter = '';
+                if (tipContent && tipContent.textContent === 'Copied!') {
+                    tipContent.innerHTML = oldTitle;
+                }
+            }, 1000);
+        });
+
+        // Insert exactly after the hobo ID text node (or the link if text node isn't found)
+        insertAfterNode.parentNode.insertBefore(copyImg, insertAfterNode.nextSibling);
+
+        // Bind the native tipTip plugin to our new image
+        if (typeof jQuery !== 'undefined' && jQuery.fn.tipTip) {
+            setTimeout(() => {
+                jQuery('#' + copyImg.id).tipTip({delay: 10, edgeOffset: 12});
+            }, 10);
+        }
+    }
+};
+
 const RatsHelper = {
     cmds: 'rats',
     settings: [
@@ -6877,6 +6970,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.29",
+            date: "2026-04-14",
+            type: "Added",
+            notes: [
+                "**Player Helper**: Added a clickable icon to user profiles (cmd=player) that easily copies the user's [hoboname=ID] tag to the clipboard."
+            ]
+        },
+        {
             version: "8.28",
             date: "2026-04-14",
             type: "Added",
@@ -6909,14 +7010,6 @@ const ChangelogData = {
             notes: [
                 "Updated the \"Next Interesting Level\" display to indicate when your current level is a prime number.",
                 "Optimised the underlying primes data set to only track primes up to level 1000."
-            ]
-        },
-        {
-            version: "8.24",
-            date: "2026-04-13",
-            type: "Added",
-            notes: [
-                "Added functionality to explicitly display the calculated Total Payout amount directly within the \"Push Payouts to Dashboard\" panel on completed 'Gangsters Sunday = Funday' event summary pages."
             ]
         }
     ]
@@ -6953,6 +7046,7 @@ const ChangelogData = {
         MessageBoardHelper,
         MixerHelper,
         NorthernFenceHelper,
+        PlayerHelper,
         RatsHelper,
         RecyclingBinHelper,
         SettingsHelper,
