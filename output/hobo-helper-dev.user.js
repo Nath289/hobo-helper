@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.26.20260414.2039
+// @version      8.27.20260414.2102
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -4690,7 +4690,25 @@ const MessageBoardHelper = {
             });
         }
 
+        this.addHoboNameFormatButton();
         this.addPaidMessageButton(messageArea, settings);
+    },
+
+    addHoboNameFormatButton: function() {
+        const ddButton = document.getElementById('DDbutton');
+        if (!ddButton) return;
+
+        const img = document.createElement('img');
+        img.className = 'sfw';
+        img.title = 'hoboname embed';
+        img.src = '../images/mb_icons/hobo.gif';
+        img.setAttribute('onmouseover', "this.style.cursor='pointer'");
+        img.setAttribute('onclick', "utml('[hoboname=', ']','')");
+        img.setAttribute('border', '0');
+        img.style.cursor = 'pointer';
+
+        ddButton.parentNode.insertBefore(img, ddButton);
+        ddButton.parentNode.insertBefore(document.createTextNode(' '), ddButton);
     },
 
     addPaidMessageButton: function(messageArea, settings) {
@@ -6859,6 +6877,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.27",
+            date: "2026-04-14",
+            type: "Added",
+            notes: [
+                "Added a clickable copy link icon next to user IDs in the Message Board to quickly format and copy their [hoboname=ID] for replies, integrating the game's native tipTip tooltip, within \\MessageBoardHelper.js\\."
+            ]
+        },
+        {
             version: "8.26",
             date: "2026-04-14",
             type: "Added",
@@ -6891,14 +6917,6 @@ const ChangelogData = {
             type: "Fixed",
             notes: [
                 "Fixed an issue where the `GangHelper` incorrectly attempted to run non-existent loans logic on the gang loans page instead of cleanly deferring to `GangLoansHelper`."
-            ]
-        },
-        {
-            version: "8.22",
-            date: "2026-04-12",
-            type: "Added",
-            notes: [
-                "Added an \"Attack Range\" checkbox filter to `ActiveListHelper` that instantly restricts the viewable opponent list exclusively to players falling within your immediate combat level range (±200 levels of your current Hobo level). Filter persistently saves to local storage."
             ]
         }
     ]

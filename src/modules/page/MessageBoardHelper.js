@@ -289,7 +289,25 @@ const MessageBoardHelper = {
             });
         }
 
+        this.addHoboNameFormatButton();
         this.addPaidMessageButton(messageArea, settings);
+    },
+
+    addHoboNameFormatButton: function() {
+        const ddButton = document.getElementById('DDbutton');
+        if (!ddButton) return;
+
+        const img = document.createElement('img');
+        img.className = 'sfw';
+        img.title = 'hoboname embed';
+        img.src = '../images/mb_icons/hobo.gif';
+        img.setAttribute('onmouseover', "this.style.cursor='pointer'");
+        img.setAttribute('onclick', "utml('[hoboname=', ']','')");
+        img.setAttribute('border', '0');
+        img.style.cursor = 'pointer';
+
+        ddButton.parentNode.insertBefore(img, ddButton);
+        ddButton.parentNode.insertBefore(document.createTextNode(' '), ddButton);
     },
 
     addPaidMessageButton: function(messageArea, settings) {

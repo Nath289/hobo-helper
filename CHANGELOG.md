@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.28] - 2026-04-14
+### Added
+- Added a \[hoboname=]\ formatting insertion button to the message editor toolbars (MessageBoardHelper.js).
+
 ## [8.27] - 2026-04-14
 ### Added
 - Added a clickable copy link icon next to user IDs in the Message Board to quickly format and copy their [hoboname=ID] for replies, integrating the game's native tipTip tooltip, within \MessageBoardHelper.js\.
