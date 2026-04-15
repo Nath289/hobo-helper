@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.33] - 2026-04-16
+### Added
+- Added `GangArmoryHelper` to completely overhaul the Gang Armory interface (`cmd=gang&do=armory`).
+- Grouped identical weapons, armor, and rings by name into expandable categorical tables, sorted dynamically by their primary power statistics rather than alphabetically.
+- Added a "Favorite Items" dashboard above the Armory tabs that lets users pin priority items, displaying real-time availability and warning in red if all copies are loaned out.
+- Added an interactive "Hide Selected" system allowing users to permanently hide unwanted clutter items from the Armory view. Hidden items can be toggled back into view via a "Show Hidden" button.
+- Integrated robust management for "Favorite Items" and "Hidden Items" directly into the `SettingsHelper` preferences page to easily remove individual items or reset entire lists.
+- Implemented global action buttons for "Expand All", "Collapse All", and column header checkboxes to quickly select or deselect all items in a group at once.
+
 ## [8.32] - 2026-04-15
 ### Fixed
 - Fixed DisplayHelper custom titles (Fake Qwee and Jack Reacher) incorrectly injecting text into player avatar elements by skipping `.pavatar` elements.

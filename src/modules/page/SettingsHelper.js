@@ -294,6 +294,137 @@ const SettingsHelper = {
                     moduleBlock.appendChild(foodContainer);
                 }
 
+                // Custom settings for GangArmoryHelper
+                if (modName === 'GangArmoryHelper') {
+                    const armoryContainer = document.createElement('div');
+                    armoryContainer.style.paddingLeft = '25px';
+                    armoryContainer.style.marginTop = '10px';
+
+                    const label = document.createElement('b');
+                    label.textContent = 'Favorite Items:';
+                    label.style.display = 'block';
+                    label.style.marginBottom = '5px';
+                    armoryContainer.appendChild(label);
+
+                    const listContainer = document.createElement('div');
+                    listContainer.style.background = 'rgba(0, 0, 0, 0.05)';
+                    listContainer.style.padding = '10px';
+                    listContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
+                    listContainer.style.borderRadius = '4px';
+                    listContainer.style.maxWidth = '100%';
+
+                    const renderFavList = () => {
+                        listContainer.innerHTML = '';
+                        const favList = JSON.parse(localStorage.getItem('GangArmory_Favorites') || '[]');
+                        if (favList.length === 0) {
+                            listContainer.textContent = 'No favorites selected.';
+                        } else {
+                            const ul = document.createElement('ul');
+                            ul.style.margin = '0 0 10px 0';
+                            ul.style.paddingLeft = '20px';
+                            favList.forEach(fav => {
+                                const li = document.createElement('li');
+                                const a = document.createElement('a');
+                                a.href = '#';
+                                a.textContent = '[x]';
+                                a.style.color = 'red';
+                                a.style.textDecoration = 'none';
+                                a.style.marginRight = '5px';
+                                a.title = 'Remove ' + fav;
+                                a.onclick = (e) => {
+                                    e.preventDefault();
+                                    let currentList = JSON.parse(localStorage.getItem('GangArmory_Favorites') || '[]');
+                                    const updatedList = currentList.filter(f => f !== fav);
+                                    localStorage.setItem('GangArmory_Favorites', JSON.stringify(updatedList));
+                                    renderFavList();
+                                };
+                                li.appendChild(a);
+                                li.appendChild(document.createTextNode(fav));
+                                ul.appendChild(li);
+                            });
+                            listContainer.appendChild(ul);
+
+                            const btnReset = document.createElement('input');
+                            btnReset.type = 'button';
+                            btnReset.value = 'Reset All Favorites';
+                            btnReset.style.padding = '4px 8px';
+                            btnReset.style.cursor = 'pointer';
+                            btnReset.onclick = () => {
+                                if(confirm('Are you sure you want to remove all favorites?')) {
+                                    localStorage.removeItem('GangArmory_Favorites');
+                                    renderFavList();
+                                }
+                            };
+                            listContainer.appendChild(btnReset);
+                        }
+                    };
+                    renderFavList();
+                    armoryContainer.appendChild(listContainer);
+
+                    const hiddenLabel = document.createElement('b');
+                    hiddenLabel.textContent = 'Hidden Items:';
+                    hiddenLabel.style.display = 'block';
+                    hiddenLabel.style.margin = '15px 0 5px 0';
+                    armoryContainer.appendChild(hiddenLabel);
+
+                    const hiddenListContainer = document.createElement('div');
+                    hiddenListContainer.style.background = 'rgba(0, 0, 0, 0.05)';
+                    hiddenListContainer.style.padding = '10px';
+                    hiddenListContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
+                    hiddenListContainer.style.borderRadius = '4px';
+                    hiddenListContainer.style.maxWidth = '100%';
+
+                    const renderHiddenList = () => {
+                        hiddenListContainer.innerHTML = '';
+                        const hiddenList = JSON.parse(localStorage.getItem('GangArmory_Hidden') || '[]');
+                        if (hiddenList.length === 0) {
+                            hiddenListContainer.textContent = 'No hidden items selected.';
+                        } else {
+                            const ul = document.createElement('ul');
+                            ul.style.margin = '0 0 10px 0';
+                            ul.style.paddingLeft = '20px';
+                            hiddenList.forEach(fav => {
+                                const li = document.createElement('li');
+                                const a = document.createElement('a');
+                                a.href = '#';
+                                a.textContent = '[x]';
+                                a.style.color = 'red';
+                                a.style.textDecoration = 'none';
+                                a.style.marginRight = '5px';
+                                a.title = 'Remove ' + fav;
+                                a.onclick = (e) => {
+                                    e.preventDefault();
+                                    let currentList = JSON.parse(localStorage.getItem('GangArmory_Hidden') || '[]');
+                                    const updatedList = currentList.filter(f => f !== fav);
+                                    localStorage.setItem('GangArmory_Hidden', JSON.stringify(updatedList));
+                                    renderHiddenList();
+                                };
+                                li.appendChild(a);
+                                li.appendChild(document.createTextNode(fav));
+                                ul.appendChild(li);
+                            });
+                            hiddenListContainer.appendChild(ul);
+
+                            const btnReset = document.createElement('input');
+                            btnReset.type = 'button';
+                            btnReset.value = 'Reset All Hidden';
+                            btnReset.style.padding = '4px 8px';
+                            btnReset.style.cursor = 'pointer';
+                            btnReset.onclick = () => {
+                                if(confirm('Are you sure you want to remove all hidden items?')) {
+                                    localStorage.removeItem('GangArmory_Hidden');
+                                    renderHiddenList();
+                                }
+                            };
+                            hiddenListContainer.appendChild(btnReset);
+                        }
+                    };
+                    renderHiddenList();
+                    armoryContainer.appendChild(hiddenListContainer);
+
+                    moduleBlock.appendChild(armoryContainer);
+                }
+
                 // Manually balance columns: FoodHelper's large box goes left, the rest goes right.
                 if (modName <= 'FoodHelper') {
                     col1.appendChild(moduleBlock);
