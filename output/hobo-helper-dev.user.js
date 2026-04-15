@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.34.20260416.0115
+// @version      8.35.20260416.0213
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
+// @match        *://hobowars.com/game/game.php?*
 // @grant        GM_notification
 // @noframes
 // @run-at       document-start
@@ -7749,6 +7750,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.35",
+            date: "2026-04-16",
+            type: "Added",
+            notes: [
+                "Added descriptive hover tooltips (alternate text) to the `GangArmoryHelper` global action buttons (Show Hidden, Hide Selected, Save Favorites, Expand All) to clearly convey exactly what each action performs."
+            ]
+        },
+        {
             version: "8.34",
             date: "2026-04-16",
             type: "Fixed",
@@ -7784,14 +7793,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Updated `MarketHelper` to convert inline `[Remove]` links into interactive format buttons alongside `[Buy]` links."
-            ]
-        },
-        {
-            version: "8.30",
-            date: "2026-04-15",
-            type: "Added",
-            notes: [
-                "**Display Helper**: Added a new setting to display a green \"Major\" title tag next to all profile links pointing to Jack Reacher (107380)."
             ]
         }
     ]

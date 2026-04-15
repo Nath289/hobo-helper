@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.36] - 2026-04-16
+### Added
+- Extended the script's global execution domain scope (via `@match` headers) to seamlessly support both the standard `www.hobowars.com` address and the non-www `hobowars.com` variation, fixing instances where Tampermonkey refused to run the code.
+
 ## [8.35] - 2026-04-16
 ### Added
 - Added descriptive hover tooltips (alternate text) to the `GangArmoryHelper` global action buttons (Show Hidden, Hide Selected, Save Favorites, Expand All) to clearly convey exactly what each action performs.

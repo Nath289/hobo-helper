@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.35
+// @version      8.36
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
+// @match        *://hobowars.com/game/game.php?*
 // @grant        GM_notification
 // @noframes
 // @run-at       document-start
@@ -7749,6 +7750,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.36",
+            date: "2026-04-16",
+            type: "Added",
+            notes: [
+                "Extended the script's global execution domain scope (via `@match` headers) to seamlessly support both the standard `www.hobowars.com` address and the non-www `hobowars.com` variation, fixing instances where Tampermonkey refused to run the code."
+            ]
+        },
+        {
             version: "8.35",
             date: "2026-04-16",
             type: "Added",
@@ -7784,14 +7793,6 @@ const ChangelogData = {
             type: "Fixed",
             notes: [
                 "Fixed DisplayHelper custom titles (Fake Qwee and Jack Reacher) incorrectly injecting text into player avatar elements by skipping `.pavatar` elements."
-            ]
-        },
-        {
-            version: "8.31",
-            date: "2026-04-15",
-            type: "Changed",
-            notes: [
-                "Updated `MarketHelper` to convert inline `[Remove]` links into interactive format buttons alongside `[Buy]` links."
             ]
         }
     ]
