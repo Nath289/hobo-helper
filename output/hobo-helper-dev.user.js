@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.29.20260415.1241
+// @version      8.30.20260415.1300
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -4268,13 +4268,13 @@ const MarketHelper = {
         const type = urlParams.get('type');
 
         if (settings.MarketHelper_ButtonBuy !== false) {
-            const buyLinks = document.querySelectorAll('a[href*="&buy="]');
-            if (buyLinks.length > 0) {
+            const actionLinks = document.querySelectorAll('a[href*="&buy="], a[href*="&remove="]');
+            if (actionLinks.length > 0) {
                 this.ensureBtnStyle();
 
-                buyLinks.forEach(link => {
+                actionLinks.forEach(link => {
                     const text = link.textContent.trim().toLowerCase();
-                    if (text === 'buy') {
+                    if (text === 'buy' || text === 'remove') {
                         // Apply button styling
                         link.classList.add('btn');
 
@@ -4410,6 +4410,32 @@ const MarketHelper = {
                 }
             }
         }
+    },
+
+    initInteractiveBuyButtons: function() {
+        const table = document.querySelector('table');
+        if (!table) return;
+
+        const rows = table.querySelectorAll('tr');
+        rows.forEach(row => {
+            const lastCell = row.cells[row.cells.length - 1];
+            if (!lastCell) return;
+
+            if (lastCell.textContent.includes('[Buy]') || lastCell.textContent.includes('[Remove]')) {
+                const actionLink = lastCell.querySelector('a');
+                if (actionLink) {
+                    actionLink.textContent = actionLink.textContent.replace(/\[|\]/g, '');
+                    actionLink.classList.add('btn');
+
+                    // Strip the brackets from the text node
+                    Array.from(lastCell.childNodes).forEach(node => {
+                        if (node.nodeType === Node.TEXT_NODE) {
+                            node.nodeValue = node.nodeValue.replace(/\[|\]/g, '');
+                        }
+                    });
+                }
+            }
+        });
     }
 };
 
@@ -6984,6 +7010,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.30",
+            date: "2026-04-15",
+            type: "Added",
+            notes: [
+                "**Display Helper**: Added a new setting to display a green \"Major\" title tag next to all profile links pointing to Jack Reacher (107380)."
+            ]
+        },
+        {
             version: "8.29",
             date: "2026-04-14",
             type: "Added",
@@ -7015,15 +7049,6 @@ const ChangelogData = {
                 "Added multi-column interactive client-side sorting for the Hitlist table (`HitlistHelper`), replacing the slow native server-refresh sorting links. Sorting configurations securely persist via browser local storage.",
                 "Implemented a combat window highlighter within the `HitlistHelper` that automatically shades rows an alerting light red if an opponent's level drastically falls outside the player's immediate attack limits (±200 combat levels).",
                 "Updated `AGENTS.md` instructions specifically to mandate the continued usage and expansion of centralized internal game value retrieval methods located within the `Utils` class instead of continuously duplicating generic operations within separate modules."
-            ]
-        },
-        {
-            version: "8.25",
-            date: "2026-04-13",
-            type: "Changed",
-            notes: [
-                "Updated the \"Next Interesting Level\" display to indicate when your current level is a prime number.",
-                "Optimised the underlying primes data set to only track primes up to level 1000."
             ]
         }
     ]

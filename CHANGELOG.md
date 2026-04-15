@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.31] - 2026-04-15
+### Changed
+- Updated `MarketHelper` to convert inline `[Remove]` links into interactive format buttons alongside `[Buy]` links.
+
 ## [8.30] - 2026-04-15
 ### Added
 - **Display Helper**: Added a new setting to display a green "Major" title tag next to all profile links pointing to Jack Reacher (107380).

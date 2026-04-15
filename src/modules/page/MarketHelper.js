@@ -17,13 +17,13 @@ const MarketHelper = {
         const type = urlParams.get('type');
 
         if (settings.MarketHelper_ButtonBuy !== false) {
-            const buyLinks = document.querySelectorAll('a[href*="&buy="]');
-            if (buyLinks.length > 0) {
+            const actionLinks = document.querySelectorAll('a[href*="&buy="], a[href*="&remove="]');
+            if (actionLinks.length > 0) {
                 this.ensureBtnStyle();
 
-                buyLinks.forEach(link => {
+                actionLinks.forEach(link => {
                     const text = link.textContent.trim().toLowerCase();
-                    if (text === 'buy') {
+                    if (text === 'buy' || text === 'remove') {
                         // Apply button styling
                         link.classList.add('btn');
 
@@ -159,5 +159,31 @@ const MarketHelper = {
                 }
             }
         }
+    },
+
+    initInteractiveBuyButtons: function() {
+        const table = document.querySelector('table');
+        if (!table) return;
+
+        const rows = table.querySelectorAll('tr');
+        rows.forEach(row => {
+            const lastCell = row.cells[row.cells.length - 1];
+            if (!lastCell) return;
+
+            if (lastCell.textContent.includes('[Buy]') || lastCell.textContent.includes('[Remove]')) {
+                const actionLink = lastCell.querySelector('a');
+                if (actionLink) {
+                    actionLink.textContent = actionLink.textContent.replace(/\[|\]/g, '');
+                    actionLink.classList.add('btn');
+
+                    // Strip the brackets from the text node
+                    Array.from(lastCell.childNodes).forEach(node => {
+                        if (node.nodeType === Node.TEXT_NODE) {
+                            node.nodeValue = node.nodeValue.replace(/\[|\]/g, '');
+                        }
+                    });
+                }
+            }
+        });
     }
 };
