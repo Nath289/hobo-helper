@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.30] - 2026-04-15
+### Added
+- **Display Helper**: Added a new setting to display a green "Major" title tag next to all profile links pointing to Jack Reacher (107380).
+
 ## [8.29] - 2026-04-14
 ### Added
 - **Player Helper**: Added a clickable icon to user profiles (cmd=player) that easily copies the user's [hoboname=ID] tag to the clipboard.

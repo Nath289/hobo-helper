@@ -2,6 +2,7 @@ const DisplayHelper = {
     settings: [
         { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' },
         { key: 'DisplayHelper_FakeQwee', label: 'Enable the Fake Qwee' },
+        { key: 'DisplayHelper_JackReacher', label: 'Enable Jack Reacher Major Title' },
         { key: 'DisplayHelper_ScrollableTopbar', label: 'Swipeable Topbar Menu (Mobile)', defaultValue: true },
         { key: 'DisplayHelper_WidenPage', label: 'Widen Content Area' },
         { key: 'DisplayHelper_PageWidth', label: 'Page Width (px)', type: 'number', defaultValue: 660, parent: 'DisplayHelper_WidenPage' },
@@ -18,6 +19,9 @@ const DisplayHelper = {
         }
         if (settings['DisplayHelper_FakeQwee'] !== false) {
             this.initFakeQwee();
+        }
+        if (settings['DisplayHelper_JackReacher'] !== false) {
+            this.initJackReacher();
         }
         if (settings['DisplayHelper_ScrollableTopbar'] !== false) {
             this.initScrollableTopbar();
@@ -95,6 +99,16 @@ const DisplayHelper = {
         playerLinks.forEach(link => {
             if (!link.innerHTML.includes('The Fake')) {
                 link.innerHTML = `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">The Fake</span> ` + link.innerHTML;
+            }
+        });
+    },
+    initJackReacher: function() {
+        const targetHoboId = "107380";
+
+        const playerLinks = document.querySelectorAll(`a[href*="cmd=player&ID=${targetHoboId}"]`);
+        playerLinks.forEach(link => {
+            if (!link.innerHTML.includes('Major')) {
+                link.innerHTML = `<span style="color: #00EE00; font-weight: bold; text-shadow: 1px 1px 2px black;">Major</span> ` + link.innerHTML;
             }
         });
     },

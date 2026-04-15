@@ -122,3 +122,10 @@ Helper functionality for the Active List page (`cmd=active`).
 ### 28. Player Helper (\PlayerHelper.js\)
 Provides enhanced functionality and specific shortcuts when viewing the \cmd=player\ profiles.
 - **Copy Hoboname**: Embeds a clickable icon under the "Citizen Information" box that allows for quickly copying the player's formatted \[hoboname=ID]\ tag. Can be disabled in Settings.
+
+### Display Helpers
+- **Improved Avatars**: Restyles user avatars to have rounded edges, distinctive borders (special styling for Donators), and custom pulsing online status indicators.
+- **Fake Qwee**: Automatically prepends "The Fake" with a red shadow to any user link pointing to "The Fake Qwee" (ID `2924510`).
+- **Jack Reacher**: Automatically prepends "Major" with a bright green shadow to any user link pointing to "Jack Reacher" (ID `107380`).
+- **Widen Content Area**: Expands the historically narrow game content container to a customizable width (default 660px) for better readability on modern monitors.
+- **Swipeable Topbar Menu**: Converts the crowded top navigation bar (Dirt Road, Recycling Bin, etc.) into a horizontally scrollable container, preventing off-screen clipping on mobile devices.

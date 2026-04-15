@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.28.20260414.2108
+// @version      8.29.20260415.1241
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -659,6 +659,7 @@ const DisplayHelper = {
     settings: [
         { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' },
         { key: 'DisplayHelper_FakeQwee', label: 'Enable the Fake Qwee' },
+        { key: 'DisplayHelper_JackReacher', label: 'Enable Jack Reacher Major Title' },
         { key: 'DisplayHelper_ScrollableTopbar', label: 'Swipeable Topbar Menu (Mobile)', defaultValue: true },
         { key: 'DisplayHelper_WidenPage', label: 'Widen Content Area' },
         { key: 'DisplayHelper_PageWidth', label: 'Page Width (px)', type: 'number', defaultValue: 660, parent: 'DisplayHelper_WidenPage' },
@@ -675,6 +676,9 @@ const DisplayHelper = {
         }
         if (settings['DisplayHelper_FakeQwee'] !== false) {
             this.initFakeQwee();
+        }
+        if (settings['DisplayHelper_JackReacher'] !== false) {
+            this.initJackReacher();
         }
         if (settings['DisplayHelper_ScrollableTopbar'] !== false) {
             this.initScrollableTopbar();
@@ -752,6 +756,16 @@ const DisplayHelper = {
         playerLinks.forEach(link => {
             if (!link.innerHTML.includes('The Fake')) {
                 link.innerHTML = `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">The Fake</span> ` + link.innerHTML;
+            }
+        });
+    },
+    initJackReacher: function() {
+        const targetHoboId = "107380";
+
+        const playerLinks = document.querySelectorAll(`a[href*="cmd=player&ID=${targetHoboId}"]`);
+        playerLinks.forEach(link => {
+            if (!link.innerHTML.includes('Major')) {
+                link.innerHTML = `<span style="color: #00EE00; font-weight: bold; text-shadow: 1px 1px 2px black;">Major</span> ` + link.innerHTML;
             }
         });
     },
@@ -6970,6 +6984,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.29",
+            date: "2026-04-14",
+            type: "Added",
+            notes: [
+                "**Player Helper**: Added a clickable icon to user profiles (cmd=player) that easily copies the user's [hoboname=ID] tag to the clipboard."
+            ]
+        },
+        {
             version: "8.28",
             date: "2026-04-14",
             type: "Added",
@@ -7002,14 +7024,6 @@ const ChangelogData = {
             notes: [
                 "Updated the \"Next Interesting Level\" display to indicate when your current level is a prime number.",
                 "Optimised the underlying primes data set to only track primes up to level 1000."
-            ]
-        },
-        {
-            version: "8.24",
-            date: "2026-04-13",
-            type: "Added",
-            notes: [
-                "Added functionality to explicitly display the calculated Total Payout amount directly within the \"Push Payouts to Dashboard\" panel on completed 'Gangsters Sunday = Funday' event summary pages."
             ]
         }
     ]
