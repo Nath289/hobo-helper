@@ -92,25 +92,22 @@ const DisplayHelper = {
             });
         }
     },
-    initFakeQwee: function() {
-        const targetHoboId = "2924510";
-
+    addTitleToPlayer: function(targetHoboId, plainTitle, styledTitle) {
         const playerLinks = document.querySelectorAll(`a[href*="cmd=player&ID=${targetHoboId}"]`);
         playerLinks.forEach(link => {
-            if (!link.innerHTML.includes('The Fake')) {
-                link.innerHTML = `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">The Fake</span> ` + link.innerHTML;
+            if (!link.innerHTML.includes(plainTitle) && 
+                !link.innerHTML.includes('<img') && 
+                !link.classList.contains('pavatar') && 
+                !link.innerHTML.includes('avatar-circle')) {
+                link.innerHTML = `${styledTitle} ` + link.innerHTML;
             }
         });
     },
+    initFakeQwee: function() {
+        this.addTitleToPlayer("2924510", "The Fake", `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">The Fake</span>`);
+    },
     initJackReacher: function() {
-        const targetHoboId = "107380";
-
-        const playerLinks = document.querySelectorAll(`a[href*="cmd=player&ID=${targetHoboId}"]`);
-        playerLinks.forEach(link => {
-            if (!link.innerHTML.includes('Major')) {
-                link.innerHTML = `<span style="color: #00EE00; font-weight: bold; text-shadow: 1px 1px 2px black;">Major</span> ` + link.innerHTML;
-            }
-        });
+        this.addTitleToPlayer("107380", "Major", `<span style="color: #00EE00; font-weight: bold; text-shadow: 1px 1px 2px black;">Major</span>`);
     },
     initInterestingLevel: function() {
         const levelSpan = document.getElementById('statValueLvl');

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.30.20260415.1300
+// @version      8.31.20260415.2312
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -749,25 +749,22 @@ const DisplayHelper = {
             });
         }
     },
-    initFakeQwee: function() {
-        const targetHoboId = "2924510";
-
+    addTitleToPlayer: function(targetHoboId, plainTitle, styledTitle) {
         const playerLinks = document.querySelectorAll(`a[href*="cmd=player&ID=${targetHoboId}"]`);
         playerLinks.forEach(link => {
-            if (!link.innerHTML.includes('The Fake')) {
-                link.innerHTML = `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">The Fake</span> ` + link.innerHTML;
+            if (!link.innerHTML.includes(plainTitle) && 
+                !link.innerHTML.includes('<img') && 
+                !link.classList.contains('pavatar') && 
+                !link.innerHTML.includes('avatar-circle')) {
+                link.innerHTML = `${styledTitle} ` + link.innerHTML;
             }
         });
     },
+    initFakeQwee: function() {
+        this.addTitleToPlayer("2924510", "The Fake", `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">The Fake</span>`);
+    },
     initJackReacher: function() {
-        const targetHoboId = "107380";
-
-        const playerLinks = document.querySelectorAll(`a[href*="cmd=player&ID=${targetHoboId}"]`);
-        playerLinks.forEach(link => {
-            if (!link.innerHTML.includes('Major')) {
-                link.innerHTML = `<span style="color: #00EE00; font-weight: bold; text-shadow: 1px 1px 2px black;">Major</span> ` + link.innerHTML;
-            }
-        });
+        this.addTitleToPlayer("107380", "Major", `<span style="color: #00EE00; font-weight: bold; text-shadow: 1px 1px 2px black;">Major</span>`);
     },
     initInterestingLevel: function() {
         const levelSpan = document.getElementById('statValueLvl');
@@ -7010,6 +7007,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.31",
+            date: "2026-04-15",
+            type: "Changed",
+            notes: [
+                "Updated `MarketHelper` to convert inline `[Remove]` links into interactive format buttons alongside `[Buy]` links."
+            ]
+        },
+        {
             version: "8.30",
             date: "2026-04-15",
             type: "Added",
@@ -7039,16 +7044,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added a clickable copy link icon next to user IDs in the Message Board to quickly format and copy their [hoboname=ID] for replies, integrating the game's native tipTip tooltip, within \\MessageBoardHelper.js\\."
-            ]
-        },
-        {
-            version: "8.26",
-            date: "2026-04-14",
-            type: "Added",
-            notes: [
-                "Added multi-column interactive client-side sorting for the Hitlist table (`HitlistHelper`), replacing the slow native server-refresh sorting links. Sorting configurations securely persist via browser local storage.",
-                "Implemented a combat window highlighter within the `HitlistHelper` that automatically shades rows an alerting light red if an opponent's level drastically falls outside the player's immediate attack limits (±200 combat levels).",
-                "Updated `AGENTS.md` instructions specifically to mandate the continued usage and expansion of centralized internal game value retrieval methods located within the `Utils` class instead of continuously duplicating generic operations within separate modules."
             ]
         }
     ]

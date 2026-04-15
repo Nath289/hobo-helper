@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.31
+// @version      8.32
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -749,25 +749,22 @@ const DisplayHelper = {
             });
         }
     },
-    initFakeQwee: function() {
-        const targetHoboId = "2924510";
-
+    addTitleToPlayer: function(targetHoboId, plainTitle, styledTitle) {
         const playerLinks = document.querySelectorAll(`a[href*="cmd=player&ID=${targetHoboId}"]`);
         playerLinks.forEach(link => {
-            if (!link.innerHTML.includes('The Fake')) {
-                link.innerHTML = `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">The Fake</span> ` + link.innerHTML;
+            if (!link.innerHTML.includes(plainTitle) && 
+                !link.innerHTML.includes('<img') && 
+                !link.classList.contains('pavatar') && 
+                !link.innerHTML.includes('avatar-circle')) {
+                link.innerHTML = `${styledTitle} ` + link.innerHTML;
             }
         });
     },
+    initFakeQwee: function() {
+        this.addTitleToPlayer("2924510", "The Fake", `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">The Fake</span>`);
+    },
     initJackReacher: function() {
-        const targetHoboId = "107380";
-
-        const playerLinks = document.querySelectorAll(`a[href*="cmd=player&ID=${targetHoboId}"]`);
-        playerLinks.forEach(link => {
-            if (!link.innerHTML.includes('Major')) {
-                link.innerHTML = `<span style="color: #00EE00; font-weight: bold; text-shadow: 1px 1px 2px black;">Major</span> ` + link.innerHTML;
-            }
-        });
+        this.addTitleToPlayer("107380", "Major", `<span style="color: #00EE00; font-weight: bold; text-shadow: 1px 1px 2px black;">Major</span>`);
     },
     initInterestingLevel: function() {
         const levelSpan = document.getElementById('statValueLvl');
@@ -7010,6 +7007,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.32",
+            date: "2026-04-15",
+            type: "Fixed",
+            notes: [
+                "Fixed DisplayHelper custom titles (Fake Qwee and Jack Reacher) incorrectly injecting text into player avatar elements by skipping `.pavatar` elements."
+            ]
+        },
+        {
             version: "8.31",
             date: "2026-04-15",
             type: "Changed",
@@ -7039,14 +7044,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added a \\[hoboname=]\\ formatting insertion button to the message editor toolbars (MessageBoardHelper.js)."
-            ]
-        },
-        {
-            version: "8.27",
-            date: "2026-04-14",
-            type: "Added",
-            notes: [
-                "Added a clickable copy link icon next to user IDs in the Message Board to quickly format and copy their [hoboname=ID] for replies, integrating the game's native tipTip tooltip, within \\MessageBoardHelper.js\\."
             ]
         }
     ]

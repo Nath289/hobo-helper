@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.32] - 2026-04-15
+### Fixed
+- Fixed DisplayHelper custom titles (Fake Qwee and Jack Reacher) incorrectly injecting text into player avatar elements by skipping `.pavatar` elements.
+
 ## [8.31] - 2026-04-15
 ### Changed
 - Updated `MarketHelper` to convert inline `[Remove]` links into interactive format buttons alongside `[Buy]` links.
