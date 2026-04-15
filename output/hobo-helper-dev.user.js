@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.32.20260416.0058
+// @version      8.34.20260416.0115
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -1775,6 +1775,7 @@ const GangArmoryHelper = {
         const toggleHiddenBtn = document.createElement('button');
         toggleHiddenBtn.className = 'armory-tab-btn';
         toggleHiddenBtn.textContent = 'Show Hidden';
+        toggleHiddenBtn.title = 'Toggle the visibility of items you have permanently hidden';
         toggleHiddenBtn.onclick = (e) => {
             e.preventDefault();
             isShowingHidden = !isShowingHidden;
@@ -1787,6 +1788,7 @@ const GangArmoryHelper = {
         const hideBtn = document.createElement('button');
         hideBtn.className = 'armory-tab-btn';
         hideBtn.textContent = 'Hide Selected';
+        hideBtn.title = 'Permanently hide the currently checked items from the armory (configurable in settings)';
         hideBtn.onclick = (e) => {
             e.preventDefault();
             const checkboxes = document.querySelectorAll('.fav-checkbox');
@@ -1795,20 +1797,29 @@ const GangArmoryHelper = {
                 if (cb.checked && !hiddenList.includes(cb.value)) hiddenList.push(cb.value);
             });
             localStorage.setItem('GangArmory_Hidden', JSON.stringify(hiddenList));
+            
+            // Explicitly uncheck to prevent browser state restoration on reload
+            checkboxes.forEach(cb => cb.checked = false);
+            
             window.location.reload();
         };
 
         const saveFavBtn = document.createElement('button');
         saveFavBtn.className = 'armory-tab-btn';
         saveFavBtn.textContent = 'Save Favorites';
+        saveFavBtn.title = 'Pin the currently checked items to the Favorites dashboard at the top of the page';
         saveFavBtn.onclick = (e) => {
             e.preventDefault();
             const checkboxes = document.querySelectorAll('.fav-checkbox');
-            const favs = [];
+            const favs = JSON.parse(localStorage.getItem('GangArmory_Favorites') || '[]');
             checkboxes.forEach(cb => {
-                if (cb.checked) favs.push(cb.value);
+                if (cb.checked && !favs.includes(cb.value)) favs.push(cb.value);
             });
             localStorage.setItem('GangArmory_Favorites', JSON.stringify(favs));
+            
+            // Explicitly uncheck to prevent browser state restoration on reload
+            checkboxes.forEach(cb => cb.checked = false);
+            
             window.location.reload();
         };
 
@@ -1816,6 +1827,7 @@ const GangArmoryHelper = {
         const expandAllBtn = document.createElement('button');
         expandAllBtn.className = 'armory-tab-btn';
         expandAllBtn.textContent = 'Expand All';
+        expandAllBtn.title = 'Expand or collapse all grouped items within the active tab';
 
         actionContainer.appendChild(toggleHiddenBtn);
         actionContainer.appendChild(hideBtn);
@@ -1903,12 +1915,14 @@ const GangArmoryHelper = {
             table.className = 'armory-table';
             
             const trHead = document.createElement('tr');
-            ['Fav', 'Item Name', 'Transfer', 'Claim Back', 'Loaned To', 'Days Inactive'].forEach(text => {
+            ['Select', 'Item Name', 'Transfer', 'Claim Back', 'Loaned To', 'Days Inactive'].forEach(text => {
                 const th = document.createElement('th');
-                if (text === 'Fav') {
+                if (text === 'Select') {
                     const selectAllCb = document.createElement('input');
                     selectAllCb.type = 'checkbox';
                     selectAllCb.title = 'Toggle All';
+                    selectAllCb.autocomplete = 'off';
+                    selectAllCb.checked = false;
                     selectAllCb.onclick = (e) => {
                         const checked = e.target.checked;
                         const checkboxes = table.querySelectorAll('.fav-checkbox');
@@ -1975,8 +1989,8 @@ const GangArmoryHelper = {
                         cb.type = 'checkbox';
                         cb.className = 'fav-checkbox';
                         cb.value = item.coreName;
-                        let savedFavs = JSON.parse(localStorage.getItem('GangArmory_Favorites') || '[]');
-                        if (savedFavs.includes(item.coreName)) cb.checked = true;
+                        cb.autocomplete = 'off';
+                        cb.checked = false;
                         tdFav.appendChild(cb);
                     }
                     tr.appendChild(tdFav);
@@ -7735,6 +7749,28 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.34",
+            date: "2026-04-16",
+            type: "Fixed",
+            notes: [
+                "Fixed an issue in `GangArmoryHelper` where browsers were aggressive caching and incorrectly restoring the selection state of checkboxes upon reloading the page. Unchecking checkboxes is now enforced programmatically via script default and `autocomplete=\"off\"` attributes.",
+                "Refined Gang Armory checkbox logic so that \"Save Favorites\" and \"Hide Selected\" operations explicitly deselect the checkboxes internally before prompting a page reload to guarantee a clean slate."
+            ]
+        },
+        {
+            version: "8.33",
+            date: "2026-04-16",
+            type: "Added",
+            notes: [
+                "Added `GangArmoryHelper` to completely overhaul the Gang Armory interface (`cmd=gang&do=armory`).",
+                "Grouped identical weapons, armor, and rings by name into expandable categorical tables, sorted dynamically by their primary power statistics rather than alphabetically.",
+                "Added a \"Favorite Items\" dashboard above the Armory tabs that lets users pin priority items, displaying real-time availability and warning in red if all copies are loaned out.",
+                "Added an interactive \"Hide Selected\" system allowing users to permanently hide unwanted clutter items from the Armory view. Hidden items can be toggled back into view via a \"Show Hidden\" button.",
+                "Integrated robust management for \"Favorite Items\" and \"Hidden Items\" directly into the `SettingsHelper` preferences page to easily remove individual items or reset entire lists.",
+                "Implemented global action buttons for \"Expand All\", \"Collapse All\", and column header checkboxes to quickly select or deselect all items in a group at once."
+            ]
+        },
+        {
             version: "8.32",
             date: "2026-04-15",
             type: "Fixed",
@@ -7756,22 +7792,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "**Display Helper**: Added a new setting to display a green \"Major\" title tag next to all profile links pointing to Jack Reacher (107380)."
-            ]
-        },
-        {
-            version: "8.29",
-            date: "2026-04-14",
-            type: "Added",
-            notes: [
-                "**Player Helper**: Added a clickable icon to user profiles (cmd=player) that easily copies the user's [hoboname=ID] tag to the clipboard."
-            ]
-        },
-        {
-            version: "8.28",
-            date: "2026-04-14",
-            type: "Added",
-            notes: [
-                "Added a \\[hoboname=]\\ formatting insertion button to the message editor toolbars (MessageBoardHelper.js)."
             ]
         }
     ]

@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.35] - 2026-04-16
+### Added
+- Added descriptive hover tooltips (alternate text) to the `GangArmoryHelper` global action buttons (Show Hidden, Hide Selected, Save Favorites, Expand All) to clearly convey exactly what each action performs.
+
+## [8.34] - 2026-04-16
+### Fixed
+- Fixed an issue in `GangArmoryHelper` where browsers were aggressive caching and incorrectly restoring the selection state of checkboxes upon reloading the page. Unchecking checkboxes is now enforced programmatically via script default and `autocomplete="off"` attributes.
+- Refined Gang Armory checkbox logic so that "Save Favorites" and "Hide Selected" operations explicitly deselect the checkboxes internally before prompting a page reload to guarantee a clean slate.
+
 ## [8.33] - 2026-04-16
 ### Added
 - Added `GangArmoryHelper` to completely overhaul the Gang Armory interface (`cmd=gang&do=armory`).

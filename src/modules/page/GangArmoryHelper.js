@@ -167,6 +167,7 @@ const GangArmoryHelper = {
         const toggleHiddenBtn = document.createElement('button');
         toggleHiddenBtn.className = 'armory-tab-btn';
         toggleHiddenBtn.textContent = 'Show Hidden';
+        toggleHiddenBtn.title = 'Toggle the visibility of items you have permanently hidden';
         toggleHiddenBtn.onclick = (e) => {
             e.preventDefault();
             isShowingHidden = !isShowingHidden;
@@ -179,6 +180,7 @@ const GangArmoryHelper = {
         const hideBtn = document.createElement('button');
         hideBtn.className = 'armory-tab-btn';
         hideBtn.textContent = 'Hide Selected';
+        hideBtn.title = 'Permanently hide the currently checked items from the armory (configurable in settings)';
         hideBtn.onclick = (e) => {
             e.preventDefault();
             const checkboxes = document.querySelectorAll('.fav-checkbox');
@@ -187,20 +189,29 @@ const GangArmoryHelper = {
                 if (cb.checked && !hiddenList.includes(cb.value)) hiddenList.push(cb.value);
             });
             localStorage.setItem('GangArmory_Hidden', JSON.stringify(hiddenList));
+            
+            // Explicitly uncheck to prevent browser state restoration on reload
+            checkboxes.forEach(cb => cb.checked = false);
+            
             window.location.reload();
         };
 
         const saveFavBtn = document.createElement('button');
         saveFavBtn.className = 'armory-tab-btn';
         saveFavBtn.textContent = 'Save Favorites';
+        saveFavBtn.title = 'Pin the currently checked items to the Favorites dashboard at the top of the page';
         saveFavBtn.onclick = (e) => {
             e.preventDefault();
             const checkboxes = document.querySelectorAll('.fav-checkbox');
-            const favs = [];
+            const favs = JSON.parse(localStorage.getItem('GangArmory_Favorites') || '[]');
             checkboxes.forEach(cb => {
-                if (cb.checked) favs.push(cb.value);
+                if (cb.checked && !favs.includes(cb.value)) favs.push(cb.value);
             });
             localStorage.setItem('GangArmory_Favorites', JSON.stringify(favs));
+            
+            // Explicitly uncheck to prevent browser state restoration on reload
+            checkboxes.forEach(cb => cb.checked = false);
+            
             window.location.reload();
         };
 
@@ -208,6 +219,7 @@ const GangArmoryHelper = {
         const expandAllBtn = document.createElement('button');
         expandAllBtn.className = 'armory-tab-btn';
         expandAllBtn.textContent = 'Expand All';
+        expandAllBtn.title = 'Expand or collapse all grouped items within the active tab';
 
         actionContainer.appendChild(toggleHiddenBtn);
         actionContainer.appendChild(hideBtn);
@@ -295,12 +307,14 @@ const GangArmoryHelper = {
             table.className = 'armory-table';
             
             const trHead = document.createElement('tr');
-            ['Fav', 'Item Name', 'Transfer', 'Claim Back', 'Loaned To', 'Days Inactive'].forEach(text => {
+            ['Select', 'Item Name', 'Transfer', 'Claim Back', 'Loaned To', 'Days Inactive'].forEach(text => {
                 const th = document.createElement('th');
-                if (text === 'Fav') {
+                if (text === 'Select') {
                     const selectAllCb = document.createElement('input');
                     selectAllCb.type = 'checkbox';
                     selectAllCb.title = 'Toggle All';
+                    selectAllCb.autocomplete = 'off';
+                    selectAllCb.checked = false;
                     selectAllCb.onclick = (e) => {
                         const checked = e.target.checked;
                         const checkboxes = table.querySelectorAll('.fav-checkbox');
@@ -367,8 +381,8 @@ const GangArmoryHelper = {
                         cb.type = 'checkbox';
                         cb.className = 'fav-checkbox';
                         cb.value = item.coreName;
-                        let savedFavs = JSON.parse(localStorage.getItem('GangArmory_Favorites') || '[]');
-                        if (savedFavs.includes(item.coreName)) cb.checked = true;
+                        cb.autocomplete = 'off';
+                        cb.checked = false;
                         tdFav.appendChild(cb);
                     }
                     tr.appendChild(tdFav);
