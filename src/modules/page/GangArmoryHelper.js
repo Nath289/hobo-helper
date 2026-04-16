@@ -60,6 +60,7 @@ const GangArmoryHelper = {
                 coreName: coreName,
                 stat1: stat1,
                 stat2: stat2,
+                unbrandLink: null,
                 claimLink: null,
                 hoboLink: null,
                 days: '-',
@@ -69,14 +70,17 @@ const GangArmoryHelper = {
 
         // Parse Loaned Items
         const loanedItems = { Weapons: [], Armor: [], Rings: [] };
+        let hasUnbrandPermission = false;
+
         if (loanedOutText) {
             let curr = loanedOutText.nextSibling;
             let section = 'Weapons';
             while(curr) {
-                if (curr.nodeType === Node.ELEMENT_NODE && curr.tagName === 'B' && curr.textContent.match(/Weapons:|Armor:|Rings:/)) {
+                if (curr.nodeType === Node.ELEMENT_NODE && curr.tagName === 'B' && curr.textContent.match(/Weapons|Armor|Rings:/)) {
                     section = curr.textContent.replace(':', '').trim();
                 } else if (curr.nodeType === Node.ELEMENT_NODE && curr.classList && curr.classList.contains('wname')) {
 
+                    let unbrandLink = null;
                     let claimLink = null;
                     let hoboLink = null;
                     let inactiveNode = null;
@@ -87,6 +91,7 @@ const GangArmoryHelper = {
                         if (next.nodeType === Node.ELEMENT_NODE) {
                             if (next.tagName === 'A') {
                                 if (next.href.includes('do=claim2')) claimLink = next;
+                                else if (next.href.includes('do=unbrand2')) { unbrandLink = next; hasUnbrandPermission = true; }
                                 else if (next.href.includes('ID=')) hoboLink = next;
                             } else if (next.tagName === 'FONT' && next.textContent.includes('Inactive')) {
                                 inactiveNode = next;
@@ -115,6 +120,7 @@ const GangArmoryHelper = {
                         coreName: coreName,
                         stat1: stat1,
                         stat2: stat2,
+                        unbrandLink: unbrandLink,
                         claimLink: claimLink,
                         hoboLink: hoboLink,
                         days: daysText,
@@ -306,8 +312,11 @@ const GangArmoryHelper = {
             const table = document.createElement('table');
             table.className = 'armory-table';
             
+            let columns = ['Select', 'Item Name', 'Transfer', 'Unbrand', 'Claim Back', 'Loaned To', 'Days Inactive'];
+            if (!hasUnbrandPermission) columns = columns.filter(c => c !== 'Unbrand');
+
             const trHead = document.createElement('tr');
-            ['Select', 'Item Name', 'Transfer', 'Claim Back', 'Loaned To', 'Days Inactive'].forEach(text => {
+            columns.forEach(text => {
                 const th = document.createElement('th');
                 if (text === 'Select') {
                     const selectAllCb = document.createElement('input');
@@ -353,6 +362,8 @@ const GangArmoryHelper = {
                 if (gB.stat2 !== gA.stat2) return gB.stat2 - gA.stat2;
                 return a.localeCompare(b);
             });
+
+            const myId = Utils.getHoboId();
 
             keys.forEach((coreName, groupIndex) => {
                 const group = grouped[coreName].items;
@@ -401,6 +412,19 @@ const GangArmoryHelper = {
                         tdTransfer.innerHTML = '-';
                     }
 
+                    let tdUnbrand = null;
+                    if (hasUnbrandPermission) {
+                        tdUnbrand = document.createElement('td');
+                        if (item.type === 'loaned' && item.unbrandLink) {
+                            const a = item.unbrandLink.cloneNode(true);
+                            a.style.textDecoration = 'none';
+                            a.style.color = '#d00';
+                            tdUnbrand.appendChild(a);
+                        } else {
+                            tdUnbrand.innerHTML = '-';
+                        }
+                    }
+
                     const tdClaim = document.createElement('td');
                     if (item.type === 'loaned' && item.claimLink) {
                         const a = item.claimLink.cloneNode(true);
@@ -432,6 +456,7 @@ const GangArmoryHelper = {
 
                     tr.appendChild(tdName);
                     tr.appendChild(tdTransfer);
+                    if (hasUnbrandPermission) tr.appendChild(tdUnbrand);
                     tr.appendChild(tdClaim);
                     tr.appendChild(tdHobo);
                     tr.appendChild(tdDays);
@@ -449,13 +474,21 @@ const GangArmoryHelper = {
                     restItems.forEach(item => {
                         const tr = createRow(item, false);
                         tr.className = toggleClass;
-                        tr.style.display = 'none';
+
+                        let isLoanedToMe = (item.type === 'loaned' && item.hoboLink && item.hoboLink.href.includes(`ID=${myId}`));
+                        if (isLoanedToMe) {
+                            tr.setAttribute('data-loaned-to-me', 'true');
+                            tr.style.display = '';
+                        } else {
+                            tr.style.display = 'none';
+                        }
+
                         tbody.appendChild(tr);
                     });
 
                     const toggleTr = document.createElement('tr');
                     const toggleTd = document.createElement('td');
-                    toggleTd.colSpan = 6;
+                    toggleTd.colSpan = hasUnbrandPermission ? 7 : 6;
                     toggleTd.style.backgroundColor = '#fff';
                     toggleTd.style.textAlign = 'left';
                     const a = document.createElement('a');
@@ -466,8 +499,12 @@ const GangArmoryHelper = {
                     a.textContent = `[⮟ Show All ${group.length}x ${coreName}]`;
                     a.onclick = () => {
                         const c = table.querySelectorAll('.' + toggleClass);
-                        const isHidden = c[0].style.display === 'none';
-                        c.forEach(el => el.style.display = isHidden ? '' : 'none');
+                        const isHidden = a.textContent.includes('Show All');
+                        c.forEach(el => {
+                            if (el.getAttribute('data-loaned-to-me') !== 'true') {
+                                el.style.display = isHidden ? '' : 'none';
+                            }
+                        });
                         a.textContent = isHidden ? `[⮝ Hide All ${group.length}x ${coreName}]` : `[⮟ Show All ${group.length}x ${coreName}]`;
                     };
                     toggleTd.appendChild(a);
@@ -497,7 +534,9 @@ const GangArmoryHelper = {
 
             const allHiddenRows = document.querySelectorAll('[class^="custom-group-"]');
             allHiddenRows.forEach(tr => {
-                tr.style.display = isExpanded ? '' : 'none';
+                if (tr.getAttribute('data-loaned-to-me') !== 'true') {
+                    tr.style.display = isExpanded ? '' : 'none';
+                }
             });
 
             expandAllBtn.textContent = isExpanded ? 'Collapse All' : 'Expand All';
@@ -517,7 +556,11 @@ const GangArmoryHelper = {
             const favTable = document.createElement('table');
             favTable.className = 'armory-table';
             const ftrHead = document.createElement('tr');
-            ['Item Name', 'Transfer', 'Claim Back', 'Loaned To', 'Days Inactive'].forEach(text => {
+            
+            let favColumns = ['Item Name', 'Transfer', 'Unbrand', 'Claim Back', 'Loaned To', 'Days Inactive'];
+            if (!hasUnbrandPermission) favColumns = favColumns.filter(c => c !== 'Unbrand');
+
+            favColumns.forEach(text => {
                 const th = document.createElement('th');
                 th.textContent = text;
                 ftrHead.appendChild(th);
@@ -557,6 +600,19 @@ const GangArmoryHelper = {
                         tdTransfer.innerHTML = '<span style="color:red; font-weight:bold;">Not Available</span>';
                     }
                     tr.appendChild(tdTransfer);
+
+                    if (hasUnbrandPermission) {
+                        const tdUnbrand = document.createElement('td');
+                        if (firstItem.type === 'loaned' && firstItem.unbrandLink) {
+                            const a = firstItem.unbrandLink.cloneNode(true);
+                            a.style.textDecoration = 'none';
+                            a.style.color = '#d00';
+                            tdUnbrand.appendChild(a);
+                        } else {
+                            tdUnbrand.innerHTML = '-';
+                        }
+                        tr.appendChild(tdUnbrand);
+                    }
 
                     const tdClaim = document.createElement('td');
                     if (firstItem.type === 'loaned' && firstItem.claimLink) {

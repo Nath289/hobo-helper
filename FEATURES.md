@@ -99,7 +99,7 @@ Helper designed to function on Gang-related pages (`cmd=gang`).
 - **Gang Event Data Save**: Injects an admin-only dashboard specifically within the event stats for events like "Gangsters Sunday = Funday", dynamically tracking and storing custom event payments.
 - **Member List Columns**: Exposes a completely configurable column selection UI right above the "list members" table so users aren't locked into the rigid pre-set columns. Fully integrated with LocalStorage and safely adapts between User and Staff column restrictions.
 - **Format Mass Mails**: Formats the list of recipients on the mass mail reading page into an easy-to-read table with read/unread status filters and total counts.
-- **Gang Armory Dashboard (`GangArmoryHelper.js`)**: Overhauls the Gang Armory interface (`cmd=gang&do=armory`) by grouping identical items by name and sorting dynamically by power stats. Includes a favorite items dashboard pinning priority gear to the top, and interactive buttons to hide selected clutter items permanently. Adds global Expand/Collapse/Toggle All capabilities.
+- **Gang Armory Dashboard (`GangArmoryHelper.js`)**: Overhauls the Gang Armory interface (`cmd=gang&do=armory`) by grouping identical items by name and sorting dynamically by power stats. Includes a favorite items dashboard pinning priority gear to the top, and interactive buttons to hide selected clutter items permanently. Adds an Unbrand action next to Claim Back for players with permissions, and includes global Expand/Collapse/Toggle All capabilities.
 
 ### 24. Market Helper (`MarketHelper`)
 - Converts plain-text inline "Buy" links and Market navigation headers into large, interactive button elements for an improved desktop/mobile marketplace experience.
