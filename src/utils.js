@@ -118,12 +118,14 @@ const Utils = {
         getHoboAgeInDays: function() {
             const ageLine = document.querySelector('#personalInfo .line font[title*="days"]');
             if (ageLine && ageLine.title) {
-                const match = ageLine.title.match(/(\d+)\s*days/i);
-                if (match) {
-                    return parseInt(match[1], 10);
-                }
+                const match = ageLine.title.match(/(\d+)\s+days/);
+                if (match) return parseInt(match[1], 10);
             }
-            return null;
+            return 0;
+        },
+        getSr: function() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('sr');
         }
 
 };

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.36.20260416.1247
+// @version      8.38.20260416.2133
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -133,12 +133,14 @@ const Utils = {
         getHoboAgeInDays: function() {
             const ageLine = document.querySelector('#personalInfo .line font[title*="days"]');
             if (ageLine && ageLine.title) {
-                const match = ageLine.title.match(/(\d+)\s*days/i);
-                if (match) {
-                    return parseInt(match[1], 10);
-                }
+                const match = ageLine.title.match(/(\d+)\s+days/);
+                if (match) return parseInt(match[1], 10);
             }
-            return null;
+            return 0;
+        },
+        getSr: function() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('sr');
         }
 
 };
@@ -4251,7 +4253,8 @@ const LivingAreaHelper = {
         { key: 'LivingAreaHelper_MixerLink', label: 'Mixer Link' },
         { key: 'LivingAreaHelper_VersionDisplay', label: 'Version Display' },
         { key: 'LivingAreaHelper_WinPercentageCalc', label: 'Win Percentage Calc' },
-        { key: 'LivingAreaHelper_WideShowAll', label: 'Always Show More Info<br><span style="font-size: 11px; color: #555;">(Requires Display Helper Page Width >= 850px)</span>' }
+        { key: 'LivingAreaHelper_WideShowAll', label: 'Always Show More Info<br><span style="font-size: 11px; color: #555;">(Requires Display Helper Page Width >= 850px)</span>' },
+        { key: 'LivingAreaHelper_ReturnBranded', label: 'Quick Return Branded Button' }
     ],
     init: function() {
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
@@ -4277,13 +4280,48 @@ const LivingAreaHelper = {
             this.initVersionDisplay();
         }
         if (savedSettings['LivingAreaHelper_WinPercentageCalc'] !== false) {
-            this.initWinPercentageCalc();
+            this.initWinPercentageCalc(savedSettings);
         }
         if (savedSettings['LivingAreaHelper_WideShowAll'] !== false) {
             this.initWideShowAll(savedSettings);
         }
+        if (savedSettings['LivingAreaHelper_ReturnBranded'] !== false) {
+            this.initReturnBranded();
+        }
 
         this.initInactiveSpecialItemBg();
+    },
+
+    initReturnBranded: function() {
+        const viewListLinks = Array.from(document.querySelectorAll("a[href*=\x22cmd=wep\x22]"));
+        const targetLink = viewListLinks.find(a => a.textContent.trim() === "View List");
+
+        if (targetLink) {
+            const btn = document.createElement("button");
+            btn.textContent = "Return Branded";
+            btn.className = "btn";
+            btn.style.display = "block";
+            btn.style.margin = "4px auto";
+            btn.style.userSelect = "none";
+            btn.style.webkitUserSelect = "none";
+
+            btn.onclick = function(e) {
+                e.preventDefault();
+                const sr = Utils.getSr();
+                if (sr) {
+                    window.location.href = "game.php?sr=" + sr + "&cmd=wep&do=return_branded";
+                }
+            };
+
+            let insertBeforeNode = targetLink.nextSibling;
+            if (insertBeforeNode && insertBeforeNode.nodeName === 'IMG') {
+                insertBeforeNode = insertBeforeNode.nextSibling;
+            }
+
+            const br = document.createElement("br");
+            targetLink.parentNode.insertBefore(br, insertBeforeNode);
+            targetLink.parentNode.insertBefore(btn, insertBeforeNode);
+        }
     },
 
     initInactiveSpecialItemBg: function() {
@@ -4694,7 +4732,7 @@ const LivingAreaHelper = {
         updateTracker();
     },
 
-    initWinPercentageCalc: function() {
+    initWinPercentageCalc: function(settings) {
         const urlParams = new URLSearchParams(window.location.search);
         const cmd = urlParams.get('cmd');
         if (cmd) return;
@@ -4767,6 +4805,28 @@ const LivingAreaHelper = {
             });
 
             calcHtml += `</div>`;
+
+            const isWiden = settings['LivingAreaHelper_WideShowAll'] !== false && settings['DisplayHelper_WidenPage'];
+            const pageWidth = parseInt(settings['DisplayHelper_PageWidth'] || 660, 10);
+
+            if (isWiden && pageWidth >= 850) {
+                const personalInfo = document.getElementById('personalInfo');
+                if (personalInfo) {
+                    const block = document.createElement('div');
+                    block.className = 'statBlock line more_info';
+                    block.style.display = 'block';
+                    block.innerHTML = calcHtml;
+                    personalInfo.insertAdjacentElement('afterend', block);
+
+                    const winCalc = block.querySelector('#winCalc');
+                    if (winCalc) {
+                        winCalc.style.borderTop = 'none';
+                        winCalc.style.marginTop = '0';
+                        winCalc.style.paddingTop = '0';
+                    }
+                    return;
+                }
+            }
 
             battleBlock.insertAdjacentHTML('beforeend', calcHtml);
         }
@@ -7806,6 +7866,22 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.38",
+            date: "2026-04-16",
+            type: "Changed",
+            notes: [
+                "The Win Percentage Calculator on the Living Area page dynamically relocates beneath the Personal Info section when the 'Always Show More Info' feature is toggled on a widened page."
+            ]
+        },
+        {
+            version: "8.37",
+            date: "2026-04-16",
+            type: "Changed",
+            notes: [
+                "Modified the `GangArmoryHelper` to ensure that any items currently loaned to the active user are always visible out-of-the-box, bypassing the \"Hide All\" group consolidation logic so users no longer have to hunt through collapsed groups for their own gear."
+            ]
+        },
+        {
             version: "8.36",
             date: "2026-04-16",
             type: "Added",
@@ -7828,27 +7904,6 @@ const ChangelogData = {
             notes: [
                 "Fixed an issue in `GangArmoryHelper` where browsers were aggressive caching and incorrectly restoring the selection state of checkboxes upon reloading the page. Unchecking checkboxes is now enforced programmatically via script default and `autocomplete=\"off\"` attributes.",
                 "Refined Gang Armory checkbox logic so that \"Save Favorites\" and \"Hide Selected\" operations explicitly deselect the checkboxes internally before prompting a page reload to guarantee a clean slate."
-            ]
-        },
-        {
-            version: "8.33",
-            date: "2026-04-16",
-            type: "Added",
-            notes: [
-                "Added `GangArmoryHelper` to completely overhaul the Gang Armory interface (`cmd=gang&do=armory`).",
-                "Grouped identical weapons, armor, and rings by name into expandable categorical tables, sorted dynamically by their primary power statistics rather than alphabetically.",
-                "Added a \"Favorite Items\" dashboard above the Armory tabs that lets users pin priority items, displaying real-time availability and warning in red if all copies are loaned out.",
-                "Added an interactive \"Hide Selected\" system allowing users to permanently hide unwanted clutter items from the Armory view. Hidden items can be toggled back into view via a \"Show Hidden\" button.",
-                "Integrated robust management for \"Favorite Items\" and \"Hidden Items\" directly into the `SettingsHelper` preferences page to easily remove individual items or reset entire lists.",
-                "Implemented global action buttons for \"Expand All\", \"Collapse All\", and column header checkboxes to quickly select or deselect all items in a group at once."
-            ]
-        },
-        {
-            version: "8.32",
-            date: "2026-04-15",
-            type: "Fixed",
-            notes: [
-                "Fixed DisplayHelper custom titles (Fake Qwee and Jack Reacher) incorrectly injecting text into player avatar elements by skipping `.pavatar` elements."
             ]
         }
     ]

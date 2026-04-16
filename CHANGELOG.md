@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.39] - 2026-04-16
+### Added
+- Added a "Quick Return Branded Button" to the Living Area helper which inserts a persistent button next to the View List link to immediately return all loaned branded weapons.
+
+## [8.38] - 2026-04-16
+### Changed
+- The Win Percentage Calculator on the Living Area page dynamically relocates beneath the Personal Info section when the 'Always Show More Info' feature is toggled on a widened page.
+
 ## [8.37] - 2026-04-16
 ### Changed
 - Modified the `GangArmoryHelper` to ensure that any items currently loaned to the active user are always visible out-of-the-box, bypassing the "Hide All" group consolidation logic so users no longer have to hunt through collapsed groups for their own gear.
