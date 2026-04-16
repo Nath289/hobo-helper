@@ -61,9 +61,11 @@ const LivingAreaHelper = {
 
             btn.onclick = function(e) {
                 e.preventDefault();
-                const sr = Utils.getSr();
-                if (sr) {
-                    window.location.href = "game.php?sr=" + sr + "&cmd=wep&do=return_branded";
+                if (confirm("Are you sure you want to return all your loaned branded items to the Gang Armory?")) {
+                    const sr = Utils.getSr();
+                    if (sr) {
+                        window.location.href = "game.php?sr=" + sr + "&cmd=wep&do=return_branded";
+                    }
                 }
             };
 

@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.40] - 2026-04-16
+### Changed
+- Added a confirmation dialog to the "Quick Return Branded Button" in the Living Area to prevent accidental item returns.
+
 ## [8.39] - 2026-04-16
 ### Added
 - Added a "Quick Return Branded Button" to the Living Area helper which inserts a persistent button next to the View List link to immediately return all loaned branded weapons.

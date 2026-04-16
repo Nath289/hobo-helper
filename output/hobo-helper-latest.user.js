@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.39
+// @version      8.40
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -4307,9 +4307,11 @@ const LivingAreaHelper = {
 
             btn.onclick = function(e) {
                 e.preventDefault();
-                const sr = Utils.getSr();
-                if (sr) {
-                    window.location.href = "game.php?sr=" + sr + "&cmd=wep&do=return_branded";
+                if (confirm("Are you sure you want to return all your loaned branded items to the Gang Armory?")) {
+                    const sr = Utils.getSr();
+                    if (sr) {
+                        window.location.href = "game.php?sr=" + sr + "&cmd=wep&do=return_branded";
+                    }
                 }
             };
 
@@ -7866,6 +7868,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.40",
+            date: "2026-04-16",
+            type: "Changed",
+            notes: [
+                "Added a confirmation dialog to the \"Quick Return Branded Button\" in the Living Area to prevent accidental item returns."
+            ]
+        },
+        {
             version: "8.39",
             date: "2026-04-16",
             type: "Added",
@@ -7895,14 +7905,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Extended the script's global execution domain scope (via `@match` headers) to seamlessly support both the standard `www.hobowars.com` address and the non-www `hobowars.com` variation, fixing instances where Tampermonkey refused to run the code."
-            ]
-        },
-        {
-            version: "8.35",
-            date: "2026-04-16",
-            type: "Added",
-            notes: [
-                "Added descriptive hover tooltips (alternate text) to the `GangArmoryHelper` global action buttons (Show Hidden, Hide Selected, Save Favorites, Expand All) to clearly convey exactly what each action performs."
             ]
         }
     ]

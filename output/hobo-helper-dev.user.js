@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.38.20260416.2133
+// @version      8.39.20260416.2142
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -4307,9 +4307,11 @@ const LivingAreaHelper = {
 
             btn.onclick = function(e) {
                 e.preventDefault();
-                const sr = Utils.getSr();
-                if (sr) {
-                    window.location.href = "game.php?sr=" + sr + "&cmd=wep&do=return_branded";
+                if (confirm("Are you sure you want to return all your loaned branded items to the Gang Armory?")) {
+                    const sr = Utils.getSr();
+                    if (sr) {
+                        window.location.href = "game.php?sr=" + sr + "&cmd=wep&do=return_branded";
+                    }
                 }
             };
 
@@ -7866,6 +7868,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.39",
+            date: "2026-04-16",
+            type: "Added",
+            notes: [
+                "Added a \"Quick Return Branded Button\" to the Living Area helper which inserts a persistent button next to the View List link to immediately return all loaned branded weapons."
+            ]
+        },
+        {
             version: "8.38",
             date: "2026-04-16",
             type: "Changed",
@@ -7895,15 +7905,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added descriptive hover tooltips (alternate text) to the `GangArmoryHelper` global action buttons (Show Hidden, Hide Selected, Save Favorites, Expand All) to clearly convey exactly what each action performs."
-            ]
-        },
-        {
-            version: "8.34",
-            date: "2026-04-16",
-            type: "Fixed",
-            notes: [
-                "Fixed an issue in `GangArmoryHelper` where browsers were aggressive caching and incorrectly restoring the selection state of checkboxes upon reloading the page. Unchecking checkboxes is now enforced programmatically via script default and `autocomplete=\"off\"` attributes.",
-                "Refined Gang Armory checkbox logic so that \"Save Favorites\" and \"Hide Selected\" operations explicitly deselect the checkboxes internally before prompting a page reload to guarantee a clean slate."
             ]
         }
     ]
