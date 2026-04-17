@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.44.20260417.2240
+// @version      8.44.20260417.2338
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -663,6 +663,7 @@ const DisplayHelper = {
         { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' },
         { key: 'DisplayHelper_FakeQwee', label: 'Enable the Fake Qwee' },
         { key: 'DisplayHelper_JackReacher', label: 'Enable Jack Reacher Major Title' },
+        { key: 'DisplayHelper_Grabow', label: 'Enable Grabow the Great Title' },
         { key: 'DisplayHelper_ScrollableTopbar', label: 'Swipeable Topbar Menu (Mobile)', defaultValue: true },
         { key: 'DisplayHelper_WidenPage', label: 'Widen Content Area' },
         { key: 'DisplayHelper_PageWidth', label: 'Page Width (px)', type: 'number', defaultValue: 660, parent: 'DisplayHelper_WidenPage' },
@@ -682,6 +683,9 @@ const DisplayHelper = {
         }
         if (settings['DisplayHelper_JackReacher'] !== false) {
             this.initJackReacher();
+        }
+        if (settings['DisplayHelper_Grabow'] !== false) {
+            this.initGrabow();
         }
         if (settings['DisplayHelper_ScrollableTopbar'] !== false) {
             this.initScrollableTopbar();
@@ -752,22 +756,29 @@ const DisplayHelper = {
             });
         }
     },
-    addTitleToPlayer: function(targetHoboId, plainTitle, styledTitle) {
+    addTitleToPlayer: function(targetHoboId, plainTitle, styledTitle, position = 'prefix') {
         const playerLinks = document.querySelectorAll(`a[href*="cmd=player&ID=${targetHoboId}"]`);
         playerLinks.forEach(link => {
             if (!link.innerHTML.includes(plainTitle) && 
                 !link.innerHTML.includes('<img') && 
                 !link.classList.contains('pavatar') && 
                 !link.innerHTML.includes('avatar-circle')) {
-                link.innerHTML = `${styledTitle} ` + link.innerHTML;
+                if (position === 'suffix') {
+                    link.innerHTML = link.innerHTML + ` ${styledTitle}`;
+                } else {
+                    link.innerHTML = `${styledTitle} ` + link.innerHTML;
+                }
             }
         });
     },
     initFakeQwee: function() {
-        this.addTitleToPlayer("2924510", "The Fake", `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">The Fake</span>`);
+        this.addTitleToPlayer("2924510", "The Fake", `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">The Fake</span>`, 'prefix');
     },
     initJackReacher: function() {
-        this.addTitleToPlayer("107380", "Major", `<span style="color: #00EE00; font-weight: bold; text-shadow: 1px 1px 2px black;">Major</span>`);
+        this.addTitleToPlayer("107380", "Major", `<span style="color: #00EE00; font-weight: bold; text-shadow: 1px 1px 2px black;">Major</span>`, 'prefix');
+    },
+    initGrabow: function() {
+        this.addTitleToPlayer("1003713", "the Great", `<span style="color: red; font-weight: bold; text-shadow: 0 0 5px black, 1px 1px 2px black;">the Great</span>`, 'suffix');
     },
     initInterestingLevel: function() {
         const levelSpan = document.getElementById('statValueLvl');
@@ -8415,7 +8426,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.44.20260417.2240';
+        window.HoboHelperVersion = '8.44.20260417.2338';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

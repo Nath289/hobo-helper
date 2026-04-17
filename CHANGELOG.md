@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 ## [8.44] - 2026-04-17
 ### Added
 - Added "Check for Updates" button to the Settings menu that fetches the latest release from GitHub to compare against current version.
-- Added version display `v{VERSION}` in Settings menu.
+- Added a new setting to Display Helper to display a red "the Great" suffix title next to all profile links pointing to Grabow (1003713).
+
+### Changed
+- Updated the Settings Menu's "Check for Updates" functionality to automatically disable itself functionally and visually when running as a local development build. 
+- Updated custom player title formatting logic internally to dynamically support both suffix and prefix tag positioning.
 
 ## [8.43] - 2026-04-17
 ### Changed
