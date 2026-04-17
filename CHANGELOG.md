@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.41] - 2026-04-17
+### Changed
+- Re-formatted the Food tab consume menu into a cleaner and much more responsive table layout.
+- Converted floating "Consume" action links into standard UI buttons.
+- Converted floating "Check all" form actions into unified matching UI buttons.
+- Added visual row-highlighting for checked/selected food items.
+
 ## [8.40] - 2026-04-16
 ### Changed
 - Added a confirmation dialog to the "Quick Return Branded Button" in the Living Area to prevent accidental item returns.

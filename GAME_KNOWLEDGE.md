@@ -39,3 +39,6 @@ This document contains a general knowledge base about the mechanics, layout, and
 - Message Board side panels displaying the user ID and avatar are contained within `<td width="140" bgcolor="#EEEEEE">`
 
 - Player profile pages (cmd=player) contain the user details under a bolded 'Citizen Information:' text section.
+
+## Food & Consumption
+- The "Consume" links in the native cmd=food form are originally simple text nodes surrounded by square brackets ([<a href="...">Consume</a>]) and separated by <br> tags rather than structured lists or tables. When reformatting this list, you must manually iterate through textual siblings to clear these brackets and line breaks.
