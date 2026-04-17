@@ -7431,55 +7431,65 @@ const SettingsHelper = {
         headerContainer.appendChild(titleDiv);
 
         const versionStr = window.HoboHelperVersion || (typeof GM_info !== 'undefined' ? GM_info.script.version : 'Unknown');
+        const isDev = versionStr !== 'Unknown' && versionStr.split('.').length > 2;
+
         const versionDiv = document.createElement('div');
         versionDiv.style.fontSize = '12px';
         versionDiv.style.color = '#666';
         versionDiv.style.marginTop = '5px';
-        versionDiv.textContent = `v${versionStr}`;
+        versionDiv.textContent = `v${versionStr}` + (isDev ? ' (Dev Build)' : '');
         headerContainer.appendChild(versionDiv);
 
         const updateBtn = document.createElement('button');
         updateBtn.className = 'btn';
-        updateBtn.textContent = 'Check for Updates';
+        updateBtn.textContent = isDev ? 'Updates Disabled (Dev)' : 'Check for Updates';
         updateBtn.style.position = 'absolute';
         updateBtn.style.right = '10px';
         updateBtn.style.top = '10px';
         updateBtn.style.userSelect = 'none';
         updateBtn.style.webkitUserSelect = 'none';
-        updateBtn.onclick = (e) => {
-            e.preventDefault();
-            updateBtn.textContent = 'Checking...';
+        
+        if (isDev) {
             updateBtn.disabled = true;
-            fetch('https://raw.githubusercontent.com/Nath289/hobo-helper/main/output/hobo-helper-latest.user.js?t=' + Date.now())
-                .then(r => r.text())
-                .then(text => {
-                    const match = text.match(/@version\s+([\d\.]+)/);
-                    if (match && match[1]) {
-                        const latest = match[1];
-                        if (versionStr !== 'Unknown' && latest !== versionStr) {
-                            updateBtn.textContent = 'Update Available (' + latest + ')!';
-                            updateBtn.style.backgroundColor = '#4CAF50';
-                            updateBtn.style.color = 'white';
-                            updateBtn.onclick = () => {
-                                window.location.href = 'https://github.com/Nath289/hobo-helper/raw/refs/heads/main/output/hobo-helper-latest.user.js';
-                            };
+            updateBtn.style.opacity = '0.6';
+            updateBtn.style.cursor = 'not-allowed';
+            updateBtn.title = 'Update checking is disabled on local development builds.';
+        } else {
+            updateBtn.onclick = (e) => {
+                e.preventDefault();
+                updateBtn.textContent = 'Checking...';
+                updateBtn.disabled = true;
+                fetch('https://raw.githubusercontent.com/Nath289/hobo-helper/main/output/hobo-helper-latest.user.js?t=' + Date.now())
+                    .then(r => r.text())
+                    .then(text => {
+                        const match = text.match(/@version\s+([\d\.]+)/);
+                        if (match && match[1]) {
+                            const latest = match[1];
+                            if (versionStr !== 'Unknown' && latest !== versionStr) {
+                                updateBtn.textContent = 'Update Available (' + latest + ')!';
+                                updateBtn.style.backgroundColor = '#4CAF50';
+                                updateBtn.style.color = 'white';
+                                updateBtn.onclick = () => {
+                                    window.location.href = 'https://github.com/Nath289/hobo-helper/raw/refs/heads/main/output/hobo-helper-latest.user.js';
+                                };
+                            } else {
+                                updateBtn.textContent = 'Up to date!';
+                                setTimeout(() => { updateBtn.textContent = 'Check for Updates'; }, 3000);
+                            }
                         } else {
-                            updateBtn.textContent = 'Up to date!';
+                            updateBtn.textContent = 'Error parsing version';
                             setTimeout(() => { updateBtn.textContent = 'Check for Updates'; }, 3000);
                         }
-                    } else {
-                        updateBtn.textContent = 'Error parsing version';
+                    })
+                    .catch(err => {
+                        updateBtn.textContent = 'Failed to check';
                         setTimeout(() => { updateBtn.textContent = 'Check for Updates'; }, 3000);
-                    }
-                })
-                .catch(err => {
-                    updateBtn.textContent = 'Failed to check';
-                    setTimeout(() => { updateBtn.textContent = 'Check for Updates'; }, 3000);
-                })
-                .finally(() => {
-                    updateBtn.disabled = false;
-                });
-        };
+                    })
+                    .finally(() => {
+                        updateBtn.disabled = false;
+                    });
+            };
+        }
         headerContainer.appendChild(updateBtn);
 
         contentArea.appendChild(headerContainer);

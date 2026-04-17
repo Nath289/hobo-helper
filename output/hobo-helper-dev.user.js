@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.43.20260417.2222
+// @version      8.44.20260417.2240
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -7431,55 +7431,65 @@ const SettingsHelper = {
         headerContainer.appendChild(titleDiv);
 
         const versionStr = window.HoboHelperVersion || (typeof GM_info !== 'undefined' ? GM_info.script.version : 'Unknown');
+        const isDev = versionStr !== 'Unknown' && versionStr.split('.').length > 2;
+
         const versionDiv = document.createElement('div');
         versionDiv.style.fontSize = '12px';
         versionDiv.style.color = '#666';
         versionDiv.style.marginTop = '5px';
-        versionDiv.textContent = `v${versionStr}`;
+        versionDiv.textContent = `v${versionStr}` + (isDev ? ' (Dev Build)' : '');
         headerContainer.appendChild(versionDiv);
 
         const updateBtn = document.createElement('button');
         updateBtn.className = 'btn';
-        updateBtn.textContent = 'Check for Updates';
+        updateBtn.textContent = isDev ? 'Updates Disabled (Dev)' : 'Check for Updates';
         updateBtn.style.position = 'absolute';
         updateBtn.style.right = '10px';
         updateBtn.style.top = '10px';
         updateBtn.style.userSelect = 'none';
         updateBtn.style.webkitUserSelect = 'none';
-        updateBtn.onclick = (e) => {
-            e.preventDefault();
-            updateBtn.textContent = 'Checking...';
+        
+        if (isDev) {
             updateBtn.disabled = true;
-            fetch('https://raw.githubusercontent.com/Nath289/hobo-helper/main/output/hobo-helper-latest.user.js?t=' + Date.now())
-                .then(r => r.text())
-                .then(text => {
-                    const match = text.match(/@version\s+([\d\.]+)/);
-                    if (match && match[1]) {
-                        const latest = match[1];
-                        if (versionStr !== 'Unknown' && latest !== versionStr) {
-                            updateBtn.textContent = 'Update Available (' + latest + ')!';
-                            updateBtn.style.backgroundColor = '#4CAF50';
-                            updateBtn.style.color = 'white';
-                            updateBtn.onclick = () => {
-                                window.location.href = 'https://github.com/Nath289/hobo-helper/raw/refs/heads/main/output/hobo-helper-latest.user.js';
-                            };
+            updateBtn.style.opacity = '0.6';
+            updateBtn.style.cursor = 'not-allowed';
+            updateBtn.title = 'Update checking is disabled on local development builds.';
+        } else {
+            updateBtn.onclick = (e) => {
+                e.preventDefault();
+                updateBtn.textContent = 'Checking...';
+                updateBtn.disabled = true;
+                fetch('https://raw.githubusercontent.com/Nath289/hobo-helper/main/output/hobo-helper-latest.user.js?t=' + Date.now())
+                    .then(r => r.text())
+                    .then(text => {
+                        const match = text.match(/@version\s+([\d\.]+)/);
+                        if (match && match[1]) {
+                            const latest = match[1];
+                            if (versionStr !== 'Unknown' && latest !== versionStr) {
+                                updateBtn.textContent = 'Update Available (' + latest + ')!';
+                                updateBtn.style.backgroundColor = '#4CAF50';
+                                updateBtn.style.color = 'white';
+                                updateBtn.onclick = () => {
+                                    window.location.href = 'https://github.com/Nath289/hobo-helper/raw/refs/heads/main/output/hobo-helper-latest.user.js';
+                                };
+                            } else {
+                                updateBtn.textContent = 'Up to date!';
+                                setTimeout(() => { updateBtn.textContent = 'Check for Updates'; }, 3000);
+                            }
                         } else {
-                            updateBtn.textContent = 'Up to date!';
+                            updateBtn.textContent = 'Error parsing version';
                             setTimeout(() => { updateBtn.textContent = 'Check for Updates'; }, 3000);
                         }
-                    } else {
-                        updateBtn.textContent = 'Error parsing version';
+                    })
+                    .catch(err => {
+                        updateBtn.textContent = 'Failed to check';
                         setTimeout(() => { updateBtn.textContent = 'Check for Updates'; }, 3000);
-                    }
-                })
-                .catch(err => {
-                    updateBtn.textContent = 'Failed to check';
-                    setTimeout(() => { updateBtn.textContent = 'Check for Updates'; }, 3000);
-                })
-                .finally(() => {
-                    updateBtn.disabled = false;
-                });
-        };
+                    })
+                    .finally(() => {
+                        updateBtn.disabled = false;
+                    });
+            };
+        }
         headerContainer.appendChild(updateBtn);
 
         contentArea.appendChild(headerContainer);
@@ -8306,6 +8316,15 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.44",
+            date: "2026-04-17",
+            type: "Added",
+            notes: [
+                "Added \"Check for Updates\" button to the Settings menu that fetches the latest release from GitHub to compare against current version.",
+                "Added version display `v{VERSION}` in Settings menu."
+            ]
+        },
+        {
             version: "8.43",
             date: "2026-04-17",
             type: "Changed",
@@ -8343,14 +8362,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Added a confirmation dialog to the \"Quick Return Branded Button\" in the Living Area to prevent accidental item returns."
-            ]
-        },
-        {
-            version: "8.39",
-            date: "2026-04-16",
-            type: "Added",
-            notes: [
-                "Added a \"Quick Return Branded Button\" to the Living Area helper which inserts a persistent button next to the View List link to immediately return all loaned branded weapons."
             ]
         }
     ]
@@ -8404,7 +8415,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.43.20260417.2222';
+        window.HoboHelperVersion = '8.44.20260417.2240';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
