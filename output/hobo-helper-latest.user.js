@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.42
+// @version      8.43
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -1042,10 +1042,10 @@ const FoodHelper = {
             }
         };
 
-        let timeout = null;
+        let rafId = null;
         const observer = new MutationObserver(() => {
-            if (timeout) clearTimeout(timeout);
-            timeout = setTimeout(bindButtons, 250);
+            if (rafId) cancelAnimationFrame(rafId);
+            rafId = requestAnimationFrame(bindButtons);
         });
 
         // The UI might be inside a #foodTab container (living area) or the main document body
@@ -8252,6 +8252,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.43",
+            date: "2026-04-17",
+            type: "Changed",
+            notes: [
+                "Swapped `setTimeout` debounce for `requestAnimationFrame` in the `FoodHelper` observer to ensure immediate, jitter-free UI updates when rendering food tables."
+            ]
+        },
+        {
             version: "8.42",
             date: "2026-04-17",
             type: "Added",
@@ -8289,14 +8297,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added a \"Quick Return Branded Button\" to the Living Area helper which inserts a persistent button next to the View List link to immediately return all loaned branded weapons."
-            ]
-        },
-        {
-            version: "8.38",
-            date: "2026-04-16",
-            type: "Changed",
-            notes: [
-                "The Win Percentage Calculator on the Living Area page dynamically relocates beneath the Personal Info section when the 'Always Show More Info' feature is toggled on a widened page."
             ]
         }
     ]

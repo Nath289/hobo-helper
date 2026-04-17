@@ -54,10 +54,10 @@ const FoodHelper = {
             }
         };
 
-        let timeout = null;
+        let rafId = null;
         const observer = new MutationObserver(() => {
-            if (timeout) clearTimeout(timeout);
-            timeout = setTimeout(bindButtons, 250);
+            if (rafId) cancelAnimationFrame(rafId);
+            rafId = requestAnimationFrame(bindButtons);
         });
 
         // The UI might be inside a #foodTab container (living area) or the main document body

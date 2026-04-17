@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.43] - 2026-04-17
+### Changed
+- Swapped `setTimeout` debounce for `requestAnimationFrame` in the `FoodHelper` observer to ensure immediate, jitter-free UI updates when rendering food tables.
+
 ## [8.42] - 2026-04-17
 ### Added
 - Added `FoodBankHelper` to explicitly manage and improve the main Food Bank overview interface (`cmd=food_bank`).
@@ -513,3 +517,5 @@ m- Included an interactive "View Stats" table modal showing lifetime consumption
 ## [7.41] - 2026-04-02
 ### Added
 - Living Area Mixer Link feature (added link to Mixer next to Hobo Grail/Kings Kiddie Cup/Golden Trolly).
+
+
