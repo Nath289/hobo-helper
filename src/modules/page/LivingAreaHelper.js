@@ -44,6 +44,58 @@ const LivingAreaHelper = {
         }
 
         this.initInactiveSpecialItemBg();
+        this.syncHealingTracker();
+    },
+
+    syncHealingTracker: function() {
+        const lastHealSaved = localStorage.getItem('hw_healing_last_used');
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const cmd = urlParams.get('cmd');
+        
+        // Ensure we're in the main living area, without a sub-command like 'food' or 'points'
+        if (cmd && cmd !== '') return;
+
+        // Check if alive
+        const lifeLabel = document.getElementById('lifeValue');
+        if (lifeLabel && lifeLabel.textContent.includes('0%')) return;
+
+        // Parse "Alive: 27 min 30 sec" or "Alive: 03 secs"
+        const statsLines = document.querySelectorAll('#generalDisplay .line');
+        let aliveLine = null;
+        statsLines.forEach(line => {
+            if (line.textContent.includes('Alive:')) {
+                aliveLine = line;
+            }
+        });
+
+        if (aliveLine) {
+            const aliveText = aliveLine.textContent;
+            let totalSeconds = 0;
+
+            const minMatch = aliveText.match(/(\d+)\s*mins?/i);
+            if (minMatch) {
+                totalSeconds += parseInt(minMatch[1], 10) * 60;
+            }
+
+            const secMatch = aliveText.match(/(\d+)\s*secs?/i);
+            if (secMatch) {
+                totalSeconds += parseInt(secMatch[1], 10);
+            }
+
+            if (totalSeconds > 0) {
+                const estimatedHealTime = Date.now() - (totalSeconds * 1000);
+                const savedTime = lastHealSaved ? parseInt(lastHealSaved, 10) : 0;
+                
+                // Allow a tiny margin of error (e.g., 5 seconds) to prevent constant overwriting
+                // if it's already generally correct from the hospital click.
+                // If it differs by more than 5s, the game's actual server time is offset from local storage.
+                if (!lastHealSaved || Math.abs(estimatedHealTime - savedTime) > 5000) {
+                    localStorage.setItem('hw_healing_last_used', estimatedHealTime.toString());
+                    console.log('LivingAreaHelper: Synced healing tracker local storage to server Alive time.');
+                }
+            }
+        }
     },
 
     initReturnBranded: function() {

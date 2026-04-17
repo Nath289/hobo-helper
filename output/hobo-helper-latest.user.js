@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.44
+// @version      8.45
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -669,7 +669,8 @@ const DisplayHelper = {
         { key: 'DisplayHelper_PageWidth', label: 'Page Width (px)', type: 'number', defaultValue: 660, parent: 'DisplayHelper_WidenPage' },
         { key: 'DisplayHelper_AwakeNotify', label: 'Awake Full Notification (Desktop)', defaultValue: false },
         { key: 'DisplayHelper_AwakeNotifyInactive', label: 'Notify Only if Inactive (mins)', type: 'number', defaultValue: 30, parent: 'DisplayHelper_AwakeNotify' },
-        { key: 'DisplayHelper_InterestingLevel', label: 'Show Next Interesting Level', defaultValue: true }
+        { key: 'DisplayHelper_InterestingLevel', label: 'Show Next Interesting Level', defaultValue: true },
+        { key: 'DisplayHelper_LiveAliveTime', label: 'Show Live Alive Time in Top Menu', defaultValue: true }
     ],
     init: function() {
         const settings = Utils.getSettings();
@@ -701,6 +702,56 @@ const DisplayHelper = {
         if (settings['DisplayHelper_InterestingLevel'] !== false) {
             this.initInterestingLevel();
         }
+        if (settings['DisplayHelper_LiveAliveTime'] !== false) {
+            this.initLiveAliveTime();
+        }
+    },
+    initLiveAliveTime: function() {
+        const topbarUl = document.querySelector('.topbar-menu ul');
+        if (!topbarUl) return;
+        
+        const lifeLabel = document.getElementById('lifeValue');
+        if (lifeLabel && lifeLabel.textContent.includes('0%')) {
+            localStorage.removeItem('hw_healing_last_used');
+            return;
+        }
+
+        const lastHealSaved = localStorage.getItem('hw_healing_last_used');
+        // Do not render anything if they have never healed/synced since the script update
+        if (!lastHealSaved) return;
+
+        const li = document.createElement('li');
+        const displayLink = document.createElement('a');
+        displayLink.href = '#';
+        displayLink.style.cursor = 'default';
+        displayLink.onclick = (e) => e.preventDefault();
+        li.appendChild(displayLink);
+        topbarUl.appendChild(li);
+
+        const updateAliveTime = () => {
+            const currentSaved = localStorage.getItem('hw_healing_last_used');
+            if (!currentSaved) return;
+
+            const elapsedSecs = Math.floor((Date.now() - parseInt(currentSaved, 10)) / 1000);
+            if (elapsedSecs < 0) {
+                displayLink.textContent = 'Alive: 00 secs';
+                return;
+            }
+
+            const mins = Math.floor(elapsedSecs / 60);
+            const secs = elapsedSecs % 60;
+            
+            let timeStr = 'Alive: ';
+            if (mins > 0) {
+                timeStr += `${mins.toString().padStart(2, '0')} min${mins === 1 ? '' : 's'} `;
+            }
+            timeStr += `${secs.toString().padStart(2, '0')} sec${secs === 1 ? '' : 's'}`;
+            
+            displayLink.textContent = timeStr;
+        };
+
+        updateAliveTime();
+        setInterval(updateAliveTime, 1000);
     },
     initWidenPage: function(width) {
         const style = document.createElement('style');
@@ -4441,6 +4492,28 @@ const HitlistHelper = {
     }
 };
 
+const HospitalHelper = {
+    cmds: 'hospital',
+    settings: [
+        { key: 'HospitalHelper_TrackHealing', label: 'Track Healing Times', defaultValue: true }
+    ],
+    init: function() {
+        const settings = Utils.getSettings();
+        
+        if (settings['HospitalHelper_TrackHealing'] !== false) {
+            this.trackHealing();
+        }
+    },
+    trackHealing: function() {
+        const healForms = document.querySelectorAll('form.healButton');
+        healForms.forEach(form => {
+            form.addEventListener('submit', () => {
+                localStorage.setItem('hw_healing_last_used', Date.now().toString());
+            });
+        });
+    },
+};
+
 const KurtzCampHelper = {
     cmds: 'camp_kurtz',
     init: function() {
@@ -4685,6 +4758,58 @@ const LivingAreaHelper = {
         }
 
         this.initInactiveSpecialItemBg();
+        this.syncHealingTracker();
+    },
+
+    syncHealingTracker: function() {
+        const lastHealSaved = localStorage.getItem('hw_healing_last_used');
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const cmd = urlParams.get('cmd');
+        
+        // Ensure we're in the main living area, without a sub-command like 'food' or 'points'
+        if (cmd && cmd !== '') return;
+
+        // Check if alive
+        const lifeLabel = document.getElementById('lifeValue');
+        if (lifeLabel && lifeLabel.textContent.includes('0%')) return;
+
+        // Parse "Alive: 27 min 30 sec" or "Alive: 03 secs"
+        const statsLines = document.querySelectorAll('#generalDisplay .line');
+        let aliveLine = null;
+        statsLines.forEach(line => {
+            if (line.textContent.includes('Alive:')) {
+                aliveLine = line;
+            }
+        });
+
+        if (aliveLine) {
+            const aliveText = aliveLine.textContent;
+            let totalSeconds = 0;
+
+            const minMatch = aliveText.match(/(\d+)\s*mins?/i);
+            if (minMatch) {
+                totalSeconds += parseInt(minMatch[1], 10) * 60;
+            }
+
+            const secMatch = aliveText.match(/(\d+)\s*secs?/i);
+            if (secMatch) {
+                totalSeconds += parseInt(secMatch[1], 10);
+            }
+
+            if (totalSeconds > 0) {
+                const estimatedHealTime = Date.now() - (totalSeconds * 1000);
+                const savedTime = lastHealSaved ? parseInt(lastHealSaved, 10) : 0;
+                
+                // Allow a tiny margin of error (e.g., 5 seconds) to prevent constant overwriting
+                // if it's already generally correct from the hospital click.
+                // If it differs by more than 5s, the game's actual server time is offset from local storage.
+                if (!lastHealSaved || Math.abs(estimatedHealTime - savedTime) > 5000) {
+                    localStorage.setItem('hw_healing_last_used', estimatedHealTime.toString());
+                    console.log('LivingAreaHelper: Synced healing tracker local storage to server Alive time.');
+                }
+            }
+        }
     },
 
     initReturnBranded: function() {
@@ -8327,6 +8452,17 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.45",
+            date: "2026-04-18",
+            type: "Added",
+            notes: [
+                "Added a new option to track and sync \"Alive Time\" in local storage.",
+                "Added a new top menu bar element to display a live updating relative Alive Time.",
+                "Added a mechanism to wipe local tracking if the player's life drops to 0%.",
+                "Added sync logic to the Living Area that gracefully updates your alive tracker."
+            ]
+        },
+        {
             version: "8.44",
             date: "2026-04-17",
             type: "Added",
@@ -8368,14 +8504,6 @@ const ChangelogData = {
                 "Converted floating \"Check all\" form actions into unified matching UI buttons.",
                 "Added visual row-highlighting for checked/selected food items."
             ]
-        },
-        {
-            version: "8.40",
-            date: "2026-04-16",
-            type: "Changed",
-            notes: [
-                "Added a confirmation dialog to the \"Quick Return Branded Button\" in the Living Area to prevent accidental item returns."
-            ]
         }
     ]
 };
@@ -8405,6 +8533,7 @@ const ChangelogData = {
         GangHelper,
         GangLoansHelper,
         HitlistHelper,
+        HospitalHelper,
         KurtzCampHelper,
         LiquorStoreHelper,
         LivingAreaHelper,
@@ -8428,7 +8557,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.44';
+        window.HoboHelperVersion = '8.45';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

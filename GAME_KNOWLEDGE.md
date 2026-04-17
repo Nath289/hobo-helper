@@ -34,6 +34,14 @@ This document contains a general knowledge base about the mechanics, layout, and
 - The game has mass mail functionality where standard layouts display sent messages with a plaintext list of all recipients and whether they have read the mail.
 - Message Board (MB) posts are stored in specific span containers (`<span id="post-content-...">`).
 
+## UI & Topbar Elements
+- The game's main top navigation bar uses a specific list structure (`<div class="topbar-menu"><ul><li><a href="...">...</a></li></ul></div>`). Injected topbar elements should match the `<li><a href="#" style="cursor: default;">Text</a></li>` pattern to inherit native spacing and styles properly.
+
+## Player State & Alive Time
+- The "Alive" state of a player is represented in the global navigation panel (`<span id="lifeValue">`).
+- When a player is dead, the element's text simply says `"0%"`, not "Dead".
+- When alive, the "Alive Time" text can contain several dynamic formats including singular and plural variations: `Alive: 01 min 14 sec`, `Alive: 27 mins 30 secs`, `Alive: 03 secs`, or `Alive: 05 min 25 sec`. Parsing it requires case-insensitive regex accounting for the optional 's' (`/(\d+)\s*mins?/i`, `/(\d+)\s*secs?/i`).
+
 ## Automation Rules
 - Automation of game activities (Macros, Refreshers, Autonomous Scripts) is strictly forbidden by the game rules. Always use manual user interaction like buttons instead of fully automated tasks. Never create a feature that clicks buttons or refreshes pages on a timer without direct user input.
 - Message Board side panels displaying the user ID and avatar are contained within `<td width="140" bgcolor="#EEEEEE">`

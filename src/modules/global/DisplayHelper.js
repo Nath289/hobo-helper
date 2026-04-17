@@ -9,7 +9,8 @@ const DisplayHelper = {
         { key: 'DisplayHelper_PageWidth', label: 'Page Width (px)', type: 'number', defaultValue: 660, parent: 'DisplayHelper_WidenPage' },
         { key: 'DisplayHelper_AwakeNotify', label: 'Awake Full Notification (Desktop)', defaultValue: false },
         { key: 'DisplayHelper_AwakeNotifyInactive', label: 'Notify Only if Inactive (mins)', type: 'number', defaultValue: 30, parent: 'DisplayHelper_AwakeNotify' },
-        { key: 'DisplayHelper_InterestingLevel', label: 'Show Next Interesting Level', defaultValue: true }
+        { key: 'DisplayHelper_InterestingLevel', label: 'Show Next Interesting Level', defaultValue: true },
+        { key: 'DisplayHelper_LiveAliveTime', label: 'Show Live Alive Time in Top Menu', defaultValue: true }
     ],
     init: function() {
         const settings = Utils.getSettings();
@@ -41,6 +42,56 @@ const DisplayHelper = {
         if (settings['DisplayHelper_InterestingLevel'] !== false) {
             this.initInterestingLevel();
         }
+        if (settings['DisplayHelper_LiveAliveTime'] !== false) {
+            this.initLiveAliveTime();
+        }
+    },
+    initLiveAliveTime: function() {
+        const topbarUl = document.querySelector('.topbar-menu ul');
+        if (!topbarUl) return;
+        
+        const lifeLabel = document.getElementById('lifeValue');
+        if (lifeLabel && lifeLabel.textContent.includes('0%')) {
+            localStorage.removeItem('hw_healing_last_used');
+            return;
+        }
+
+        const lastHealSaved = localStorage.getItem('hw_healing_last_used');
+        // Do not render anything if they have never healed/synced since the script update
+        if (!lastHealSaved) return;
+
+        const li = document.createElement('li');
+        const displayLink = document.createElement('a');
+        displayLink.href = '#';
+        displayLink.style.cursor = 'default';
+        displayLink.onclick = (e) => e.preventDefault();
+        li.appendChild(displayLink);
+        topbarUl.appendChild(li);
+
+        const updateAliveTime = () => {
+            const currentSaved = localStorage.getItem('hw_healing_last_used');
+            if (!currentSaved) return;
+
+            const elapsedSecs = Math.floor((Date.now() - parseInt(currentSaved, 10)) / 1000);
+            if (elapsedSecs < 0) {
+                displayLink.textContent = 'Alive: 00 secs';
+                return;
+            }
+
+            const mins = Math.floor(elapsedSecs / 60);
+            const secs = elapsedSecs % 60;
+            
+            let timeStr = 'Alive: ';
+            if (mins > 0) {
+                timeStr += `${mins.toString().padStart(2, '0')} min${mins === 1 ? '' : 's'} `;
+            }
+            timeStr += `${secs.toString().padStart(2, '0')} sec${secs === 1 ? '' : 's'}`;
+            
+            displayLink.textContent = timeStr;
+        };
+
+        updateAliveTime();
+        setInterval(updateAliveTime, 1000);
     },
     initWidenPage: function(width) {
         const style = document.createElement('style');
