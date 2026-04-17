@@ -15,10 +15,64 @@ const SettingsHelper = {
         headerContainer.style.background = 'rgba(128, 128, 128, 0.1)';
         headerContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
         headerContainer.style.borderRadius = '5px';
+        headerContainer.style.position = 'relative';
 
         const titleDiv = document.createElement('div');
         titleDiv.innerHTML = "<h2 style='margin: 0; font-family: Arial, sans-serif; font-size: 20px; text-transform: uppercase; letter-spacing: 1px;'>Hobo Helper Settings</h2>";
         headerContainer.appendChild(titleDiv);
+
+        const versionStr = window.HoboHelperVersion || (typeof GM_info !== 'undefined' ? GM_info.script.version : 'Unknown');
+        const versionDiv = document.createElement('div');
+        versionDiv.style.fontSize = '12px';
+        versionDiv.style.color = '#666';
+        versionDiv.style.marginTop = '5px';
+        versionDiv.textContent = `v${versionStr}`;
+        headerContainer.appendChild(versionDiv);
+
+        const updateBtn = document.createElement('button');
+        updateBtn.className = 'btn';
+        updateBtn.textContent = 'Check for Updates';
+        updateBtn.style.position = 'absolute';
+        updateBtn.style.right = '10px';
+        updateBtn.style.top = '10px';
+        updateBtn.style.userSelect = 'none';
+        updateBtn.style.webkitUserSelect = 'none';
+        updateBtn.onclick = (e) => {
+            e.preventDefault();
+            updateBtn.textContent = 'Checking...';
+            updateBtn.disabled = true;
+            fetch('https://raw.githubusercontent.com/Nath289/hobo-helper/main/output/hobo-helper-latest.user.js?t=' + Date.now())
+                .then(r => r.text())
+                .then(text => {
+                    const match = text.match(/@version\s+([\d\.]+)/);
+                    if (match && match[1]) {
+                        const latest = match[1];
+                        if (versionStr !== 'Unknown' && latest !== versionStr) {
+                            updateBtn.textContent = 'Update Available (' + latest + ')!';
+                            updateBtn.style.backgroundColor = '#4CAF50';
+                            updateBtn.style.color = 'white';
+                            updateBtn.onclick = () => {
+                                window.location.href = 'https://github.com/Nath289/hobo-helper/raw/refs/heads/main/output/hobo-helper-latest.user.js';
+                            };
+                        } else {
+                            updateBtn.textContent = 'Up to date!';
+                            setTimeout(() => { updateBtn.textContent = 'Check for Updates'; }, 3000);
+                        }
+                    } else {
+                        updateBtn.textContent = 'Error parsing version';
+                        setTimeout(() => { updateBtn.textContent = 'Check for Updates'; }, 3000);
+                    }
+                })
+                .catch(err => {
+                    updateBtn.textContent = 'Failed to check';
+                    setTimeout(() => { updateBtn.textContent = 'Check for Updates'; }, 3000);
+                })
+                .finally(() => {
+                    updateBtn.disabled = false;
+                });
+        };
+        headerContainer.appendChild(updateBtn);
+
         contentArea.appendChild(headerContainer);
 
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
