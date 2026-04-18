@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.53.20260419.0301
+// @version      8.54.20260419.0305
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -855,8 +855,8 @@ const DisplayHelper = {
         this.addTitleToPlayer("107380", "Major", `<span style="color: #00EE00; font-weight: bold; text-shadow: 1px 1px 2px black;">Major</span>`, 'prefix');
     },
     initGrabow: function() {
-        this.addTitleToPlayer("1003713", "The", `<span style="color: #A71930; font-weight: bold; text-shadow: 0 0 5px black, 1px 1px 2px black;">The</span>`, 'prefix');
-        this.addTitleToPlayer("1003713", "the Great", `<span style="color: #A71930; font-weight: bold; text-shadow: 0 0 5px black, 1px 1px 2px black;">the Great</span>`, 'suffix');
+        this.addTitleToPlayer("1003713", "The", `<span style="color: #A71930; font-weight: bold;">The</span>`, 'prefix');
+        this.addTitleToPlayer("1003713", "the Great", `<span style="color: #A71930; font-weight: bold;">the Great</span>`, 'suffix');
     },
     initPirateKingMugi: function() {
         this.addTitleToPlayer("1554846", "Pirate King", `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">Pirate King</span>`, 'prefix');
@@ -8783,6 +8783,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.54",
+            date: "2026-04-19",
+            type: "Fixed",
+            notes: [
+                "Fixed the base64 image asset for the permanent Buddhism rat upgrade in `RatsHelper` to precisely match the actual game icon."
+            ]
+        },
+        {
             version: "8.53",
             date: "2026-04-19",
             type: "Added",
@@ -8818,18 +8826,6 @@ const ChangelogData = {
             notes: [
                 "Improved the styling of maxed permanent Rat upgrades to include a green tick in the top-left corner and a distinct light green background for better visibility.",
                 "Adjusted the alignment of text and icons inside permanent Rat upgrade buttons to perfectly center them vertically."
-            ]
-        },
-        {
-            version: "8.49",
-            date: "2026-04-18",
-            type: "Added",
-            notes: [
-                "Completely redesigned the Rat Upgrades UI into a new square-button layout with separated sections for standard and permanent upgrades.",
-                "Added custom icons for Vegetarianism, Buddhism, and Materialism.",
-                "Standard upgrade buttons now abbreviate their cash costs to be more compact (e.g. $15k instead of $15,000).",
-                "Permanent upgrades now display a green tick mark when purchased.",
-                "The standard Cheese quantity table globally displays a cheese emoji for quick reference."
             ]
         }
     ]
@@ -8885,7 +8881,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.53.20260419.0301';
+        window.HoboHelperVersion = '8.54.20260419.0305';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

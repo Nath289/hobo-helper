@@ -165,8 +165,8 @@ const DisplayHelper = {
         this.addTitleToPlayer("107380", "Major", `<span style="color: #00EE00; font-weight: bold; text-shadow: 1px 1px 2px black;">Major</span>`, 'prefix');
     },
     initGrabow: function() {
-        this.addTitleToPlayer("1003713", "The", `<span style="color: #A71930; font-weight: bold; text-shadow: 0 0 5px black, 1px 1px 2px black;">The</span>`, 'prefix');
-        this.addTitleToPlayer("1003713", "the Great", `<span style="color: #A71930; font-weight: bold; text-shadow: 0 0 5px black, 1px 1px 2px black;">the Great</span>`, 'suffix');
+        this.addTitleToPlayer("1003713", "The", `<span style="color: #A71930; font-weight: bold;">The</span>`, 'prefix');
+        this.addTitleToPlayer("1003713", "the Great", `<span style="color: #A71930; font-weight: bold;">the Great</span>`, 'suffix');
     },
     initPirateKingMugi: function() {
         this.addTitleToPlayer("1554846", "Pirate King", `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">Pirate King</span>`, 'prefix');

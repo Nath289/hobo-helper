@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.54
+// @version      8.55
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -855,8 +855,8 @@ const DisplayHelper = {
         this.addTitleToPlayer("107380", "Major", `<span style="color: #00EE00; font-weight: bold; text-shadow: 1px 1px 2px black;">Major</span>`, 'prefix');
     },
     initGrabow: function() {
-        this.addTitleToPlayer("1003713", "The", `<span style="color: #A71930; font-weight: bold; text-shadow: 0 0 5px black, 1px 1px 2px black;">The</span>`, 'prefix');
-        this.addTitleToPlayer("1003713", "the Great", `<span style="color: #A71930; font-weight: bold; text-shadow: 0 0 5px black, 1px 1px 2px black;">the Great</span>`, 'suffix');
+        this.addTitleToPlayer("1003713", "The", `<span style="color: #A71930; font-weight: bold;">The</span>`, 'prefix');
+        this.addTitleToPlayer("1003713", "the Great", `<span style="color: #A71930; font-weight: bold;">the Great</span>`, 'suffix');
     },
     initPirateKingMugi: function() {
         this.addTitleToPlayer("1554846", "Pirate King", `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">Pirate King</span>`, 'prefix');
@@ -8783,6 +8783,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.55",
+            date: "2026-04-19",
+            type: "Changed",
+            notes: [
+                "Removed the text shadow styling from Grabow's custom title within the Display Helper."
+            ]
+        },
+        {
             version: "8.54",
             date: "2026-04-19",
             type: "Fixed",
@@ -8817,15 +8825,6 @@ const ChangelogData = {
             notes: [
                 "Fixed an accessibility issue in the `RatsHelper` permanent upgrade buttons by adding `alt` attributes to injected `<img>` tags.",
                 "Cleaned up redundant variable initialization logic in the `RatsHelper` feed UI function."
-            ]
-        },
-        {
-            version: "8.50",
-            date: "2026-04-18",
-            type: "Changed",
-            notes: [
-                "Improved the styling of maxed permanent Rat upgrades to include a green tick in the top-left corner and a distinct light green background for better visibility.",
-                "Adjusted the alignment of text and icons inside permanent Rat upgrade buttons to perfectly center them vertically."
             ]
         }
     ]
@@ -8881,7 +8880,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.54';
+        window.HoboHelperVersion = '8.55';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

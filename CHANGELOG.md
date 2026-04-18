@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.55] - 2026-04-19
+### Changed
+- Removed the text shadow styling from Grabow's custom title within the Display Helper.
+
 ## [8.54] - 2026-04-19
 ### Fixed
 - Fixed the base64 image asset for the permanent Buddhism rat upgrade in `RatsHelper` to precisely match the actual game icon.
