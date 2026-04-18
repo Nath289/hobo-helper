@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.49] - 2026-04-18
+### Added
+- Completely redesigned the Rat Upgrades UI into a new square-button layout with separated sections for standard and permanent upgrades.
+- Added custom icons for Vegetarianism, Buddhism, and Materialism.
+- Standard upgrade buttons now abbreviate their cash costs to be more compact (e.g. $15k instead of $15,000).
+- Permanent upgrades now display a green tick mark when purchased.
+- The standard Cheese quantity table globally displays a cheese emoji for quick reference.
+
 ## [8.48] - 2026-04-18
 ### Added
 - Added a "Show Next Respect Needed" feature in the Living Area that automatically calculates and displays the threshold amount for your next respect rank beneath your current respect total.

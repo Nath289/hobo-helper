@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.48
+// @version      8.49
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -7081,13 +7081,15 @@ const RatsHelper = {
     settings: [
         { key: 'RatsHelper_NewsFilter', label: 'Rat News Filter' },
         { key: 'RatsHelper_ExpBar', label: 'Show Exp Progress Indicator' },
-        { key: 'RatsHelper_ActionButtons', label: 'Convert Action Links to Buttons' }
+        { key: 'RatsHelper_ActionButtons', label: 'Convert Action Links to Buttons' },
+        { key: 'RatsHelper_UpgradeUI', label: 'Custom Upgrade Buttons UI' }
     ],
     init: function() {
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
         const enableNewsFilter = savedSettings['RatsHelper_NewsFilter'] !== false;
         const enableExpBar = savedSettings['RatsHelper_ExpBar'] !== false;
         const enableActionButtons = savedSettings['RatsHelper_ActionButtons'] !== false;
+        const enableUpgradeUI = savedSettings['RatsHelper_UpgradeUI'] !== false;
 
         const style = document.createElement('style');
         style.textContent = `
@@ -7293,9 +7295,193 @@ const RatsHelper = {
             this.initActionButtons(contentArea);
         }
 
+        if (enableUpgradeUI && window.location.search.includes('do=upgrade')) {
+            this.initUpgradeButtons(contentArea);
+        }
+
         if (window.location.search.includes('do=feed')) {
             this.initFeedUI();
         }
+
+        this.initCheeseIcons(contentArea);
+    },
+
+    initCheeseIcons: function(contentArea) {
+        const cheeseHeaders = Array.from(contentArea.querySelectorAll('td')).filter(td => td.textContent.trim() === 'Cheese');
+
+        cheeseHeaders.forEach(header => {
+            const tr = header.closest('tr');
+            if (!tr) return;
+            const tds = Array.from(tr.children);
+            const index = tds.indexOf(header);
+            if (index === -1) return;
+            const table = tr.closest('table');
+            if (!table) return;
+
+            const rows = Array.from(table.rows);
+            rows.forEach(row => {
+                if (row === tr) return; // Skip header
+                if (row.style.verticalAlign === 'top') return; // Skip rat image info rows
+
+                if (row.children.length > index) {
+                    const cell = row.children[index];
+                    const text = cell.textContent.trim();
+                    if (/^\d+$/.test(text)) {
+                        cell.innerHTML = `${text} <span style="font-size:12px;">🧀</span>`;
+                    }
+                }
+            });
+        });
+    },
+
+    initUpgradeButtons: function(contentArea) {
+        const uls = contentArea.querySelectorAll('ul');
+        uls.forEach(ul => {
+            const listItems = Array.from(ul.querySelectorAll('li.upg_inf'));
+            if (listItems.length === 0) return;
+
+            const standardDefs = [
+                { name: 'Speed Boost', key: 'upg_speed' },
+                { name: 'Attack Boost', key: 'upg_attack' },
+                { name: 'Defense Boost', key: 'upg_defense' },
+                { name: 'Life Boost', key: 'upg_life' },
+                { name: 'Meal Boost', key: 'upg_meals' }
+            ];
+
+            const permanentDefs = [
+                { name: 'Buddhism', key: 'Buddhism', imgSrc: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAMAAABhEH5lAAACc1BMVEUAAAAfFQQmGgUqHAUxIgZOTk5PTk5ST01TUE1WUk1cXFxeXFxgXlyocxavdxeyeRe2fBe5fhe7fxjRjhvSjxvSkBvWkhzXkxzZlBzalRzblRzblhzdlxwAAAAlGQUwIQYBAgBfXlzblRwKFwMgSQkCBADYkxwAAACpcxUBAgABAwBRT04DBgHSjxsAAAAECgHQjhsDBgEhFwSqcxUAAAAVDgO/ghkCBQGudxe3fRgAAAAaPAiveBdcXFyochUAAQAAAAByTQ4AAAAMCAIAAAAgSQqXZxQBAgBOTk4AAAAPCgJpRw0AAACMjI0GBAF2UQ8BAQAHBQEBAgBxTQ8BAgAaOwcYNwdcW1sDBwEaPAgBAgACBAEYOAcRDAJUOgsTLAVOTU5JMgpONQooGwVMNApMNAoBAwAbEgM8KQgCAQBLMwoGDwIfFQQsHQUIEgIsHgYdFAQIEgIfFQQKFgMnGwU3JgcSKAUQJAUlGQVFLwkOHwRFMAkWMwdRNwsRJwU2JQcNHQQQJQUQJQUgSAoNHgQRJgVsSg41JAdKMwojTwolVQtsSg53UQ8cQQkdQQldQAxuSg53UQ97VBAZOgctZg0wbg44fxE5gRFDLglGMAlHohVNsRdPNgpeQAx7VBCFWhGXZxMbPggdQwkoWwwtaA45JwhWwxlXxxpXyBpoRw2bahSgbRWmcRamchavdxa6fxi8gBjEhhoMGgQcPwhJphVNsBdWxRpYyhpbzxtc0RumcRardRavdxe+ghjBgxnGhxnHhxrKihrQjhvTkBvalRzBhBnEhRnKiRrZlBzalBzalRzblRzclhzdlxzdlx3emB3fmB3iFpV+AAAAxXRSTlMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAECAwQEBQYGCAgJDA0NDQ4ODxAQExUVFxcgIikqKy0vOTk/RkZISU1NTlFRUlpdX2Rsb3B0dnh8fH2DhIWGiIuMkpeYpKmwsrW2uru8vsLFyMnKzM/S09Ta3+Dg4ePl6ers7/Dw8fLz8/P19fb29/f5+fr6+vv8/Pz8/Pz8/Pz8/Pz8/P39/f39/f39/f39/f39/f39/v7+/v7+/v7+/v7+/v7+/v7+/vPbK8QAAAEeSURBVBjTY+BigAD77IYIHVkrFwd1BphQ0OLtXWGuhc01TnChgN5tW8vKp67o8oELGca0Tls4ffmsRk+YkJ6qinXe5J2z6+IVGLgYmZiY5JwL0v1MMzdtXlQVqsXAzSsiLGpReuzoxPyi2LQpWzqjGbj5JCV0U3adPnFud4aRecuyHU0gIRn/9g2nT5w4OylQObJvSTFQSNqscv6M/aeOHzqQo6kfEuUOFFKKW3VhzbqT82ZuLDEB287Nb9dx4sSRM6fOr6zwkoUIaSStPn1w7vqDPak28hA38jjWzzl8au3S6mADcRaIkGLyngWH9vYnWspIiEGFbGuP7OvOclOTkpSECYVPaMv1NhYSBAIBZoiQb4KHNicHGLCzsYIAAMfTX8+a+L+8AAAAAElFTkSuQmCC' },
+                { name: 'Vegetarianism', key: 'Vegetarianism', imgSrc: 'data:image/webp;base64,UklGRsICAABXRUJQVlA4TLUCAAAvEUAEEKcFt7Zt1cpa58p3LCKlAW2MlondHc5pA3Yk26qqmb3PwR3SoMg/DSLgV5+7nOM4kiRHyUK+MAYb8N8YnrrhyLZt2lrrvHv3ebZfhOybLbDRAPXnd+RnNmL7p7ZtngAABE4gwAmiIAMUsIENfCokBAhwh6mm3yweq/vM351Vd6/WwYdwqZ8wAXZ1gRHuRzTSggbSI0tUtuiz6Vk41OOI/kQQUCnxpV66prb18Fp47sFILjAQ2lQM+kEIWDO5im4XyZoRZqY3NRPEmczh6IgQThYn9KDW5QDxfzQ+MIghIxDiyBDClc9fpBaT2Erf4JegW9FKr6JXH6gf/LWSBTgnYbc5oJXYauiDACiMuQByhV1FYSDSFSoZo34i7RgQgWYQNEH6N0YMkShMHwQQNvyrx1Zzqw8EAWAQgahvBQgKCDenb/bp/E29Py52fXwFXq//6t+fJapxAUd1rmrOVdf/3zTdVeG3msz3x5j/e65OIpy12tHX27/x/89Csf/85UW7+a8M5PJvkWzmwUs1Otvu/350//2sJv899Krm8+lfkJLL3bV4kSL7w2PX/cGg0f0xj3z9qy007C1uN9JEpJXT/b0PECTbNu2cb5uxbSc/tm3b9lNs27adGT5NIaL/EwC0ejsXtRVHIBZy6eTRmRb/N4fIFxGdLDQt2cc9LsMipbP284oPTkhP9JDQ8MwRQfav2SnevkaKi4ebW+3ds3NIuFuAiaL1oLen9Pjq8SkmKUpFGl2pI5DppsNLG9fULE9SyX4ngSBT5RqnwLBYRwCY267c6ccGhweuDbYKpQ5gYql6trYZrdjsO+UD5fwGguCT2Eze+T2HomG5hhjK7RgqW207AsqivfcxrH53q3gEqP/OWqqGu3LW24H+9wPvzl9bGAeGP4UFJ4uNwPj/++sTWAIA' },
+                { name: 'Materialism', key: 'Materialism', imgSrc: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAD+ElEQVQ4y22SXWjVdRzGP7//y/nv7Jy5OTenc861Td2cWWIm4UulYRiRolHgRViBVAReVDcVXQSVojdCIUUUGCEhddGFI3H5Vio1dZKe3NQ1t7md7ezkefvvnP/L7/frYmPzoi888IUHPjwPPMKdvM+l33+h6+QFysqizJ1XQ7FYZGR0CFMGtbLkPjp46/bW+sbW3AcHD38SBoFi5jQIQT6XwxIIlKLKzeWa06MjDXf+TrSkksm21OjwcjdbaHQ9GS8GfnxZrtibTo3v931faTQCAIEMS1z/K4Hl+96cqsquI12njj8zcbdYLZUyECCYlpjS7cStlQN3ehdE45VDSko0BuXmGNFolFLJw+gf+GrPcP+ZXSs6YjVSK8M2wBZgCTCngQaQD6U1nhzdsLB+EQvqG1i0qJ7aOS4gEEJgFCd/3fnd92l72446Sgr0bPuZHyACXDx77sl8Lm8WcinikQlAzviGlL45dsslFoHqansGwnQ1pcFX4MQEV270rfJKbnWMfiLWTPkp0JKmnV1VcaETPVme2FqL0rO2K2DOAoOXd5fzxeeVrO0YX275na871sRjmmhEa9sxzIgJAhGGmdor3a/9eODdzo2btjfy4ft9GEpTNc/g4KcVtDTazK8T5LIKFVgIK49SpjKtpt6Kikz8YnfH6X9GHv9aKCVJJi+3DQwe/EzJgS379l6r2LIxwro1sKLNAcMkDCVhIHCiGhUYSC0YHfIY6JekRgLdsLiu0wIIguhNJ7Ln1dS/fz6yfcvYkZZlhfamJSYKgQ4loW9iOxo3b9DfH3DvjiSTUZzv9hiekOK9N2pcq1RyUcrH9/IZy2w+u7x5caLz5+72gWabmnpYtjJCKKHvmsdkVtM3qHj7o7W8+dZV+q4HWFEwTOFa5899gzBMBKCNMrQVGzv5h8epSz6rV0ZYd08TBh7dvSGXe3wCJZhQNxhKFLCnR1ZRVZM1HCdGxC7DtsuI2A7ReOVYxBYEk5rTlzy0FqSzijMXPbSnsQPFbydSBEVJAMyvMWXRC5OW75dmVydCTCeWLLcNXdJSGECuoKiICwwxtXA9PQ1pCf3c05Wp9Zs2fDm/9ZWjViw2d5YjDCQPDTfUO8XB5GS5BeRymqZGEzSEAgIDVrUb4e4X1x+b17pj/3haJCzbwVrStJoHLwhXnPr4gLX3xPGj73x7vHd1OqN4uN1GamhdaobPP9t2oX3tC4cKsulk0ZeeIDMVYnj4xgOJBL5fJJtLCx3eb+i/+tO+ngundy9d7NZ133SSm7ftPKRia44FMpL0SnmEsCnks7S0dvw/KJMZxfeLYJRhy3tP3e354SVn4a7Drl/RiyyiNHiehxDWDOg/rWrv8GrELoAAAAAASUVORK5CYII=' }
+            ];
+
+            const container = document.createElement('div');
+            container.style.cssText = 'display: flex; flex-direction: column; gap: 8px; width: 100%; align-items: center;';
+
+            const stdRow = document.createElement('div');
+            stdRow.style.cssText = 'display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; width: 100%;';
+
+            const permRow = document.createElement('div');
+            permRow.style.cssText = 'display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; width: 100%;';
+
+            const formatUpgradeBtn = (li, def, isPermanent) => {
+                let link = null;
+                let isMaxed = false;
+                let level = '';
+                let cheeseCost = '';
+                let cashCost = '';
+
+                if (li) {
+                    link = li.querySelector('a');
+                    const fontTag = li.querySelector('font');
+                    if (fontTag) {
+                        level = fontTag.textContent.trim();
+                    }
+
+                    const bElement = li.querySelector('b');
+                    if (bElement) {
+                        const bText = bElement.textContent.trim();
+                        const cheeseMatch = bText.match(/(\d+)\s*cheese/i);
+                        const cashMatch = bText.match(/(\$[0-9,]+)/);
+                        if (cheeseMatch) cheeseCost = cheeseMatch[1];
+                        if (cashMatch) cashCost = cashMatch[1].replace(',000,000', 'm').replace(',000', 'k');
+                    }
+
+                    if (!link && !cheeseCost && !cashCost) {
+                        isMaxed = true;
+                    }
+                } else {
+                    isMaxed = true;
+                }
+
+                const btn = document.createElement(link ? 'a' : 'div');
+                btn.className = 'feed-btn' + (!link ? ' meat' : '');
+                if (link && !isMaxed) {
+                    btn.href = link.href;
+                }
+
+                if (isPermanent) {
+                    btn.style.width = '112px';
+                    btn.style.height = '65px';
+                    btn.style.minHeight = '65px';
+                } else {
+                    btn.style.width = '70px';
+                    btn.style.height = '70px';
+                    btn.style.minHeight = '70px';
+                }
+                btn.style.padding = '4px';
+                btn.title = (li ? li.title : '') || def.name;
+
+                if (!isPermanent && level !== '') {
+                    const levelSpan = document.createElement('div');
+                    levelSpan.style.cssText = 'position: absolute; top: 2px; left: 4px; font-size: 11px; font-weight: bold; color: blue;';
+                    levelSpan.textContent = level;
+                    btn.appendChild(levelSpan);
+                }
+
+                const label = document.createElement('div');
+                label.style.cssText = 'font-size: 11px; line-height: 1.2; text-align: center; width: 100%; font-weight: bold; flex-grow: 1; display: flex; align-items: center; justify-content: center;';
+
+                if (isPermanent && def.imgSrc) {
+                    label.innerHTML = `<img src="${def.imgSrc}" style="margin-bottom:4px; max-width:24px; max-height:24px;"><span>${def.name.replace(' Boost', '')}</span>`;
+                    label.style.flexDirection = 'column';
+                } else {
+                    label.innerHTML = def.name.replace(' Boost', '<br>Boost');
+                }
+
+                btn.appendChild(label);
+
+                if (!isMaxed && (cheeseCost || cashCost)) {
+                    const costRow = document.createElement('div');
+                    costRow.style.cssText = 'display: flex; justify-content: space-between; width: 100%; font-size: 10px; line-height: 1; position: absolute; bottom: 4px; left: 0; padding: 0 4px; box-sizing: border-box;';
+
+                    const cheeseSpan = document.createElement('span');
+                    cheeseSpan.style.color = '#d9534f';
+                    cheeseSpan.textContent = cheeseCost ? `${cheeseCost} 🧀` : '';
+
+                    const cashSpan = document.createElement('span');
+                    cashSpan.style.color = 'green';
+                    cashSpan.textContent = cashCost ? cashCost : '';
+
+                    costRow.appendChild(cheeseSpan);
+                    costRow.appendChild(cashSpan);
+                    btn.appendChild(costRow);
+                } else if (isMaxed) {
+                    const maxSpan = document.createElement('div');
+                    if (isPermanent) {
+                        maxSpan.style.cssText = 'position: absolute; top: 2px; left: 4px; font-size: 14px; font-weight: bold; color: green;';
+                        maxSpan.innerHTML = '&#10004;'; // Green tick
+                    } else {
+                        maxSpan.style.cssText = 'position: absolute; bottom: 4px; width: 100%; text-align: center; font-size: 10px; color: #999;';
+                        maxSpan.textContent = 'MAXED';
+                    }
+                    btn.appendChild(maxSpan);
+                }
+
+                return btn;
+            };
+
+            let stdFound = false;
+            standardDefs.forEach(def => {
+                const li = listItems.find(item => item.textContent.includes(def.name));
+                if (li) {
+                    stdRow.appendChild(formatUpgradeBtn(li, def, false));
+                    stdFound = true;
+                }
+            });
+
+            let permFound = false;
+            permanentDefs.forEach(def => {
+                const li = listItems.find(item => item.textContent.includes(def.name));
+                permRow.appendChild(formatUpgradeBtn(li || null, def, true));
+                permFound = true;
+            });
+
+            if (stdFound || permFound) {
+                if (stdFound) container.appendChild(stdRow);
+                if (permFound) container.appendChild(permRow);
+                ul.parentNode.replaceChild(container, ul);
+            }
+        });
     },
 
     initActionButtons: function(contentArea) {
@@ -8539,6 +8725,18 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.49",
+            date: "2026-04-18",
+            type: "Added",
+            notes: [
+                "Completely redesigned the Rat Upgrades UI into a new square-button layout with separated sections for standard and permanent upgrades.",
+                "Added custom icons for Vegetarianism, Buddhism, and Materialism.",
+                "Standard upgrade buttons now abbreviate their cash costs to be more compact (e.g. $15k instead of $15,000).",
+                "Permanent upgrades now display a green tick mark when purchased.",
+                "The standard Cheese quantity table globally displays a cheese emoji for quick reference."
+            ]
+        },
+        {
             version: "8.48",
             date: "2026-04-18",
             type: "Added",
@@ -8575,14 +8773,6 @@ const ChangelogData = {
                 "Added a new top menu bar element to display a live updating relative Alive Time.",
                 "Added a mechanism to wipe local tracking if the player's life drops to 0%.",
                 "Added sync logic to the Living Area that gracefully updates your alive tracker."
-            ]
-        },
-        {
-            version: "8.43",
-            date: "2026-04-17",
-            type: "Changed",
-            notes: [
-                "Swapped `setTimeout` debounce for `requestAnimationFrame` in the `FoodHelper` observer to ensure immediate, jitter-free UI updates when rendering food tables."
             ]
         }
     ]
@@ -8638,7 +8828,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.48';
+        window.HoboHelperVersion = '8.49';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

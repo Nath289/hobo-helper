@@ -16,6 +16,7 @@ This document contains a general knowledge base about the mechanics, layout, and
 - **Vegetarianism:** Some rats can have a "Vegetarianism" upgrade. This restricts them from eating meat-based foods (which will show an "Eww, meat!" tooltip). This upgrade generally adds extra +1 Exp and +1 Life to non-meat foods.
 - When a rat needs food, a "Feed" option appears in their action links.
 - Rats earn 1 Cheese every level, which is used (along with cash) to buy permanent upgrades for the rat.
+- Permanent rat upgrades (like Buddhism, Vegetarianism, Materialism) disappear completely from the upgrade list once purchased. If they are unaffordable due to insufficient cheese or cash, their clickable purchase links are removed and replaced with a grayed-out strikethrough, but the text remains visible.
 - Rat UI usually relies on nested tables. Manipulating the DOM here requires care not to unbalance table rows when action buttons (like "Feed") conditionally appear.
 
 ## Gangs
