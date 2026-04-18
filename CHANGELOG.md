@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.48] - 2026-04-18
+### Added
+- Added a "Show Next Respect Needed" feature in the Living Area that automatically calculates and displays the threshold amount for your next respect rank beneath your current respect total.
+
 ## [8.47] - 2026-04-18
 ### Fixed
 - Fixed a bug where the new Alive Time tracker would incorrectly reset and disappear when a player's health reached exactly 100% due to a faulty death-state check.

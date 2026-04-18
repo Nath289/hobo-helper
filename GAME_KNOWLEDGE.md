@@ -51,3 +51,7 @@ This document contains a general knowledge base about the mechanics, layout, and
 
 ## Food & Consumption
 - The "Consume" links in the native cmd=food form are originally simple text nodes surrounded by square brackets ([<a href="...">Consume</a>]) and separated by <br> tags rather than structured lists or tables. When reformatting this list, you must manually iterate through textual siblings to clear these brackets and line breaks.
+
+## Respect Mechanics
+- Respect rank thresholds scale from 0 to 15 (max starting at 10,000,000 respect). The rank names differ depending on whether respect is positive (e.g. `Preacher`) or negative (e.g. `Murderer`).
+- Dispay in Living Area includes the title and number inside parentheses e.g. `Preacher (1,216,971)`. It can also have negative numbers that have the same magnitude but distinct titles and a red `#FF1100` color, whereas positive numbers use `#22A100`.

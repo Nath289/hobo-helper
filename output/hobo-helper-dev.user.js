@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.45.20260418.1255
+// @version      8.47.20260418.1318
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -1362,6 +1362,25 @@ const FoodHelper = {
         }
     }
 };
+
+const RespectData = [
+    { rank: 0, posTitle: "Hobo", negTitle: "Hobo", minRespect: 0 },
+    { rank: 1, posTitle: "Homeless", negTitle: "Lowlife", minRespect: 5000 },
+    { rank: 2, posTitle: "Bum", negTitle: "Delinquent", minRespect: 10000 },
+    { rank: 3, posTitle: "Freeloader", negTitle: "Thug", minRespect: 20000 },
+    { rank: 4, posTitle: "Drifter", negTitle: "Outcast", minRespect: 40000 },
+    { rank: 5, posTitle: "Showered", negTitle: "Addict", minRespect: 80000 },
+    { rank: 6, posTitle: "Citizen", negTitle: "Tramp", minRespect: 160000 },
+    { rank: 7, posTitle: "Worker", negTitle: "Criminal", minRespect: 320000 },
+    { rank: 8, posTitle: "Medic", negTitle: "Mental patient", minRespect: 640000 },
+    { rank: 9, posTitle: "Preacher", negTitle: "Murderer", minRespect: 1000000 },
+    { rank: 10, posTitle: "Actor", negTitle: "Hit man", minRespect: 1600000 },
+    { rank: 11, posTitle: "Officer", negTitle: "Mass murderer", minRespect: 2800000 },
+    { rank: 12, posTitle: "Peacemaker", negTitle: "Politician", minRespect: 4000000 },
+    { rank: 13, posTitle: "John McClane", negTitle: "Freddy Kreuger", minRespect: 6000000 },
+    { rank: 14, posTitle: "Organ Donor", negTitle: "Dexter", minRespect: 8000000 },
+    { rank: 15, posTitle: "Hobo Jesus", negTitle: "Batman", minRespect: 10000000 }
+];
 
 const ActiveListHelper = {
     cmds: 'active',
@@ -4734,7 +4753,8 @@ const LivingAreaHelper = {
         { key: 'LivingAreaHelper_VersionDisplay', label: 'Version Display' },
         { key: 'LivingAreaHelper_WinPercentageCalc', label: 'Win Percentage Calc' },
         { key: 'LivingAreaHelper_WideShowAll', label: 'Always Show More Info<br><span style="font-size: 11px; color: #555;">(Requires Display Helper Page Width >= 850px)</span>' },
-        { key: 'LivingAreaHelper_ReturnBranded', label: 'Quick Return Branded Button' }
+        { key: 'LivingAreaHelper_ReturnBranded', label: 'Quick Return Branded Button' },
+        { key: 'LivingAreaHelper_NextRespectNeeded', label: 'Show Next Respect Needed' }
     ],
     init: function() {
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
@@ -4767,6 +4787,9 @@ const LivingAreaHelper = {
         }
         if (savedSettings['LivingAreaHelper_ReturnBranded'] !== false) {
             this.initReturnBranded();
+        }
+        if (savedSettings['LivingAreaHelper_NextRespectNeeded'] !== false) {
+            this.initNextRespectNeeded();
         }
 
         this.initInactiveSpecialItemBg();
@@ -4855,6 +4878,61 @@ const LivingAreaHelper = {
             const br = document.createElement("br");
             targetLink.parentNode.insertBefore(br, insertBeforeNode);
             targetLink.parentNode.insertBefore(btn, insertBeforeNode);
+        }
+    },
+
+    initNextRespectNeeded: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const cmd = urlParams.get('cmd');
+        if (cmd) return;
+
+        const generalDisplay = document.getElementById('generalDisplay');
+        if (!generalDisplay) return;
+
+        const lines = generalDisplay.querySelectorAll('.line');
+        let respectLine = null;
+        for (let line of lines) {
+            if (line.querySelector('span') && line.querySelector('span').textContent.includes('Respect:')) {
+                respectLine = line;
+                break;
+            }
+        }
+
+        if (!respectLine) return;
+
+        const respectText = respectLine.textContent;
+        const match = respectText.match(/\((.*?)\)/);
+        if (!match) return;
+
+        const currentRespectStr = match[1].replace(/[^\d-]/g, '');
+        if (!currentRespectStr) return;
+
+        const currentRespectInt = parseInt(currentRespectStr, 10);
+        const currentRespectAbs = Math.abs(currentRespectInt);
+
+        let nextRankInfo = null;
+        for (let i = 0; i < RespectData.length; i++) {
+            if (currentRespectAbs < RespectData[i].minRespect) {
+                nextRankInfo = RespectData[i];
+                break;
+            }
+        }
+
+        if (nextRankInfo) {
+            const needObj = nextRankInfo.minRespect;
+
+            const nextLine = document.createElement('div');
+            nextLine.className = 'line';
+            nextLine.style.fontSize = '11px';
+            nextLine.style.color = '#777';
+            
+            const nextTitle = currentRespectStr.includes('-') ? nextRankInfo.negTitle : nextRankInfo.posTitle;
+            const thresholdStr = currentRespectStr.includes('-') ? '-' + needObj.toLocaleString() : needObj.toLocaleString();
+            const color = currentRespectStr.includes('-') ? '#FF1100' : '#22A100';
+            
+            nextLine.innerHTML = `<span style="width: auto; margin-right: 5px;">&#8627; Next:</span> <span style="color: #444;">${nextTitle} (<font color="${color}">${thresholdStr}</font>)</span>`;
+
+            respectLine.insertAdjacentElement('afterend', nextLine);
         }
     },
 
@@ -8461,13 +8539,12 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
-            version: "8.45",
+            version: "8.47",
             date: "2026-04-18",
-            type: "Changed",
+            type: "Fixed",
             notes: [
-                "Added a live Alive Time tracker to the topbed menu.",
-                "Automatically syncs alive time relative tracking when visiting the living area.",
-                "Automatically wipes alive time tracking when the user dies."
+                "Fixed a bug where the new Alive Time tracker would incorrectly reset and disappear when a player's health reached exactly 100% due to a faulty death-state check.",
+                "Removed the redundant parent toggle for Player features in the helper settings."
             ]
         },
         {
@@ -8528,6 +8605,7 @@ const ChangelogData = {
         DisplayHelper,
         DrinksHelper,
         FoodHelper,
+        RespectData,
     };
 
     const PageModules = {
@@ -8565,7 +8643,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.45.20260418.1255';
+        window.HoboHelperVersion = '8.47.20260418.1318';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

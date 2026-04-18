@@ -8,7 +8,8 @@ const LivingAreaHelper = {
         { key: 'LivingAreaHelper_VersionDisplay', label: 'Version Display' },
         { key: 'LivingAreaHelper_WinPercentageCalc', label: 'Win Percentage Calc' },
         { key: 'LivingAreaHelper_WideShowAll', label: 'Always Show More Info<br><span style="font-size: 11px; color: #555;">(Requires Display Helper Page Width >= 850px)</span>' },
-        { key: 'LivingAreaHelper_ReturnBranded', label: 'Quick Return Branded Button' }
+        { key: 'LivingAreaHelper_ReturnBranded', label: 'Quick Return Branded Button' },
+        { key: 'LivingAreaHelper_NextRespectNeeded', label: 'Show Next Respect Needed' }
     ],
     init: function() {
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
@@ -41,6 +42,9 @@ const LivingAreaHelper = {
         }
         if (savedSettings['LivingAreaHelper_ReturnBranded'] !== false) {
             this.initReturnBranded();
+        }
+        if (savedSettings['LivingAreaHelper_NextRespectNeeded'] !== false) {
+            this.initNextRespectNeeded();
         }
 
         this.initInactiveSpecialItemBg();
@@ -129,6 +133,61 @@ const LivingAreaHelper = {
             const br = document.createElement("br");
             targetLink.parentNode.insertBefore(br, insertBeforeNode);
             targetLink.parentNode.insertBefore(btn, insertBeforeNode);
+        }
+    },
+
+    initNextRespectNeeded: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const cmd = urlParams.get('cmd');
+        if (cmd) return;
+
+        const generalDisplay = document.getElementById('generalDisplay');
+        if (!generalDisplay) return;
+
+        const lines = generalDisplay.querySelectorAll('.line');
+        let respectLine = null;
+        for (let line of lines) {
+            if (line.querySelector('span') && line.querySelector('span').textContent.includes('Respect:')) {
+                respectLine = line;
+                break;
+            }
+        }
+
+        if (!respectLine) return;
+
+        const respectText = respectLine.textContent;
+        const match = respectText.match(/\((.*?)\)/);
+        if (!match) return;
+
+        const currentRespectStr = match[1].replace(/[^\d-]/g, '');
+        if (!currentRespectStr) return;
+
+        const currentRespectInt = parseInt(currentRespectStr, 10);
+        const currentRespectAbs = Math.abs(currentRespectInt);
+
+        let nextRankInfo = null;
+        for (let i = 0; i < RespectData.length; i++) {
+            if (currentRespectAbs < RespectData[i].minRespect) {
+                nextRankInfo = RespectData[i];
+                break;
+            }
+        }
+
+        if (nextRankInfo) {
+            const needObj = nextRankInfo.minRespect;
+
+            const nextLine = document.createElement('div');
+            nextLine.className = 'line';
+            nextLine.style.fontSize = '11px';
+            nextLine.style.color = '#777';
+            
+            const nextTitle = currentRespectStr.includes('-') ? nextRankInfo.negTitle : nextRankInfo.posTitle;
+            const thresholdStr = currentRespectStr.includes('-') ? '-' + needObj.toLocaleString() : needObj.toLocaleString();
+            const color = currentRespectStr.includes('-') ? '#FF1100' : '#22A100';
+            
+            nextLine.innerHTML = `<span style="width: auto; margin-right: 5px;">&#8627; Next:</span> <span style="color: #444;">${nextTitle} (<font color="${color}">${thresholdStr}</font>)</span>`;
+
+            respectLine.insertAdjacentElement('afterend', nextLine);
         }
     },
 
