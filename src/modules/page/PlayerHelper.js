@@ -1,13 +1,10 @@
 const PlayerHelper = {
     cmds: 'player',
     settings: [
-        { key: 'PlayerHelper_EnableFeature', label: 'Enable Player Features' },
         { key: 'PlayerHelper_CopyHoboName', label: 'Show Copy [hoboname] Link' }
     ],
     init: function() {
         const settings = Utils.getSettings();
-        if (settings['PlayerHelper_EnableFeature'] === false) return;
-
         if (settings['PlayerHelper_CopyHoboName'] !== false) {
             this.addCopyHoboNameLink();
         }

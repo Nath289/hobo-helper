@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.45.20260418.1219
+// @version      8.45.20260418.1255
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -682,7 +682,7 @@ const DisplayHelper = {
             this.initJackReacher();
             this.initGrabow();
             this.initPirateKingMugi();
-            this.initLeet();
+            this.initUberLeetRoot();
         }
         if (settings['DisplayHelper_ScrollableTopbar'] !== false) {
             this.initScrollableTopbar();
@@ -707,7 +707,7 @@ const DisplayHelper = {
         if (!topbarUl) return;
         
         const lifeLabel = document.getElementById('lifeValue');
-        if (lifeLabel && lifeLabel.textContent.includes('0%')) {
+        if (lifeLabel && lifeLabel.textContent.trim() === '0%') {
             localStorage.removeItem('hw_healing_last_used');
             return;
         }
@@ -831,7 +831,7 @@ const DisplayHelper = {
     initPirateKingMugi: function() {
         this.addTitleToPlayer("1554846", "Pirate King", `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">Pirate King</span>`, 'prefix');
     },
-    initLeet: function() {
+    initUberLeetRoot: function() {
         const targetHoboId = "1140606";
         const playerLinks = document.querySelectorAll(`a[href*="cmd=player&ID=${targetHoboId}"]`);
         playerLinks.forEach(link => {
@@ -4784,7 +4784,7 @@ const LivingAreaHelper = {
 
         // Check if alive
         const lifeLabel = document.getElementById('lifeValue');
-        if (lifeLabel && lifeLabel.textContent.includes('0%')) return;
+        if (lifeLabel && lifeLabel.textContent.trim() === '0%') return;
 
         // Parse "Alive: 27 min 30 sec" or "Alive: 03 secs"
         const statsLines = document.querySelectorAll('#generalDisplay .line');
@@ -6911,13 +6911,10 @@ const NorthernFenceHelper = {
 const PlayerHelper = {
     cmds: 'player',
     settings: [
-        { key: 'PlayerHelper_EnableFeature', label: 'Enable Player Features' },
         { key: 'PlayerHelper_CopyHoboName', label: 'Show Copy [hoboname] Link' }
     ],
     init: function() {
         const settings = Utils.getSettings();
-        if (settings['PlayerHelper_EnableFeature'] === false) return;
-
         if (settings['PlayerHelper_CopyHoboName'] !== false) {
             this.addCopyHoboNameLink();
         }
@@ -8466,23 +8463,33 @@ const ChangelogData = {
         {
             version: "8.45",
             date: "2026-04-18",
+            type: "Changed",
+            notes: [
+                "Added a live Alive Time tracker to the topbed menu.",
+                "Automatically syncs alive time relative tracking when visiting the living area.",
+                "Automatically wipes alive time tracking when the user dies."
+            ]
+        },
+        {
+            version: "8.46",
+            date: "2026-04-18",
+            type: "Changed",
+            notes: [
+                "Collapsed all distinct custom player titles into one new setting: \"Enable Custom Player Titles\".",
+                "Added a custom red \"Pirate King\" prefix title for Mugi.",
+                "Added a custom green name color and blue \"1337\" suffix title for Leet.",
+                "Added a custom red \"The\" prefix to Grabow to complement the existing \"the Great\" suffix."
+            ]
+        },
+        {
+            version: "8.44",
+            date: "2026-04-18",
             type: "Added",
             notes: [
                 "Added a new option to track and sync \"Alive Time\" in local storage.",
                 "Added a new top menu bar element to display a live updating relative Alive Time.",
                 "Added a mechanism to wipe local tracking if the player's life drops to 0%.",
                 "Added sync logic to the Living Area that gracefully updates your alive tracker."
-            ]
-        },
-        {
-            version: "8.44",
-            date: "2026-04-17",
-            type: "Added",
-            notes: [
-                "Added \"Check for Updates\" button to the Settings menu that fetches the latest release from GitHub to compare against current version.",
-                "Added a new setting to Display Helper to display a red \"the Great\" suffix title next to all profile links pointing to Grabow (1003713).",
-                "Updated the Settings Menu's \"Check for Updates\" functionality to automatically disable itself functionally and visually when running as a local development build. ",
-                "Updated custom player title formatting logic internally to dynamically support both suffix and prefix tag positioning."
             ]
         },
         {
@@ -8504,17 +8511,6 @@ const ChangelogData = {
                 "Styled floating \"Check all\" label inputs into unified UI `.btn` toggles across both tables.",
                 "Added adaptive row highlighting logic so user selections natively colorize rows grey upon checking.",
                 "Eliminated a native code bug in HoboWars generated by duplicated default toggle text element IDs (`id=\"toggleSpan\"`) which triggered text corruption whenever multiple \"Check all\" boxes were rendered on the same Food Bank view; isolating toggle listeners specifically to corresponding sets."
-            ]
-        },
-        {
-            version: "8.41",
-            date: "2026-04-17",
-            type: "Changed",
-            notes: [
-                "Re-formatted the Food tab consume menu into a cleaner and much more responsive table layout.",
-                "Converted floating \"Consume\" action links into standard UI buttons.",
-                "Converted floating \"Check all\" form actions into unified matching UI buttons.",
-                "Added visual row-highlighting for checked/selected food items."
             ]
         }
     ]
@@ -8569,7 +8565,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.45.20260418.1219';
+        window.HoboHelperVersion = '8.45.20260418.1255';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

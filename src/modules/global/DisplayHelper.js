@@ -47,7 +47,7 @@ const DisplayHelper = {
         if (!topbarUl) return;
         
         const lifeLabel = document.getElementById('lifeValue');
-        if (lifeLabel && lifeLabel.textContent.includes('0%')) {
+        if (lifeLabel && lifeLabel.textContent.trim() === '0%') {
             localStorage.removeItem('hw_healing_last_used');
             return;
         }

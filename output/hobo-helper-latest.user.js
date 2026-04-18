@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.45
+// @version      8.47
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -682,7 +682,7 @@ const DisplayHelper = {
             this.initJackReacher();
             this.initGrabow();
             this.initPirateKingMugi();
-            this.initLeet();
+            this.initUberLeetRoot();
         }
         if (settings['DisplayHelper_ScrollableTopbar'] !== false) {
             this.initScrollableTopbar();
@@ -707,7 +707,7 @@ const DisplayHelper = {
         if (!topbarUl) return;
         
         const lifeLabel = document.getElementById('lifeValue');
-        if (lifeLabel && lifeLabel.textContent.includes('0%')) {
+        if (lifeLabel && lifeLabel.textContent.trim() === '0%') {
             localStorage.removeItem('hw_healing_last_used');
             return;
         }
@@ -831,7 +831,7 @@ const DisplayHelper = {
     initPirateKingMugi: function() {
         this.addTitleToPlayer("1554846", "Pirate King", `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">Pirate King</span>`, 'prefix');
     },
-    initLeet: function() {
+    initUberLeetRoot: function() {
         const targetHoboId = "1140606";
         const playerLinks = document.querySelectorAll(`a[href*="cmd=player&ID=${targetHoboId}"]`);
         playerLinks.forEach(link => {
@@ -4784,7 +4784,7 @@ const LivingAreaHelper = {
 
         // Check if alive
         const lifeLabel = document.getElementById('lifeValue');
-        if (lifeLabel && lifeLabel.textContent.includes('0%')) return;
+        if (lifeLabel && lifeLabel.textContent.trim() === '0%') return;
 
         // Parse "Alive: 27 min 30 sec" or "Alive: 03 secs"
         const statsLines = document.querySelectorAll('#generalDisplay .line');
@@ -6911,13 +6911,10 @@ const NorthernFenceHelper = {
 const PlayerHelper = {
     cmds: 'player',
     settings: [
-        { key: 'PlayerHelper_EnableFeature', label: 'Enable Player Features' },
         { key: 'PlayerHelper_CopyHoboName', label: 'Show Copy [hoboname] Link' }
     ],
     init: function() {
         const settings = Utils.getSettings();
-        if (settings['PlayerHelper_EnableFeature'] === false) return;
-
         if (settings['PlayerHelper_CopyHoboName'] !== false) {
             this.addCopyHoboNameLink();
         }
@@ -8464,13 +8461,12 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
-            version: "8.45",
+            version: "8.47",
             date: "2026-04-18",
-            type: "Changed",
+            type: "Fixed",
             notes: [
-                "Added a live Alive Time tracker to the topbed menu.",
-                "Automatically syncs alive time relative tracking when visiting the living area.",
-                "Automatically wipes alive time tracking when the user dies."
+                "Fixed a bug where the new Alive Time tracker would incorrectly reset and disappear when a player's health reached exactly 100% due to a faulty death-state check.",
+                "Removed the redundant parent toggle for Player features in the helper settings."
             ]
         },
         {
@@ -8568,7 +8564,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.45';
+        window.HoboHelperVersion = '8.47';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

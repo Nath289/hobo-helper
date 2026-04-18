@@ -2,10 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [8.45] - 2026-04-18
-- Added a live Alive Time tracker to the topbed menu.
-- Automatically syncs alive time relative tracking when visiting the living area.
-- Automatically wipes alive time tracking when the user dies.
+## [8.47] - 2026-04-18
+### Fixed
+- Fixed a bug where the new Alive Time tracker would incorrectly reset and disappear when a player's health reached exactly 100% due to a faulty death-state check.
+### Changed
+- Removed the redundant parent toggle for Player features in the helper settings.
 
 ## [8.46] - 2026-04-18
 - Collapsed all distinct custom player titles into one new setting: "Enable Custom Player Titles".

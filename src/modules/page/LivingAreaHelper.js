@@ -58,7 +58,7 @@ const LivingAreaHelper = {
 
         // Check if alive
         const lifeLabel = document.getElementById('lifeValue');
-        if (lifeLabel && lifeLabel.textContent.includes('0%')) return;
+        if (lifeLabel && lifeLabel.textContent.trim() === '0%') return;
 
         // Parse "Alive: 27 min 30 sec" or "Alive: 03 secs"
         const statsLines = document.querySelectorAll('#generalDisplay .line');
