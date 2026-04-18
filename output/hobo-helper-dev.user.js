@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.51.20260419.0223
+// @version      8.52.20260419.0247
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -1002,6 +1002,94 @@ const DisplayHelper = {
     }
 };
 
+const DrinksHelper = {
+            init: function() {
+                function getInventory() {
+                    const inventory = {};
+                    document.querySelectorAll('.bp-itm').forEach(item => {
+                        try {
+                            const img = item.querySelector('img');
+                            if (!img) return;
+
+                            const name = img.title.trim();
+                            const text = item.textContent.trim();
+                            const countMatch = text.match(/\((\d+)\)/);
+                            const count = countMatch ? parseInt(countMatch[1], 10) : 1;
+
+                            inventory[name] = (inventory[name] || 0) + count;
+                        } catch (e) { /* silent fail on malformed items */ }
+                    });
+                    return inventory;
+                }
+
+                function handleBartenderGuide() {
+                    const mixerLinks = document.querySelectorAll('a[href*="cmd=mixer&make="]');
+                    if (mixerLinks.length === 0) return;
+
+                    const inventory = getInventory();
+
+                    mixerLinks.forEach(link => {
+                        try {
+                            const row = link.closest('tr');
+                            if (!row || row.hasAttribute('data-dh-processed')) return;
+
+                            row.setAttribute('data-dh-processed', 'true');
+
+                            const cells = row.querySelectorAll('td');
+                            if (cells.length < 2) return;
+
+                            const recipeCell = cells[0];
+                            const actionCell = cells[1];
+
+                            const images = recipeCell.querySelectorAll('img');
+                            const ingredients = Array.from(images).slice(1).map(img => img.title.trim());
+
+                            if (ingredients.length === 0) return;
+
+                            let maxCanMake = Infinity;
+                            let limitingIngredient = "Unknown";
+
+                            ingredients.forEach(ing => {
+                                const owned = inventory[ing] || 0;
+                                if (owned < maxCanMake) {
+                                    maxCanMake = owned;
+                                    limitingIngredient = ing;
+                                }
+                            });
+
+                            const limiterDiv = document.createElement('div');
+                            limiterDiv.className = 'dh-helper-text';
+                            limiterDiv.style.fontSize = '0.82em';
+                            limiterDiv.style.marginTop = '4px';
+                            limiterDiv.style.display = 'block';
+
+                            if (maxCanMake > 0) {
+                                limiterDiv.style.color = '#555';
+                                limiterDiv.textContent = `Limit: ${limitingIngredient}`;
+                            } else {
+                                limiterDiv.style.color = '#aa0000';
+                                limiterDiv.style.fontWeight = 'bold';
+                                limiterDiv.textContent = `Missing: ${limitingIngredient}`;
+                            }
+
+                            actionCell.appendChild(limiterDiv);
+                        } catch (err) {
+                            console.error("HoboWars Drinks Helper Error:", err);
+                        }
+                    });
+                }
+
+                let timeout = null;
+                const observer = new MutationObserver(() => {
+                    if (timeout) clearTimeout(timeout);
+                    timeout = setTimeout(handleBartenderGuide, 100);
+                });
+
+                observer.observe(document.body, { childList: true, subtree: true });
+                handleBartenderGuide();
+            }
+        }
+
 const FoodHelper = {
     init: function() {
         const settings = Utils.getSettings();
@@ -1709,94 +1797,6 @@ const CanDepoHelper = {
         }
     }
 };
-
-const DrinksHelper = {
-            init: function() {
-                function getInventory() {
-                    const inventory = {};
-                    document.querySelectorAll('.bp-itm').forEach(item => {
-                        try {
-                            const img = item.querySelector('img');
-                            if (!img) return;
-
-                            const name = img.title.trim();
-                            const text = item.textContent.trim();
-                            const countMatch = text.match(/\((\d+)\)/);
-                            const count = countMatch ? parseInt(countMatch[1], 10) : 1;
-
-                            inventory[name] = (inventory[name] || 0) + count;
-                        } catch (e) { /* silent fail on malformed items */ }
-                    });
-                    return inventory;
-                }
-
-                function handleBartenderGuide() {
-                    const mixerLinks = document.querySelectorAll('a[href*="cmd=mixer&make="]');
-                    if (mixerLinks.length === 0) return;
-
-                    const inventory = getInventory();
-
-                    mixerLinks.forEach(link => {
-                        try {
-                            const row = link.closest('tr');
-                            if (!row || row.hasAttribute('data-dh-processed')) return;
-
-                            row.setAttribute('data-dh-processed', 'true');
-
-                            const cells = row.querySelectorAll('td');
-                            if (cells.length < 2) return;
-
-                            const recipeCell = cells[0];
-                            const actionCell = cells[1];
-
-                            const images = recipeCell.querySelectorAll('img');
-                            const ingredients = Array.from(images).slice(1).map(img => img.title.trim());
-
-                            if (ingredients.length === 0) return;
-
-                            let maxCanMake = Infinity;
-                            let limitingIngredient = "Unknown";
-
-                            ingredients.forEach(ing => {
-                                const owned = inventory[ing] || 0;
-                                if (owned < maxCanMake) {
-                                    maxCanMake = owned;
-                                    limitingIngredient = ing;
-                                }
-                            });
-
-                            const limiterDiv = document.createElement('div');
-                            limiterDiv.className = 'dh-helper-text';
-                            limiterDiv.style.fontSize = '0.82em';
-                            limiterDiv.style.marginTop = '4px';
-                            limiterDiv.style.display = 'block';
-
-                            if (maxCanMake > 0) {
-                                limiterDiv.style.color = '#555';
-                                limiterDiv.textContent = `Limit: ${limitingIngredient}`;
-                            } else {
-                                limiterDiv.style.color = '#aa0000';
-                                limiterDiv.style.fontWeight = 'bold';
-                                limiterDiv.textContent = `Missing: ${limitingIngredient}`;
-                            }
-
-                            actionCell.appendChild(limiterDiv);
-                        } catch (err) {
-                            console.error("HoboWars Drinks Helper Error:", err);
-                        }
-                    });
-                }
-
-                let timeout = null;
-                const observer = new MutationObserver(() => {
-                    if (timeout) clearTimeout(timeout);
-                    timeout = setTimeout(handleBartenderGuide, 100);
-                });
-
-                observer.observe(document.body, { childList: true, subtree: true });
-                handleBartenderGuide();
-            }
-        }
 
 const FoodBankHelper = {
     cmds: 'food_bank',
@@ -4316,6 +4316,30 @@ const HitlistHelper = {
         }
 
         this.highlightOutOfRangePlayers();
+        this.addLegend();
+    },
+
+    addLegend: function() {
+        const table = document.querySelector('form[action*="do=phlist"] table');
+        if (!table) return;
+
+        const legend = document.createElement('div');
+        legend.style.marginTop = '15px';
+        legend.style.padding = '10px';
+        legend.style.background = '#eee';
+        legend.style.border = '1px solid #ccc';
+        legend.style.borderRadius = '5px';
+        legend.innerHTML = `
+            <strong>Legend:</strong><br/>
+            <div style="margin-top: 5px;">
+                <span style="display:inline-block; width:15px; height:15px; background-color:#d4edda; margin-right:5px; vertical-align:middle; border:1px solid #ccc;"></span> Currently Online
+            </div>
+            <div style="margin-top: 5px;">
+                <span style="display:inline-block; width:15px; height:15px; background-color:#f8d7da; margin-right:5px; vertical-align:middle; border:1px solid #ccc;"></span> Outside Attack Range
+            </div>
+        `;
+
+        table.parentElement.insertBefore(legend, table.nextSibling);
     },
 
     highlightOutOfRangePlayers: function() {
@@ -8759,6 +8783,18 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.52",
+            date: "2026-04-19",
+            type: "Added",
+            notes: [
+                "Added individual configuration toggles within the Settings menu for `BackpackHelper` sub-features (Item Tooltips and Favourite Drinks UI).",
+                "Overhauled the Settings menu UI to display clean, human-readable module names.",
+                "Settings menu sub-features are now dynamically wrapped in collapsible containers that hide automatically when their parent module is disabled, drastically reducing visual clutter.",
+                "Refactored `DrinksHelper` from a global background script to a targeted page module restricted to the Mixer page, improving overall execution performance.",
+                "Relocated static data object files to their proper data directory structure."
+            ]
+        },
+        {
             version: "8.51",
             date: "2026-04-18",
             type: "Fixed",
@@ -8795,15 +8831,6 @@ const ChangelogData = {
             notes: [
                 "Added a \"Show Next Respect Needed\" feature in the Living Area that automatically calculates and displays the threshold amount for your next respect rank beneath your current respect total."
             ]
-        },
-        {
-            version: "8.47",
-            date: "2026-04-18",
-            type: "Fixed",
-            notes: [
-                "Fixed a bug where the new Alive Time tracker would incorrectly reset and disappear when a player's health reached exactly 100% due to a faulty death-state check.",
-                "Removed the redundant parent toggle for Player features in the helper settings."
-            ]
         }
     ]
 };
@@ -8819,6 +8846,7 @@ const ChangelogData = {
     const GlobalModules = {
         BackpackHelper,
         DisplayHelper,
+        DrinksHelper,
         FoodHelper,
     };
 
@@ -8827,7 +8855,6 @@ const ChangelogData = {
         BankHelper,
         BernardsBasementHelper,
         CanDepoHelper,
-        DrinksHelper,
         FoodBankHelper,
         FortSlugworthHelper,
         GangArmoryHelper,
@@ -8858,7 +8885,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.51.20260419.0223';
+        window.HoboHelperVersion = '8.52.20260419.0247';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

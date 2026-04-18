@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.53] - 2026-04-19
+### Added
+- Added a legend at the bottom of the Hitlist table indicating row highlight colors (Green for currently online, Red for outside attack range).
+
 ## [8.52] - 2026-04-19
 ### Added
 - Added individual configuration toggles within the Settings menu for `BackpackHelper` sub-features (Item Tooltips and Favourite Drinks UI).

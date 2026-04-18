@@ -24,6 +24,30 @@ const HitlistHelper = {
         }
 
         this.highlightOutOfRangePlayers();
+        this.addLegend();
+    },
+
+    addLegend: function() {
+        const table = document.querySelector('form[action*="do=phlist"] table');
+        if (!table) return;
+
+        const legend = document.createElement('div');
+        legend.style.marginTop = '15px';
+        legend.style.padding = '10px';
+        legend.style.background = '#eee';
+        legend.style.border = '1px solid #ccc';
+        legend.style.borderRadius = '5px';
+        legend.innerHTML = `
+            <strong>Legend:</strong><br/>
+            <div style="margin-top: 5px;">
+                <span style="display:inline-block; width:15px; height:15px; background-color:#d4edda; margin-right:5px; vertical-align:middle; border:1px solid #ccc;"></span> Currently Online
+            </div>
+            <div style="margin-top: 5px;">
+                <span style="display:inline-block; width:15px; height:15px; background-color:#f8d7da; margin-right:5px; vertical-align:middle; border:1px solid #ccc;"></span> Outside Attack Range
+            </div>
+        `;
+
+        table.parentElement.insertBefore(legend, table.nextSibling);
     },
 
     highlightOutOfRangePlayers: function() {

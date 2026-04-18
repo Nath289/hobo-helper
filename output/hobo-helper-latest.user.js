@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.52
+// @version      8.53
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -4316,6 +4316,30 @@ const HitlistHelper = {
         }
 
         this.highlightOutOfRangePlayers();
+        this.addLegend();
+    },
+
+    addLegend: function() {
+        const table = document.querySelector('form[action*="do=phlist"] table');
+        if (!table) return;
+
+        const legend = document.createElement('div');
+        legend.style.marginTop = '15px';
+        legend.style.padding = '10px';
+        legend.style.background = '#eee';
+        legend.style.border = '1px solid #ccc';
+        legend.style.borderRadius = '5px';
+        legend.innerHTML = `
+            <strong>Legend:</strong><br/>
+            <div style="margin-top: 5px;">
+                <span style="display:inline-block; width:15px; height:15px; background-color:#d4edda; margin-right:5px; vertical-align:middle; border:1px solid #ccc;"></span> Currently Online
+            </div>
+            <div style="margin-top: 5px;">
+                <span style="display:inline-block; width:15px; height:15px; background-color:#f8d7da; margin-right:5px; vertical-align:middle; border:1px solid #ccc;"></span> Outside Attack Range
+            </div>
+        `;
+
+        table.parentElement.insertBefore(legend, table.nextSibling);
     },
 
     highlightOutOfRangePlayers: function() {
@@ -8759,6 +8783,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.53",
+            date: "2026-04-19",
+            type: "Added",
+            notes: [
+                "Added a legend at the bottom of the Hitlist table indicating row highlight colors (Green for currently online, Red for outside attack range)."
+            ]
+        },
+        {
             version: "8.52",
             date: "2026-04-19",
             type: "Added",
@@ -8798,14 +8830,6 @@ const ChangelogData = {
                 "Standard upgrade buttons now abbreviate their cash costs to be more compact (e.g. $15k instead of $15,000).",
                 "Permanent upgrades now display a green tick mark when purchased.",
                 "The standard Cheese quantity table globally displays a cheese emoji for quick reference."
-            ]
-        },
-        {
-            version: "8.48",
-            date: "2026-04-18",
-            type: "Added",
-            notes: [
-                "Added a \"Show Next Respect Needed\" feature in the Living Area that automatically calculates and displays the threshold amount for your next respect rank beneath your current respect total."
             ]
         }
     ]
@@ -8861,7 +8885,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.52';
+        window.HoboHelperVersion = '8.53';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
