@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.51
+// @version      8.52
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -386,13 +386,41 @@ const FoodData = {
 
 const PrimesData = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,103,107,109,113,127,131,137,139,149,151,157,163,167,173,179,181,191,193,197,199,211,223,227,229,233,239,241,251,257,263,269,271,277,281,283,293,307,311,313,317,331,337,347,349,353,359,367,373,379,383,389,397,401,409,419,421,431,433,439,443,449,457,461,463,467,479,487,491,499,503,509,521,523,541,547,557,563,569,571,577,587,593,599,601,607,613,617,619,631,641,643,647,653,659,661,673,677,683,691,701,709,719,727,733,739,743,751,757,761,769,773,787,797,809,811,821,823,827,829,839,853,857,859,863,877,881,883,887,907,911,919,929,937,941,947,953,967,971,977,983,991,997];
 
+const RespectData = [
+    { rank: 0, posTitle: "Hobo", negTitle: "Hobo", minRespect: 0 },
+    { rank: 1, posTitle: "Homeless", negTitle: "Lowlife", minRespect: 5000 },
+    { rank: 2, posTitle: "Bum", negTitle: "Delinquent", minRespect: 10000 },
+    { rank: 3, posTitle: "Freeloader", negTitle: "Thug", minRespect: 20000 },
+    { rank: 4, posTitle: "Drifter", negTitle: "Outcast", minRespect: 40000 },
+    { rank: 5, posTitle: "Showered", negTitle: "Addict", minRespect: 80000 },
+    { rank: 6, posTitle: "Citizen", negTitle: "Tramp", minRespect: 160000 },
+    { rank: 7, posTitle: "Worker", negTitle: "Criminal", minRespect: 320000 },
+    { rank: 8, posTitle: "Medic", negTitle: "Mental patient", minRespect: 640000 },
+    { rank: 9, posTitle: "Preacher", negTitle: "Murderer", minRespect: 1000000 },
+    { rank: 10, posTitle: "Actor", negTitle: "Hit man", minRespect: 1600000 },
+    { rank: 11, posTitle: "Officer", negTitle: "Mass murderer", minRespect: 2800000 },
+    { rank: 12, posTitle: "Peacemaker", negTitle: "Politician", minRespect: 4000000 },
+    { rank: 13, posTitle: "John McClane", negTitle: "Freddy Kreuger", minRespect: 6000000 },
+    { rank: 14, posTitle: "Organ Donor", negTitle: "Dexter", minRespect: 8000000 },
+    { rank: 15, posTitle: "Hobo Jesus", negTitle: "Batman", minRespect: 10000000 }
+];
+
 const BackpackHelper = {
+    settings: [
+        { key: 'BackpackHelper_Tooltips', label: 'Item Tooltips (Stats/Effects)' },
+        { key: 'BackpackHelper_Favourites', label: 'Favourite Drinks UI' }
+    ],
     init: function() {
         const settings = Utils.getSettings();
-        if (settings?.BackpackHelper?.enabled === false) return;
-        
-        this.initDrinkStats();
-        this.observeBackpack();
+
+        const enableTooltips = settings['BackpackHelper_Tooltips'] !== false;
+        const enableFavourites = settings['BackpackHelper_Favourites'] !== false;
+
+        if (enableFavourites) {
+            this.initDrinkStats();
+        }
+
+        this.observeBackpack(enableTooltips, enableFavourites);
     },
 
     initDrinkStats: function() {
@@ -430,16 +458,18 @@ const BackpackHelper = {
         document.addEventListener('click', this.handleDrinkClick);
     },
 
-    observeBackpack: function() {
+    observeBackpack: function(enableTooltips, enableFavourites) {
         let drinkMap = null;
         let lastInjected = 0;
 
         const processItems = () => {
             const now = Date.now();
-            if (now - lastInjected > 1000) {
+            if (enableFavourites && (now - lastInjected > 1000)) {
                 this.injectFavourites();
                 lastInjected = now;
             }
+
+            if (!enableTooltips) return;
 
             const items = document.querySelectorAll('.bp-itm:not([data-bh-tooltip-processed])');
             if (items.length === 0) return;
@@ -1363,34 +1393,13 @@ const FoodHelper = {
     }
 };
 
-const RespectData = [
-    { rank: 0, posTitle: "Hobo", negTitle: "Hobo", minRespect: 0 },
-    { rank: 1, posTitle: "Homeless", negTitle: "Lowlife", minRespect: 5000 },
-    { rank: 2, posTitle: "Bum", negTitle: "Delinquent", minRespect: 10000 },
-    { rank: 3, posTitle: "Freeloader", negTitle: "Thug", minRespect: 20000 },
-    { rank: 4, posTitle: "Drifter", negTitle: "Outcast", minRespect: 40000 },
-    { rank: 5, posTitle: "Showered", negTitle: "Addict", minRespect: 80000 },
-    { rank: 6, posTitle: "Citizen", negTitle: "Tramp", minRespect: 160000 },
-    { rank: 7, posTitle: "Worker", negTitle: "Criminal", minRespect: 320000 },
-    { rank: 8, posTitle: "Medic", negTitle: "Mental patient", minRespect: 640000 },
-    { rank: 9, posTitle: "Preacher", negTitle: "Murderer", minRespect: 1000000 },
-    { rank: 10, posTitle: "Actor", negTitle: "Hit man", minRespect: 1600000 },
-    { rank: 11, posTitle: "Officer", negTitle: "Mass murderer", minRespect: 2800000 },
-    { rank: 12, posTitle: "Peacemaker", negTitle: "Politician", minRespect: 4000000 },
-    { rank: 13, posTitle: "John McClane", negTitle: "Freddy Kreuger", minRespect: 6000000 },
-    { rank: 14, posTitle: "Organ Donor", negTitle: "Dexter", minRespect: 8000000 },
-    { rank: 15, posTitle: "Hobo Jesus", negTitle: "Batman", minRespect: 10000000 }
-];
-
 const ActiveListHelper = {
     cmds: 'active',
     settings: [
-        { key: 'ActiveListHelper_Enable', label: 'Enable Active List Helper' },
         { key: 'ActiveListHelper_Filter', label: 'Enable Alive/Dead Filters' }
     ],
     init: function() {
         const settings = Utils.getSettings();
-        if (settings.ActiveListHelper_Enable === false) return;
 
         if (settings.ActiveListHelper_Filter !== false) {
             this.initFilters();
@@ -8040,11 +8049,11 @@ const SettingsHelper = {
         topDiv.style.marginBottom = '20px';
 
         // Add global toggle
-        topDiv.appendChild(createToggle('global_enabled', 'Enable Hobo Helper (Global)', true));
+        topDiv.appendChild(createToggle('global_enabled', 'Hobo Helper (Global)', true));
         contentArea.appendChild(topDiv);
 
         const modsLabel = document.createElement('div');
-        modsLabel.textContent = "Active Modules:";
+        modsLabel.textContent = "Active Improvements:";
         modsLabel.style.fontWeight = 'bold';
         modsLabel.style.fontSize = '16px';
         modsLabel.style.marginBottom = '10px';
@@ -8089,7 +8098,24 @@ const SettingsHelper = {
                 moduleBlock.style.borderRadius = '6px';
                 moduleBlock.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
 
-                moduleBlock.appendChild(createToggle(modName, `<b>Enable ${modName}</b>`));
+                const displayName = Modules[modName].name || modName.replace(/Helper$/, '').replace(/([a-z])([A-Z])/g, '$1 $2');
+
+                const mainToggle = createToggle(modName, `<b>${displayName}</b>`);
+                moduleBlock.appendChild(mainToggle);
+
+                const moduleOptionsContainer = document.createElement('div');
+                const mainCheckbox = mainToggle.querySelector('input[type="checkbox"]');
+
+                const toggleSubFeatures = () => {
+                    if (mainCheckbox) {
+                        moduleOptionsContainer.style.display = mainCheckbox.checked ? 'block' : 'none';
+                    }
+                };
+
+                toggleSubFeatures();
+                if (mainCheckbox) {
+                    mainCheckbox.addEventListener('change', toggleSubFeatures);
+                }
 
                 // Render sub-features if this module has them defined
                 if (subFeatures[modName]) {
@@ -8099,28 +8125,32 @@ const SettingsHelper = {
                     subContainer.style.borderLeft = '2px solid #2196F3';
                     subFeatures[modName].forEach(feature => {
                         let el;
+                        const strippedLabel = feature.label ? feature.label.replace(/^Enable\s+/i, '') : feature.key;
                         if (feature.type === 'number' || feature.type === 'text') {
-                            el = createInput(feature);
+                            el = createInput({ ...feature, label: strippedLabel });
                         } else {
-                            el = createToggle(feature.key, feature.label, false, feature.defaultValue !== false);
+                            el = createToggle(feature.key, strippedLabel, false, feature.defaultValue !== false);
                         }
 
                         if (feature.parent) {
-                            const parentCheckbox = document.getElementById(`hw_helper_${feature.parent}`);
-                            if (parentCheckbox) {
-                                const containerDiv = el;
-                                const updateVisibility = () => {
-                                    containerDiv.style.opacity = parentCheckbox.checked ? '1' : '0.4';
-                                    containerDiv.style.pointerEvents = parentCheckbox.checked ? 'auto' : 'none';
-                                };
-                                parentCheckbox.addEventListener('change', updateVisibility);
-                                updateVisibility();
-                            }
+                            // DOM insertion delay ensures parent elements are queryable
+                            setTimeout(() => {
+                                const parentCheckbox = document.getElementById(`hw_helper_${feature.parent}`);
+                                if (parentCheckbox) {
+                                    const containerDiv = el;
+                                    const updateVisibility = () => {
+                                        containerDiv.style.opacity = parentCheckbox.checked ? '1' : '0.4';
+                                        containerDiv.style.pointerEvents = parentCheckbox.checked ? 'auto' : 'none';
+                                    };
+                                    parentCheckbox.addEventListener('change', updateVisibility);
+                                    updateVisibility();
+                                }
+                            }, 50);
                         }
 
                         subContainer.appendChild(el);
                     });
-                    moduleBlock.appendChild(subContainer);
+                    moduleOptionsContainer.appendChild(subContainer);
                 }
 
                 // Custom settings for FoodHelper
@@ -8175,7 +8205,7 @@ const SettingsHelper = {
                         listContainer.appendChild(ul);
                     }
                     foodContainer.appendChild(listContainer);
-                    moduleBlock.appendChild(foodContainer);
+                    moduleOptionsContainer.appendChild(foodContainer);
                 }
 
                 // Custom settings for GangArmoryHelper
@@ -8306,8 +8336,10 @@ const SettingsHelper = {
                     renderHiddenList();
                     armoryContainer.appendChild(hiddenListContainer);
 
-                    moduleBlock.appendChild(armoryContainer);
+                    moduleOptionsContainer.appendChild(armoryContainer);
                 }
+
+                moduleBlock.appendChild(moduleOptionsContainer);
 
                 // Manually balance columns: FoodHelper's large box goes left, the rest goes right.
                 if (modName <= 'FoodHelper') {
@@ -8727,6 +8759,18 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.52",
+            date: "2026-04-19",
+            type: "Added",
+            notes: [
+                "Added individual configuration toggles within the Settings menu for `BackpackHelper` sub-features (Item Tooltips and Favourite Drinks UI).",
+                "Overhauled the Settings menu UI to display clean, human-readable module names.",
+                "Settings menu sub-features are now dynamically wrapped in collapsible containers that hide automatically when their parent module is disabled, drastically reducing visual clutter.",
+                "Refactored `DrinksHelper` from a global background script to a targeted page module restricted to the Mixer page, improving overall execution performance.",
+                "Relocated static data object files to their proper data directory structure."
+            ]
+        },
+        {
             version: "8.51",
             date: "2026-04-18",
             type: "Fixed",
@@ -8763,15 +8807,6 @@ const ChangelogData = {
             notes: [
                 "Added a \"Show Next Respect Needed\" feature in the Living Area that automatically calculates and displays the threshold amount for your next respect rank beneath your current respect total."
             ]
-        },
-        {
-            version: "8.47",
-            date: "2026-04-18",
-            type: "Fixed",
-            notes: [
-                "Fixed a bug where the new Alive Time tracker would incorrectly reset and disappear when a player's health reached exactly 100% due to a faulty death-state check.",
-                "Removed the redundant parent toggle for Player features in the helper settings."
-            ]
         }
     ]
 };
@@ -8780,6 +8815,7 @@ const ChangelogData = {
         EquipmentData,
         FoodData,
         PrimesData,
+        RespectData,
         ChangelogData
     };
 
@@ -8788,7 +8824,6 @@ const ChangelogData = {
         DisplayHelper,
         DrinksHelper,
         FoodHelper,
-        RespectData,
     };
 
     const PageModules = {
@@ -8826,7 +8861,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.51';
+        window.HoboHelperVersion = '8.52';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

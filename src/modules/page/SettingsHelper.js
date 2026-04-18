@@ -220,11 +220,11 @@ const SettingsHelper = {
         topDiv.style.marginBottom = '20px';
 
         // Add global toggle
-        topDiv.appendChild(createToggle('global_enabled', 'Enable Hobo Helper (Global)', true));
+        topDiv.appendChild(createToggle('global_enabled', 'Hobo Helper (Global)', true));
         contentArea.appendChild(topDiv);
 
         const modsLabel = document.createElement('div');
-        modsLabel.textContent = "Active Modules:";
+        modsLabel.textContent = "Active Improvements:";
         modsLabel.style.fontWeight = 'bold';
         modsLabel.style.fontSize = '16px';
         modsLabel.style.marginBottom = '10px';
@@ -269,7 +269,24 @@ const SettingsHelper = {
                 moduleBlock.style.borderRadius = '6px';
                 moduleBlock.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
 
-                moduleBlock.appendChild(createToggle(modName, `<b>Enable ${modName}</b>`));
+                const displayName = Modules[modName].name || modName.replace(/Helper$/, '').replace(/([a-z])([A-Z])/g, '$1 $2');
+
+                const mainToggle = createToggle(modName, `<b>${displayName}</b>`);
+                moduleBlock.appendChild(mainToggle);
+
+                const moduleOptionsContainer = document.createElement('div');
+                const mainCheckbox = mainToggle.querySelector('input[type="checkbox"]');
+
+                const toggleSubFeatures = () => {
+                    if (mainCheckbox) {
+                        moduleOptionsContainer.style.display = mainCheckbox.checked ? 'block' : 'none';
+                    }
+                };
+
+                toggleSubFeatures();
+                if (mainCheckbox) {
+                    mainCheckbox.addEventListener('change', toggleSubFeatures);
+                }
 
                 // Render sub-features if this module has them defined
                 if (subFeatures[modName]) {
@@ -279,28 +296,32 @@ const SettingsHelper = {
                     subContainer.style.borderLeft = '2px solid #2196F3';
                     subFeatures[modName].forEach(feature => {
                         let el;
+                        const strippedLabel = feature.label ? feature.label.replace(/^Enable\s+/i, '') : feature.key;
                         if (feature.type === 'number' || feature.type === 'text') {
-                            el = createInput(feature);
+                            el = createInput({ ...feature, label: strippedLabel });
                         } else {
-                            el = createToggle(feature.key, feature.label, false, feature.defaultValue !== false);
+                            el = createToggle(feature.key, strippedLabel, false, feature.defaultValue !== false);
                         }
 
                         if (feature.parent) {
-                            const parentCheckbox = document.getElementById(`hw_helper_${feature.parent}`);
-                            if (parentCheckbox) {
-                                const containerDiv = el;
-                                const updateVisibility = () => {
-                                    containerDiv.style.opacity = parentCheckbox.checked ? '1' : '0.4';
-                                    containerDiv.style.pointerEvents = parentCheckbox.checked ? 'auto' : 'none';
-                                };
-                                parentCheckbox.addEventListener('change', updateVisibility);
-                                updateVisibility();
-                            }
+                            // DOM insertion delay ensures parent elements are queryable
+                            setTimeout(() => {
+                                const parentCheckbox = document.getElementById(`hw_helper_${feature.parent}`);
+                                if (parentCheckbox) {
+                                    const containerDiv = el;
+                                    const updateVisibility = () => {
+                                        containerDiv.style.opacity = parentCheckbox.checked ? '1' : '0.4';
+                                        containerDiv.style.pointerEvents = parentCheckbox.checked ? 'auto' : 'none';
+                                    };
+                                    parentCheckbox.addEventListener('change', updateVisibility);
+                                    updateVisibility();
+                                }
+                            }, 50);
                         }
 
                         subContainer.appendChild(el);
                     });
-                    moduleBlock.appendChild(subContainer);
+                    moduleOptionsContainer.appendChild(subContainer);
                 }
 
                 // Custom settings for FoodHelper
@@ -355,7 +376,7 @@ const SettingsHelper = {
                         listContainer.appendChild(ul);
                     }
                     foodContainer.appendChild(listContainer);
-                    moduleBlock.appendChild(foodContainer);
+                    moduleOptionsContainer.appendChild(foodContainer);
                 }
 
                 // Custom settings for GangArmoryHelper
@@ -486,8 +507,10 @@ const SettingsHelper = {
                     renderHiddenList();
                     armoryContainer.appendChild(hiddenListContainer);
 
-                    moduleBlock.appendChild(armoryContainer);
+                    moduleOptionsContainer.appendChild(armoryContainer);
                 }
+
+                moduleBlock.appendChild(moduleOptionsContainer);
 
                 // Manually balance columns: FoodHelper's large box goes left, the rest goes right.
                 if (modName <= 'FoodHelper') {

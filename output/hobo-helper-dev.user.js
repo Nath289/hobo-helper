@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.49.20260418.2337
+// @version      8.51.20260419.0223
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -386,13 +386,41 @@ const FoodData = {
 
 const PrimesData = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,103,107,109,113,127,131,137,139,149,151,157,163,167,173,179,181,191,193,197,199,211,223,227,229,233,239,241,251,257,263,269,271,277,281,283,293,307,311,313,317,331,337,347,349,353,359,367,373,379,383,389,397,401,409,419,421,431,433,439,443,449,457,461,463,467,479,487,491,499,503,509,521,523,541,547,557,563,569,571,577,587,593,599,601,607,613,617,619,631,641,643,647,653,659,661,673,677,683,691,701,709,719,727,733,739,743,751,757,761,769,773,787,797,809,811,821,823,827,829,839,853,857,859,863,877,881,883,887,907,911,919,929,937,941,947,953,967,971,977,983,991,997];
 
+const RespectData = [
+    { rank: 0, posTitle: "Hobo", negTitle: "Hobo", minRespect: 0 },
+    { rank: 1, posTitle: "Homeless", negTitle: "Lowlife", minRespect: 5000 },
+    { rank: 2, posTitle: "Bum", negTitle: "Delinquent", minRespect: 10000 },
+    { rank: 3, posTitle: "Freeloader", negTitle: "Thug", minRespect: 20000 },
+    { rank: 4, posTitle: "Drifter", negTitle: "Outcast", minRespect: 40000 },
+    { rank: 5, posTitle: "Showered", negTitle: "Addict", minRespect: 80000 },
+    { rank: 6, posTitle: "Citizen", negTitle: "Tramp", minRespect: 160000 },
+    { rank: 7, posTitle: "Worker", negTitle: "Criminal", minRespect: 320000 },
+    { rank: 8, posTitle: "Medic", negTitle: "Mental patient", minRespect: 640000 },
+    { rank: 9, posTitle: "Preacher", negTitle: "Murderer", minRespect: 1000000 },
+    { rank: 10, posTitle: "Actor", negTitle: "Hit man", minRespect: 1600000 },
+    { rank: 11, posTitle: "Officer", negTitle: "Mass murderer", minRespect: 2800000 },
+    { rank: 12, posTitle: "Peacemaker", negTitle: "Politician", minRespect: 4000000 },
+    { rank: 13, posTitle: "John McClane", negTitle: "Freddy Kreuger", minRespect: 6000000 },
+    { rank: 14, posTitle: "Organ Donor", negTitle: "Dexter", minRespect: 8000000 },
+    { rank: 15, posTitle: "Hobo Jesus", negTitle: "Batman", minRespect: 10000000 }
+];
+
 const BackpackHelper = {
+    settings: [
+        { key: 'BackpackHelper_Tooltips', label: 'Item Tooltips (Stats/Effects)' },
+        { key: 'BackpackHelper_Favourites', label: 'Favourite Drinks UI' }
+    ],
     init: function() {
         const settings = Utils.getSettings();
-        if (settings?.BackpackHelper?.enabled === false) return;
-        
-        this.initDrinkStats();
-        this.observeBackpack();
+
+        const enableTooltips = settings['BackpackHelper_Tooltips'] !== false;
+        const enableFavourites = settings['BackpackHelper_Favourites'] !== false;
+
+        if (enableFavourites) {
+            this.initDrinkStats();
+        }
+
+        this.observeBackpack(enableTooltips, enableFavourites);
     },
 
     initDrinkStats: function() {
@@ -430,16 +458,18 @@ const BackpackHelper = {
         document.addEventListener('click', this.handleDrinkClick);
     },
 
-    observeBackpack: function() {
+    observeBackpack: function(enableTooltips, enableFavourites) {
         let drinkMap = null;
         let lastInjected = 0;
 
         const processItems = () => {
             const now = Date.now();
-            if (now - lastInjected > 1000) {
+            if (enableFavourites && (now - lastInjected > 1000)) {
                 this.injectFavourites();
                 lastInjected = now;
             }
+
+            if (!enableTooltips) return;
 
             const items = document.querySelectorAll('.bp-itm:not([data-bh-tooltip-processed])');
             if (items.length === 0) return;
@@ -972,94 +1002,6 @@ const DisplayHelper = {
     }
 };
 
-const DrinksHelper = {
-            init: function() {
-                function getInventory() {
-                    const inventory = {};
-                    document.querySelectorAll('.bp-itm').forEach(item => {
-                        try {
-                            const img = item.querySelector('img');
-                            if (!img) return;
-
-                            const name = img.title.trim();
-                            const text = item.textContent.trim();
-                            const countMatch = text.match(/\((\d+)\)/);
-                            const count = countMatch ? parseInt(countMatch[1], 10) : 1;
-
-                            inventory[name] = (inventory[name] || 0) + count;
-                        } catch (e) { /* silent fail on malformed items */ }
-                    });
-                    return inventory;
-                }
-
-                function handleBartenderGuide() {
-                    const mixerLinks = document.querySelectorAll('a[href*="cmd=mixer&make="]');
-                    if (mixerLinks.length === 0) return;
-
-                    const inventory = getInventory();
-
-                    mixerLinks.forEach(link => {
-                        try {
-                            const row = link.closest('tr');
-                            if (!row || row.hasAttribute('data-dh-processed')) return;
-
-                            row.setAttribute('data-dh-processed', 'true');
-
-                            const cells = row.querySelectorAll('td');
-                            if (cells.length < 2) return;
-
-                            const recipeCell = cells[0];
-                            const actionCell = cells[1];
-
-                            const images = recipeCell.querySelectorAll('img');
-                            const ingredients = Array.from(images).slice(1).map(img => img.title.trim());
-
-                            if (ingredients.length === 0) return;
-
-                            let maxCanMake = Infinity;
-                            let limitingIngredient = "Unknown";
-
-                            ingredients.forEach(ing => {
-                                const owned = inventory[ing] || 0;
-                                if (owned < maxCanMake) {
-                                    maxCanMake = owned;
-                                    limitingIngredient = ing;
-                                }
-                            });
-
-                            const limiterDiv = document.createElement('div');
-                            limiterDiv.className = 'dh-helper-text';
-                            limiterDiv.style.fontSize = '0.82em';
-                            limiterDiv.style.marginTop = '4px';
-                            limiterDiv.style.display = 'block';
-
-                            if (maxCanMake > 0) {
-                                limiterDiv.style.color = '#555';
-                                limiterDiv.textContent = `Limit: ${limitingIngredient}`;
-                            } else {
-                                limiterDiv.style.color = '#aa0000';
-                                limiterDiv.style.fontWeight = 'bold';
-                                limiterDiv.textContent = `Missing: ${limitingIngredient}`;
-                            }
-
-                            actionCell.appendChild(limiterDiv);
-                        } catch (err) {
-                            console.error("HoboWars Drinks Helper Error:", err);
-                        }
-                    });
-                }
-
-                let timeout = null;
-                const observer = new MutationObserver(() => {
-                    if (timeout) clearTimeout(timeout);
-                    timeout = setTimeout(handleBartenderGuide, 100);
-                });
-
-                observer.observe(document.body, { childList: true, subtree: true });
-                handleBartenderGuide();
-            }
-        }
-
 const FoodHelper = {
     init: function() {
         const settings = Utils.getSettings();
@@ -1363,34 +1305,13 @@ const FoodHelper = {
     }
 };
 
-const RespectData = [
-    { rank: 0, posTitle: "Hobo", negTitle: "Hobo", minRespect: 0 },
-    { rank: 1, posTitle: "Homeless", negTitle: "Lowlife", minRespect: 5000 },
-    { rank: 2, posTitle: "Bum", negTitle: "Delinquent", minRespect: 10000 },
-    { rank: 3, posTitle: "Freeloader", negTitle: "Thug", minRespect: 20000 },
-    { rank: 4, posTitle: "Drifter", negTitle: "Outcast", minRespect: 40000 },
-    { rank: 5, posTitle: "Showered", negTitle: "Addict", minRespect: 80000 },
-    { rank: 6, posTitle: "Citizen", negTitle: "Tramp", minRespect: 160000 },
-    { rank: 7, posTitle: "Worker", negTitle: "Criminal", minRespect: 320000 },
-    { rank: 8, posTitle: "Medic", negTitle: "Mental patient", minRespect: 640000 },
-    { rank: 9, posTitle: "Preacher", negTitle: "Murderer", minRespect: 1000000 },
-    { rank: 10, posTitle: "Actor", negTitle: "Hit man", minRespect: 1600000 },
-    { rank: 11, posTitle: "Officer", negTitle: "Mass murderer", minRespect: 2800000 },
-    { rank: 12, posTitle: "Peacemaker", negTitle: "Politician", minRespect: 4000000 },
-    { rank: 13, posTitle: "John McClane", negTitle: "Freddy Kreuger", minRespect: 6000000 },
-    { rank: 14, posTitle: "Organ Donor", negTitle: "Dexter", minRespect: 8000000 },
-    { rank: 15, posTitle: "Hobo Jesus", negTitle: "Batman", minRespect: 10000000 }
-];
-
 const ActiveListHelper = {
     cmds: 'active',
     settings: [
-        { key: 'ActiveListHelper_Enable', label: 'Enable Active List Helper' },
         { key: 'ActiveListHelper_Filter', label: 'Enable Alive/Dead Filters' }
     ],
     init: function() {
         const settings = Utils.getSettings();
-        if (settings.ActiveListHelper_Enable === false) return;
 
         if (settings.ActiveListHelper_Filter !== false) {
             this.initFilters();
@@ -1788,6 +1709,94 @@ const CanDepoHelper = {
         }
     }
 };
+
+const DrinksHelper = {
+            init: function() {
+                function getInventory() {
+                    const inventory = {};
+                    document.querySelectorAll('.bp-itm').forEach(item => {
+                        try {
+                            const img = item.querySelector('img');
+                            if (!img) return;
+
+                            const name = img.title.trim();
+                            const text = item.textContent.trim();
+                            const countMatch = text.match(/\((\d+)\)/);
+                            const count = countMatch ? parseInt(countMatch[1], 10) : 1;
+
+                            inventory[name] = (inventory[name] || 0) + count;
+                        } catch (e) { /* silent fail on malformed items */ }
+                    });
+                    return inventory;
+                }
+
+                function handleBartenderGuide() {
+                    const mixerLinks = document.querySelectorAll('a[href*="cmd=mixer&make="]');
+                    if (mixerLinks.length === 0) return;
+
+                    const inventory = getInventory();
+
+                    mixerLinks.forEach(link => {
+                        try {
+                            const row = link.closest('tr');
+                            if (!row || row.hasAttribute('data-dh-processed')) return;
+
+                            row.setAttribute('data-dh-processed', 'true');
+
+                            const cells = row.querySelectorAll('td');
+                            if (cells.length < 2) return;
+
+                            const recipeCell = cells[0];
+                            const actionCell = cells[1];
+
+                            const images = recipeCell.querySelectorAll('img');
+                            const ingredients = Array.from(images).slice(1).map(img => img.title.trim());
+
+                            if (ingredients.length === 0) return;
+
+                            let maxCanMake = Infinity;
+                            let limitingIngredient = "Unknown";
+
+                            ingredients.forEach(ing => {
+                                const owned = inventory[ing] || 0;
+                                if (owned < maxCanMake) {
+                                    maxCanMake = owned;
+                                    limitingIngredient = ing;
+                                }
+                            });
+
+                            const limiterDiv = document.createElement('div');
+                            limiterDiv.className = 'dh-helper-text';
+                            limiterDiv.style.fontSize = '0.82em';
+                            limiterDiv.style.marginTop = '4px';
+                            limiterDiv.style.display = 'block';
+
+                            if (maxCanMake > 0) {
+                                limiterDiv.style.color = '#555';
+                                limiterDiv.textContent = `Limit: ${limitingIngredient}`;
+                            } else {
+                                limiterDiv.style.color = '#aa0000';
+                                limiterDiv.style.fontWeight = 'bold';
+                                limiterDiv.textContent = `Missing: ${limitingIngredient}`;
+                            }
+
+                            actionCell.appendChild(limiterDiv);
+                        } catch (err) {
+                            console.error("HoboWars Drinks Helper Error:", err);
+                        }
+                    });
+                }
+
+                let timeout = null;
+                const observer = new MutationObserver(() => {
+                    if (timeout) clearTimeout(timeout);
+                    timeout = setTimeout(handleBartenderGuide, 100);
+                });
+
+                observer.observe(document.body, { childList: true, subtree: true });
+                handleBartenderGuide();
+            }
+        }
 
 const FoodBankHelper = {
     cmds: 'food_bank',
@@ -7422,7 +7431,7 @@ const RatsHelper = {
                 label.style.cssText = 'font-size: 11px; line-height: 1.2; text-align: center; width: 100%; font-weight: bold; flex-grow: 1; display: flex; align-items: center; justify-content: center;';
 
                 if (isPermanent && def.imgSrc) {
-                    label.innerHTML = `<img src="${def.imgSrc}" style="margin-bottom:4px; max-width:24px; max-height:24px;"><span>${def.name.replace(' Boost', '')}</span>`;
+                    label.innerHTML = `<img src="${def.imgSrc}" alt="${def.name}" style="margin-bottom:4px; max-width:24px; max-height:24px;"><span>${def.name.replace(' Boost', '')}</span>`;
                     label.style.flexDirection = 'column';
                 } else {
                     label.innerHTML = def.name.replace(' Boost', '<br>Boost');
@@ -7615,7 +7624,7 @@ const RatsHelper = {
 
         items.forEach(li => {
             let isMeat = false;
-            let name = '';
+            let name;
             let exp = 0;
             let life = 0;
             let img = li.querySelector('img');
@@ -8040,11 +8049,11 @@ const SettingsHelper = {
         topDiv.style.marginBottom = '20px';
 
         // Add global toggle
-        topDiv.appendChild(createToggle('global_enabled', 'Enable Hobo Helper (Global)', true));
+        topDiv.appendChild(createToggle('global_enabled', 'Hobo Helper (Global)', true));
         contentArea.appendChild(topDiv);
 
         const modsLabel = document.createElement('div');
-        modsLabel.textContent = "Active Modules:";
+        modsLabel.textContent = "Active Improvements:";
         modsLabel.style.fontWeight = 'bold';
         modsLabel.style.fontSize = '16px';
         modsLabel.style.marginBottom = '10px';
@@ -8089,7 +8098,24 @@ const SettingsHelper = {
                 moduleBlock.style.borderRadius = '6px';
                 moduleBlock.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
 
-                moduleBlock.appendChild(createToggle(modName, `<b>Enable ${modName}</b>`));
+                const displayName = Modules[modName].name || modName.replace(/Helper$/, '').replace(/([a-z])([A-Z])/g, '$1 $2');
+
+                const mainToggle = createToggle(modName, `<b>${displayName}</b>`);
+                moduleBlock.appendChild(mainToggle);
+
+                const moduleOptionsContainer = document.createElement('div');
+                const mainCheckbox = mainToggle.querySelector('input[type="checkbox"]');
+
+                const toggleSubFeatures = () => {
+                    if (mainCheckbox) {
+                        moduleOptionsContainer.style.display = mainCheckbox.checked ? 'block' : 'none';
+                    }
+                };
+
+                toggleSubFeatures();
+                if (mainCheckbox) {
+                    mainCheckbox.addEventListener('change', toggleSubFeatures);
+                }
 
                 // Render sub-features if this module has them defined
                 if (subFeatures[modName]) {
@@ -8099,28 +8125,32 @@ const SettingsHelper = {
                     subContainer.style.borderLeft = '2px solid #2196F3';
                     subFeatures[modName].forEach(feature => {
                         let el;
+                        const strippedLabel = feature.label ? feature.label.replace(/^Enable\s+/i, '') : feature.key;
                         if (feature.type === 'number' || feature.type === 'text') {
-                            el = createInput(feature);
+                            el = createInput({ ...feature, label: strippedLabel });
                         } else {
-                            el = createToggle(feature.key, feature.label, false, feature.defaultValue !== false);
+                            el = createToggle(feature.key, strippedLabel, false, feature.defaultValue !== false);
                         }
 
                         if (feature.parent) {
-                            const parentCheckbox = document.getElementById(`hw_helper_${feature.parent}`);
-                            if (parentCheckbox) {
-                                const containerDiv = el;
-                                const updateVisibility = () => {
-                                    containerDiv.style.opacity = parentCheckbox.checked ? '1' : '0.4';
-                                    containerDiv.style.pointerEvents = parentCheckbox.checked ? 'auto' : 'none';
-                                };
-                                parentCheckbox.addEventListener('change', updateVisibility);
-                                updateVisibility();
-                            }
+                            // DOM insertion delay ensures parent elements are queryable
+                            setTimeout(() => {
+                                const parentCheckbox = document.getElementById(`hw_helper_${feature.parent}`);
+                                if (parentCheckbox) {
+                                    const containerDiv = el;
+                                    const updateVisibility = () => {
+                                        containerDiv.style.opacity = parentCheckbox.checked ? '1' : '0.4';
+                                        containerDiv.style.pointerEvents = parentCheckbox.checked ? 'auto' : 'none';
+                                    };
+                                    parentCheckbox.addEventListener('change', updateVisibility);
+                                    updateVisibility();
+                                }
+                            }, 50);
                         }
 
                         subContainer.appendChild(el);
                     });
-                    moduleBlock.appendChild(subContainer);
+                    moduleOptionsContainer.appendChild(subContainer);
                 }
 
                 // Custom settings for FoodHelper
@@ -8175,7 +8205,7 @@ const SettingsHelper = {
                         listContainer.appendChild(ul);
                     }
                     foodContainer.appendChild(listContainer);
-                    moduleBlock.appendChild(foodContainer);
+                    moduleOptionsContainer.appendChild(foodContainer);
                 }
 
                 // Custom settings for GangArmoryHelper
@@ -8306,8 +8336,10 @@ const SettingsHelper = {
                     renderHiddenList();
                     armoryContainer.appendChild(hiddenListContainer);
 
-                    moduleBlock.appendChild(armoryContainer);
+                    moduleOptionsContainer.appendChild(armoryContainer);
                 }
+
+                moduleBlock.appendChild(moduleOptionsContainer);
 
                 // Manually balance columns: FoodHelper's large box goes left, the rest goes right.
                 if (modName <= 'FoodHelper') {
@@ -8727,6 +8759,24 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.51",
+            date: "2026-04-18",
+            type: "Fixed",
+            notes: [
+                "Fixed an accessibility issue in the `RatsHelper` permanent upgrade buttons by adding `alt` attributes to injected `<img>` tags.",
+                "Cleaned up redundant variable initialization logic in the `RatsHelper` feed UI function."
+            ]
+        },
+        {
+            version: "8.50",
+            date: "2026-04-18",
+            type: "Changed",
+            notes: [
+                "Improved the styling of maxed permanent Rat upgrades to include a green tick in the top-left corner and a distinct light green background for better visibility.",
+                "Adjusted the alignment of text and icons inside permanent Rat upgrade buttons to perfectly center them vertically."
+            ]
+        },
+        {
             version: "8.49",
             date: "2026-04-18",
             type: "Added",
@@ -8754,28 +8804,6 @@ const ChangelogData = {
                 "Fixed a bug where the new Alive Time tracker would incorrectly reset and disappear when a player's health reached exactly 100% due to a faulty death-state check.",
                 "Removed the redundant parent toggle for Player features in the helper settings."
             ]
-        },
-        {
-            version: "8.46",
-            date: "2026-04-18",
-            type: "Changed",
-            notes: [
-                "Collapsed all distinct custom player titles into one new setting: \"Enable Custom Player Titles\".",
-                "Added a custom red \"Pirate King\" prefix title for Mugi.",
-                "Added a custom green name color and blue \"1337\" suffix title for Leet.",
-                "Added a custom red \"The\" prefix to Grabow to complement the existing \"the Great\" suffix."
-            ]
-        },
-        {
-            version: "8.44",
-            date: "2026-04-18",
-            type: "Added",
-            notes: [
-                "Added a new option to track and sync \"Alive Time\" in local storage.",
-                "Added a new top menu bar element to display a live updating relative Alive Time.",
-                "Added a mechanism to wipe local tracking if the player's life drops to 0%.",
-                "Added sync logic to the Living Area that gracefully updates your alive tracker."
-            ]
         }
     ]
 };
@@ -8784,15 +8812,14 @@ const ChangelogData = {
         EquipmentData,
         FoodData,
         PrimesData,
+        RespectData,
         ChangelogData
     };
 
     const GlobalModules = {
         BackpackHelper,
         DisplayHelper,
-        DrinksHelper,
         FoodHelper,
-        RespectData,
     };
 
     const PageModules = {
@@ -8800,6 +8827,7 @@ const ChangelogData = {
         BankHelper,
         BernardsBasementHelper,
         CanDepoHelper,
+        DrinksHelper,
         FoodBankHelper,
         FortSlugworthHelper,
         GangArmoryHelper,
@@ -8830,7 +8858,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.49.20260418.2337';
+        window.HoboHelperVersion = '8.51.20260419.0223';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

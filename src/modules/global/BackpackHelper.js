@@ -1,10 +1,19 @@
 const BackpackHelper = {
+    settings: [
+        { key: 'BackpackHelper_Tooltips', label: 'Item Tooltips (Stats/Effects)' },
+        { key: 'BackpackHelper_Favourites', label: 'Favourite Drinks UI' }
+    ],
     init: function() {
         const settings = Utils.getSettings();
-        if (settings?.BackpackHelper?.enabled === false) return;
-        
-        this.initDrinkStats();
-        this.observeBackpack();
+
+        const enableTooltips = settings['BackpackHelper_Tooltips'] !== false;
+        const enableFavourites = settings['BackpackHelper_Favourites'] !== false;
+
+        if (enableFavourites) {
+            this.initDrinkStats();
+        }
+
+        this.observeBackpack(enableTooltips, enableFavourites);
     },
 
     initDrinkStats: function() {
@@ -42,16 +51,18 @@ const BackpackHelper = {
         document.addEventListener('click', this.handleDrinkClick);
     },
 
-    observeBackpack: function() {
+    observeBackpack: function(enableTooltips, enableFavourites) {
         let drinkMap = null;
         let lastInjected = 0;
 
         const processItems = () => {
             const now = Date.now();
-            if (now - lastInjected > 1000) {
+            if (enableFavourites && (now - lastInjected > 1000)) {
                 this.injectFavourites();
                 lastInjected = now;
             }
+
+            if (!enableTooltips) return;
 
             const items = document.querySelectorAll('.bp-itm:not([data-bh-tooltip-processed])');
             if (items.length === 0) return;

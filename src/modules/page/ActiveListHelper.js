@@ -1,12 +1,10 @@
 const ActiveListHelper = {
     cmds: 'active',
     settings: [
-        { key: 'ActiveListHelper_Enable', label: 'Enable Active List Helper' },
         { key: 'ActiveListHelper_Filter', label: 'Enable Alive/Dead Filters' }
     ],
     init: function() {
         const settings = Utils.getSettings();
-        if (settings.ActiveListHelper_Enable === false) return;
 
         if (settings.ActiveListHelper_Filter !== false) {
             this.initFilters();

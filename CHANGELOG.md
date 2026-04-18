@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.52] - 2026-04-19
+### Added
+- Added individual configuration toggles within the Settings menu for `BackpackHelper` sub-features (Item Tooltips and Favourite Drinks UI).
+### Changed
+- Overhauled the Settings menu UI to display clean, human-readable module names.
+- Settings menu sub-features are now dynamically wrapped in collapsible containers that hide automatically when their parent module is disabled, drastically reducing visual clutter.
+- Refactored `DrinksHelper` from a global background script to a targeted page module restricted to the Mixer page, improving overall execution performance.
+- Relocated static data object files to their proper data directory structure.
+
 ## [8.51] - 2026-04-18
 ### Fixed
 - Fixed an accessibility issue in the `RatsHelper` permanent upgrade buttons by adding `alt` attributes to injected `<img>` tags.
