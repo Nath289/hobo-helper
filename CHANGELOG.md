@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.51] - 2026-04-18
+### Fixed
+- Fixed an accessibility issue in the `RatsHelper` permanent upgrade buttons by adding `alt` attributes to injected `<img>` tags.
+- Cleaned up redundant variable initialization logic in the `RatsHelper` feed UI function.
+
 ## [8.50] - 2026-04-18
 ### Changed
 - Improved the styling of maxed permanent Rat upgrades to include a green tick in the top-left corner and a distinct light green background for better visibility.

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.50
+// @version      8.51
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -7422,7 +7422,7 @@ const RatsHelper = {
                 label.style.cssText = 'font-size: 11px; line-height: 1.2; text-align: center; width: 100%; font-weight: bold; flex-grow: 1; display: flex; align-items: center; justify-content: center;';
 
                 if (isPermanent && def.imgSrc) {
-                    label.innerHTML = `<img src="${def.imgSrc}" style="margin-bottom:4px; max-width:24px; max-height:24px;"><span>${def.name.replace(' Boost', '')}</span>`;
+                    label.innerHTML = `<img src="${def.imgSrc}" alt="${def.name}" style="margin-bottom:4px; max-width:24px; max-height:24px;"><span>${def.name.replace(' Boost', '')}</span>`;
                     label.style.flexDirection = 'column';
                 } else {
                     label.innerHTML = def.name.replace(' Boost', '<br>Boost');
@@ -7615,7 +7615,7 @@ const RatsHelper = {
 
         items.forEach(li => {
             let isMeat = false;
-            let name = '';
+            let name;
             let exp = 0;
             let life = 0;
             let img = li.querySelector('img');
@@ -8727,6 +8727,15 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.51",
+            date: "2026-04-18",
+            type: "Fixed",
+            notes: [
+                "Fixed an accessibility issue in the `RatsHelper` permanent upgrade buttons by adding `alt` attributes to injected `<img>` tags.",
+                "Cleaned up redundant variable initialization logic in the `RatsHelper` feed UI function."
+            ]
+        },
+        {
             version: "8.50",
             date: "2026-04-18",
             type: "Changed",
@@ -8762,17 +8771,6 @@ const ChangelogData = {
             notes: [
                 "Fixed a bug where the new Alive Time tracker would incorrectly reset and disappear when a player's health reached exactly 100% due to a faulty death-state check.",
                 "Removed the redundant parent toggle for Player features in the helper settings."
-            ]
-        },
-        {
-            version: "8.46",
-            date: "2026-04-18",
-            type: "Changed",
-            notes: [
-                "Collapsed all distinct custom player titles into one new setting: \"Enable Custom Player Titles\".",
-                "Added a custom red \"Pirate King\" prefix title for Mugi.",
-                "Added a custom green name color and blue \"1337\" suffix title for Leet.",
-                "Added a custom red \"The\" prefix to Grabow to complement the existing \"the Great\" suffix."
             ]
         }
     ]
@@ -8828,7 +8826,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.50';
+        window.HoboHelperVersion = '8.51';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
