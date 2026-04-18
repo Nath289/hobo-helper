@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.52.20260419.0247
+// @version      8.53.20260419.0301
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -7382,7 +7382,7 @@ const RatsHelper = {
             ];
 
             const permanentDefs = [
-                { name: 'Buddhism', key: 'Buddhism', imgSrc: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAMAAABhEH5lAAACc1BMVEUAAAAfFQQmGgUqHAUxIgZOTk5PTk5ST01TUE1WUk1cXFxeXFxgXlyocxavdxeyeRe2fBe5fhe7fxjRjhvSjxvSkBvWkhzXkxzZlBzalRzblRzblhzdlxwAAAAlGQUwIQYBAgBfXlzblRwKFwMgSQkCBADYkxwAAACpcxUBAgABAwBRT04DBgHSjxsAAAAECgHQjhsDBgEhFwSqcxUAAAAVDgO/ghkCBQGudxe3fRgAAAAaPAiveBdcXFyochUAAQAAAAByTQ4AAAAMCAIAAAAgSQqXZxQBAgBOTk4AAAAPCgJpRw0AAACMjI0GBAF2UQ8BAQAHBQEBAgBxTQ8BAgAaOwcYNwdcW1sDBwEaPAgBAgACBAEYOAcRDAJUOgsTLAVOTU5JMgpONQooGwVMNApMNAoBAwAbEgM8KQgCAQBLMwoGDwIfFQQsHQUIEgIsHgYdFAQIEgIfFQQKFgMnGwU3JgcSKAUQJAUlGQVFLwkOHwRFMAkWMwdRNwsRJwU2JQcNHQQQJQUQJQUgSAoNHgQRJgVsSg41JAdKMwojTwolVQtsSg53UQ8cQQkdQQldQAxuSg53UQ97VBAZOgctZg0wbg44fxE5gRFDLglGMAlHohVNsRdPNgpeQAx7VBCFWhGXZxMbPggdQwkoWwwtaA45JwhWwxlXxxpXyBpoRw2bahSgbRWmcRamchavdxa6fxi8gBjEhhoMGgQcPwhJphVNsBdWxRpYyhpbzxtc0RumcRardRavdxe+ghjBgxnGhxnHhxrKihrQjhvTkBvalRzBhBnEhRnKiRrZlBzalBzalRzblRzclhzdlxzdlx3emB3fmB3iFpV+AAAAxXRSTlMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAECAwQEBQYGCAgJDA0NDQ4ODxAQExUVFxcgIikqKy0vOTk/RkZISU1NTlFRUlpdX2Rsb3B0dnh8fH2DhIWGiIuMkpeYpKmwsrW2uru8vsLFyMnKzM/S09Ta3+Dg4ePl6ers7/Dw8fLz8/P19fb29/f5+fr6+vv8/Pz8/Pz8/Pz8/Pz8/P39/f39/f39/f39/f39/f39/v7+/v7+/v7+/v7+/v7+/v7+/vPbK8QAAAEeSURBVBjTY+BigAD77IYIHVkrFwd1BphQ0OLtXWGuhc01TnChgN5tW8vKp67o8oELGca0Tls4ffmsRk+YkJ6qinXe5J2z6+IVGLgYmZiY5JwL0v1MMzdtXlQVqsXAzSsiLGpReuzoxPyi2LQpWzqjGbj5JCV0U3adPnFud4aRecuyHU0gIRn/9g2nT5w4OylQObJvSTFQSNqscv6M/aeOHzqQo6kfEuUOFFKKW3VhzbqT82ZuLDEB287Nb9dx4sSRM6fOr6zwkoUIaSStPn1w7vqDPak28hA38jjWzzl8au3S6mADcRaIkGLyngWH9vYnWspIiEGFbGuP7OvOclOTkpSECYVPaMv1NhYSBAIBZoiQb4KHNicHGLCzsYIAAMfTX8+a+L+8AAAAAElFTkSuQmCC' },
+                { name: 'Buddhism', key: 'Buddhism', imgSrc: 'data:image/webp;base64,UklGRjYCAABXRUJQVlA4TCoCAAAvEUAEEN/koG0kSUqqe2b3Xv5sDsehOAJP03DQRpIjuWbvM4gn//weQFrHkSQ5SlXP7B4a//3hhTM4IAZutW3Lmvv5XtxdWqh8AFiAipoRqLNU9sgMnnSe1j15AgAEciALciBnvrN5MftjJiBAHaTZA2iAWU3VztOpVtNVIGjMpqZ/jeOaLslmUmPOUgIcrmN/zJ591fG43Vvz56Cmyvu0V0RTLkELtE2DL3CbMjYtMf8tkWIDiPwyC+KLzFfFBMfaz7VaVaqWJ1lVIssSfBNACImafALv//+/uE9b7iQ2wxzeW7FWW2IB/BlhASRh4ExSKqcYbH//b/X7+R09Hvfr5+2ZLJYy3dPax8ZCJpLOhLWWLISA/0yASor0mkUfS6FTlCmATaWQCgEJsKDXUk2ZSMJQ0AYSIBOJCUTwfr4TmUARBCiA3OwZgQC5z/tzBX7AI/gFnj271+u1nj0BCAIAGGgu27Zt2zXbto0wewuz9dzcCyL6PwGgkR9f356qgFKCLTRYZZjWu+wArjJsRzY7jK8IBWcNjrARkArCQp49GnPyBYlyY4F0tjN+m2keLydfLBwY9fu5VQWjFFKSmXd0jZrnDlXoUoTeZM/68tJG394k8afogbSwNeSONLm711bIX0X3UiVXk8kVjhwcney7CLT/eZP5k+2ZTd//BCh+EU2fTnlc/v7U+az4o+g9dL2r3jk+u7m6uGz7LXqmmgxMi81ms1m19E8AAA==' },
                 { name: 'Vegetarianism', key: 'Vegetarianism', imgSrc: 'data:image/webp;base64,UklGRsICAABXRUJQVlA4TLUCAAAvEUAEEKcFt7Zt1cpa58p3LCKlAW2MlondHc5pA3Yk26qqmb3PwR3SoMg/DSLgV5+7nOM4kiRHyUK+MAYb8N8YnrrhyLZt2lrrvHv3ebZfhOybLbDRAPXnd+RnNmL7p7ZtngAABE4gwAmiIAMUsIENfCokBAhwh6mm3yweq/vM351Vd6/WwYdwqZ8wAXZ1gRHuRzTSggbSI0tUtuiz6Vk41OOI/kQQUCnxpV66prb18Fp47sFILjAQ2lQM+kEIWDO5im4XyZoRZqY3NRPEmczh6IgQThYn9KDW5QDxfzQ+MIghIxDiyBDClc9fpBaT2Erf4JegW9FKr6JXH6gf/LWSBTgnYbc5oJXYauiDACiMuQByhV1FYSDSFSoZo34i7RgQgWYQNEH6N0YMkShMHwQQNvyrx1Zzqw8EAWAQgahvBQgKCDenb/bp/E29Py52fXwFXq//6t+fJapxAUd1rmrOVdf/3zTdVeG3msz3x5j/e65OIpy12tHX27/x/89Csf/85UW7+a8M5PJvkWzmwUs1Otvu/350//2sJv899Krm8+lfkJLL3bV4kSL7w2PX/cGg0f0xj3z9qy007C1uN9JEpJXT/b0PECTbNu2cb5uxbSc/tm3b9lNs27adGT5NIaL/EwC0ejsXtRVHIBZy6eTRmRb/N4fIFxGdLDQt2cc9LsMipbP284oPTkhP9JDQ8MwRQfav2SnevkaKi4ebW+3ds3NIuFuAiaL1oLen9Pjq8SkmKUpFGl2pI5DppsNLG9fULE9SyX4ngSBT5RqnwLBYRwCY267c6ccGhweuDbYKpQ5gYql6trYZrdjsO+UD5fwGguCT2Eze+T2HomG5hhjK7RgqW207AsqivfcxrH53q3gEqP/OWqqGu3LW24H+9wPvzl9bGAeGP4UFJ4uNwPj/++sTWAIA' },
                 { name: 'Materialism', key: 'Materialism', imgSrc: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAD+ElEQVQ4y22SXWjVdRzGP7//y/nv7Jy5OTenc861Td2cWWIm4UulYRiRolHgRViBVAReVDcVXQSVojdCIUUUGCEhddGFI3H5Vio1dZKe3NQ1t7md7ezkefvvnP/L7/frYmPzoi888IUHPjwPPMKdvM+l33+h6+QFysqizJ1XQ7FYZGR0CFMGtbLkPjp46/bW+sbW3AcHD38SBoFi5jQIQT6XwxIIlKLKzeWa06MjDXf+TrSkksm21OjwcjdbaHQ9GS8GfnxZrtibTo3v931faTQCAIEMS1z/K4Hl+96cqsquI12njj8zcbdYLZUyECCYlpjS7cStlQN3ehdE45VDSko0BuXmGNFolFLJw+gf+GrPcP+ZXSs6YjVSK8M2wBZgCTCngQaQD6U1nhzdsLB+EQvqG1i0qJ7aOS4gEEJgFCd/3fnd92l72446Sgr0bPuZHyACXDx77sl8Lm8WcinikQlAzviGlL45dsslFoHqansGwnQ1pcFX4MQEV270rfJKbnWMfiLWTPkp0JKmnV1VcaETPVme2FqL0rO2K2DOAoOXd5fzxeeVrO0YX275na871sRjmmhEa9sxzIgJAhGGmdor3a/9eODdzo2btjfy4ft9GEpTNc/g4KcVtDTazK8T5LIKFVgIK49SpjKtpt6Kikz8YnfH6X9GHv9aKCVJJi+3DQwe/EzJgS379l6r2LIxwro1sKLNAcMkDCVhIHCiGhUYSC0YHfIY6JekRgLdsLiu0wIIguhNJ7Ln1dS/fz6yfcvYkZZlhfamJSYKgQ4loW9iOxo3b9DfH3DvjiSTUZzv9hiekOK9N2pcq1RyUcrH9/IZy2w+u7x5caLz5+72gWabmnpYtjJCKKHvmsdkVtM3qHj7o7W8+dZV+q4HWFEwTOFa5899gzBMBKCNMrQVGzv5h8epSz6rV0ZYd08TBh7dvSGXe3wCJZhQNxhKFLCnR1ZRVZM1HCdGxC7DtsuI2A7ReOVYxBYEk5rTlzy0FqSzijMXPbSnsQPFbydSBEVJAMyvMWXRC5OW75dmVydCTCeWLLcNXdJSGECuoKiICwwxtXA9PQ1pCf3c05Wp9Zs2fDm/9ZWjViw2d5YjDCQPDTfUO8XB5GS5BeRymqZGEzSEAgIDVrUb4e4X1x+b17pj/3haJCzbwVrStJoHLwhXnPr4gLX3xPGj73x7vHd1OqN4uN1GamhdaobPP9t2oX3tC4cKsulk0ZeeIDMVYnj4xgOJBL5fJJtLCx3eb+i/+tO+ngundy9d7NZ133SSm7ftPKRia44FMpL0SnmEsCnks7S0dvw/KJMZxfeLYJRhy3tP3e354SVn4a7Drl/RiyyiNHiehxDWDOg/rWrv8GrELoAAAAAASUVORK5CYII=' }
             ];
@@ -8783,6 +8783,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.53",
+            date: "2026-04-19",
+            type: "Added",
+            notes: [
+                "Added a legend at the bottom of the Hitlist table indicating row highlight colors (Green for currently online, Red for outside attack range)."
+            ]
+        },
+        {
             version: "8.52",
             date: "2026-04-19",
             type: "Added",
@@ -8822,14 +8830,6 @@ const ChangelogData = {
                 "Standard upgrade buttons now abbreviate their cash costs to be more compact (e.g. $15k instead of $15,000).",
                 "Permanent upgrades now display a green tick mark when purchased.",
                 "The standard Cheese quantity table globally displays a cheese emoji for quick reference."
-            ]
-        },
-        {
-            version: "8.48",
-            date: "2026-04-18",
-            type: "Added",
-            notes: [
-                "Added a \"Show Next Respect Needed\" feature in the Living Area that automatically calculates and displays the threshold amount for your next respect rank beneath your current respect total."
             ]
         }
     ]
@@ -8885,7 +8885,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.52.20260419.0247';
+        window.HoboHelperVersion = '8.53.20260419.0301';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

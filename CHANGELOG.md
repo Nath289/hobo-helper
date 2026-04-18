@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.54] - 2026-04-19
+### Fixed
+- Fixed the base64 image asset for the permanent Buddhism rat upgrade in `RatsHelper` to precisely match the actual game icon.
+
 ## [8.53] - 2026-04-19
 ### Added
 - Added a legend at the bottom of the Hitlist table indicating row highlight colors (Green for currently online, Red for outside attack range).
