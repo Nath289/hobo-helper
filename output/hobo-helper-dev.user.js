@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.44.20260418.0101
+// @version      8.45.20260418.1219
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -661,9 +661,7 @@ const BackpackHelper = {
 const DisplayHelper = {
     settings: [
         { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' },
-        { key: 'DisplayHelper_FakeQwee', label: 'Enable the Fake Qwee' },
-        { key: 'DisplayHelper_JackReacher', label: 'Enable Jack Reacher Major Title' },
-        { key: 'DisplayHelper_Grabow', label: 'Enable Grabow the Great Title' },
+        { key: 'DisplayHelper_CustomTitles', label: 'Enable Custom Player Titles', defaultValue: true },
         { key: 'DisplayHelper_ScrollableTopbar', label: 'Swipeable Topbar Menu (Mobile)', defaultValue: true },
         { key: 'DisplayHelper_WidenPage', label: 'Widen Content Area' },
         { key: 'DisplayHelper_PageWidth', label: 'Page Width (px)', type: 'number', defaultValue: 660, parent: 'DisplayHelper_WidenPage' },
@@ -679,14 +677,12 @@ const DisplayHelper = {
         if (settings['DisplayHelper_ImprovedAvatars'] !== false) {
             this.initImprovedAvatars();
         }
-        if (settings['DisplayHelper_FakeQwee'] !== false) {
+        if (settings['DisplayHelper_CustomTitles'] !== false) {
             this.initFakeQwee();
-        }
-        if (settings['DisplayHelper_JackReacher'] !== false) {
             this.initJackReacher();
-        }
-        if (settings['DisplayHelper_Grabow'] !== false) {
             this.initGrabow();
+            this.initPirateKingMugi();
+            this.initLeet();
         }
         if (settings['DisplayHelper_ScrollableTopbar'] !== false) {
             this.initScrollableTopbar();
@@ -829,7 +825,23 @@ const DisplayHelper = {
         this.addTitleToPlayer("107380", "Major", `<span style="color: #00EE00; font-weight: bold; text-shadow: 1px 1px 2px black;">Major</span>`, 'prefix');
     },
     initGrabow: function() {
-        this.addTitleToPlayer("1003713", "the Great", `<span style="color: red; font-weight: bold; text-shadow: 0 0 5px black, 1px 1px 2px black;">the Great</span>`, 'suffix');
+        this.addTitleToPlayer("1003713", "The", `<span style="color: #A71930; font-weight: bold; text-shadow: 0 0 5px black, 1px 1px 2px black;">The</span>`, 'prefix');
+        this.addTitleToPlayer("1003713", "the Great", `<span style="color: #A71930; font-weight: bold; text-shadow: 0 0 5px black, 1px 1px 2px black;">the Great</span>`, 'suffix');
+    },
+    initPirateKingMugi: function() {
+        this.addTitleToPlayer("1554846", "Pirate King", `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">Pirate King</span>`, 'prefix');
+    },
+    initLeet: function() {
+        const targetHoboId = "1140606";
+        const playerLinks = document.querySelectorAll(`a[href*="cmd=player&ID=${targetHoboId}"]`);
+        playerLinks.forEach(link => {
+            if (!link.innerHTML.includes('1337') && 
+                !link.innerHTML.includes('<img') && 
+                !link.classList.contains('pavatar') && 
+                !link.innerHTML.includes('avatar-circle')) {
+                link.innerHTML = `<span style="color: #36ba01;">${link.innerHTML}</span> <span style="color: #0561CB; font-weight: bold; text-shadow: 1px 1px 2px black;">1337</span>`;
+            }
+        });
     },
     initInterestingLevel: function() {
         const levelSpan = document.getElementById('statValueLvl');
@@ -8452,6 +8464,17 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.45",
+            date: "2026-04-18",
+            type: "Added",
+            notes: [
+                "Added a new option to track and sync \"Alive Time\" in local storage.",
+                "Added a new top menu bar element to display a live updating relative Alive Time.",
+                "Added a mechanism to wipe local tracking if the player's life drops to 0%.",
+                "Added sync logic to the Living Area that gracefully updates your alive tracker."
+            ]
+        },
+        {
             version: "8.44",
             date: "2026-04-17",
             type: "Added",
@@ -8492,14 +8515,6 @@ const ChangelogData = {
                 "Converted floating \"Consume\" action links into standard UI buttons.",
                 "Converted floating \"Check all\" form actions into unified matching UI buttons.",
                 "Added visual row-highlighting for checked/selected food items."
-            ]
-        },
-        {
-            version: "8.40",
-            date: "2026-04-16",
-            type: "Changed",
-            notes: [
-                "Added a confirmation dialog to the \"Quick Return Branded Button\" in the Living Area to prevent accidental item returns."
             ]
         }
     ]
@@ -8554,7 +8569,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.44.20260418.0101';
+        window.HoboHelperVersion = '8.45.20260418.1219';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

@@ -3,20 +3,22 @@
 All notable changes to this project will be documented in this file.
 
 ## [8.45] - 2026-04-18
+- Added a live Alive Time tracker to the topbed menu.
+- Automatically syncs alive time relative tracking when visiting the living area.
+- Automatically wipes alive time tracking when the user dies.
+
+## [8.46] - 2026-04-18
+- Collapsed all distinct custom player titles into one new setting: "Enable Custom Player Titles".
+- Added a custom red "Pirate King" prefix title for Mugi.
+- Added a custom green name color and blue "1337" suffix title for Leet.
+- Added a custom red "The" prefix to Grabow to complement the existing "the Great" suffix.
+
+## [8.44] - 2026-04-18
 ### Added
 - Added a new option to track and sync "Alive Time" in local storage.
 - Added a new top menu bar element to display a live updating relative Alive Time.
 - Added a mechanism to wipe local tracking if the player's life drops to 0%.
 - Added sync logic to the Living Area that gracefully updates your alive tracker.
-
-## [8.44] - 2026-04-17
-### Added
-- Added "Check for Updates" button to the Settings menu that fetches the latest release from GitHub to compare against current version.
-- Added a new setting to Display Helper to display a red "the Great" suffix title next to all profile links pointing to Grabow (1003713).
-
-### Changed
-- Updated the Settings Menu's "Check for Updates" functionality to automatically disable itself functionally and visually when running as a local development build. 
-- Updated custom player title formatting logic internally to dynamically support both suffix and prefix tag positioning.
 
 ## [8.43] - 2026-04-17
 ### Changed

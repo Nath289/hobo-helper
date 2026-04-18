@@ -1,9 +1,7 @@
 const DisplayHelper = {
     settings: [
         { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' },
-        { key: 'DisplayHelper_FakeQwee', label: 'Enable the Fake Qwee' },
-        { key: 'DisplayHelper_JackReacher', label: 'Enable Jack Reacher Major Title' },
-        { key: 'DisplayHelper_Grabow', label: 'Enable Grabow the Great Title' },
+        { key: 'DisplayHelper_CustomTitles', label: 'Enable Custom Player Titles', defaultValue: true },
         { key: 'DisplayHelper_ScrollableTopbar', label: 'Swipeable Topbar Menu (Mobile)', defaultValue: true },
         { key: 'DisplayHelper_WidenPage', label: 'Widen Content Area' },
         { key: 'DisplayHelper_PageWidth', label: 'Page Width (px)', type: 'number', defaultValue: 660, parent: 'DisplayHelper_WidenPage' },
@@ -19,14 +17,12 @@ const DisplayHelper = {
         if (settings['DisplayHelper_ImprovedAvatars'] !== false) {
             this.initImprovedAvatars();
         }
-        if (settings['DisplayHelper_FakeQwee'] !== false) {
+        if (settings['DisplayHelper_CustomTitles'] !== false) {
             this.initFakeQwee();
-        }
-        if (settings['DisplayHelper_JackReacher'] !== false) {
             this.initJackReacher();
-        }
-        if (settings['DisplayHelper_Grabow'] !== false) {
             this.initGrabow();
+            this.initPirateKingMugi();
+            this.initUberLeetRoot();
         }
         if (settings['DisplayHelper_ScrollableTopbar'] !== false) {
             this.initScrollableTopbar();
@@ -169,7 +165,23 @@ const DisplayHelper = {
         this.addTitleToPlayer("107380", "Major", `<span style="color: #00EE00; font-weight: bold; text-shadow: 1px 1px 2px black;">Major</span>`, 'prefix');
     },
     initGrabow: function() {
-        this.addTitleToPlayer("1003713", "the Great", `<span style="color: red; font-weight: bold; text-shadow: 0 0 5px black, 1px 1px 2px black;">the Great</span>`, 'suffix');
+        this.addTitleToPlayer("1003713", "The", `<span style="color: #A71930; font-weight: bold; text-shadow: 0 0 5px black, 1px 1px 2px black;">The</span>`, 'prefix');
+        this.addTitleToPlayer("1003713", "the Great", `<span style="color: #A71930; font-weight: bold; text-shadow: 0 0 5px black, 1px 1px 2px black;">the Great</span>`, 'suffix');
+    },
+    initPirateKingMugi: function() {
+        this.addTitleToPlayer("1554846", "Pirate King", `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">Pirate King</span>`, 'prefix');
+    },
+    initUberLeetRoot: function() {
+        const targetHoboId = "1140606";
+        const playerLinks = document.querySelectorAll(`a[href*="cmd=player&ID=${targetHoboId}"]`);
+        playerLinks.forEach(link => {
+            if (!link.innerHTML.includes('1337') && 
+                !link.innerHTML.includes('<img') && 
+                !link.classList.contains('pavatar') && 
+                !link.innerHTML.includes('avatar-circle')) {
+                link.innerHTML = `<span style="color: #36ba01;">${link.innerHTML}</span> <span style="color: #0561CB; font-weight: bold; text-shadow: 1px 1px 2px black;">1337</span>`;
+            }
+        });
     },
     initInterestingLevel: function() {
         const levelSpan = document.getElementById('statValueLvl');
