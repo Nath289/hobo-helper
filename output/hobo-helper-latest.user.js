@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.49
+// @version      8.50
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -7450,6 +7450,8 @@ const RatsHelper = {
                     if (isPermanent) {
                         maxSpan.style.cssText = 'position: absolute; top: 2px; left: 4px; font-size: 14px; font-weight: bold; color: green;';
                         maxSpan.innerHTML = '&#10004;'; // Green tick
+                        btn.style.backgroundColor = '#e8f5e9';
+                        btn.style.borderColor = '#c3e6cb';
                     } else {
                         maxSpan.style.cssText = 'position: absolute; bottom: 4px; width: 100%; text-align: center; font-size: 10px; color: #999;';
                         maxSpan.textContent = 'MAXED';
@@ -8725,6 +8727,15 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.50",
+            date: "2026-04-18",
+            type: "Changed",
+            notes: [
+                "Improved the styling of maxed permanent Rat upgrades to include a green tick in the top-left corner and a distinct light green background for better visibility.",
+                "Adjusted the alignment of text and icons inside permanent Rat upgrade buttons to perfectly center them vertically."
+            ]
+        },
+        {
             version: "8.49",
             date: "2026-04-18",
             type: "Added",
@@ -8762,17 +8773,6 @@ const ChangelogData = {
                 "Added a custom red \"Pirate King\" prefix title for Mugi.",
                 "Added a custom green name color and blue \"1337\" suffix title for Leet.",
                 "Added a custom red \"The\" prefix to Grabow to complement the existing \"the Great\" suffix."
-            ]
-        },
-        {
-            version: "8.44",
-            date: "2026-04-18",
-            type: "Added",
-            notes: [
-                "Added a new option to track and sync \"Alive Time\" in local storage.",
-                "Added a new top menu bar element to display a live updating relative Alive Time.",
-                "Added a mechanism to wipe local tracking if the player's life drops to 0%.",
-                "Added sync logic to the Living Area that gracefully updates your alive tracker."
             ]
         }
     ]
@@ -8828,7 +8828,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.49';
+        window.HoboHelperVersion = '8.50';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

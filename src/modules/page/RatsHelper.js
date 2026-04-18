@@ -344,7 +344,7 @@ const RatsHelper = {
                 label.style.cssText = 'font-size: 11px; line-height: 1.2; text-align: center; width: 100%; font-weight: bold; flex-grow: 1; display: flex; align-items: center; justify-content: center;';
 
                 if (isPermanent && def.imgSrc) {
-                    label.innerHTML = `<img src="${def.imgSrc}" style="margin-bottom:4px; max-width:24px; max-height:24px;"><span>${def.name.replace(' Boost', '')}</span>`;
+                    label.innerHTML = `<img src="${def.imgSrc}" alt="${def.name}" style="margin-bottom:4px; max-width:24px; max-height:24px;"><span>${def.name.replace(' Boost', '')}</span>`;
                     label.style.flexDirection = 'column';
                 } else {
                     label.innerHTML = def.name.replace(' Boost', '<br>Boost');
@@ -372,6 +372,8 @@ const RatsHelper = {
                     if (isPermanent) {
                         maxSpan.style.cssText = 'position: absolute; top: 2px; left: 4px; font-size: 14px; font-weight: bold; color: green;';
                         maxSpan.innerHTML = '&#10004;'; // Green tick
+                        btn.style.backgroundColor = '#e8f5e9';
+                        btn.style.borderColor = '#c3e6cb';
                     } else {
                         maxSpan.style.cssText = 'position: absolute; bottom: 4px; width: 100%; text-align: center; font-size: 10px; color: #999;';
                         maxSpan.textContent = 'MAXED';
@@ -535,7 +537,7 @@ const RatsHelper = {
 
         items.forEach(li => {
             let isMeat = false;
-            let name = '';
+            let name;
             let exp = 0;
             let life = 0;
             let img = li.querySelector('img');

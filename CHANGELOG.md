@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.50] - 2026-04-18
+### Changed
+- Improved the styling of maxed permanent Rat upgrades to include a green tick in the top-left corner and a distinct light green background for better visibility.
+- Adjusted the alignment of text and icons inside permanent Rat upgrade buttons to perfectly center them vertically.
+
 ## [8.49] - 2026-04-18
 ### Added
 - Completely redesigned the Rat Upgrades UI into a new square-button layout with separated sections for standard and permanent upgrades.
