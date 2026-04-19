@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.63
+// @version      8.64
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -738,6 +738,7 @@ const DisplayHelper = {
             this.initGrabow();
             this.initPirateKingMugi();
             this.initUberLeetRoot();
+            this.initSeventhHeaven();
         }
         if (settings['DisplayHelper_ScrollableTopbar'] !== false) {
             this.initScrollableTopbar();
@@ -897,6 +898,9 @@ const DisplayHelper = {
                 link.innerHTML = `<span style="color: #36ba01;">${link.innerHTML}</span> <span style="color: #0561CB; font-weight: bold; text-shadow: 1px 1px 2px black;">1337</span>`;
             }
         });
+    },
+    initSeventhHeaven: function() {
+        this.addTitleToPlayer("2924238", "Нeaveп", `<span style="color: #40e0d0; font-weight: bold; text-shadow: 1px 1px 2px black;">Нeaveп</span>`, 'suffix');
     },
     initInterestingLevel: function() {
         const levelSpan = document.getElementById('statValueLvl');
@@ -8147,6 +8151,15 @@ const RatsHelper = {
         }
 
         ul.parentNode.replaceChild(container, ul);
+
+        // Add tattoo display below the links
+        const savedTattoo = localStorage.getItem('hw_helper_tattoo');
+        if (savedTattoo) {
+            const tattooDisplay = document.createElement('div');
+            tattooDisplay.style.cssText = 'text-align: center; margin-top: 10px; font-size: 11px; color: #555;';
+            tattooDisplay.textContent = `Current Tattoo: ${savedTattoo}`;
+            container.parentNode.insertBefore(tattooDisplay, container.nextSibling);
+        }
     },
 
     initExpBars: function(contentArea) {
@@ -9356,6 +9369,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.64",
+            date: "2026-04-19",
+            type: "Added",
+            notes: [
+                "Added custom 'Нeaveп' title display for SeventhHeaven."
+            ]
+        },
+        {
             version: "8.63",
             date: "2026-04-19",
             type: "Changed",
@@ -9392,16 +9413,6 @@ const ChangelogData = {
                 "Created the new `GangHitlistHelper` module specifically for the Gang Hitlist page (`cmd=gang&do=hitlist`).",
                 "Added a \"Hitlist Page Tracker\" feature that remembers and visually highlights the currently selected paginated hitlist page.",
                 "Added a \"Hitlist Mark Red\" interactive toggle link within the \"Options\" column of the hitlist table, allowing users to permanently shade specific opponent rows red across page reloads."
-            ]
-        },
-        {
-            version: "8.59",
-            date: "2026-04-19",
-            type: "Added",
-            notes: [
-                "Added a comprehensive Mass Mail template system allowing the saving, loading, updating, and deletion of mass mail presets on the Gang Send Mass Mail page.",
-                "Templates automatically save the 'Send To' selection, Subject, and Body content.",
-                "Added support for dynamic date variables in mass mail templates: `{date}` (e.g. Apr 16) and `{fullDate}` (e.g. Apr 16 2026)."
             ]
         }
     ]
@@ -9459,7 +9470,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.63';
+        window.HoboHelperVersion = '8.64';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
