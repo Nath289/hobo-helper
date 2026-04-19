@@ -24,12 +24,29 @@ This document contains a general knowledge base about the mechanics, layout, and
   - 26-49T: +13 exp / +5 life
   - 50-99T: +17 exp / +3 life
   - 100T: +21 exp / +1 life
-  *Exceptions:* Fruit by the Furlong (+17 exp / -7 life), Kit Rat Bar (+10 exp / +8 life).
+  *Exceptions:* Fruit by the Furlong (+17 exp / -7 life), Kit Rat Bar (+10 exp / +8 life). *Note: Kit Rat Bars are rare Halloween Event items found by dumping Trick-or-Treat Baskets into Trollys or discarded in Improved Dumpsters. They grant 20T and the Chocorat status effect.*
 - **Vegetarianism:** A "one off" rat upgrade. It generally adds +1 Exp and +1 Life to non-meat foods. If the player possesses the **Rattoo** tattoo in their Living Area, the Vegetarianism bonus doubles to +2 Exp and +2 Life. Meat cannot be fed to a vegetarian rat.
+- **Common Feeding Regimes:** For easily accessible foods, players typically use one of two approaches:
+  - **Fighter's Lunches → Apples:** Feeds high-Exp Fighter's Lunches early to quickly level the rat up so it becomes useful in battles and item finding sooner, then switches to Apples (high-Life, low-T food) later to sustain its lifespan against compounding age decay.
+  - **Apples → Fighter's Lunches:** Builds a massive life buffer early on with Apples, then switches to Fighter's Lunches later for experience.
 - When a rat needs food, a "Feed" option appears in their action links.
 - Rats earn 1 Cheese every level, which is used (along with cash) to buy permanent upgrades for the rat.
+- **Cheese Upgrades:** 
+  - **Meal Boost**: Grants 3 extra meals immediately.
+  - **Life Boost**: Increases life value as if you gained a level (e.g., +110 life for a gumshoe rat).
+  - Cheese upgrades scale in cost: the cheese cost increases by 1 for every 5 levels purchased in that specific upgrade.
 - Permanent rat upgrades (like Buddhism, Vegetarianism, Materialism) disappear completely from the upgrade list once purchased. If they are unaffordable due to insufficient cheese or cash, their clickable purchase links are removed and replaced with a grayed-out strikethrough, but the text remains visible.
 - Rat UI usually relies on nested tables. Manipulating the DOM here requires care not to unbalance table rows when action buttons (like "Feed") conditionally appear.
+
+### The Cheese Economy (Upgrades)
+When purchasing upgrades for your rat (Vegetarian, Life Boost, Meal Boost), keep in mind the scaling cost mechanic:
+1. Every time a rat levels up, it generates **1 Cheese**.
+2. Upgrade costs scale based on the number of times you've purchased that specific upgrade type. They cost 1 Cheese for levels 1-5, **2 Cheese for levels 6-10**, 3 Cheese for levels 11-15, etc.
+
+**Optimal Upgrade Strategy (Meal Boost vs Life Boost):**
+* **Meal Boosts (Levels 1-5):** These cost 1 Cheese and grant 3 meals. If you feed the rat Fighter's Lunches (16 EXP * 3 = 48 EXP), this is usually enough to gain at least 1 level in the early game. Gaining a level refunds the 1 Cheese cost, making this an "infinite loop" of free stats until the EXP requirement becomes too steep.
+* **The Cutoff (Meal Boost Level 6):** Once Meal Boost costs 2 Cheese, you would need to gain **2 levels** from those 3 meals (48 EXP) to break even on Cheese. Because EXP requirements scale up constantly, 48 EXP will not cover 2 levels. At this exact point, you begin losing Cheese rapidly.
+* **Switch to Life Boost:** As soon as Meal Boost hits 2 Cheese, stop buying it. Switch entirely to purchasing **Life Boosts** (which grants a flat influx of Life equivalent to a level up, e.g., 110 Life for a Gumshoe) starting at 1 Cheese cost.
 
 ## Gangs
 - Gang members have stats like Level, Life, main stats, battle stats, and other stats.

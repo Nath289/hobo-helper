@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.64] - 2026-04-19
+### Added
+- Added custom 'Нeaveп' title display for SeventhHeaven.
+
 ## [8.63] - 2026-04-19
 ### Changed
 - The Rat Life Progress Bar now dynamically shifts color from green to yellow to red as the rat approaches the end of its estimated lifespan.

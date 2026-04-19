@@ -23,6 +23,7 @@ const DisplayHelper = {
             this.initGrabow();
             this.initPirateKingMugi();
             this.initUberLeetRoot();
+            this.initSeventhHeaven();
         }
         if (settings['DisplayHelper_ScrollableTopbar'] !== false) {
             this.initScrollableTopbar();
@@ -182,6 +183,9 @@ const DisplayHelper = {
                 link.innerHTML = `<span style="color: #36ba01;">${link.innerHTML}</span> <span style="color: #0561CB; font-weight: bold; text-shadow: 1px 1px 2px black;">1337</span>`;
             }
         });
+    },
+    initSeventhHeaven: function() {
+        this.addTitleToPlayer("2924238", "Нeaveп", `<span style="color: #40e0d0; font-weight: bold; text-shadow: 1px 1px 2px black;">Нeaveп</span>`, 'suffix');
     },
     initInterestingLevel: function() {
         const levelSpan = document.getElementById('statValueLvl');

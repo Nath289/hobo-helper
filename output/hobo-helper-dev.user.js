@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.62.20260419.1850
+// @version      8.63.20260419.2201
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -738,6 +738,7 @@ const DisplayHelper = {
             this.initGrabow();
             this.initPirateKingMugi();
             this.initUberLeetRoot();
+            this.initSeventhHeaven();
         }
         if (settings['DisplayHelper_ScrollableTopbar'] !== false) {
             this.initScrollableTopbar();
@@ -897,6 +898,9 @@ const DisplayHelper = {
                 link.innerHTML = `<span style="color: #36ba01;">${link.innerHTML}</span> <span style="color: #0561CB; font-weight: bold; text-shadow: 1px 1px 2px black;">1337</span>`;
             }
         });
+    },
+    initSeventhHeaven: function() {
+        this.addTitleToPlayer("2924238", "Нeaveп", `<span style="color: #40e0d0; font-weight: bold; text-shadow: 1px 1px 2px black;">Нeaveп</span>`, 'suffix');
     },
     initInterestingLevel: function() {
         const levelSpan = document.getElementById('statValueLvl');
@@ -8147,6 +8151,15 @@ const RatsHelper = {
         }
 
         ul.parentNode.replaceChild(container, ul);
+
+        // Add tattoo display below the links
+        const savedTattoo = localStorage.getItem('hw_helper_tattoo');
+        if (savedTattoo) {
+            const tattooDisplay = document.createElement('div');
+            tattooDisplay.style.cssText = 'text-align: center; margin-top: 10px; font-size: 11px; color: #555;';
+            tattooDisplay.textContent = `Current Tattoo: ${savedTattoo}`;
+            container.parentNode.insertBefore(tattooDisplay, container.nextSibling);
+        }
     },
 
     initExpBars: function(contentArea) {
@@ -9356,6 +9369,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.63",
+            date: "2026-04-19",
+            type: "Changed",
+            notes: [
+                "The Rat Life Progress Bar now dynamically shifts color from green to yellow to red as the rat approaches the end of its estimated lifespan."
+            ]
+        },
+        {
             version: "8.62",
             date: "2026-04-19",
             type: "Changed",
@@ -9394,14 +9415,6 @@ const ChangelogData = {
                 "Added a comprehensive Mass Mail template system allowing the saving, loading, updating, and deletion of mass mail presets on the Gang Send Mass Mail page.",
                 "Templates automatically save the 'Send To' selection, Subject, and Body content.",
                 "Added support for dynamic date variables in mass mail templates: `{date}` (e.g. Apr 16) and `{fullDate}` (e.g. Apr 16 2026)."
-            ]
-        },
-        {
-            version: "8.58",
-            date: "2026-04-19",
-            type: "Changed",
-            notes: [
-                "Updated the Gang Armory Favorites dashboard to display \"Loaned to You\" in green instead of a red \"Not Available\" warning for items currently loaned to the active user."
             ]
         }
     ]
@@ -9459,7 +9472,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.62.20260419.1850';
+        window.HoboHelperVersion = '8.63.20260419.2201';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

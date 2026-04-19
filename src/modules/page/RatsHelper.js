@@ -659,6 +659,15 @@ const RatsHelper = {
         }
 
         ul.parentNode.replaceChild(container, ul);
+
+        // Add tattoo display below the links
+        const savedTattoo = localStorage.getItem('hw_helper_tattoo');
+        if (savedTattoo) {
+            const tattooDisplay = document.createElement('div');
+            tattooDisplay.style.cssText = 'text-align: center; margin-top: 10px; font-size: 11px; color: #555;';
+            tattooDisplay.textContent = `Current Tattoo: ${savedTattoo}`;
+            container.parentNode.insertBefore(tattooDisplay, container.nextSibling);
+        }
     },
 
     initExpBars: function(contentArea) {
