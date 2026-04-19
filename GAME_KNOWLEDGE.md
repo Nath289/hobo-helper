@@ -11,9 +11,21 @@ This document contains a general knowledge base about the mechanics, layout, and
 ## Rats
 - Rats help the user fight in battles and find items (seafood, treasure, etc.).
 - Rats have stats like Level, Experience, Age, Life, Meals, Speed, Attack, Defense, and Cheese.
-- **Meals:** A rat gains 1 Meal every 3 Hours (max 10 meals). Meals are required to feed a rat.
-- **Feeding:** Feeding a rat increases its Life and Experience. However, the exact Exp and Life gained vary wildly depending on the player's current "Awake" time (measured in `T`). Generally, higher Awake time yields more Exp but less Life gain, with some exceptions like *Fruit by the Furlong* which actually decreases Life.
-- **Vegetarianism:** Some rats can have a "Vegetarianism" upgrade. This restricts them from eating meat-based foods (which will show an "Eww, meat!" tooltip). This upgrade generally adds extra +1 Exp and +1 Life to non-meat foods.
+- **Meals & Capacity:** Standard rats gain 1 meal every 3 hours (8 meals/day, max 10). **Two-Headed Rats** get an extra meal every 6 hours (12 meals/day, max 20). If a rat is a **Two-Headed Sub-rat** (has the trait as a secondary from merging like `Pincher Rat / Two Headed Rat`), it gets an extra meal every 12 hours (10 meals/day, max 20).
+- **Life Decay & Extrapolation:** A rat's Age increases by 1 each day at midnight server time. A rat's Life decays by its current Age every day at noon server time. Because the age increment is linear, life decay is compounding, meaning rats cannot live infinitely and will eventually die no matter how much they are fed.
+- **Leveling up:** To level up, a rat needs progressively more Exp per level. The formula for the required Exp to reach the next level is `30 + ((currentLevel - 1) * 3)`. Leveling up grants a base life boost (usually 60).
+- **Feeding & Awake (T) Dependency:** Feeding a rat increases its Life and Experience based on the player's current "Awake" time (measured in T). Bonus brackets are:
+  - 0T: +1 exp / +11 life
+  - 1T: +3 exp / +10 life
+  - 2-4T: +5 exp / +9 life
+  - 5-9T: +7 exp / +8 life
+  - 10-15T: +9 exp / +7 life
+  - 16-25T: +11 exp / +6 life
+  - 26-49T: +13 exp / +5 life
+  - 50-99T: +17 exp / +3 life
+  - 100T: +21 exp / +1 life
+  *Exceptions:* Fruit by the Furlong (+17 exp / -7 life), Kit Rat Bar (+10 exp / +8 life).
+- **Vegetarianism:** A "one off" rat upgrade. It generally adds +1 Exp and +1 Life to non-meat foods. If the player possesses the **Rattoo** tattoo in their Living Area, the Vegetarianism bonus doubles to +2 Exp and +2 Life. Meat cannot be fed to a vegetarian rat.
 - When a rat needs food, a "Feed" option appears in their action links.
 - Rats earn 1 Cheese every level, which is used (along with cash) to buy permanent upgrades for the rat.
 - Permanent rat upgrades (like Buddhism, Vegetarianism, Materialism) disappear completely from the upgrade list once purchased. If they are unaffordable due to insufficient cheese or cash, their clickable purchase links are removed and replaced with a grayed-out strikethrough, but the text remains visible.

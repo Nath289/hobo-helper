@@ -3,6 +3,8 @@ const RatsHelper = {
     settings: [
         { key: 'RatsHelper_NewsFilter', label: 'Rat News Filter' },
         { key: 'RatsHelper_ExpBar', label: 'Show Exp Progress Indicator' },
+        { key: 'RatsHelper_LifeBar', label: 'Show Life Progress Bar' },
+        { key: 'RatsHelper_AssumeRattoo', label: 'Extrapolate: Assume Rattoo (Vegetarianism +2)' },
         { key: 'RatsHelper_ActionButtons', label: 'Convert Action Links to Buttons' },
         { key: 'RatsHelper_UpgradeUI', label: 'Custom Upgrade Buttons UI' }
     ],
@@ -10,8 +12,13 @@ const RatsHelper = {
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
         const enableNewsFilter = savedSettings['RatsHelper_NewsFilter'] !== false;
         const enableExpBar = savedSettings['RatsHelper_ExpBar'] !== false;
+        const enableLifeBar = savedSettings['RatsHelper_LifeBar'] !== false;
+        const assumeRattoo = savedSettings['RatsHelper_AssumeRattoo'] === true; // Default to false
         const enableActionButtons = savedSettings['RatsHelper_ActionButtons'] !== false;
         const enableUpgradeUI = savedSettings['RatsHelper_UpgradeUI'] !== false;
+
+        const savedTattoo = localStorage.getItem('hw_helper_tattoo') || '';
+        this.assumeRattoo = assumeRattoo || savedTattoo === 'Rattoo';
 
         const style = document.createElement('style');
         style.textContent = `
@@ -213,6 +220,10 @@ const RatsHelper = {
             this.initExpBars(contentArea);
         }
 
+        if (enableLifeBar) {
+            this.initLifeBars(contentArea);
+        }
+
         if (enableActionButtons) {
             this.initActionButtons(contentArea);
         }
@@ -226,6 +237,191 @@ const RatsHelper = {
         }
 
         this.initCheeseIcons(contentArea);
+    },
+
+    simulateRatLife: function(initialLife, initialAge, mealsPerDay, lifePerMeal, initialExp, initialLevel, expPerMeal, baseLife) {
+        let currentLife = initialLife;
+        let currentAge = initialAge;
+        let currentExp = initialExp;
+        let currentLevel = initialLevel;
+        let daysLivedInSim = 0;
+
+        const mealsPerHalfDay = mealsPerDay / 2;
+
+        const applyMeals = (count) => {
+            for (let i = 0; i < count; i++) {
+                currentLife += lifePerMeal;
+                currentExp += expPerMeal;
+                let requiredExp = 30 + ((currentLevel - 1) * 3);
+                while (currentExp >= requiredExp) {
+                    currentExp -= requiredExp;
+                    currentLevel++;
+                    currentLife += baseLife;
+                    requiredExp = 30 + ((currentLevel - 1) * 3);
+                }
+            }
+        };
+
+        // Cap at 100,000 to prevent infinite loops in case of unexpected math,
+        // though rat life decay is exponential so it should always terminate.
+        while (currentLife > 0 && daysLivedInSim < 100000) {
+            // AM Reset (Midnight)
+            currentAge++;
+            currentLife -= currentAge;
+
+            // "Rats only die if their Life is at or below zero when major reset occurs."
+            if (currentLife <= 0) return daysLivedInSim;
+
+            // Morning Meals
+            applyMeals(mealsPerHalfDay);
+
+            // PM Reset (Noon)
+            currentLife -= currentAge;
+
+            // Afternoon/Evening Meals
+            applyMeals(mealsPerHalfDay);
+
+            daysLivedInSim++;
+        }
+
+        return daysLivedInSim;
+    },
+
+    initLifeBars: function(contentArea) {
+        const lifeTDs = contentArea.querySelectorAll('td.days_to_live');
+        lifeTDs.forEach(td => {
+            const tr = td.closest('tr');
+            if (!tr) return;
+
+            const titleMatch = td.title.match(/(\d+)\s+days? to live/i);
+            if (!titleMatch) return;
+
+            const daysToLive = parseInt(titleMatch[1], 10);
+            
+            // Age is the previous td in this layout structure
+            const tds = Array.from(tr.children);
+            const index = tds.indexOf(td);
+            if (index < 1) return;
+            
+            const ageTD = tds[index - 1];
+            const ageText = ageTD.textContent.replace(/,/g, '').trim();
+            const age = parseInt(ageText, 10);
+            
+            if (isNaN(age) || isNaN(daysToLive)) return;
+
+            const expTD = tds[index - 2];
+            const expMatch = expTD ? expTD.textContent.match(/(\d+)\s*\/\s*(\d+)/) : null;
+            const currentExp = expMatch ? parseInt(expMatch[1], 10) : 0;
+
+            const levelTD = tds[index - 3];
+            const currentLevel = levelTD ? parseInt(levelTD.textContent.replace(/,/g, '').trim(), 10) : 1;
+
+            const currentLife = parseInt(td.textContent.replace(/,/g, '').trim(), 10);
+
+            let mealsPerDay = 8;
+            let baseLife = 60; // Default base life gain per level
+            const ratInfoTr = tr.nextElementSibling;
+            const img = ratInfoTr ? ratInfoTr.querySelector('.mainimg') : null;
+            if (img && typeof RatData !== 'undefined') {
+                const ratTypeTitle = img.title || '';
+                const parts = ratTypeTitle.split('/').map(s => s.trim());
+
+                const normalizeName = (name) => name.replace(/-/g, ' ');
+
+                const mainRatMatch = Object.keys(RatData).find(type => normalizeName(parts[0]).includes(normalizeName(type)));
+                if (mainRatMatch) {
+                    if (RatData[mainRatMatch].mealsPerDay) mealsPerDay = RatData[mainRatMatch].mealsPerDay;
+                    if (RatData[mainRatMatch].life) baseLife = RatData[mainRatMatch].life;
+                }
+
+                // Sub-rat mechanics (e.g. "Pincher Rat / Two Headed Rat")
+                if (parts.length > 1) {
+                    const subRatMatch = Object.keys(RatData).find(type => normalizeName(parts[1]).includes(normalizeName(type)));
+                    if (subRatMatch === 'Two-Headed Rat' && mealsPerDay === 8) {
+                        mealsPerDay = 10; // Extra meal every 12 hours translates to +2 a day base
+                    }
+                }
+            }
+
+            let hasVegetarianism = false;
+            if (ratInfoTr) {
+                const upgImgs = Array.from(ratInfoTr.querySelectorAll('.upgImg'));
+                if (upgImgs.some(img => img.title && img.title.includes("won't eat meat"))) {
+                    hasVegetarianism = true;
+                }
+            }
+
+            let defaultLifePerMeal = 8; // Assumes baseline of Trough style food
+            let defaultExpPerMeal = 7;
+            if (hasVegetarianism) {
+                const bonus = this.assumeRattoo ? 2 : 1;
+                defaultLifePerMeal += bonus;
+                defaultExpPerMeal += bonus;
+            }
+
+            const extrapolatedDays = this.simulateRatLife(currentLife, age, mealsPerDay, defaultLifePerMeal, currentExp, currentLevel, defaultExpPerMeal, baseLife);
+
+            const totalLifeExtrapolated = age + extrapolatedDays;
+            if (totalLifeExtrapolated <= 0) return;
+
+            const percentLived = (age / totalLifeExtrapolated) * 100;
+
+            const newTr = document.createElement('tr');
+            newTr.style.backgroundColor = '#EAEAEA';
+
+            const newTd = document.createElement('td');
+            newTd.colSpan = tds.length;
+            newTd.style.position = 'relative';
+            newTd.style.zIndex = '1';
+            newTd.style.height = '14px';
+            newTd.title = `${daysToLive} Days Remaining at Current Life\nExtrapolated: ${extrapolatedDays.toLocaleString()} Days (Assumes +${defaultLifePerMeal} Life, +${defaultExpPerMeal} Exp per meal, 0 missed)`;
+
+            const bgContainer = document.createElement('div');
+            bgContainer.style.position = 'absolute';
+            bgContainer.style.top = '1px';
+            bgContainer.style.left = '2px';
+            bgContainer.style.right = '2px';
+            bgContainer.style.bottom = '1px';
+            bgContainer.style.border = '1px solid rgb(153, 153, 153)';
+            bgContainer.style.backgroundColor = '#eee';
+            bgContainer.style.zIndex = '-2';
+            bgContainer.style.borderRadius = '3px';
+            bgContainer.style.overflow = 'hidden';
+
+            const bar = document.createElement('div');
+            bar.style.position = 'absolute';
+            bar.style.top = '0';
+            bar.style.left = '0';
+            bar.style.height = '100%';
+            bar.style.width = `${percentLived}%`;
+            // Calculate color: green (120) to red (0)
+            const hue = Math.max(0, 120 - (percentLived * 1.2));
+            bar.style.backgroundColor = `hsl(${hue}, 75%, 60%)`;
+            bar.style.zIndex = '-1';
+            
+            const textLabel = document.createElement('div');
+            textLabel.style.position = 'absolute';
+            textLabel.style.width = '100%';
+            textLabel.style.textAlign = 'center';
+            textLabel.style.fontSize = '9px';
+            textLabel.style.top = '0px';
+            textLabel.style.fontWeight = 'bold';
+            textLabel.style.color = '#333';
+            textLabel.style.textShadow = '0px 0px 2px #fff';
+            textLabel.textContent = `${extrapolatedDays.toLocaleString()} Days Left (@ +${defaultLifePerMeal} L/Meal)`;
+
+            bgContainer.appendChild(bar);
+            bgContainer.appendChild(textLabel);
+            newTd.appendChild(bgContainer);
+            newTr.appendChild(newTd);
+
+            let insertAfterTr = tr;
+            // The details (image, text, options) are in the row immediately following the stats row
+            if (tr.nextElementSibling && tr.nextElementSibling.querySelector('.ratcell, .rat-opts')) {
+                insertAfterTr = tr.nextElementSibling;
+            }
+            insertAfterTr.parentNode.insertBefore(newTr, insertAfterTr.nextElementSibling);
+        });
     },
 
     initCheeseIcons: function(contentArea) {

@@ -92,7 +92,12 @@ A helper designed to operate on the Soup Kitchen page (`cmd=soup_kitchen`).
 
 ### 22. Rats Helper (`RatsHelper.js`)
 A new helper designed to operate on the Rats page (`cmd=rats`).
-- Currently tracking and foundational logic setup. Future features will be added here.
+- **Life Progress Bar**: Automatically calculates and displays a colorful life remaining progress bar beneath each rat.
+- **Experience Progress Bar**: Shows a small colored background bar over each rats experience td cell.
+- **Action Buttons**: Restyles text action links as stylized UI buttons for improved usability.
+- **Custom Upgrade Buttons UI**: Enhances the rat upgrade page with dedicated pill buttons and icons for permanent/standard upgrades.
+- **Rat News Filter**: Provides an easy filter row for hiding or showing news related to specific rats.
+- **Cheese Visuals**: Adds a small cheese emoji to cheese number cells.
 
 ### 23. Weapons Helper (`WeaponsHelper.js`)
 A new helper designed to operate on the Weapons page (`cmd=wep`).

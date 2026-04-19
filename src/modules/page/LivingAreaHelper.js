@@ -48,7 +48,25 @@ const LivingAreaHelper = {
         }
 
         this.initInactiveSpecialItemBg();
+        this.saveTattoo();
         this.syncHealingTracker();
+    },
+
+    saveTattoo: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const cmd = urlParams.get('cmd');
+        if (cmd && cmd !== '') return;
+
+        const myHobo = document.getElementById('myhobo');
+        if (myHobo) {
+            const tattooLink = myHobo.querySelector('a[href*="cmd=tattoo_parlor"] img');
+            if (tattooLink && tattooLink.title) {
+                const tattooName = tattooLink.title.split(':')[0].trim();
+                localStorage.setItem('hw_helper_tattoo', tattooName);
+            } else {
+                localStorage.removeItem('hw_helper_tattoo');
+            }
+        }
     },
 
     syncHealingTracker: function() {

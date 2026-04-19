@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.60
+// @version      8.63
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -247,144 +247,169 @@ const EquipmentData = {"Plastic Bag":"/images/items/gifs/Plastic-Bag.gif","Mithr
  * 10-15T	9	7
  * 16-25T	11	6
  * 26-49T	13	5
- * 50-99T*	17	2
+ * 50-99T*	17	3
  * 100T	21	1
- * *Exception: Fruit by the Furlong (55T) exp = 17, life = -7
+ * *Exceptions: Fruit by the Furlong (55T) exp = 17, life = -7. Kit Rat Bar (20T) exp = 10, life = 8
  * **Vegetarianism Upgrade will add +1 to exp and life, but will restrict food intake to vegetarian meals only.
  */
 const FoodData = {
-    "Apple Core": { "img": "Apple-Core.gif" },
-    "Half a Donut": { "img": "Half-a-Donut.gif" },
-    "Piece of Bread": { "img": "Piece-of-Bread.gif" },
-    "Can of Coke": { "img": "Can-of-Coke.gif" },
-    "Piece of Pizza": { "img": "Piece-of-Pizza.gif" },
-    "Meat Pie": { "img": "Meat-Pie.gif" },
-    "Can of Pepsi": { "img": "Can-of-Pepsi.gif" },
-    "Rotten Fish": { "img": "Rotten-Fish.gif" },
-    "Half Eaten Burger": { "img": "Half-Eaten-Burger.gif" },
-    "Packet of Fries": { "img": "Packet-of-Fries.gif" },
-    "New Pizza": { "img": "New-Pizza.gif" },
-    "Chewed Chicken Leg": { "img": "Chewed-Chicken-Leg.gif" },
-    "Raw Chicken Leg": { "img": "Raw-Chicken-Leg.gif" },
-    "Cooked Chicken": { "img": "Cooked-Chicken.gif" },
-    "Half a HotDog": { "img": "Half-a-HotDog.gif" },
-    "HotDog": { "img": "HotDog.gif" },
-    "KFC Meal": { "img": "KFC-Meal.gif" },
-    "Raw Potato": { "img": "Raw-Potato.gif" },
-    "Vanilla Ice Cream": { "img": "Vanilla-Ice-Cream.gif" },
-    "Chocolate Ice Cream": { "img": "Chocolate-Ice-Cream.gif" },
-    "Fresh Apple": { "img": "Fresh-Apple.gif" },
-    "Fighters Lunch": { "img": "Fighters-Lunch.gif" },
-    "Double-Double": { "img": "Double-Double.gif" },
-    "Bachelor Chow": { "img": "Bachelor-Chow.gif" },
-    "Smart Bread": { "img": "Smart-Bread.gif" },
-    "Day Old Coffee Naan": { "img": "Day-Old-Coffee-Naan.gif" },
-    "Half a Sandwich Naan": { "img": "Half-a-Sandwich-Naan.gif" },
-    "Discarded Taco Naan": { "img": "Discarded-Taco-Naan.gif" },
-    "Wonka Bar": { "img": "Wonka-Bar.gif" },
-    "Single-Single": { "img": "Single-Single.gif" },
-    "Wonka-stripe Candy Cane": { "img": "Wonka-stripe-Candy-Cane.gif" },
-    "Rainbow Drop": { "img": "Rainbow-Drop.gif" },
-    "Roast Beef": { "img": "Roast-Beef.gif" },
-    "Pre-Chewed Gum": { "img": "Pre-Chewed-Gum.gif" },
-    "Roast Beef Flavored Gum": { "img": "Roast-Beef-Flavored-Gum.gif" },
-    "Semi-Lasting Gobstopper": { "img": "Semi-Lasting-Gobstopper.gif" },
-    "Sweet Bomb": { "img": "Sweet-Bomb.gif" },
-    "Blueberry Blast Jelly Beans": { "img": "Blueberry-Blast-Jelly-Beans.gif" },
-    "Beef Mushroom Stew": { "img": "Beef-Mushroom-Stew.gif" },
-    "Texas Fajita Soup": { "img": "Texas-Fajita-Soup.gif" },
-    "Cream of Okra Soup": { "img": "Cream-of-Okra-Soup.gif" },
-    "Garlic Salmon Bisque": { "img": "Garlic-Salmon-Bisque.gif" },
-    "Beggars Bouillon": { "img": "Beggar%27s-Bouillon.gif" },
-    "Fizzy Lifting Soda": { "img": "Fizzy-Lifting-Soda.gif" },
-    "Wonkas Peppermint Spirits": { "img": "Wonka%27s-Peppermint-Spirits.gif" },
-    "Altoids": { "img": "Altoids.gif" },
-    "Junior Mints": { "img": "Junior-Mints.gif" },
-    "Red Hots": { "img": "Red-Hots.gif" },
-    "Crystal Pepsi": { "img": "Crystal-Pepsi.gif" },
-    "Chocolate Vanilla Swirl Ice Cream": { "img": "Chocolate-Vanilla-Swirl-Ice-Cream.gif" },
-    "Redder Hots": { "img": "Redder-Hots.gif" },
-    "Gas Soaked Red Hots": { "img": "Gas-Soaked-Red-Hots.gif" },
-    "Gummi Gorilla": { "img": "Gummi-Gorilla.gif" },
-    "Gummi Peregrine Falcon": { "img": "Gummi-Peregrine-Falcon.gif" },
-    "Gummi Raptor": { "img": "Gummi-Raptor.gif" },
-    "Quantum Candy": { "img": "Quantum-Candy.gif" },
-    "Gummi Spaghetti Monster": { "img": "Gummi-Spaghetti-Monster.gif" },
-    "Fruit by the Furlong": { "img": "Fruit-by-the-Furlong.gif" },
-    "Candy Cigarette": { "img": "Candy-Cigarette.gif" },
-    "Pack of Candy Cigarettes": { "img": "Pack-of-Candy-Cigarettes.gif" },
-    "Freeze-Packed Dippin Dots": { "img": "Freeze-Packed-Dippin-Dots.gif" },
-    "Dippin Dots": { "img": "Dippin-Dots.gif" },
-    "Military Rations": { "img": "Military-Rations.gif" },
-    "Can of Whipped Cream": { "img": "Can-of-Whipped-Cream.gif" },
-    "Faberge Cream Egg": { "img": "Faberge-Cream-Egg.gif" },
-    "Apple Flavored Gum": { "img": "Apple-Flavored-Gum.gif" },
-    "Cinnamon Flavored Gum": { "img": "Cinnamon-Flavored-Gum.gif" },
-    "Dark Chocolate Wonka Bar": { "img": "Dark-Chocolate-Wonka-Bar.gif" },
-    "Special Brownie": { "img": "Special-Brownie.gif" },
-    "Bacon Blast Jelly Beans": { "img": "Bacon-Blast-Jelly-Beans.gif" },
-    "Fizzy Falling Soda": { "img": "Fizzy-Falling-Soda.gif" },
-    "Caulipop": { "img": "Caulipop.gif" },
-    "Dalipop": { "img": "Dalipop.gif" },
-    "Volleypop": { "img": "Volleypop.gif" },
-    "Polypop": { "img": "Polypop.gif" },
-    "Mountain Honeydew Melon": { "img": "Mountain-Honeydew-Melon.gif" },
-    "Mountain Dew": { "img": "Mountain-Dew.gif" },
-    "Salmon": { "img": "Salmon.gif" },
-    "Catfish": { "img": "Catfish.gif" },
-    "Fish Sticks": { "img": "Fish-Sticks.gif" },
-    "Octopus": { "img": "Octopus.gif" },
-    "Blowfish": { "img": "Blowfish.gif" },
-    "Hobo Stew": { "img": "Hobo-Stew.gif" },
-    "Beggars Brunch": { "img": "Beggars-Brunch.gif" },
-    "Hangover Omelette": { "img": "Hangover-Omelette.gif" },
-    "Stomach Parasite": { "img": "Stomach-Parasite.gif" },
-    "Forest Shroom": { "img": "Forest-Shroom.gif" },
-    "Garlic Clove": { "img": "Garlic-Clove.gif" },
-    "Chili Pepper": { "img": "Chili-Pepper.gif" },
-    "Okra": { "img": "Okra.gif" },
-    "Gingerbread Bum": { "img": "Gingerbread-Bum.gif" },
-    "Bernard Burger": { "img": "Bernard-Burger.gif" },
-    "Flying Dutchman": { "img": "Flying-Dutchman.gif" },
-    "Animal Style Fries": { "img": "Animal-Style-Fries.gif" },
-    "Neapolitan Shake": { "img": "Neapolitan-Shake.gif" },
-    "SARS Bar": { "img": "SARS-Bar.gif" },
-    "Hobowarheads": { "img": "Hobowarheads.gif" },
-    "Mop Rocks": { "img": "Mop-Rocks.gif" },
-    "ICPeanut Butter Cup": { "img": "ICPeanut-Butter-Cup.gif" },
-    "Sugarfree Gum": { "img": "Sugarfree-Gum.gif" },
-    "Kit Rat Bar": { "img": "Kit-Rat-Bar.gif" },
-    "Butlerfinger": { "img": "Butlerfinger.gif" },
-    "Life Savers": { "img": "Life-Savers.gif" },
-    "Pay Day": { "img": "Pay-Day.gif" },
-    "Candycorn": { "img": "Candycorn.gif" },
-    "Sourpatch Bums": { "img": "Sourpatch-Bums.gif" },
-    "L&amp;Ls": { "img": "L&amp;Ls.gif" },
-    "Apple Surprise": { "img": "Apple-Surprise.gif" },
-    "Death Mints": { "img": "Death-Mints.gif" },
-    "Blow-Up Pop": { "img": "Blow-Up-Pop.gif" },
-    "Peppermint Burger Patties": { "img": "Peppermint-Burger-Patties.gif" },
-    "Rock Candy": { "img": "Rock-Candy.gif" },
-    "Walking Taco": { "img": "Walking-Taco.gif" },
-    "Freedom Fries": { "img": "Freedom-Fries.gif" },
-    "Jugger-Nut": { "img": "Jugger-Nut.gif" },
-    "Pizza Del Mare": { "img": "Pizza-Del-Mare.gif" },
-    "Bottle of Coke": { "img": "Bottle-of-Coke.gif" },
-    "Brains": { "img": "Brains.gif" },
-    "Death By Chocolate": { "img": "Death-By-Chocolate.gif" },
-    "Spooky Biscuit": { "img": "Spooky-Biscuit.gif" },
-    "Twozzlers": { "img": "Twozzlers.gif" },
-    "Red Hot Chili Pepper": { "img": "Red-Hot-Chili-Pepper.gif" },
-    "Longer-Lasting Gobstopper": { "img": "Longer-Lasting-Gobstopper.gif" },
-    "Double Gorillas": { "img": "Double-Gorillas.gif" },
-    "Double Falcons": { "img": "Double-Falcons.gif" },
-    "Double Raptors": { "img": "Double-Raptors.gif" },
-    "Triple Dipps": { "img": "Triple-Dipps.gif" },
-    "Rainbow Balls": { "img": "Rainbow-Balls.gif" },
-    "Wonka Quadra Candy Cane": { "img": "Wonka-Quadra-Candy-Cane.gif" },
+    "Apple Core": { "img": "Apple-Core.gif", "ratExp": 3, "ratLife": 10 },
+    "Half a Donut": { "img": "Half-a-Donut.gif", "ratExp": 5, "ratLife": 9 },
+    "Piece of Bread": { "img": "Piece-of-Bread.gif", "ratExp": 5, "ratLife": 9 },
+    "Can of Coke": { "img": "Can-of-Coke.gif", "ratExp": 5, "ratLife": 9 },
+    "Piece of Pizza": { "img": "Piece-of-Pizza.gif", "ratExp": 5, "ratLife": 9 },
+    "Meat Pie": { "img": "Meat-Pie.gif", "ratExp": 5, "ratLife": 9 },
+    "Can of Pepsi": { "img": "Can-of-Pepsi.gif", "ratExp": 5, "ratLife": 9 },
+    "Rotten Fish": { "img": "Rotten-Fish.gif", "ratExp": 3, "ratLife": 10 },
+    "Half Eaten Burger": { "img": "Half-Eaten-Burger.gif", "ratExp": 5, "ratLife": 9 },
+    "Packet of Fries": { "img": "Packet-of-Fries.gif", "ratExp": 5, "ratLife": 9 },
+    "New Pizza": { "img": "New-Pizza.gif", "ratExp": 7, "ratLife": 8 },
+    "Chewed Chicken Leg": { "img": "Chewed-Chicken-Leg.gif", "ratExp": 5, "ratLife": 9 },
+    "Raw Chicken Leg": { "img": "Raw-Chicken-Leg.gif", "ratExp": 3, "ratLife": 10 },
+    "Cooked Chicken": { "img": "Cooked-Chicken.gif", "ratExp": 7, "ratLife": 8 },
+    "Half a HotDog": { "img": "Half-a-HotDog.gif", "ratExp": 5, "ratLife": 9 },
+    "HotDog": { "img": "HotDog.gif", "ratExp": 7, "ratLife": 8 },
+    "KFC Meal": { "img": "KFC-Meal.gif", "ratExp": 9, "ratLife": 7 },
+    "Raw Potato": { "img": "Raw-Potato.gif", "ratExp": 3, "ratLife": 10 },
+    "Vanilla Ice Cream": { "img": "Vanilla-Ice-Cream.gif", "ratExp": 5, "ratLife": 9 },
+    "Chocolate Ice Cream": { "img": "Chocolate-Ice-Cream.gif", "ratExp": 7, "ratLife": 8 },
+    "Fresh Apple": { "img": "Fresh-Apple.gif", "ratExp": 5, "ratLife": 9 },
+    "Fighters Lunch": { "img": "Fighters-Lunch.gif", "ratExp": 11, "ratLife": 6 },
+    "Double-Double": { "img": "Double-Double.gif", "ratExp": 21, "ratLife": 1 },
+    "Bachelor Chow": { "img": "Bachelor-Chow.gif", "ratExp": 9, "ratLife": 7 },
+    "Smart Bread": { "img": "Smart-Bread.gif", "ratExp": 5, "ratLife": 9 },
+    "Day Old Coffee Naan": { "img": "Day-Old-Coffee-Naan.gif", "ratExp": 7, "ratLife": 8 },
+    "Half a Sandwich Naan": { "img": "Half-a-Sandwich-Naan.gif", "ratExp": 7, "ratLife": 8 },
+    "Discarded Taco Naan": { "img": "Discarded-Taco-Naan.gif", "ratExp": 7, "ratLife": 8 },
+    "Wonka Bar": { "img": "Wonka-Bar.gif", "ratExp": 5, "ratLife": 9 },
+    "Single-Single": { "img": "Single-Single.gif", "ratExp": 17, "ratLife": 3 },
+    "Wonka-stripe Candy Cane": { "img": "Wonka-stripe-Candy-Cane.gif", "ratExp": 7, "ratLife": 8 },
+    "Rainbow Drop": { "img": "Rainbow-Drop.gif", "ratExp": 7, "ratLife": 8 },
+    "Roast Beef": { "img": "Roast-Beef.gif", "ratExp": 9, "ratLife": 7 },
+    "Pre-Chewed Gum": { "img": "Pre-Chewed-Gum.gif", "ratExp": 3, "ratLife": 10 },
+    "Roast Beef Flavored Gum": { "img": "Roast-Beef-Flavored-Gum.gif", "ratExp": 9, "ratLife": 7 },
+    "Semi-Lasting Gobstopper": { "img": "Semi-Lasting-Gobstopper.gif", "ratExp": 7, "ratLife": 8 },
+    "Sweet Bomb": { "img": "Sweet-Bomb.gif", "ratExp": 11, "ratLife": 6 },
+    "Blueberry Blast Jelly Beans": { "img": "Blueberry-Blast-Jelly-Beans.gif", "ratExp": 7, "ratLife": 8 },
+    "Beef Mushroom Stew": { "img": "Beef-Mushroom-Stew.gif", "ratExp": 9, "ratLife": 7 },
+    "Texas Fajita Soup": { "img": "Texas-Fajita-Soup.gif", "ratExp": 9, "ratLife": 7 },
+    "Cream of Okra Soup": { "img": "Cream-of-Okra-Soup.gif", "ratExp": 9, "ratLife": 7 },
+    "Garlic Salmon Bisque": { "img": "Garlic-Salmon-Bisque.gif", "ratExp": 9, "ratLife": 7 },
+    "Beggars Bouillon": { "img": "Beggar%27s-Bouillon.gif", "ratExp": 9, "ratLife": 7 },
+    "Fizzy Lifting Soda": { "img": "Fizzy-Lifting-Soda.gif", "ratExp": 7, "ratLife": 8 },
+    "Wonkas Peppermint Spirits": { "img": "Wonka%27s-Peppermint-Spirits.gif", "ratExp": 7, "ratLife": 8 },
+    "Altoids": { "img": "Altoids.gif", "ratExp": 5, "ratLife": 9 },
+    "Junior Mints": { "img": "Junior-Mints.gif", "ratExp": 11, "ratLife": 6 },
+    "Red Hots": { "img": "Red-Hots.gif", "ratExp": 9, "ratLife": 7 },
+    "Crystal Pepsi": { "img": "Crystal-Pepsi.gif", "ratExp": 7, "ratLife": 8 },
+    "Chocolate Vanilla Swirl Ice Cream": { "img": "Chocolate-Vanilla-Swirl-Ice-Cream.gif", "ratExp": 7, "ratLife": 8 },
+    "Redder Hots": { "img": "Redder-Hots.gif", "ratExp": 9, "ratLife": 7 },
+    "Gas Soaked Red Hots": { "img": "Gas-Soaked-Red-Hots.gif", "ratExp": 9, "ratLife": 7 },
+    "Gummi Gorilla": { "img": "Gummi-Gorilla.gif", "ratExp": 7, "ratLife": 8 },
+    "Gummi Peregrine Falcon": { "img": "Gummi-Peregrine-Falcon.gif", "ratExp": 7, "ratLife": 8 },
+    "Gummi Raptor": { "img": "Gummi-Raptor.gif", "ratExp": 7, "ratLife": 8 },
+    "Quantum Candy": { "img": "Quantum-Candy.gif", "ratExp": 7, "ratLife": 8 },
+    "Gummi Spaghetti Monster": { "img": "Gummi-Spaghetti-Monster.gif", "ratExp": 7, "ratLife": 8 },
+    "Fruit by the Furlong": { "img": "Fruit-by-the-Furlong.gif", "ratExp": 17, "ratLife": -7 },
+    "Candy Cigarette": { "img": "Candy-Cigarette.gif", "ratExp": 3, "ratLife": 10 },
+    "Pack of Candy Cigarettes": { "img": "Pack-of-Candy-Cigarettes.gif", "ratExp": 17, "ratLife": 3 },
+    "Freeze-Packed Dippin Dots": { "img": "Freeze-Packed-Dippin-Dots.gif", "ratExp": 9, "ratLife": 7 },
+    "Dippin Dots": { "img": "Dippin-Dots.gif", "ratExp": 9, "ratLife": 7 },
+    "Military Rations": { "img": "Military-Rations.gif", "ratExp": 11, "ratLife": 6 },
+    "Can of Whipped Cream": { "img": "Can-of-Whipped-Cream.gif", "ratExp": 9, "ratLife": 7 },
+    "Faberge Cream Egg": { "img": "Faberge-Cream-Egg.gif", "ratExp": 13, "ratLife": 5 },
+    "Apple Flavored Gum": { "img": "Apple-Flavored-Gum.gif", "ratExp": 9, "ratLife": 7 },
+    "Cinnamon Flavored Gum": { "img": "Cinnamon-Flavored-Gum.gif", "ratExp": 9, "ratLife": 7 },
+    "Dark Chocolate Wonka Bar": { "img": "Dark-Chocolate-Wonka-Bar.gif", "ratExp": 5, "ratLife": 9 },
+    "Special Brownie": { "img": "Special-Brownie.gif", "ratExp": 5, "ratLife": 9 },
+    "Bacon Blast Jelly Beans": { "img": "Bacon-Blast-Jelly-Beans.gif", "ratExp": 7, "ratLife": 8 },
+    "Fizzy Falling Soda": { "img": "Fizzy-Falling-Soda.gif", "ratExp": 7, "ratLife": 8 },
+    "Caulipop": { "img": "Caulipop.gif", "ratExp": 9, "ratLife": 7 },
+    "Dalipop": { "img": "Dalipop.gif", "ratExp": 9, "ratLife": 7 },
+    "Volleypop": { "img": "Volleypop.gif", "ratExp": 9, "ratLife": 7 },
+    "Polypop": { "img": "Polypop.gif", "ratExp": 9, "ratLife": 7 },
+    "Mountain Honeydew Melon": { "img": "Mountain-Honeydew-Melon.gif", "ratExp": 7, "ratLife": 8 },
+    "Mountain Dew": { "img": "Mountain-Dew.gif", "ratExp": 11, "ratLife": 6 },
+    "Salmon": { "img": "Salmon.gif", "ratExp": 7, "ratLife": 8 },
+    "Catfish": { "img": "Catfish.gif", "ratExp": 9, "ratLife": 7 },
+    "Fish Sticks": { "img": "Fish-Sticks.gif", "ratExp": 9, "ratLife": 7 },
+    "Octopus": { "img": "Octopus.gif", "ratExp": 11, "ratLife": 6 },
+    "Blowfish": { "img": "Blowfish.gif", "ratExp": 11, "ratLife": 6 },
+    "Hobo Stew": { "img": "Hobo-Stew.gif", "ratExp": 11, "ratLife": 6 },
+    "Beggars Brunch": { "img": "Beggars-Brunch.gif", "ratExp": 11, "ratLife": 6 },
+    "Hangover Omelette": { "img": "Hangover-Omelette.gif", "ratExp": 11, "ratLife": 6 },
+    "Stomach Parasite": { "img": "Stomach-Parasite.gif", "ratExp": 1, "ratLife": 11 },
+    "Forest Shroom": { "img": "Forest-Shroom.gif", "ratExp": 7, "ratLife": 8 },
+    "Garlic Clove": { "img": "Garlic-Clove.gif", "ratExp": 5, "ratLife": 9 },
+    "Chili Pepper": { "img": "Chili-Pepper.gif", "ratExp": 7, "ratLife": 8 },
+    "Okra": { "img": "Okra.gif", "ratExp": 5, "ratLife": 9 },
+    "Gingerbread Bum": { "img": "Gingerbread-Bum.gif", "ratExp": 11, "ratLife": 6 },
+    "Bernard Burger": { "img": "Bernard-Burger.gif", "ratExp": 9, "ratLife": 7 },
+    "Flying Dutchman": { "img": "Flying-Dutchman.gif", "ratExp": 11, "ratLife": 6 },
+    "Animal Style Fries": { "img": "Animal-Style-Fries.gif", "ratExp": 13, "ratLife": 5 },
+    "Neapolitan Shake": { "img": "Neapolitan-Shake.gif", "ratExp": 1, "ratLife": 11 },
+    "SARS Bar": { "img": "SARS-Bar.gif", "ratExp": 9, "ratLife": 7 },
+    "Hobowarheads": { "img": "Hobowarheads.gif", "ratExp": 9, "ratLife": 7 },
+    "Mop Rocks": { "img": "Mop-Rocks.gif", "ratExp": 9, "ratLife": 7 },
+    "ICPeanut Butter Cup": { "img": "ICPeanut-Butter-Cup.gif", "ratExp": 9, "ratLife": 7 },
+    "Sugarfree Gum": { "img": "Sugarfree-Gum.gif", "ratExp": 9, "ratLife": 7 },
+    "Kit Rat Bar": { "img": "Kit-Rat-Bar.gif", "ratExp": 10, "ratLife": 8 },
+    "Butlerfinger": { "img": "Butlerfinger.gif", "ratExp": 9, "ratLife": 7 },
+    "Life Savers": { "img": "Life-Savers.gif", "ratExp": 11, "ratLife": 6 },
+    "Pay Day": { "img": "Pay-Day.gif", "ratExp": 11, "ratLife": 6 },
+    "Candycorn": { "img": "Candycorn.gif", "ratExp": 11, "ratLife": 6 },
+    "Sourpatch Bums": { "img": "Sourpatch-Bums.gif", "ratExp": 9, "ratLife": 7 },
+    "L&amp;Ls": { "img": "L&amp;Ls.gif", "ratExp": 9, "ratLife": 7 },
+    "Apple Surprise": { "img": "Apple-Surprise.gif", "ratExp": 11, "ratLife": 6 },
+    "Death Mints": { "img": "Death-Mints.gif", "ratExp": 9, "ratLife": 7 },
+    "Blow-Up Pop": { "img": "Blow-Up-Pop.gif", "ratExp": 9, "ratLife": 7 },
+    "Peppermint Burger Patties": { "img": "Peppermint-Burger-Patties.gif", "ratExp": 11, "ratLife": 6 },
+    "Rock Candy": { "img": "Rock-Candy.gif", "ratExp": 9, "ratLife": 7 },
+    "Walking Taco": { "img": "Walking-Taco.gif", "ratExp": 11, "ratLife": 6 },
+    "Freedom Fries": { "img": "Freedom-Fries.gif", "ratExp": 9, "ratLife": 7 },
+    "Jugger-Nut": { "img": "Jugger-Nut.gif", "ratExp": 9, "ratLife": 7 },
+    "Pizza Del Mare": { "img": "Pizza-Del-Mare.gif", "ratExp": 7, "ratLife": 8 },
+    "Bottle of Coke": { "img": "Bottle-of-Coke.gif", "ratExp": 13, "ratLife": 5 },
+    "Brains": { "img": "Brains.gif", "ratExp": 13, "ratLife": 5 },
+    "Death By Chocolate": { "img": "Death-By-Chocolate.gif", "ratExp": 11, "ratLife": 6 },
+    "Spooky Biscuit": { "img": "Spooky-Biscuit.gif", "ratExp": 9, "ratLife": 7 },
+    "Twozzlers": { "img": "Twozzlers.gif", "ratExp": 9, "ratLife": 7 },
+    "Red Hot Chili Pepper": { "img": "Red-Hot-Chili-Pepper.gif", "ratExp": 9, "ratLife": 7 },
+    "Longer-Lasting Gobstopper": { "img": "Longer-Lasting-Gobstopper.gif", "ratExp": 9, "ratLife": 7 },
+    "Double Gorillas": { "img": "Double-Gorillas.gif", "ratExp": 9, "ratLife": 7 },
+    "Double Falcons": { "img": "Double-Falcons.gif", "ratExp": 9, "ratLife": 7 },
+    "Double Raptors": { "img": "Double-Raptors.gif", "ratExp": 9, "ratLife": 7 },
+    "Triple Dipps": { "img": "Triple-Dipps.gif", "ratExp": 13, "ratLife": 5 },
+    "Rainbow Balls": { "img": "Rainbow-Balls.gif", "ratExp": 11, "ratLife": 6 },
+    "Wonka Quadra Candy Cane": { "img": "Wonka-Quadra-Candy-Cane.gif", "ratExp": 11, "ratLife": 6 },
 };
 
 const PrimesData = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,103,107,109,113,127,131,137,139,149,151,157,163,167,173,179,181,191,193,197,199,211,223,227,229,233,239,241,251,257,263,269,271,277,281,283,293,307,311,313,317,331,337,347,349,353,359,367,373,379,383,389,397,401,409,419,421,431,433,439,443,449,457,461,463,467,479,487,491,499,503,509,521,523,541,547,557,563,569,571,577,587,593,599,601,607,613,617,619,631,641,643,647,653,659,661,673,677,683,691,701,709,719,727,733,739,743,751,757,761,769,773,787,797,809,811,821,823,827,829,839,853,857,859,863,877,881,883,887,907,911,919,929,937,941,947,953,967,971,977,983,991,997];
+
+const RatData = {
+    "Two-Headed Rat": { "life": 60, "speed": 10, "attack": 11, "defense": 10, "mealsPerDay": 12, "maxMeals": 20 },
+    "Shadow Rat": { "life": 90, "speed": 16, "attack": 14, "defense": 16, "mealsPerDay": 8, "maxMeals": 10 },
+    "Vampire Rat": { "life": 10, "speed": 14, "attack": 6, "defense": 6, "mealsPerDay": 8, "maxMeals": 10 },
+    "Golden Rat": { "life": 160, "speed": 18, "attack": 18, "defense": 18, "mealsPerDay": 8, "maxMeals": 10 },
+    "Octo Rat": { "life": 80, "speed": 10, "attack": 10, "defense": 10, "mealsPerDay": 8, "maxMeals": 10 },
+    "Gumshoe Rat": { "life": 110, "speed": 11, "attack": 8, "defense": 9, "mealsPerDay": 8, "maxMeals": 10 },
+    "Old Rat": { "life": 30, "speed": 5, "attack": 7, "defense": 6, "mealsPerDay": 8, "maxMeals": 10 },
+    "Winged Rat": { "life": 170, "speed": 13, "attack": 9, "defense": 7, "mealsPerDay": 8, "maxMeals": 10 },
+    "Pincher Rat": { "life": 120, "speed": 13, "attack": 19, "defense": 19, "mealsPerDay": 8, "maxMeals": 10 },
+    "Rat Bandit": { "life": 60, "speed": 15, "attack": 8, "defense": 7, "mealsPerDay": 8, "maxMeals": 10 },
+    "Rollerderby Rat": { "life": 80, "speed": 19, "attack": 13, "defense": 8, "mealsPerDay": 8, "maxMeals": 10 },
+    "Obese Rat": { "life": 60, "speed": 6, "attack": 10, "defense": 15, "mealsPerDay": 8, "maxMeals": 10 },
+    "Space Rat": { "life": 140, "speed": 16, "attack": 16, "defense": 16, "mealsPerDay": 8, "maxMeals": 10 },
+    "Breakdancing Rat": { "life": 70, "speed": 17, "attack": 10, "defense": 5, "mealsPerDay": 8, "maxMeals": 10 },
+    "Country Rat": { "life": 100, "speed": 13, "attack": 15, "defense": 10, "mealsPerDay": 8, "maxMeals": 10 },
+    "Ballerina Rat": { "life": 80, "speed": 16, "attack": 9, "defense": 6, "mealsPerDay": 8, "maxMeals": 10 },
+    "Cave Rat": { "life": 90, "speed": 10, "attack": 13, "defense": 12, "mealsPerDay": 8, "maxMeals": 10 },
+    "Raver Rat": { "life": 100, "speed": 14, "attack": 9, "defense": 9, "mealsPerDay": 8, "maxMeals": 10 },
+    "Alcoholic Rat": { "life": 50, "speed": 9, "attack": 9, "defense": 8, "mealsPerDay": 8, "maxMeals": 10 },
+    "Disco Rat": { "life": 90, "speed": 15, "attack": 11, "defense": 10, "mealsPerDay": 8, "maxMeals": 10 },
+    "Boxing Rat": { "life": 100, "speed": 14, "attack": 20, "defense": 8, "mealsPerDay": 8, "maxMeals": 10 },
+    "Pirate Rat": { "life": 110, "speed": 15, "attack": 17, "defense": 15, "mealsPerDay": 8, "maxMeals": 10 }
+};
 
 const RespectData = [
     { rank: 0, posTitle: "Hobo", negTitle: "Hobo", minRespect: 0 },
@@ -5160,7 +5185,25 @@ const LivingAreaHelper = {
         }
 
         this.initInactiveSpecialItemBg();
+        this.saveTattoo();
         this.syncHealingTracker();
+    },
+
+    saveTattoo: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const cmd = urlParams.get('cmd');
+        if (cmd && cmd !== '') return;
+
+        const myHobo = document.getElementById('myhobo');
+        if (myHobo) {
+            const tattooLink = myHobo.querySelector('a[href*="cmd=tattoo_parlor"] img');
+            if (tattooLink && tattooLink.title) {
+                const tattooName = tattooLink.title.split(':')[0].trim();
+                localStorage.setItem('hw_helper_tattoo', tattooName);
+            } else {
+                localStorage.removeItem('hw_helper_tattoo');
+            }
+        }
     },
 
     syncHealingTracker: function() {
@@ -7448,6 +7491,8 @@ const RatsHelper = {
     settings: [
         { key: 'RatsHelper_NewsFilter', label: 'Rat News Filter' },
         { key: 'RatsHelper_ExpBar', label: 'Show Exp Progress Indicator' },
+        { key: 'RatsHelper_LifeBar', label: 'Show Life Progress Bar' },
+        { key: 'RatsHelper_AssumeRattoo', label: 'Extrapolate: Assume Rattoo (Vegetarianism +2)' },
         { key: 'RatsHelper_ActionButtons', label: 'Convert Action Links to Buttons' },
         { key: 'RatsHelper_UpgradeUI', label: 'Custom Upgrade Buttons UI' }
     ],
@@ -7455,8 +7500,13 @@ const RatsHelper = {
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
         const enableNewsFilter = savedSettings['RatsHelper_NewsFilter'] !== false;
         const enableExpBar = savedSettings['RatsHelper_ExpBar'] !== false;
+        const enableLifeBar = savedSettings['RatsHelper_LifeBar'] !== false;
+        const assumeRattoo = savedSettings['RatsHelper_AssumeRattoo'] === true; // Default to false
         const enableActionButtons = savedSettings['RatsHelper_ActionButtons'] !== false;
         const enableUpgradeUI = savedSettings['RatsHelper_UpgradeUI'] !== false;
+
+        const savedTattoo = localStorage.getItem('hw_helper_tattoo') || '';
+        this.assumeRattoo = assumeRattoo || savedTattoo === 'Rattoo';
 
         const style = document.createElement('style');
         style.textContent = `
@@ -7658,6 +7708,10 @@ const RatsHelper = {
             this.initExpBars(contentArea);
         }
 
+        if (enableLifeBar) {
+            this.initLifeBars(contentArea);
+        }
+
         if (enableActionButtons) {
             this.initActionButtons(contentArea);
         }
@@ -7671,6 +7725,191 @@ const RatsHelper = {
         }
 
         this.initCheeseIcons(contentArea);
+    },
+
+    simulateRatLife: function(initialLife, initialAge, mealsPerDay, lifePerMeal, initialExp, initialLevel, expPerMeal, baseLife) {
+        let currentLife = initialLife;
+        let currentAge = initialAge;
+        let currentExp = initialExp;
+        let currentLevel = initialLevel;
+        let daysLivedInSim = 0;
+
+        const mealsPerHalfDay = mealsPerDay / 2;
+
+        const applyMeals = (count) => {
+            for (let i = 0; i < count; i++) {
+                currentLife += lifePerMeal;
+                currentExp += expPerMeal;
+                let requiredExp = 30 + ((currentLevel - 1) * 3);
+                while (currentExp >= requiredExp) {
+                    currentExp -= requiredExp;
+                    currentLevel++;
+                    currentLife += baseLife;
+                    requiredExp = 30 + ((currentLevel - 1) * 3);
+                }
+            }
+        };
+
+        // Cap at 100,000 to prevent infinite loops in case of unexpected math,
+        // though rat life decay is exponential so it should always terminate.
+        while (currentLife > 0 && daysLivedInSim < 100000) {
+            // AM Reset (Midnight)
+            currentAge++;
+            currentLife -= currentAge;
+
+            // "Rats only die if their Life is at or below zero when major reset occurs."
+            if (currentLife <= 0) return daysLivedInSim;
+
+            // Morning Meals
+            applyMeals(mealsPerHalfDay);
+
+            // PM Reset (Noon)
+            currentLife -= currentAge;
+
+            // Afternoon/Evening Meals
+            applyMeals(mealsPerHalfDay);
+
+            daysLivedInSim++;
+        }
+
+        return daysLivedInSim;
+    },
+
+    initLifeBars: function(contentArea) {
+        const lifeTDs = contentArea.querySelectorAll('td.days_to_live');
+        lifeTDs.forEach(td => {
+            const tr = td.closest('tr');
+            if (!tr) return;
+
+            const titleMatch = td.title.match(/(\d+)\s+days? to live/i);
+            if (!titleMatch) return;
+
+            const daysToLive = parseInt(titleMatch[1], 10);
+            
+            // Age is the previous td in this layout structure
+            const tds = Array.from(tr.children);
+            const index = tds.indexOf(td);
+            if (index < 1) return;
+            
+            const ageTD = tds[index - 1];
+            const ageText = ageTD.textContent.replace(/,/g, '').trim();
+            const age = parseInt(ageText, 10);
+            
+            if (isNaN(age) || isNaN(daysToLive)) return;
+
+            const expTD = tds[index - 2];
+            const expMatch = expTD ? expTD.textContent.match(/(\d+)\s*\/\s*(\d+)/) : null;
+            const currentExp = expMatch ? parseInt(expMatch[1], 10) : 0;
+
+            const levelTD = tds[index - 3];
+            const currentLevel = levelTD ? parseInt(levelTD.textContent.replace(/,/g, '').trim(), 10) : 1;
+
+            const currentLife = parseInt(td.textContent.replace(/,/g, '').trim(), 10);
+
+            let mealsPerDay = 8;
+            let baseLife = 60; // Default base life gain per level
+            const ratInfoTr = tr.nextElementSibling;
+            const img = ratInfoTr ? ratInfoTr.querySelector('.mainimg') : null;
+            if (img && typeof RatData !== 'undefined') {
+                const ratTypeTitle = img.title || '';
+                const parts = ratTypeTitle.split('/').map(s => s.trim());
+
+                const normalizeName = (name) => name.replace(/-/g, ' ');
+
+                const mainRatMatch = Object.keys(RatData).find(type => normalizeName(parts[0]).includes(normalizeName(type)));
+                if (mainRatMatch) {
+                    if (RatData[mainRatMatch].mealsPerDay) mealsPerDay = RatData[mainRatMatch].mealsPerDay;
+                    if (RatData[mainRatMatch].life) baseLife = RatData[mainRatMatch].life;
+                }
+
+                // Sub-rat mechanics (e.g. "Pincher Rat / Two Headed Rat")
+                if (parts.length > 1) {
+                    const subRatMatch = Object.keys(RatData).find(type => normalizeName(parts[1]).includes(normalizeName(type)));
+                    if (subRatMatch === 'Two-Headed Rat' && mealsPerDay === 8) {
+                        mealsPerDay = 10; // Extra meal every 12 hours translates to +2 a day base
+                    }
+                }
+            }
+
+            let hasVegetarianism = false;
+            if (ratInfoTr) {
+                const upgImgs = Array.from(ratInfoTr.querySelectorAll('.upgImg'));
+                if (upgImgs.some(img => img.title && img.title.includes("won't eat meat"))) {
+                    hasVegetarianism = true;
+                }
+            }
+
+            let defaultLifePerMeal = 8; // Assumes baseline of Trough style food
+            let defaultExpPerMeal = 7;
+            if (hasVegetarianism) {
+                const bonus = this.assumeRattoo ? 2 : 1;
+                defaultLifePerMeal += bonus;
+                defaultExpPerMeal += bonus;
+            }
+
+            const extrapolatedDays = this.simulateRatLife(currentLife, age, mealsPerDay, defaultLifePerMeal, currentExp, currentLevel, defaultExpPerMeal, baseLife);
+
+            const totalLifeExtrapolated = age + extrapolatedDays;
+            if (totalLifeExtrapolated <= 0) return;
+
+            const percentLived = (age / totalLifeExtrapolated) * 100;
+
+            const newTr = document.createElement('tr');
+            newTr.style.backgroundColor = '#EAEAEA';
+
+            const newTd = document.createElement('td');
+            newTd.colSpan = tds.length;
+            newTd.style.position = 'relative';
+            newTd.style.zIndex = '1';
+            newTd.style.height = '14px';
+            newTd.title = `${daysToLive} Days Remaining at Current Life\nExtrapolated: ${extrapolatedDays.toLocaleString()} Days (Assumes +${defaultLifePerMeal} Life, +${defaultExpPerMeal} Exp per meal, 0 missed)`;
+
+            const bgContainer = document.createElement('div');
+            bgContainer.style.position = 'absolute';
+            bgContainer.style.top = '1px';
+            bgContainer.style.left = '2px';
+            bgContainer.style.right = '2px';
+            bgContainer.style.bottom = '1px';
+            bgContainer.style.border = '1px solid rgb(153, 153, 153)';
+            bgContainer.style.backgroundColor = '#eee';
+            bgContainer.style.zIndex = '-2';
+            bgContainer.style.borderRadius = '3px';
+            bgContainer.style.overflow = 'hidden';
+
+            const bar = document.createElement('div');
+            bar.style.position = 'absolute';
+            bar.style.top = '0';
+            bar.style.left = '0';
+            bar.style.height = '100%';
+            bar.style.width = `${percentLived}%`;
+            // Calculate color: green (120) to red (0)
+            const hue = Math.max(0, 120 - (percentLived * 1.2));
+            bar.style.backgroundColor = `hsl(${hue}, 75%, 60%)`;
+            bar.style.zIndex = '-1';
+            
+            const textLabel = document.createElement('div');
+            textLabel.style.position = 'absolute';
+            textLabel.style.width = '100%';
+            textLabel.style.textAlign = 'center';
+            textLabel.style.fontSize = '9px';
+            textLabel.style.top = '0px';
+            textLabel.style.fontWeight = 'bold';
+            textLabel.style.color = '#333';
+            textLabel.style.textShadow = '0px 0px 2px #fff';
+            textLabel.textContent = `${extrapolatedDays.toLocaleString()} Days Left (@ +${defaultLifePerMeal} L/Meal)`;
+
+            bgContainer.appendChild(bar);
+            bgContainer.appendChild(textLabel);
+            newTd.appendChild(bgContainer);
+            newTr.appendChild(newTd);
+
+            let insertAfterTr = tr;
+            // The details (image, text, options) are in the row immediately following the stats row
+            if (tr.nextElementSibling && tr.nextElementSibling.querySelector('.ratcell, .rat-opts')) {
+                insertAfterTr = tr.nextElementSibling;
+            }
+            insertAfterTr.parentNode.insertBefore(newTr, insertAfterTr.nextElementSibling);
+        });
     },
 
     initCheeseIcons: function(contentArea) {
@@ -9117,6 +9356,35 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.63",
+            date: "2026-04-19",
+            type: "Changed",
+            notes: [
+                "The Rat Life Progress Bar now dynamically shifts color from green to yellow to red as the rat approaches the end of its estimated lifespan."
+            ]
+        },
+        {
+            version: "8.62",
+            date: "2026-04-19",
+            type: "Changed",
+            notes: [
+                "Modified the Rat Life Progress Bar to fill up from the left based on the percentage of the rat's total estimated life that has already been lived, approaching 100% as the rat nears death."
+            ]
+        },
+        {
+            version: "8.61",
+            date: "2026-04-19",
+            type: "Added",
+            notes: [
+                "Added a visual Life Progress Bar to the Rats page showing the percentage of lifespan remaining.",
+                "Added an Extrapolated Days calculation to the Rat Life tooltip, estimating total days to live based on expected daily meals.",
+                "Included specialized meal tracking for **Two-Headed Rats** (12 meals/day) and **Two-Headed Sub-Rats** (10 meals/day).",
+                "Included bonus life calculations for the **Vegetarianism** rat upgrade (`+1` life/meal).",
+                "The `LivingAreaHelper` now automatically detects and saves your current tattoo to support other modules.",
+                "The `RatsHelper` now properly applies the player's **Rattoo** tattoo bonuses (`+2` life/meal) to Vegetarianism calculations for extrapolation."
+            ]
+        },
+        {
             version: "8.60",
             date: "2026-04-19",
             type: "Added",
@@ -9135,30 +9403,6 @@ const ChangelogData = {
                 "Templates automatically save the 'Send To' selection, Subject, and Body content.",
                 "Added support for dynamic date variables in mass mail templates: `{date}` (e.g. Apr 16) and `{fullDate}` (e.g. Apr 16 2026)."
             ]
-        },
-        {
-            version: "8.58",
-            date: "2026-04-19",
-            type: "Changed",
-            notes: [
-                "Updated the Gang Armory Favorites dashboard to display \"Loaned to You\" in green instead of a red \"Not Available\" warning for items currently loaned to the active user."
-            ]
-        },
-        {
-            version: "8.57",
-            date: "2026-04-19",
-            type: "Changed",
-            notes: [
-                "Aligned the new Sunday Funday projected payout column text to the right for improved numeric readability."
-            ]
-        },
-        {
-            version: "8.56",
-            date: "2026-04-19",
-            type: "Added",
-            notes: [
-                "Added a new projected payout column to individual Hobo score rows during the Sunday Funday gang event (Current and Last Happenings)."
-            ]
         }
     ]
 };
@@ -9167,6 +9411,7 @@ const ChangelogData = {
         EquipmentData,
         FoodData,
         PrimesData,
+        RatData,
         RespectData,
         ChangelogData
     };
@@ -9214,7 +9459,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.60';
+        window.HoboHelperVersion = '8.63';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

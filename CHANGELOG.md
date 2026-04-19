@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.63] - 2026-04-19
+### Changed
+- The Rat Life Progress Bar now dynamically shifts color from green to yellow to red as the rat approaches the end of its estimated lifespan.
+
+## [8.62] - 2026-04-19
+### Changed
+- Modified the Rat Life Progress Bar to fill up from the left based on the percentage of the rat's total estimated life that has already been lived, approaching 100% as the rat nears death.
+
+## [8.61] - 2026-04-19
+### Added
+- Added a visual Life Progress Bar to the Rats page showing the percentage of lifespan remaining.
+- Added an Extrapolated Days calculation to the Rat Life tooltip, estimating total days to live based on expected daily meals.
+- Included specialized meal tracking for **Two-Headed Rats** (12 meals/day) and **Two-Headed Sub-Rats** (10 meals/day).
+- Included bonus life calculations for the **Vegetarianism** rat upgrade (`+1` life/meal).
+- The `LivingAreaHelper` now automatically detects and saves your current tattoo to support other modules.
+- The `RatsHelper` now properly applies the player's **Rattoo** tattoo bonuses (`+2` life/meal) to Vegetarianism calculations for extrapolation.
+
 ## [8.60] - 2026-04-19
 ### Added
 - Created the new `GangHitlistHelper` module specifically for the Gang Hitlist page (`cmd=gang&do=hitlist`).
