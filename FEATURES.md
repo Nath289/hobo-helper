@@ -115,6 +115,7 @@ Helper designed to function on Gang-related pages (`cmd=gang`).
 ### 25. Market Helper (`MarketHelper`)
 - Converts plain-text inline "Buy" links and Market navigation headers into large, interactive button elements for an improved desktop/mobile marketplace experience.
 - Cross-references the HoboWars wiki to dynamically inject highly-visible 40x40 item thumbnails natively into the Market listings for Weapons, Armor, and Cart Parts.
+- Transforms the SGHM Market Watcher text feed into a structured, readable HTML table, with alternating rows, styled headers, and extracted values.
 
 ### 26. Drink Helpers
 - [x] Automatically inject stat and effect data as tooltips to all drinks when hovering your mouse over them inside of your backpack and living area page.

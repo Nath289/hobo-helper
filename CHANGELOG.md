@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.65] - 2026-04-19
+### Added
+- Added a structured table view for the Market Watcher section on the SGHM page, including alternate row coloring and precise dollar value extraction.
+
 ## [8.64] - 2026-04-19
 ### Added
 - Added custom 'Нeaveп' title display for SeventhHeaven.

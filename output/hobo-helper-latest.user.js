@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.64
+// @version      8.65
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -6004,6 +6004,7 @@ const MarketHelper = {
     cmds: 'mart',
     settings: [
         { key: 'MarketHelper_Enable', label: 'Enable Market Helper' },
+        { key: 'MarketHelper_TableWatcher', label: 'Convert Market Watcher to Table' },
         { key: 'MarketHelper_ButtonBuy', label: 'Convert "Buy" links to Buttons' },
         { key: 'MarketHelper_FormatSwitchLinks', label: 'Convert "Switch to" links to Buttons' },
         { key: 'MarketHelper_WeaponImages', label: 'Show Weapon Images' },
@@ -6071,6 +6072,10 @@ const MarketHelper = {
             }
         }
 
+        if (settings.MarketHelper_TableWatcher !== false && !action) {
+            this.initMarketWatcherTable();
+        }
+
         // Page specific routing
         if (action === 'list') {
             switch(type) {
@@ -6119,6 +6124,186 @@ const MarketHelper = {
             `;
             document.head.appendChild(style);
         }
+    },
+
+    initMarketWatcherTable: function() {
+        // Find Market Watcher <b><u> header
+        const bsuElements = document.querySelectorAll('b u');
+        let watcherHeader = null;
+        for (const u of bsuElements) {
+            if (u.textContent.includes('Market Watcher')) {
+                watcherHeader = u.closest('b');
+                break;
+            }
+        }
+
+        if (!watcherHeader) return;
+
+        let nextNode = watcherHeader.nextSibling;
+        // Skip any BRs immediately after
+        while (nextNode && nextNode.nodeName === 'BR') {
+            nextNode = nextNode.nextSibling;
+        }
+
+        // We will collect entries until we hit a double BR or an element like <center>
+        const entries = [];
+        let currentEntryNodes = [];
+
+        while (nextNode) {
+            if (nextNode.nodeName === 'BR') {
+                if (currentEntryNodes.length > 0) {
+                    entries.push(currentEntryNodes);
+                    currentEntryNodes = [];
+                }
+                
+                // If the next sibling is also a BR or center, we are done
+                if (nextNode.nextSibling && (nextNode.nextSibling.nodeName === 'BR' || nextNode.nextSibling.nodeName === 'CENTER')) {
+                    break;
+                }
+            } else if (nextNode.nodeName === 'CENTER') {
+                break;
+            } else {
+                currentEntryNodes.push(nextNode);
+            }
+            nextNode = nextNode.nextSibling;
+        }
+
+        if (entries.length === 0) return;
+
+        // Build the table
+        const table = document.createElement('table');
+        table.className = 'table table-bordered table-striped';
+        table.style.margin = '10px auto';
+        table.style.width = '100%';
+        table.style.maxWidth = '800px';
+
+        const thead = document.createElement('thead');
+        thead.innerHTML = `
+            <tr style="background-color: #444; color: #fff;">
+                <th style="padding: 5px; text-align: left;">Time</th>
+                <th style="padding: 5px; text-align: left;">Seller</th>
+                <th style="padding: 5px; text-align: left;">Item</th>
+                <th style="padding: 5px; text-align: left;">Total</th>
+                <th style="padding: 5px; text-align: left;">Price</th>
+                <th style="padding: 5px; text-align: center;">Action</th>
+            </tr>
+        `;
+        table.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+
+        let rowCount = 0;
+
+        // Go back and create the table rows while removing the original nodes
+        entries.forEach(entryNodes => {
+            const tr = document.createElement('tr');
+            tr.style.backgroundColor = (rowCount++ % 2 === 0) ? 'rgba(0, 0, 0, 0.05)' : 'transparent';
+            
+            // Expected parsing:
+            // "5 minutes ago : " (TEXT)
+            // <a> player </a> (A)
+            // " listed " (TEXT)
+            // <b> amount item </b> (B)
+            // " for " (TEXT)
+            // <b> total price </b> (B)
+            // <span> (price each) </span> (SPAN)
+            // " [" (TEXT)
+            // <a>Buy</a> (A)
+            // "]" (TEXT)
+
+            let timeStr = "";
+            let sellerNode = null;
+            let itemNode = null;
+            let priceNode = null;
+            let eachNode = null;
+            let actionNodes = [];
+
+            for (const node of entryNodes) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    if (node.textContent.includes(' ago :')) {
+                        timeStr = node.textContent.replace(' :', '').trim();
+                    }
+                } else if (node.nodeName === 'A' && node.href.includes('cmd=player')) {
+                    sellerNode = node.cloneNode(true);
+                } else if (node.nodeName === 'B' && !itemNode) {
+                    itemNode = node.cloneNode(true);
+                } else if (node.nodeName === 'B' && itemNode) {
+                    priceNode = node.cloneNode(true);
+                } else if (node.nodeName === 'SPAN') {
+                    const match = node.textContent.match(/\$[\d,]+/);
+                    if (match) {
+                        eachNode = document.createElement('span');
+                        eachNode.textContent = match[0];
+                    }
+                } else if (node.nodeName === 'A' && node.href.includes('cmd=mart')) {
+                    actionNodes.push(node.cloneNode(true));
+                }
+            }
+
+            const tdTime = document.createElement('td');
+            tdTime.style.padding = '5px';
+            tdTime.textContent = timeStr;
+            tr.appendChild(tdTime);
+
+            const tdSeller = document.createElement('td');
+            tdSeller.style.padding = '5px';
+            if (sellerNode) tdSeller.appendChild(sellerNode);
+            tr.appendChild(tdSeller);
+
+            const tdItem = document.createElement('td');
+            tdItem.style.padding = '5px';
+            if (itemNode) tdItem.appendChild(itemNode);
+            tr.appendChild(tdItem);
+
+            const tdPrice = document.createElement('td');
+            tdPrice.style.padding = '5px';
+            if (priceNode) tdPrice.appendChild(priceNode);
+            tr.appendChild(tdPrice);
+
+            const tdEach = document.createElement('td');
+            tdEach.style.padding = '5px';
+            if (eachNode) tdEach.appendChild(eachNode);
+            tr.appendChild(tdEach);
+
+            const tdAction = document.createElement('td');
+            tdAction.style.padding = '5px';
+            tdAction.style.textAlign = 'center';
+            actionNodes.forEach(an => tdAction.appendChild(an));
+            tr.appendChild(tdAction);
+
+            tbody.appendChild(tr);
+
+            // Hide or remove original nodes
+            entryNodes.forEach(node => {
+                if (node.parentNode) {
+                    node.parentNode.removeChild(node);
+                }
+            });
+        });
+
+        table.appendChild(tbody);
+
+        watcherHeader.parentNode.insertBefore(table, watcherHeader.nextSibling);
+        
+        // Remove the hanging <br>s that used to trail each line
+        // The while loop collected the ones that ended entries but didn't remove them
+        const parent = watcherHeader.parentNode;
+        let pNext = watcherHeader.nextSibling;
+        while (pNext && pNext.nodeName === 'BR') {
+            const temp = pNext;
+            pNext = pNext.nextSibling;
+            if (temp !== table) parent.removeChild(temp);
+        }
+
+        // Convert the action links into buttons if necessary
+        const actionLinks = table.querySelectorAll('td:last-child a');
+        actionLinks.forEach(a => {
+            a.classList.add('btn');
+            const p = a.parentNode;
+            Array.from(p.childNodes).forEach(n => {
+                if(n.nodeType === Node.TEXT_NODE) n.nodeValue = n.nodeValue.replace(/\[|\]/g, '');
+            });
+        });
     },
 
     initItemsPage: function(settingToggle, itemData) {
@@ -9369,6 +9554,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.65",
+            date: "2026-04-19",
+            type: "Added",
+            notes: [
+                "Added a structured table view for the Market Watcher section on the SGHM page, including alternate row coloring and precise dollar value extraction."
+            ]
+        },
+        {
             version: "8.64",
             date: "2026-04-19",
             type: "Added",
@@ -9403,16 +9596,6 @@ const ChangelogData = {
                 "Included bonus life calculations for the **Vegetarianism** rat upgrade (`+1` life/meal).",
                 "The `LivingAreaHelper` now automatically detects and saves your current tattoo to support other modules.",
                 "The `RatsHelper` now properly applies the player's **Rattoo** tattoo bonuses (`+2` life/meal) to Vegetarianism calculations for extrapolation."
-            ]
-        },
-        {
-            version: "8.60",
-            date: "2026-04-19",
-            type: "Added",
-            notes: [
-                "Created the new `GangHitlistHelper` module specifically for the Gang Hitlist page (`cmd=gang&do=hitlist`).",
-                "Added a \"Hitlist Page Tracker\" feature that remembers and visually highlights the currently selected paginated hitlist page.",
-                "Added a \"Hitlist Mark Red\" interactive toggle link within the \"Options\" column of the hitlist table, allowing users to permanently shade specific opponent rows red across page reloads."
             ]
         }
     ]
@@ -9470,7 +9653,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.64';
+        window.HoboHelperVersion = '8.65';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
