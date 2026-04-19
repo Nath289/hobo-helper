@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.65
+// @version      8.66
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -2888,6 +2888,18 @@ const GangHelper = {
         delBtn.onmouseover = () => { delBtn.style.color = '#fff'; delBtn.style.background = '#d32f2f'; };
         delBtn.onmouseout = () => { delBtn.style.color = '#636363'; delBtn.style.background = '#ddd'; };
 
+        const exportBtn = document.createElement('button');
+        exportBtn.textContent = 'Export All';
+        exportBtn.style.cssText = '-webkit-font-smoothing: antialiased; color: #636363; background: #ddd; font-weight: bold; text-decoration: none; padding: 3px 12px; border-radius: 3px; border: 0; cursor: pointer; -webkit-appearance: none; display: inline-block;';
+        exportBtn.onmouseover = () => { exportBtn.style.color = '#fff'; exportBtn.style.background = '#1b9eff'; };
+        exportBtn.onmouseout = () => { exportBtn.style.color = '#636363'; exportBtn.style.background = '#ddd'; };
+
+        const importBtn = document.createElement('button');
+        importBtn.textContent = 'Import';
+        importBtn.style.cssText = '-webkit-font-smoothing: antialiased; color: #636363; background: #ddd; font-weight: bold; text-decoration: none; padding: 3px 12px; border-radius: 3px; border: 0; cursor: pointer; -webkit-appearance: none; display: inline-block;';
+        importBtn.onmouseover = () => { importBtn.style.color = '#fff'; importBtn.style.background = '#1b9eff'; };
+        importBtn.onmouseout = () => { importBtn.style.color = '#636363'; importBtn.style.background = '#ddd'; };
+
         const hintNote = document.createElement('div');
         hintNote.style.cssText = 'width: 100%; font-size: 11px; color: #555; margin-top: 5px;';
         hintNote.innerHTML = '<em>Hint: Use <strong>{date}</strong> (e.g. Apr 16) or <strong>{fullDate}</strong> (e.g. Apr 16 2026) in your template subject or body to automatically insert the date when loaded.</em>';
@@ -2895,6 +2907,8 @@ const GangHelper = {
         panel.appendChild(templateSelect);
         panel.appendChild(loadBtn);
         panel.appendChild(delBtn);
+        panel.appendChild(exportBtn);
+        panel.appendChild(importBtn);
         panel.appendChild(hintNote);
 
         form.parentNode.insertBefore(panel, form);
@@ -2989,6 +3003,75 @@ const GangHelper = {
             }
             updateSelect();
             updateSaveBtnText();
+        });
+
+        exportBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (templates.length === 0) {
+                alert('No templates to export!');
+                return;
+            }
+            const dataStr = JSON.stringify(templates);
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(dataStr).then(() => {
+                    alert('Templates exported to clipboard!');
+                }).catch(err => {
+                    fallbackCopy(dataStr);
+                });
+            } else {
+                fallbackCopy(dataStr);
+            }
+
+            function fallbackCopy(text) {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                try {
+                    document.execCommand('copy');
+                    alert('Templates exported to clipboard! (Fallback)');
+                } catch (err) {
+                    alert('Failed to copy to clipboard automatically. \n\nPlease copy manually:\n' + text);
+                }
+                document.body.removeChild(ta);
+            }
+        });
+
+        importBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const input = prompt('Paste your exported templates JSON string here.\nWarning: This will overwrite existing templates with the same name.');
+            if (!input) return;
+            try {
+                const imported = JSON.parse(input);
+                if (!Array.isArray(imported)) throw new Error('Invalid format. Expected an array of templates.');
+                
+                let added = 0;
+                let updated = 0;
+                imported.forEach(impT => {
+                    if (impT.name && impT.subject !== undefined && impT.body !== undefined && impT.group !== undefined) {
+                        const existingIndex = templates.findIndex(t => t.name === impT.name);
+                        if (existingIndex >= 0) {
+                            templates[existingIndex] = impT;
+                            updated++;
+                        } else {
+                            templates.push(impT);
+                            added++;
+                        }
+                    }
+                });
+                
+                if (added > 0 || updated > 0) {
+                    templates.sort((a,b) => a.name.localeCompare(b.name));
+                    localStorage.setItem('hw_helper_gang_mail_templates', JSON.stringify(templates));
+                    updateSelect();
+                    updateSaveBtnText();
+                    alert(`Successfully imported templates!\\nAdded: ${added}\\nUpdated: ${updated}`);
+                } else {
+                    alert('No valid templates found to import.');
+                }
+            } catch (err) {
+                alert('Failed to import: Invalid JSON data format.\\nError: ' + err.message);
+            }
         });
     },
 
@@ -9554,6 +9637,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.66",
+            date: "2026-04-20",
+            type: "Added",
+            notes: [
+                "Added an \"Export All\" and \"Import\" functionality to the Gang Mass Mail templates (`GangHelper.js`), empowering users to easily backup, transfer, or share template data using clipboard JSON string arrays."
+            ]
+        },
+        {
             version: "8.65",
             date: "2026-04-19",
             type: "Added",
@@ -9583,19 +9674,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Modified the Rat Life Progress Bar to fill up from the left based on the percentage of the rat's total estimated life that has already been lived, approaching 100% as the rat nears death."
-            ]
-        },
-        {
-            version: "8.61",
-            date: "2026-04-19",
-            type: "Added",
-            notes: [
-                "Added a visual Life Progress Bar to the Rats page showing the percentage of lifespan remaining.",
-                "Added an Extrapolated Days calculation to the Rat Life tooltip, estimating total days to live based on expected daily meals.",
-                "Included specialized meal tracking for **Two-Headed Rats** (12 meals/day) and **Two-Headed Sub-Rats** (10 meals/day).",
-                "Included bonus life calculations for the **Vegetarianism** rat upgrade (`+1` life/meal).",
-                "The `LivingAreaHelper` now automatically detects and saves your current tattoo to support other modules.",
-                "The `RatsHelper` now properly applies the player's **Rattoo** tattoo bonuses (`+2` life/meal) to Vegetarianism calculations for extrapolation."
             ]
         }
     ]
@@ -9653,7 +9731,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.65';
+        window.HoboHelperVersion = '8.66';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

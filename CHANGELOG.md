@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.66] - 2026-04-20
+### Added
+- Added an "Export All" and "Import" functionality to the Gang Mass Mail templates (`GangHelper.js`), empowering users to easily backup, transfer, or share template data using clipboard JSON string arrays.
+
 ## [8.65] - 2026-04-19
 ### Added
 - Added a structured table view for the Market Watcher section on the SGHM page, including alternate row coloring and precise dollar value extraction.
