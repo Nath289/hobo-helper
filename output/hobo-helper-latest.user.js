@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.57
+// @version      8.58
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -2663,6 +2663,8 @@ const GangArmoryHelper = {
                 ftrHead.appendChild(th);
             });
             favTable.appendChild(ftrHead);
+            
+            const myId = Utils.getHoboId();
 
             savedFavs.forEach(favName => {
                 let foundItems = [];
@@ -2676,6 +2678,10 @@ const GangArmoryHelper = {
                     foundItems.sort((a,b) => {
                         if (a.type === 'available' && b.type !== 'available') return -1;
                         if (a.type !== 'available' && b.type === 'available') return 1;
+                        const aIsMe = a.type === 'loaned' && a.hoboLink && a.hoboLink.href.includes(`ID=${myId}`);
+                        const bIsMe = b.type === 'loaned' && b.hoboLink && b.hoboLink.href.includes(`ID=${myId}`);
+                        if (aIsMe && !bIsMe) return -1;
+                        if (!aIsMe && bIsMe) return 1;
                         return 0;
                     });
 
@@ -2693,6 +2699,8 @@ const GangArmoryHelper = {
                         const a = firstItem.transferLink.cloneNode(true);
                         a.style.textDecoration = 'none';
                         tdTransfer.appendChild(a);
+                    } else if (firstItem.type === 'loaned' && firstItem.hoboLink && firstItem.hoboLink.href.includes(`ID=${myId}`)) {
+                        tdTransfer.innerHTML = '<span style="color:green; font-weight:bold;">Loaned to You</span>';
                     } else {
                         tdTransfer.innerHTML = '<span style="color:red; font-weight:bold;">Not Available</span>';
                     }
@@ -8815,6 +8823,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.58",
+            date: "2026-04-19",
+            type: "Changed",
+            notes: [
+                "Updated the Gang Armory Favorites dashboard to display \"Loaned to You\" in green instead of a red \"Not Available\" warning for items currently loaned to the active user."
+            ]
+        },
+        {
             version: "8.57",
             date: "2026-04-19",
             type: "Changed",
@@ -8844,14 +8860,6 @@ const ChangelogData = {
             type: "Fixed",
             notes: [
                 "Fixed the base64 image asset for the permanent Buddhism rat upgrade in `RatsHelper` to precisely match the actual game icon."
-            ]
-        },
-        {
-            version: "8.53",
-            date: "2026-04-19",
-            type: "Added",
-            notes: [
-                "Added a legend at the bottom of the Hitlist table indicating row highlight colors (Green for currently online, Red for outside attack range)."
             ]
         }
     ]
@@ -8907,7 +8915,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.57';
+        window.HoboHelperVersion = '8.58';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

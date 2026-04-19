@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.56.20260419.1040
+// @version      8.57.20260419.1102
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -2663,6 +2663,8 @@ const GangArmoryHelper = {
                 ftrHead.appendChild(th);
             });
             favTable.appendChild(ftrHead);
+            
+            const myId = Utils.getHoboId();
 
             savedFavs.forEach(favName => {
                 let foundItems = [];
@@ -2676,6 +2678,10 @@ const GangArmoryHelper = {
                     foundItems.sort((a,b) => {
                         if (a.type === 'available' && b.type !== 'available') return -1;
                         if (a.type !== 'available' && b.type === 'available') return 1;
+                        const aIsMe = a.type === 'loaned' && a.hoboLink && a.hoboLink.href.includes(`ID=${myId}`);
+                        const bIsMe = b.type === 'loaned' && b.hoboLink && b.hoboLink.href.includes(`ID=${myId}`);
+                        if (aIsMe && !bIsMe) return -1;
+                        if (!aIsMe && bIsMe) return 1;
                         return 0;
                     });
 
@@ -2693,6 +2699,8 @@ const GangArmoryHelper = {
                         const a = firstItem.transferLink.cloneNode(true);
                         a.style.textDecoration = 'none';
                         tdTransfer.appendChild(a);
+                    } else if (firstItem.type === 'loaned' && firstItem.hoboLink && firstItem.hoboLink.href.includes(`ID=${myId}`)) {
+                        tdTransfer.innerHTML = '<span style="color:green; font-weight:bold;">Loaned to You</span>';
                     } else {
                         tdTransfer.innerHTML = '<span style="color:red; font-weight:bold;">Not Available</span>';
                     }
@@ -8815,6 +8823,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.57",
+            date: "2026-04-19",
+            type: "Changed",
+            notes: [
+                "Aligned the new Sunday Funday projected payout column text to the right for improved numeric readability."
+            ]
+        },
+        {
             version: "8.56",
             date: "2026-04-19",
             type: "Added",
@@ -8844,18 +8860,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added a legend at the bottom of the Hitlist table indicating row highlight colors (Green for currently online, Red for outside attack range)."
-            ]
-        },
-        {
-            version: "8.52",
-            date: "2026-04-19",
-            type: "Added",
-            notes: [
-                "Added individual configuration toggles within the Settings menu for `BackpackHelper` sub-features (Item Tooltips and Favourite Drinks UI).",
-                "Overhauled the Settings menu UI to display clean, human-readable module names.",
-                "Settings menu sub-features are now dynamically wrapped in collapsible containers that hide automatically when their parent module is disabled, drastically reducing visual clutter.",
-                "Refactored `DrinksHelper` from a global background script to a targeted page module restricted to the Mixer page, improving overall execution performance.",
-                "Relocated static data object files to their proper data directory structure."
             ]
         }
     ]
@@ -8911,7 +8915,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.56.20260419.1040';
+        window.HoboHelperVersion = '8.57.20260419.1102';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

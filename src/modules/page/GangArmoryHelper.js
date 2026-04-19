@@ -566,6 +566,8 @@ const GangArmoryHelper = {
                 ftrHead.appendChild(th);
             });
             favTable.appendChild(ftrHead);
+            
+            const myId = Utils.getHoboId();
 
             savedFavs.forEach(favName => {
                 let foundItems = [];
@@ -579,6 +581,10 @@ const GangArmoryHelper = {
                     foundItems.sort((a,b) => {
                         if (a.type === 'available' && b.type !== 'available') return -1;
                         if (a.type !== 'available' && b.type === 'available') return 1;
+                        const aIsMe = a.type === 'loaned' && a.hoboLink && a.hoboLink.href.includes(`ID=${myId}`);
+                        const bIsMe = b.type === 'loaned' && b.hoboLink && b.hoboLink.href.includes(`ID=${myId}`);
+                        if (aIsMe && !bIsMe) return -1;
+                        if (!aIsMe && bIsMe) return 1;
                         return 0;
                     });
 
@@ -596,6 +602,8 @@ const GangArmoryHelper = {
                         const a = firstItem.transferLink.cloneNode(true);
                         a.style.textDecoration = 'none';
                         tdTransfer.appendChild(a);
+                    } else if (firstItem.type === 'loaned' && firstItem.hoboLink && firstItem.hoboLink.href.includes(`ID=${myId}`)) {
+                        tdTransfer.innerHTML = '<span style="color:green; font-weight:bold;">Loaned to You</span>';
                     } else {
                         tdTransfer.innerHTML = '<span style="color:red; font-weight:bold;">Not Available</span>';
                     }

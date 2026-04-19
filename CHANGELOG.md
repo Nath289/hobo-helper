@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.58] - 2026-04-19
+### Changed
+- Updated the Gang Armory Favorites dashboard to display "Loaned to You" in green instead of a red "Not Available" warning for items currently loaned to the active user.
+
 ## [8.57] - 2026-04-19
 ### Changed
 - Aligned the new Sunday Funday projected payout column text to the right for improved numeric readability.
