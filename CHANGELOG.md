@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.59] - 2026-04-19
+### Added
+- Added a comprehensive Mass Mail template system allowing the saving, loading, updating, and deletion of mass mail presets on the Gang Send Mass Mail page.
+- Templates automatically save the 'Send To' selection, Subject, and Body content.
+- Added support for dynamic date variables in mass mail templates: `{date}` (e.g. Apr 16) and `{fullDate}` (e.g. Apr 16 2026).
+
 ## [8.58] - 2026-04-19
 ### Changed
 - Updated the Gang Armory Favorites dashboard to display "Loaned to You" in green instead of a red "Not Available" warning for items currently loaned to the active user.

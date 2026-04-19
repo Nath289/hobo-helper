@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.58
+// @version      8.59
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -2774,7 +2774,8 @@ const GangHelper = {
     cmds: ['gang', 'gang2'],
     settings: [
         { key: 'GangHelper_EnableFeature', label: 'Enable Gang Helper' },
-        { key: 'GangHelper_FormatMassMails', label: 'Format Mass Mails' }
+        { key: 'GangHelper_FormatMassMails', label: 'Format Mass Mails' },
+        { key: 'GangHelper_MassMailTemplates', label: 'Mass Mail Templates' }
     ],
     init: function () {
         const queryParams = new URLSearchParams(window.location.search);
@@ -2802,10 +2803,166 @@ const GangHelper = {
                 if (savedSettings['GangHelper_FormatMassMails'] !== false) {
                     this.formatMassMail();
                 }
+            } else if (doParam === 'mail') {
+                if (savedSettings['GangHelper_MassMailTemplates'] !== false) {
+                    this.initGangMassMail();
+                }
             }
         }
     },
-    
+
+    initGangMassMail: function() {
+        const form = document.querySelector('form[action*="do=mail"]');
+        if (!form) return;
+
+        let templates = JSON.parse(localStorage.getItem('hw_helper_gang_mail_templates') || '[]');
+        let currentTemplateName = null;
+
+        const panel = document.createElement('div');
+        panel.style.cssText = 'margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; background: #eee; font-family: Tahoma, sans-serif; text-align: left; max-width: 600px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px;';
+
+        const header = document.createElement('strong');
+        header.textContent = 'Templates:';
+        panel.appendChild(header);
+
+        const templateSelect = document.createElement('select');
+        templateSelect.style.padding = '2px';
+
+        const updateSelect = () => {
+            templateSelect.innerHTML = '<option value="">-- Select a Template --</option>';
+            templates.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.name;
+                opt.textContent = t.name;
+                templateSelect.appendChild(opt);
+            });
+            if (currentTemplateName) {
+                templateSelect.value = currentTemplateName;
+            }
+        };
+        updateSelect();
+
+        templateSelect.addEventListener('change', () => {
+            currentTemplateName = templateSelect.value || null;
+            updateSaveBtnText();
+        });
+
+        const loadBtn = document.createElement('button');
+        loadBtn.textContent = 'Load';
+        loadBtn.style.cssText = '-webkit-font-smoothing: antialiased; color: #636363; background: #ddd; font-weight: bold; text-decoration: none; padding: 3px 12px; border-radius: 3px; border: 0; cursor: pointer; -webkit-appearance: none; display: inline-block;';
+        loadBtn.onmouseover = () => { loadBtn.style.color = '#fff'; loadBtn.style.background = '#1b9eff'; };
+        loadBtn.onmouseout = () => { loadBtn.style.color = '#636363'; loadBtn.style.background = '#ddd'; };
+
+        const delBtn = document.createElement('button');
+        delBtn.textContent = 'Delete';
+        delBtn.style.cssText = '-webkit-font-smoothing: antialiased; color: #636363; background: #ddd; font-weight: bold; text-decoration: none; padding: 3px 12px; border-radius: 3px; border: 0; cursor: pointer; -webkit-appearance: none; display: inline-block;';
+        delBtn.onmouseover = () => { delBtn.style.color = '#fff'; delBtn.style.background = '#d32f2f'; };
+        delBtn.onmouseout = () => { delBtn.style.color = '#636363'; delBtn.style.background = '#ddd'; };
+
+        const hintNote = document.createElement('div');
+        hintNote.style.cssText = 'width: 100%; font-size: 11px; color: #555; margin-top: 5px;';
+        hintNote.innerHTML = '<em>Hint: Use <strong>{date}</strong> (e.g. Apr 16) or <strong>{fullDate}</strong> (e.g. Apr 16 2026) in your template subject or body to automatically insert the date when loaded.</em>';
+
+        panel.appendChild(templateSelect);
+        panel.appendChild(loadBtn);
+        panel.appendChild(delBtn);
+        panel.appendChild(hintNote);
+
+        form.parentNode.insertBefore(panel, form);
+
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'btn';
+        saveBtn.style.cssText = 'margin-left: 10px; font-weight: bold; cursor: pointer;';
+
+        const updateSaveBtnText = () => {
+            saveBtn.textContent = currentTemplateName ? 'Update Template' : 'Save as Template';
+        };
+        updateSaveBtnText();
+
+        const submitBtn = form.querySelector('input[type="submit"]');
+        if (submitBtn) {
+            submitBtn.parentNode.insertBefore(saveBtn, submitBtn.nextSibling);
+        } else {
+            form.appendChild(saveBtn);
+        }
+
+        saveBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const subject = form.querySelector('input[name="subject"]').value;
+            const body = form.querySelector('textarea[name="msg"]').value;
+            const groupInput = form.querySelector('input[name="send_type"]:checked');
+            const group = groupInput ? groupInput.value : 'all';
+
+            const defaultName = currentTemplateName || subject || 'New Template';
+            const name = prompt('Enter a name for this template (if you change the name, it will save as a new template):', defaultName);
+            if (!name) return;
+
+            const existingIndex = templates.findIndex(t => t.name === name);
+            const templateData = { name, subject, body, group };
+            if (existingIndex >= 0) {
+                templates[existingIndex] = templateData;
+            } else {
+                templates.push(templateData);
+            }
+
+            templates.sort((a,b) => a.name.localeCompare(b.name));
+            localStorage.setItem('hw_helper_gang_mail_templates', JSON.stringify(templates));
+
+            currentTemplateName = name;
+            updateSelect();
+            updateSaveBtnText();
+            alert('Template saved successfully!');
+        });
+
+        loadBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const selected = templateSelect.value;
+            if (!selected) return;
+            const template = templates.find(t => t.name === selected);
+            if (!template) return;
+            
+            const dateObj = (Utils.getHoboDateTime && Utils.getHoboDateTime()) || new Date();
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const shortDateStr = `${months[dateObj.getMonth()]} ${dateObj.getDate()}`;
+            const fullDateStr = `${shortDateStr} ${dateObj.getFullYear()}`;
+            
+            const subjectInput = form.querySelector('input[name="subject"]');
+            if (subjectInput) {
+                let text = template.subject || '';
+                text = text.replace(/\{fullDate\}/g, fullDateStr).replace(/\{date\}/g, shortDateStr);
+                subjectInput.value = text;
+            }
+            
+            const bodyInput = form.querySelector('textarea[name="msg"]');
+            if (bodyInput) {
+                let text = template.body || '';
+                text = text.replace(/\{fullDate\}/g, fullDateStr).replace(/\{date\}/g, shortDateStr);
+                bodyInput.value = text;
+            }
+            
+            const groupInput = form.querySelector(`input[name="send_type"][value="${template.group}"]`);
+            if (groupInput) groupInput.checked = true;
+            
+            currentTemplateName = template.name;
+            updateSaveBtnText();
+        });
+
+        delBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const selected = templateSelect.value;
+            if (!selected) return;
+            if (!confirm(`Are you sure you want to delete template "${selected}"?`)) return;
+
+            templates = templates.filter(t => t.name !== selected);
+            localStorage.setItem('hw_helper_gang_mail_templates', JSON.stringify(templates));
+            if (currentTemplateName === selected) {
+                currentTemplateName = null;
+            }
+            updateSelect();
+            updateSaveBtnText();
+        });
+    },
+
     formatMassMail: function() {
         const bTags = document.querySelectorAll('td > b, div > b');
         let sentToTd = null;
@@ -8823,6 +8980,16 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.59",
+            date: "2026-04-19",
+            type: "Added",
+            notes: [
+                "Added a comprehensive Mass Mail template system allowing the saving, loading, updating, and deletion of mass mail presets on the Gang Send Mass Mail page.",
+                "Templates automatically save the 'Send To' selection, Subject, and Body content.",
+                "Added support for dynamic date variables in mass mail templates: `{date}` (e.g. Apr 16) and `{fullDate}` (e.g. Apr 16 2026)."
+            ]
+        },
+        {
             version: "8.58",
             date: "2026-04-19",
             type: "Changed",
@@ -8852,14 +9019,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Removed the text shadow styling from Grabow's custom title within the Display Helper."
-            ]
-        },
-        {
-            version: "8.54",
-            date: "2026-04-19",
-            type: "Fixed",
-            notes: [
-                "Fixed the base64 image asset for the permanent Buddhism rat upgrade in `RatsHelper` to precisely match the actual game icon."
             ]
         }
     ]
@@ -8915,7 +9074,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.58';
+        window.HoboHelperVersion = '8.59';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

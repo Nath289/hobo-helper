@@ -35,6 +35,7 @@ This document contains a general knowledge base about the mechanics, layout, and
 ## Mass Mails / Messaging
 - The game has mass mail functionality where standard layouts display sent messages with a plaintext list of all recipients and whether they have read the mail.
 - Message Board (MB) posts are stored in specific span containers (`<span id="post-content-...">`).
+- **Gang Mass Mail Form**: When composing a gang mass mail (`cmd=gang2&do=mail`), the form inputs use specific names (`name="send_type"` for the recipient group radio buttons, `name="subject"` for the subject line, and `name="msg"` for the message body), which differ from standard mail input names (`Mgroup`, `Subject`, `Body`).
 
 ## UI & Topbar Elements
 - The game's main top navigation bar uses a specific list structure (`<div class="topbar-menu"><ul><li><a href="...">...</a></li></ul></div>`). Injected topbar elements should match the `<li><a href="#" style="cursor: default;">Text</a></li>` pattern to inherit native spacing and styles properly.
