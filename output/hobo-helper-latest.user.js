@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.55
+// @version      8.57
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -3270,8 +3270,29 @@ const GangHelper = {
             let rows;
             if (isScoresTable) {
                  rows = table.querySelectorAll('tr'); // First row is header, but points will parse NaN so it's safe
+                 const headerRow = rows[0];
+                 if (headerRow && !headerRow.querySelector('.hh_sf_payout_header')) {
+                     const th = document.createElement('td');
+                     th.className = 'hh_sf_payout_header';
+                     th.innerHTML = '<b>Payout</b>';
+                     th.align = 'right';
+                     headerRow.appendChild(th);
+                 }
             } else {
                  rows = table.querySelectorAll('tr[bgcolor="#F3F3F3"], tr[bgcolor="#DCDCDC"]');
+                 const allRows = table.querySelectorAll('tr');
+                 for (let i = 0; i < allRows.length; i++) {
+                     if (allRows[i].textContent.includes('Hobo') && allRows[i].textContent.includes('Score')) {
+                         if (!allRows[i].querySelector('.hh_sf_payout_header')) {
+                             const th = document.createElement('td');
+                             th.className = 'hh_sf_payout_header';
+                             th.innerHTML = '<b>Payout</b>';
+                             th.align = 'right';
+                             allRows[i].appendChild(th);
+                         }
+                         break;
+                     }
+                 }
             }
 
             Array.from(rows).forEach(row => {
@@ -3288,8 +3309,8 @@ const GangHelper = {
                 const scoreText = cells[1].textContent.replace(/,/g, '').trim();
                 const score = parseInt(scoreText, 10);
 
+                let payout = 0;
                 if (hoboId && !isNaN(score) && score > 0) {
-                    let payout = 0;
                     savedTiers.forEach(tier => {
                         if (score > tier.min) {
                             const ptsInTier = Math.min(score, tier.max) - tier.min;
@@ -3311,6 +3332,17 @@ const GangHelper = {
                             cleared: false
                         });
                     }
+                }
+                
+                let payoutCell = row.querySelector('.hh_sf_payout_cell');
+                if (!payoutCell && cells.length >= 2) {
+                    payoutCell = document.createElement('td');
+                    payoutCell.className = 'hh_sf_payout_cell';
+                    payoutCell.align = 'right';
+                    row.appendChild(payoutCell);
+                }
+                if (payoutCell) {
+                    payoutCell.textContent = '$' + payout.toLocaleString();
                 }
             });
             return { total, payments };
@@ -8783,6 +8815,22 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.57",
+            date: "2026-04-19",
+            type: "Changed",
+            notes: [
+                "Aligned the new Sunday Funday projected payout column text to the right for improved numeric readability."
+            ]
+        },
+        {
+            version: "8.56",
+            date: "2026-04-19",
+            type: "Added",
+            notes: [
+                "Added a new projected payout column to individual Hobo score rows during the Sunday Funday gang event (Current and Last Happenings)."
+            ]
+        },
+        {
             version: "8.55",
             date: "2026-04-19",
             type: "Changed",
@@ -8804,27 +8852,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added a legend at the bottom of the Hitlist table indicating row highlight colors (Green for currently online, Red for outside attack range)."
-            ]
-        },
-        {
-            version: "8.52",
-            date: "2026-04-19",
-            type: "Added",
-            notes: [
-                "Added individual configuration toggles within the Settings menu for `BackpackHelper` sub-features (Item Tooltips and Favourite Drinks UI).",
-                "Overhauled the Settings menu UI to display clean, human-readable module names.",
-                "Settings menu sub-features are now dynamically wrapped in collapsible containers that hide automatically when their parent module is disabled, drastically reducing visual clutter.",
-                "Refactored `DrinksHelper` from a global background script to a targeted page module restricted to the Mixer page, improving overall execution performance.",
-                "Relocated static data object files to their proper data directory structure."
-            ]
-        },
-        {
-            version: "8.51",
-            date: "2026-04-18",
-            type: "Fixed",
-            notes: [
-                "Fixed an accessibility issue in the `RatsHelper` permanent upgrade buttons by adding `alt` attributes to injected `<img>` tags.",
-                "Cleaned up redundant variable initialization logic in the `RatsHelper` feed UI function."
             ]
         }
     ]
@@ -8880,7 +8907,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.55';
+        window.HoboHelperVersion = '8.57';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

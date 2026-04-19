@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.57] - 2026-04-19
+### Changed
+- Aligned the new Sunday Funday projected payout column text to the right for improved numeric readability.
+
+## [8.56] - 2026-04-19
+### Added
+- Added a new projected payout column to individual Hobo score rows during the Sunday Funday gang event (Current and Last Happenings).
+
 ## [8.55] - 2026-04-19
 ### Changed
 - Removed the text shadow styling from Grabow's custom title within the Display Helper.

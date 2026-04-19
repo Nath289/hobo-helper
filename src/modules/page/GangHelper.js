@@ -506,8 +506,29 @@ const GangHelper = {
             let rows;
             if (isScoresTable) {
                  rows = table.querySelectorAll('tr'); // First row is header, but points will parse NaN so it's safe
+                 const headerRow = rows[0];
+                 if (headerRow && !headerRow.querySelector('.hh_sf_payout_header')) {
+                     const th = document.createElement('td');
+                     th.className = 'hh_sf_payout_header';
+                     th.innerHTML = '<b>Payout</b>';
+                     th.align = 'right';
+                     headerRow.appendChild(th);
+                 }
             } else {
                  rows = table.querySelectorAll('tr[bgcolor="#F3F3F3"], tr[bgcolor="#DCDCDC"]');
+                 const allRows = table.querySelectorAll('tr');
+                 for (let i = 0; i < allRows.length; i++) {
+                     if (allRows[i].textContent.includes('Hobo') && allRows[i].textContent.includes('Score')) {
+                         if (!allRows[i].querySelector('.hh_sf_payout_header')) {
+                             const th = document.createElement('td');
+                             th.className = 'hh_sf_payout_header';
+                             th.innerHTML = '<b>Payout</b>';
+                             th.align = 'right';
+                             allRows[i].appendChild(th);
+                         }
+                         break;
+                     }
+                 }
             }
 
             Array.from(rows).forEach(row => {
@@ -524,8 +545,8 @@ const GangHelper = {
                 const scoreText = cells[1].textContent.replace(/,/g, '').trim();
                 const score = parseInt(scoreText, 10);
 
+                let payout = 0;
                 if (hoboId && !isNaN(score) && score > 0) {
-                    let payout = 0;
                     savedTiers.forEach(tier => {
                         if (score > tier.min) {
                             const ptsInTier = Math.min(score, tier.max) - tier.min;
@@ -547,6 +568,17 @@ const GangHelper = {
                             cleared: false
                         });
                     }
+                }
+                
+                let payoutCell = row.querySelector('.hh_sf_payout_cell');
+                if (!payoutCell && cells.length >= 2) {
+                    payoutCell = document.createElement('td');
+                    payoutCell.className = 'hh_sf_payout_cell';
+                    payoutCell.align = 'right';
+                    row.appendChild(payoutCell);
+                }
+                if (payoutCell) {
+                    payoutCell.textContent = '$' + payout.toLocaleString();
                 }
             });
             return { total, payments };
