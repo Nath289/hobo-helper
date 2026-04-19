@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.59
+// @version      8.60
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -3684,6 +3684,143 @@ const GangHelper = {
         if (!scoresTable) return;
 
         this.renderTierSettingsPanel(scoresTable, true);
+    }
+};
+
+const GangHitlistHelper = {
+    cmds: ['gang', 'gang2'],
+    settings: [
+        { key: 'GangHitlistHelper_HitlistPageTracker', label: 'Hitlist Page Tracker' },
+        { key: 'GangHitlistHelper_HitlistMarkRed', label: 'Hitlist Mark Red' }
+    ],
+    init: function() {
+        const queryParams = new URLSearchParams(window.location.search);
+        const doParam = queryParams.get('do');
+
+        if (doParam !== 'hitlist') return;
+
+        const savedSettings = Utils.getSettings();
+
+        if (savedSettings['GangHitlistHelper_HitlistPageTracker'] !== false) {
+            this.initGangHitlistPageTracker(queryParams);
+        }
+        if (savedSettings['GangHitlistHelper_HitlistMarkRed'] !== false) {
+            this.initGangHitlistMarkRed();
+        }
+    },
+
+    initGangHitlistPageTracker: function(queryParams) {
+        const pageParam = queryParams.get('page');
+        let savedPage = localStorage.getItem('hw_helper_gang_hitlist_page');
+
+        if (pageParam !== null) {
+            if (parseInt(pageParam, 10) > 0) {
+                savedPage = pageParam;
+                localStorage.setItem('hw_helper_gang_hitlist_page', savedPage);
+            }
+        }
+
+        if (savedPage !== null && parseInt(savedPage, 10) > 0) {
+            const pageLinks = document.querySelectorAll('a[href*="do=hitlist"]');
+            pageLinks.forEach(link => {
+                try {
+                    const url = new URL(link.href, window.location.origin);
+                    if (url.searchParams.get('page') === savedPage) {
+                        link.style.fontSize = '32px';
+                        link.style.fontWeight = 'bold';
+
+                        const td = link.parentElement;
+                        if (td && td.tagName === 'TD') {
+                            if (td.getAttribute('bgcolor') !== '#7799ff') {
+                                td.style.backgroundColor = '#fffacd';
+                                td.setAttribute('bgcolor', '#fffacd');
+                                td.onmouseover = function() { this.style.backgroundColor = '#ffeb8a'; };
+                                td.onmouseout = function() { this.style.backgroundColor = '#fffacd'; };
+                            }
+                        }
+                    }
+                } catch (e) {}
+            });
+        }
+    },
+
+    initGangHitlistMarkRed: function() {
+        const tables = document.querySelectorAll('table[width="100%"]');
+        let hitlistTable = null;
+        tables.forEach(t => {
+            if (t.rows.length > 0 && t.rows[0].textContent.includes('Player') && t.rows[0].textContent.includes('Options')) {
+                hitlistTable = t;
+            }
+        });
+
+        if (!hitlistTable) return;
+
+        if (hitlistTable.rows[0]) {
+            const headerCells = hitlistTable.rows[0].querySelectorAll('td');
+            if (headerCells.length >= 5) {
+                headerCells[4].setAttribute('width', '15%');
+                headerCells[4].style.whiteSpace = 'nowrap';
+
+                if (headerCells[3] && headerCells[3].getAttribute('width') === '20%') {
+                    headerCells[3].setAttribute('width', '15%');
+                }
+            }
+        }
+
+        let markedHobos = JSON.parse(localStorage.getItem('hw_helper_gang_hitlist_marked') || '[]');
+
+        for (let i = 1; i < hitlistTable.rows.length; i++) {
+            const row = hitlistTable.rows[i];
+            const cells = row.querySelectorAll('td');
+            if (cells.length < 5) continue;
+
+            const link = cells[0].querySelector('a[href*="ID="]');
+            if (!link) continue;
+
+            const urlParams = new URLSearchParams(link.href.split('?')[1]);
+            const hoboId = urlParams.get('ID');
+            if (!hoboId) continue;
+
+            const origBg = cells[0].getAttribute('bgcolor') || '#eeeeee';
+
+            const optionsCell = cells[4];
+            optionsCell.style.whiteSpace = 'nowrap';
+
+            const markContainer = document.createElement('span');
+            markContainer.style.marginLeft = '4px';
+
+            const renderRow = () => {
+                const isMarked = markedHobos.includes(hoboId);
+                const targetBg = isMarked ? '#ffcccc' : origBg;
+
+                cells.forEach(td => {
+                    td.setAttribute('bgcolor', targetBg);
+                    td.style.backgroundColor = targetBg;
+                });
+
+                markContainer.innerHTML = isMarked
+                    ? '[<a href="#" style="text-decoration:none; color:gray;">Unmark</a>]'
+                    : '[<a href="#" style="text-decoration:none; color:red;">Mark</a>]';
+
+                const toggleLink = markContainer.querySelector('a');
+                if (toggleLink) {
+                    toggleLink.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const currentlyMarked = markedHobos.includes(hoboId);
+                        if (currentlyMarked) {
+                            markedHobos = markedHobos.filter(id => id !== hoboId);
+                        } else {
+                            if (!markedHobos.includes(hoboId)) markedHobos.push(hoboId);
+                        }
+                        localStorage.setItem('hw_helper_gang_hitlist_marked', JSON.stringify(markedHobos));
+                        renderRow();
+                    });
+                }
+            };
+
+            renderRow();
+            optionsCell.appendChild(markContainer);
+        }
     }
 };
 
@@ -8980,6 +9117,16 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.60",
+            date: "2026-04-19",
+            type: "Added",
+            notes: [
+                "Created the new `GangHitlistHelper` module specifically for the Gang Hitlist page (`cmd=gang&do=hitlist`).",
+                "Added a \"Hitlist Page Tracker\" feature that remembers and visually highlights the currently selected paginated hitlist page.",
+                "Added a \"Hitlist Mark Red\" interactive toggle link within the \"Options\" column of the hitlist table, allowing users to permanently shade specific opponent rows red across page reloads."
+            ]
+        },
+        {
             version: "8.59",
             date: "2026-04-19",
             type: "Added",
@@ -9012,14 +9159,6 @@ const ChangelogData = {
             notes: [
                 "Added a new projected payout column to individual Hobo score rows during the Sunday Funday gang event (Current and Last Happenings)."
             ]
-        },
-        {
-            version: "8.55",
-            date: "2026-04-19",
-            type: "Changed",
-            notes: [
-                "Removed the text shadow styling from Grabow's custom title within the Display Helper."
-            ]
         }
     ]
 };
@@ -9048,6 +9187,7 @@ const ChangelogData = {
         FortSlugworthHelper,
         GangArmoryHelper,
         GangHelper,
+        GangHitlistHelper,
         GangLoansHelper,
         HitlistHelper,
         HospitalHelper,
@@ -9074,7 +9214,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.59';
+        window.HoboHelperVersion = '8.60';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.60] - 2026-04-19
+### Added
+- Created the new `GangHitlistHelper` module specifically for the Gang Hitlist page (`cmd=gang&do=hitlist`).
+- Added a "Hitlist Page Tracker" feature that remembers and visually highlights the currently selected paginated hitlist page.
+- Added a "Hitlist Mark Red" interactive toggle link within the "Options" column of the hitlist table, allowing users to permanently shade specific opponent rows red across page reloads.
+
 ## [8.59] - 2026-04-19
 ### Added
 - Added a comprehensive Mass Mail template system allowing the saving, loading, updating, and deletion of mass mail presets on the Gang Send Mass Mail page.

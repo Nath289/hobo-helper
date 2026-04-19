@@ -81,20 +81,25 @@ A gang management tool that creates a specialized dashboard within the Gang Loan
 A helper designed to operate on the main game Hitlist page (`cmd=battle&do=phlist`).
 - **Highlight Online Players**: Scans your hitlist for opponents currently online and highlights their entire row green, avoiding the need to search for the small online icon.
 
-### 20. Soup Kitchen Helper (`SoupKitchenHelper.js`)
+### 20. Gang Hitlist Helper (`GangHitlistHelper.js`)
+A helper designed to operate on the Gang Hitlist page (`cmd=gang&do=hitlist`).
+- **Hitlist Page Tracker**: Remembers the currently selected paginated hitlist page number and highlights the selected page number in a larger, bold font with a yellow background.
+- **Hitlist Mark Red**: Adds an interactive link to the "Options" column to manually mark individual hobos, turning their row red persistently across page reloads.
+
+### 21. Soup Kitchen Helper (`SoupKitchenHelper.js`)
 A helper designed to operate on the Soup Kitchen page (`cmd=soup_kitchen`).
 - **Soup Line Predictor**: Displays your Hobo's exact age in days right alongside a handy wiki reference table to help you determine exactly which soup rewards correlate to which age ranges when waiting in the soup line.
 
-### 21. Rats Helper (`RatsHelper.js`)
+### 22. Rats Helper (`RatsHelper.js`)
 A new helper designed to operate on the Rats page (`cmd=rats`).
 - Currently tracking and foundational logic setup. Future features will be added here.
 
-### 22. Weapons Helper (`WeaponsHelper.js`)
+### 23. Weapons Helper (`WeaponsHelper.js`)
 A new helper designed to operate on the Weapons page (`cmd=wep`).
 - **Highlight Equipped Items**: Automatically highlights weapons, armor, and rings that you currently have equipped in your inventory list.
 - **Quick Equip/Unequip**: Converts item images into clickable links that will instantly equip or unequip the item based on its current state.
 
-### 23. Gang Helper (`GangHelper.js`)
+### 24. Gang Helper (`GangHelper.js`)
 Helper designed to function on Gang-related pages (`cmd=gang`).
 - **Gang Event Data Save**: Injects an admin-only dashboard specifically within the event stats for events like "Gangsters Sunday = Funday", dynamically tracking and storing custom event payments.
 - **Member List Columns**: Exposes a completely configurable column selection UI right above the "list members" table so users aren't locked into the rigid pre-set columns. Fully integrated with LocalStorage and safely adapts between User and Staff column restrictions.
@@ -102,26 +107,26 @@ Helper designed to function on Gang-related pages (`cmd=gang`).
 - **Mass Mail Templates**: Adds a comprehensive templating system to the Gang Send Mass Mail page. Allows saving, updating, loading, and deleting templates that store the 'Send To' grouping, Subject, and Body content. Includes support for dynamic `{date}` and `{fullDate}` insertion in the subject line.
 - **Gang Armory Dashboard (`GangArmoryHelper.js`)**: Overhauls the Gang Armory interface (`cmd=gang&do=armory`) by grouping identical items by name and sorting dynamically by power stats. Includes a favorite items dashboard pinning priority gear to the top, and interactive buttons to hide selected clutter items permanently. Adds an Unbrand action next to Claim Back for players with permissions, and includes global Expand/Collapse/Toggle All capabilities.
 
-### 24. Market Helper (`MarketHelper`)
+### 25. Market Helper (`MarketHelper`)
 - Converts plain-text inline "Buy" links and Market navigation headers into large, interactive button elements for an improved desktop/mobile marketplace experience.
 - Cross-references the HoboWars wiki to dynamically inject highly-visible 40x40 item thumbnails natively into the Market listings for Weapons, Armor, and Cart Parts.
 
-### 25. Drink Helpers
+### 26. Drink Helpers
 - [x] Automatically inject stat and effect data as tooltips to all drinks when hovering your mouse over them inside of your backpack and living area page.
 
-### 26. Food Helpers
+### 27. Food Helpers
 - [x] Food Menu Management: Add a "Mark as Crap" button to mark selected foods as "crap". Unchecked foods will be removed from the list.
 - [x] Add a "Select Crap" button to automatically select all foods you have marked as crap, making it easy to throw them away.
 - [x] Works both in the main Food page and within the Living Area Food tab.
 
-### 27. Active List Helper (`ActiveListHelper.js`)
+### 28. Active List Helper (`ActiveListHelper.js`)
 Helper functionality for the Active List page (`cmd=active`).
 - **Interactive Alive/Dead Filter**: Adds pill-styled buttons allowing users to dynamically hide dead players or show everyone.
 - **Attack Range Filter**: Automatically restricts the opponent list to players within your immediate attackable level range (± 200 levels).
 
 ---
 *Note: We are constantly updating and tweaking these modules. If you encounter any bugs, please report them!*
-### 28. Player Helper (\PlayerHelper.js\)
+### 29. Player Helper (\PlayerHelper.js\)
 Provides enhanced functionality and specific shortcuts when viewing the \cmd=player\ profiles.
 - **Copy Hoboname**: Embeds a clickable icon under the "Citizen Information" box that allows for quickly copying the player's formatted \[hoboname=ID]\ tag. Can be disabled in Settings.
 

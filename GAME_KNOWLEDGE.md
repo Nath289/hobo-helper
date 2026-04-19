@@ -26,6 +26,7 @@ This document contains a general knowledge base about the mechanics, layout, and
 - **Staff Detection:** A reliable way to check if a user is "Gang Staff" is the presence of the "Manage Loans" link (`a[href*="cmd=gang2&do=loans"]`) in the DOM.
 - **Current vs Last Happenings:** Event stats (like "Gangsters Sunday = Funday") lack semantic classes or IDs. The text headers (e.g., `<u>Current Gang Happening Stats:</u>` or `<u>Last Gang Happening Stats:</u>`) must be located first, then the immediate sibling `<table>` containing the "Hobo" and "Score" headers must be traversed to extract scores.
 - **Table Row Inconsistencies:** The "Last Happenings" table usually color-codes member rows (`bgcolor="#F3F3F3"` or `#DCDCDC`), but the "Current Happenings" table lacks these entirely. Querying rows dynamically requires checking the text content rather than relying on CSS or `bgcolor`.
+- **Gang Hitlist Table:** The paginated gang hitlist (`cmd=gang&do=hitlist`) doesn't have an easily targetable ID; it's a generic table where rows typically start with `Player` and end with `Options`. To adjust styling dynamically across lines with interactive action text elements like `[Attack]` or `[Mark]`, manipulating specific table cells without forcing whitespace breaks is necessary to keep row alignment consistent.
 
 ## Inventory & Items
 - The **Trolley** is an inventory container that can hold up to exactly **25 items** at maximum capacity. When building UI for Trolley items, keep in mind lists can be comfortably large up to this limit.
