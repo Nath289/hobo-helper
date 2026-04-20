@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.70] - 2026-04-21
+### Added
+- Added Top Pagination links above the Gang Hitlist table (Previous Page, Last Viewed Page, Next Page).
+
 ## [8.69] - 2026-04-21
 ### Added
 - Added an option to wrap long pagination lists on the Gang Hitlist into multiple lines to prevent horizontal scrolling.
