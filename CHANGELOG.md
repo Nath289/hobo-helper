@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.69] - 2026-04-21
+### Added
+- Added an option to wrap long pagination lists on the Gang Hitlist into multiple lines to prevent horizontal scrolling.
+- Added an option to automatically highlight players outside your attack range (level discrepancy > 200) on the Gang Hitlist.
+
 ## [8.68] - 2026-04-20
 ### Changed
 - Increased maximum height of the Saved Gang Posts & Payments panel in GangHelper for better visibility.

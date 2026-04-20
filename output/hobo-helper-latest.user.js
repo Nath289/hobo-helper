@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.68
+// @version      8.69
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -3891,7 +3891,9 @@ const GangHitlistHelper = {
     cmds: ['gang', 'gang2'],
     settings: [
         { key: 'GangHitlistHelper_HitlistPageTracker', label: 'Hitlist Page Tracker' },
-        { key: 'GangHitlistHelper_HitlistMarkRed', label: 'Hitlist Mark Red' }
+        { key: 'GangHitlistHelper_HitlistMarkRed', label: 'Hitlist Mark Red' },
+        { key: 'GangHitlistHelper_AutoMarkRange', label: 'Auto-Mark Out of Attack Range' },
+        { key: 'GangHitlistHelper_WrapPagination', label: 'Wrap Hitlist Pagination' }
     ],
     init: function() {
         const queryParams = new URLSearchParams(window.location.search);
@@ -3904,9 +3906,31 @@ const GangHitlistHelper = {
         if (savedSettings['GangHitlistHelper_HitlistPageTracker'] !== false) {
             this.initGangHitlistPageTracker(queryParams);
         }
-        if (savedSettings['GangHitlistHelper_HitlistMarkRed'] !== false) {
-            this.initGangHitlistMarkRed();
+        if (savedSettings['GangHitlistHelper_HitlistMarkRed'] !== false || savedSettings['GangHitlistHelper_AutoMarkRange'] !== false) {
+            this.initGangHitlistRowModifiers(savedSettings['GangHitlistHelper_HitlistMarkRed'] !== false, savedSettings['GangHitlistHelper_AutoMarkRange'] !== false);
         }
+        if (savedSettings['GangHitlistHelper_WrapPagination'] !== false) {
+            this.initWrapPagination();
+        }
+    },
+
+    initWrapPagination: function() {
+        const pageLabels = Array.from(document.querySelectorAll('td')).filter(td => td.textContent.match(/Page \d+ out of \d+:/));
+        pageLabels.forEach(td => {
+            const row = td.parentElement;
+            if (row && row.children.length >= 3) {
+                const paginationTd = row.children[2];
+                const innerTable = paginationTd.querySelector('table');
+                if (innerTable) {
+                    const tbodyTr = innerTable.querySelector('tbody > tr');
+                    if (tbodyTr) {
+                        tbodyTr.style.display = 'flex';
+                        tbodyTr.style.flexWrap = 'wrap';
+                        tbodyTr.style.gap = '2px';
+                    }
+                }
+            }
+        });
     },
 
     initGangHitlistPageTracker: function(queryParams) {
@@ -3944,7 +3968,7 @@ const GangHitlistHelper = {
         }
     },
 
-    initGangHitlistMarkRed: function() {
+    initGangHitlistRowModifiers: function(enableMarkRed, enableAutoMarkRange) {
         const tables = document.querySelectorAll('table[width="100%"]');
         let hitlistTable = null;
         tables.forEach(t => {
@@ -3968,6 +3992,7 @@ const GangHitlistHelper = {
         }
 
         let markedHobos = JSON.parse(localStorage.getItem('hw_helper_gang_hitlist_marked') || '[]');
+        const playerLvl = Utils.getHoboLevel();
 
         for (let i = 1; i < hitlistTable.rows.length; i++) {
             const row = hitlistTable.rows[i];
@@ -3981,6 +4006,14 @@ const GangHitlistHelper = {
             const hoboId = urlParams.get('ID');
             if (!hoboId) continue;
 
+            let isOutOfRange = false;
+            if (enableAutoMarkRange && playerLvl > 0) {
+                const targetLvl = parseInt(cells[1].textContent.replace(/,/g, '').trim(), 10);
+                if (!isNaN(targetLvl) && Math.abs(targetLvl - playerLvl) > 200) {
+                    isOutOfRange = true;
+                }
+            }
+
             const origBg = cells[0].getAttribute('bgcolor') || '#eeeeee';
 
             const optionsCell = cells[4];
@@ -3990,36 +4023,45 @@ const GangHitlistHelper = {
             markContainer.style.marginLeft = '4px';
 
             const renderRow = () => {
-                const isMarked = markedHobos.includes(hoboId);
-                const targetBg = isMarked ? '#ffcccc' : origBg;
+                const isMarkedManually = enableMarkRed && markedHobos.includes(hoboId);
+                const isColoredRed = isMarkedManually || isOutOfRange;
+                const targetBg = isColoredRed ? (isOutOfRange ? '#f8d7da' : '#ffcccc') : origBg;
 
                 cells.forEach(td => {
                     td.setAttribute('bgcolor', targetBg);
                     td.style.backgroundColor = targetBg;
                 });
 
-                markContainer.innerHTML = isMarked
-                    ? '[<a href="#" style="text-decoration:none; color:gray;">Unmark</a>]'
-                    : '[<a href="#" style="text-decoration:none; color:red;">Mark</a>]';
+                if (enableMarkRed) {
+                    if (isOutOfRange) {
+                        markContainer.innerHTML = '[<span style="color:gray;">Out of Range</span>]';
+                    } else {
+                        markContainer.innerHTML = isMarkedManually
+                            ? '[<a href="#" style="text-decoration:none; color:gray;">Unmark</a>]'
+                            : '[<a href="#" style="text-decoration:none; color:red;">Mark</a>]';
 
-                const toggleLink = markContainer.querySelector('a');
-                if (toggleLink) {
-                    toggleLink.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        const currentlyMarked = markedHobos.includes(hoboId);
-                        if (currentlyMarked) {
-                            markedHobos = markedHobos.filter(id => id !== hoboId);
-                        } else {
-                            if (!markedHobos.includes(hoboId)) markedHobos.push(hoboId);
+                        const toggleLink = markContainer.querySelector('a');
+                        if (toggleLink) {
+                            toggleLink.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                const currentlyMarked = markedHobos.includes(hoboId);
+                                if (currentlyMarked) {
+                                    markedHobos = markedHobos.filter(id => id !== hoboId);
+                                } else {
+                                    if (!markedHobos.includes(hoboId)) markedHobos.push(hoboId);
+                                }
+                                localStorage.setItem('hw_helper_gang_hitlist_marked', JSON.stringify(markedHobos));
+                                renderRow();
+                            });
                         }
-                        localStorage.setItem('hw_helper_gang_hitlist_marked', JSON.stringify(markedHobos));
-                        renderRow();
-                    });
+                    }
                 }
             };
 
             renderRow();
-            optionsCell.appendChild(markContainer);
+            if (enableMarkRed) {
+                optionsCell.appendChild(markContainer);
+            }
         }
     }
 };
@@ -9740,6 +9782,15 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.69",
+            date: "2026-04-21",
+            type: "Added",
+            notes: [
+                "Added an option to wrap long pagination lists on the Gang Hitlist into multiple lines to prevent horizontal scrolling.",
+                "Added an option to automatically highlight players outside your attack range (level discrepancy > 200) on the Gang Hitlist."
+            ]
+        },
+        {
             version: "8.68",
             date: "2026-04-20",
             type: "Changed",
@@ -9772,14 +9823,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added a structured table view for the Market Watcher section on the SGHM page, including alternate row coloring and precise dollar value extraction."
-            ]
-        },
-        {
-            version: "8.64",
-            date: "2026-04-19",
-            type: "Added",
-            notes: [
-                "Added custom 'Нeaveп' title display for SeventhHeaven."
             ]
         }
     ]
@@ -9837,7 +9880,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.68';
+        window.HoboHelperVersion = '8.69';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
