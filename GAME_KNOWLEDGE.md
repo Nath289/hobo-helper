@@ -7,6 +7,7 @@ This document contains a general knowledge base about the mechanics, layout, and
 - The UI often uses standard HTML tables (`<tr>`, `<td>`) structured around older design principles.
 - Time in the game is often represented as "T" (e.g. Awake time), and resetting or gaining features is usually tied to specific server time intervals (00:00, 03:00, etc.).
 - Offline HTML snapshots stored in the `html/` directory are grouped into specific functional subfolders (e.g., `living-area/`, `gang/`, `mb/`, `rats/`, `wiki/`). Always ensure recursive matching when searching them in powershell.
+- When dynamically injecting standard `.img` icons into the topbar `.bmenu`, inline styles must apply `!important` keywords (e.g., `background-image: ... !important; background-size: contain !important;`) to resist override by native HoboWars responsive caching logic.
 
 ## Rats
 - Rats help the user fight in battles and find items (seafood, treasure, etc.).

@@ -8,7 +8,8 @@ const DisplayHelper = {
         { key: 'DisplayHelper_AwakeNotify', label: 'Awake Full Notification (Desktop)', defaultValue: false },
         { key: 'DisplayHelper_AwakeNotifyInactive', label: 'Notify Only if Inactive (mins)', type: 'number', defaultValue: 30, parent: 'DisplayHelper_AwakeNotify' },
         { key: 'DisplayHelper_InterestingLevel', label: 'Show Next Interesting Level', defaultValue: true },
-        { key: 'DisplayHelper_LiveAliveTime', label: 'Show Live Alive Time in Top Menu', defaultValue: true }
+        { key: 'DisplayHelper_LiveAliveTime', label: 'Show Live Alive Time in Top Menu', defaultValue: true },
+        { key: 'DisplayHelper_ShowCans', label: 'Show Cans in Top Menu', defaultValue: true }
     ],
     init: function() {
         const settings = Utils.getSettings();
@@ -41,6 +42,80 @@ const DisplayHelper = {
         }
         if (settings['DisplayHelper_LiveAliveTime'] !== false) {
             this.initLiveAliveTime();
+        }
+        if (settings['DisplayHelper_ShowCans'] !== false) {
+            this.initShowCans();
+        }
+    },
+    initShowCans: function() {
+        if (!document.getElementById('hobohelper-cans-style')) {
+            const style = document.createElement('style');
+            style.id = 'hobohelper-cans-style';
+            style.innerHTML = `
+                .topbar .bmenu a .img.cans {
+                    background-image: url('data:image/webp;base64,UklGRoIDAABXRUJQVlA4THUDAAAvO8AOEH+gqJEkZcm/QnrtHkogG2oCAGn4SUGLjdo/hN+2gwraSFKO//0bZAYNP/8BAADg/1/0YL9rnm3dY55tnWPsJUenlAh76AYQnfaAzrNta+RqwtB9geVdSxNOyUnFWDEzcw4zM58TZnCYE2u6oEdboq2to+fzD/D3jTQLAwa94deH+oj+M3DbSFGXt3vYgT+k/itl2y+ndvVOPJt+zRBCfJ20LSoJQSTEmoTzamGunD37uHExGQriwJxZH+6aUBT9k7Sj4sCL3dPBpJLxbpK9mvzE2T8cmFgxL6B8gptcEQs+PPnrnNnlYxaJfjyqD12j0xuXXn+76tOssZBtm4RpXvvMvPnbMfOKV8cTXfnS/ICsuR/QvLKOeaLiYnHbmmDh1uDto650+JtWvVvYecLcHpizywrgierFV8haWb446WpWQtdu5lBzYMfJT8rW/A8OlADEF1kQBfTbpB9oeBGALfqy3ccfr5j940MrXQAAYwC3TeYvvwRZHQ7rAqDrFnPIPiJq0ToacUkBqP+Wu1FjDroNeDLmO/8lwelQmZGQ5MNZONMDANGPUxD6ieUBVrpJArp24ZvxjVCO8ZMrdTyqCwDiQ4zRGX68eokr4Sw8nIioao+GHw8AHU7MygR/emhjPPp6UQFPFhYUoOsYiQ/m28wdZQ0g/NGVAGdbi4T/mJ5CImd/HSiAta3q9hyeZCFbdXTj5WAMZP50RuropheTcsyyD80Z9UGhEX/mht2+jk66kicMP6LJZHb5cL4uqBfEAM4AInM7WZc96OgDV2rOqK/k20JqoW2uhD22oHTdt5yj+Wh7FI4OFLDxPY8lphuejok2drpS30nflw5nPRWZ3JlxZdpGQDzysAJHXBD67SNdj6YV/RfETI+VeJHhn3n/sHf7e1fKhekHkjXq6vZo5CU/nkrQe9OdKjrEoDtjW2XlvF1Q+kz6sB9y+Eaox1nghRA6GrbEJQ7TDd8m6PB7D/GIccQiVdEYk3pFP3vUODK+5dCVicnPRd970h6zhPiI+I54TG6rdcmDPfaKlSCo1TwloqndPuwDdPOV8MCJGNHqWYHWNh2ofoXhDFNFRG7OCemGGMBjk3DR2oK2kE4br9yVXeazLY9DopvGa2GYvZiIiKyapLmj+pUqxIHeybDJEC/LZ6mk5YObRLdWpf4PJQUA') !important;
+                    background-size: contain !important;
+                    background-repeat: no-repeat !important;
+                    background-position: center bottom !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        const currencyUl = document.querySelector('.section.currency ul');
+        const bmenuUl = document.querySelector('.section.bmenu ul');
+        
+        if (!currencyUl || !bmenuUl) return;
+
+        let tokensLi = null;
+        let cansCommentNode = null;
+        let existingCansLi = null;
+
+        currencyUl.childNodes.forEach(node => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                const text = node.textContent || '';
+                if (text.includes('Tokens')) tokensLi = node;
+                if (text.includes('Cans:')) existingCansLi = node;
+            } else if (node.nodeType === Node.COMMENT_NODE) {
+                if (node.nodeValue.includes('Cans:') || node.nodeValue.includes('displayCans')) {
+                    cansCommentNode = node;
+                }
+            }
+        });
+
+        if (tokensLi) {
+            tokensLi.classList.remove('no-mobile');
+        }
+
+        let targetCansLi = existingCansLi;
+        if (cansCommentNode) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = '<ul>' + cansCommentNode.nodeValue + '</ul>';
+            targetCansLi = tempDiv.querySelector('li');
+            cansCommentNode.remove();
+        }
+
+        if (targetCansLi) {
+            const span = targetCansLi.querySelector('.displayCans');
+            let cValue = span ? span.textContent.trim() : '';
+            if (!cValue) {
+                const cMatch = targetCansLi.textContent.match(/[\d,]+/);
+                cValue = cMatch ? cMatch[0] : '';
+            }
+
+            const aLink = targetCansLi.querySelector('a');
+            const href = aLink ? aLink.getAttribute('href') : 'game.php?cmd=depo';
+            
+            const abbreviatedCans = Utils.abbreviateNumber(cValue);
+
+            const bmenuCansLi = document.createElement('li');
+            bmenuCansLi.classList.add('no-mobile');
+            bmenuCansLi.innerHTML = `<a href="${href}" title="Go to Can Depot"><div class="img cans"></div>${abbreviatedCans}</a>`;
+            bmenuUl.appendChild(bmenuCansLi);
+
+            if (existingCansLi) {
+                existingCansLi.remove();
+            }
         }
     },
     initLiveAliveTime: function() {

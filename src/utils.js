@@ -1,4 +1,17 @@
 const Utils = {
+    abbreviateNumber: function(num) {
+        if (typeof num === 'string') num = parseInt(num.replace(/,/g, ''), 10);
+        if (isNaN(num)) return 0;
+
+        if (num >= 1000000) {
+            return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
+        }
+        if (num >= 10000) {
+            return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+        }
+
+        return num.toLocaleString();
+    },
         getHoboDateTime: function() {
             const clockEl = document.getElementById('clock');
             if (!clockEl) return null;
