@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.68] - 2026-04-20
+### Changed
+- Increased maximum height of the Saved Gang Posts & Payments panel in GangHelper for better visibility.
+- The Saved Gang Posts & Payments panel now automatically scrolls to the next pending replier or payment action smoothly so you don't lose your place.
+
 ## [8.67] - 2026-04-20
 ### Added
 - Added Cans directly to the top navigation bar alongside Points and Tokens.

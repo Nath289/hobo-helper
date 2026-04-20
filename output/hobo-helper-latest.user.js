@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.67
+// @version      8.68
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -4164,7 +4164,7 @@ const GangLoansHelper = {
         const banksSelectHtml = banksEl ? banksEl.innerHTML : '';
 
         const panel = document.createElement('div');
-        panel.style.cssText = 'border: 2px solid #336699; background: #eef5ff; padding: 15px; margin-bottom: 20px; border-radius: 5px; color: black; font-size: 13px; line-height: 1.4;';
+        panel.style.cssText = 'border: 2px solid #336699; background: #eef5ff; padding: 15px; margin-bottom: 20px; border-radius: 5px; color: black; font-size: 13px; line-height: 1.4; max-height: 500px; overflow-y: auto;';
 
         const header = document.createElement('h3');
         header.style.cssText = 'margin: 0 0 10px 0; border-bottom: 1px solid #336699; padding-bottom: 5px; font-weight: bold; font-size: 16px; display: flex; justify-content: space-between; align-items: center;';
@@ -4304,7 +4304,7 @@ const GangLoansHelper = {
                         }
 
                         hobosHtml += `
-                            <tr style="border-bottom: 1px solid #eee; background: ${rowBg};">
+                            <tr class="${(!isCompleted && !isCleared) ? 'hw-pending-action' : ''}" style="border-bottom: 1px solid #eee; background: ${rowBg};">
                                 <td style="padding: 4px;">
                                     <a href="game.php?sr=${this.getSr()}&cmd=player&ID=${h.id}" target="_blank" style="text-decoration: none; color: #0055aa; font-weight: bold;">${h.name}</a> 
                                     <span style="color: #666; font-size: 11px;">[ID: ${h.id}]</span>
@@ -4369,7 +4369,7 @@ const GangLoansHelper = {
                         }
 
                         payHtml += `
-                            <tr style="background: ${rowBg}; border-bottom: 1px solid #f0f0f0;">
+                            <tr class="${(!isCompleted && !isCleared) ? 'hw-pending-action' : ''}" style="background: ${rowBg}; border-bottom: 1px solid #f0f0f0;">
                                 <td style="padding: 5px; border: 1px solid #ececec;"><a href="game.php?sr=${this.getSr()}&cmd=player&ID=${hoboId}" target="_blank" style="color:#0055aa;text-decoration:none;">${hoboId}</a></td>
                                 <td style="padding: 5px; border: 1px solid #ececec;">${hoboName}</td>
                                 <td style="padding: 5px; border: 1px solid #ececec; font-family: monospace; font-size: 13px;">${p.amount || ''}</td>
@@ -4815,6 +4815,21 @@ const GangLoansHelper = {
                 }
             });
         }
+
+        setTimeout(() => {
+            const firstPending = panel.querySelector('.hw-pending-action');
+            if (firstPending) {
+                const panelRect = panel.getBoundingClientRect();
+                const pendingRect = firstPending.getBoundingClientRect();
+                const scrollPos = pendingRect.top - panelRect.top + panel.scrollTop - 40;
+                if (scrollPos > 0) {
+                    panel.scrollTo({
+                        top: scrollPos,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        }, 100);
 
     },
 
@@ -9725,6 +9740,15 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.68",
+            date: "2026-04-20",
+            type: "Changed",
+            notes: [
+                "Increased maximum height of the Saved Gang Posts & Payments panel in GangHelper for better visibility.",
+                "The Saved Gang Posts & Payments panel now automatically scrolls to the next pending replier or payment action smoothly so you don't lose your place."
+            ]
+        },
+        {
             version: "8.67",
             date: "2026-04-20",
             type: "Added",
@@ -9756,14 +9780,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added custom 'Нeaveп' title display for SeventhHeaven."
-            ]
-        },
-        {
-            version: "8.63",
-            date: "2026-04-19",
-            type: "Changed",
-            notes: [
-                "The Rat Life Progress Bar now dynamically shifts color from green to yellow to red as the rat approaches the end of its estimated lifespan."
             ]
         }
     ]
@@ -9821,7 +9837,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.67';
+        window.HoboHelperVersion = '8.68';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

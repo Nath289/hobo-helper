@@ -138,7 +138,7 @@ const GangLoansHelper = {
         const banksSelectHtml = banksEl ? banksEl.innerHTML : '';
 
         const panel = document.createElement('div');
-        panel.style.cssText = 'border: 2px solid #336699; background: #eef5ff; padding: 15px; margin-bottom: 20px; border-radius: 5px; color: black; font-size: 13px; line-height: 1.4;';
+        panel.style.cssText = 'border: 2px solid #336699; background: #eef5ff; padding: 15px; margin-bottom: 20px; border-radius: 5px; color: black; font-size: 13px; line-height: 1.4; max-height: 500px; overflow-y: auto;';
 
         const header = document.createElement('h3');
         header.style.cssText = 'margin: 0 0 10px 0; border-bottom: 1px solid #336699; padding-bottom: 5px; font-weight: bold; font-size: 16px; display: flex; justify-content: space-between; align-items: center;';
@@ -278,7 +278,7 @@ const GangLoansHelper = {
                         }
 
                         hobosHtml += `
-                            <tr style="border-bottom: 1px solid #eee; background: ${rowBg};">
+                            <tr class="${(!isCompleted && !isCleared) ? 'hw-pending-action' : ''}" style="border-bottom: 1px solid #eee; background: ${rowBg};">
                                 <td style="padding: 4px;">
                                     <a href="game.php?sr=${this.getSr()}&cmd=player&ID=${h.id}" target="_blank" style="text-decoration: none; color: #0055aa; font-weight: bold;">${h.name}</a> 
                                     <span style="color: #666; font-size: 11px;">[ID: ${h.id}]</span>
@@ -343,7 +343,7 @@ const GangLoansHelper = {
                         }
 
                         payHtml += `
-                            <tr style="background: ${rowBg}; border-bottom: 1px solid #f0f0f0;">
+                            <tr class="${(!isCompleted && !isCleared) ? 'hw-pending-action' : ''}" style="background: ${rowBg}; border-bottom: 1px solid #f0f0f0;">
                                 <td style="padding: 5px; border: 1px solid #ececec;"><a href="game.php?sr=${this.getSr()}&cmd=player&ID=${hoboId}" target="_blank" style="color:#0055aa;text-decoration:none;">${hoboId}</a></td>
                                 <td style="padding: 5px; border: 1px solid #ececec;">${hoboName}</td>
                                 <td style="padding: 5px; border: 1px solid #ececec; font-family: monospace; font-size: 13px;">${p.amount || ''}</td>
@@ -790,6 +790,21 @@ const GangLoansHelper = {
             });
         }
 
+        setTimeout(() => {
+            const firstPending = panel.querySelector('.hw-pending-action');
+            if (firstPending) {
+                const panelRect = panel.getBoundingClientRect();
+                const pendingRect = firstPending.getBoundingClientRect();
+                const scrollPos = pendingRect.top - panelRect.top + panel.scrollTop - 40;
+                if (scrollPos > 0) {
+                    panel.scrollTo({
+                        top: scrollPos,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        }, 100);
+
     },
 
     getSr: function() {
@@ -797,6 +812,13 @@ const GangLoansHelper = {
         return match ? match[1] : '';
     }
 };
+
+
+
+
+
+
+
 
 
 
