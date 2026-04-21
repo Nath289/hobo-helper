@@ -1,4 +1,5 @@
 const DisplayHelper = {
+    staff: false,
     settings: [
         { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' },
         { key: 'DisplayHelper_CustomTitles', label: 'Enable Custom Player Titles', defaultValue: true },

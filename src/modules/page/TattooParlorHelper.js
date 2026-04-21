@@ -1,5 +1,6 @@
 const TattooParlorHelper = {
     cmds: 'tattoo_parlor',
+    staff: false,
     init: function() {
         const links = document.querySelectorAll('a[href*="tattoo_parlor"]');
         links.forEach(link => {

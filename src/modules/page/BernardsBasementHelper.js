@@ -1,5 +1,6 @@
 const BernardsBasementHelper = {
     cmds: 'bernards',
+    staff: false,
     settings: [
         { key: 'BernardsBasementHelper_BasementMap', label: 'Basement Map' }
     ],

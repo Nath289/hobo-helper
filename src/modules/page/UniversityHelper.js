@@ -1,5 +1,6 @@
 const UniversityHelper = {
     cmds: 'uni',
+    staff: false,
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
         const doParam = urlParams.get('do');

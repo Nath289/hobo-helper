@@ -1,5 +1,6 @@
 const GangArmoryHelper = {
     cmds: 'gang',
+    staff: false,
     settings: [
         { key: 'GangArmoryHelper_EnableTabs', label: 'Enable Armory Tabs', default: true }
     ],

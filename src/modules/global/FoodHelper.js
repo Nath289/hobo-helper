@@ -1,4 +1,5 @@
 const FoodHelper = {
+    staff: false,
     init: function() {
         const settings = Utils.getSettings();
         if (settings?.FoodHelper?.enabled === false) return;

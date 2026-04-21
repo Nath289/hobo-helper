@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.69.20260421.0055
-// @description  Combines original HoboWars helpers into a single modular script.
+// @version      8.71.20260421.2059
+// @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
 // @match        *://hobowars.com/game/game.php?*
@@ -443,7 +443,58 @@ const RespectData = [
     { rank: 15, posTitle: "Hobo Jesus", negTitle: "Batman", minRespect: 10000000 }
 ];
 
+const ChangelogData = {
+    changes: [
+        {
+            version: "8.71",
+            date: "2026-04-21",
+            type: "Added",
+            notes: [
+                "Added a 3-build release system with per-build templates and build-time module filtering.",
+                "Implemented script segregation so distinct production scripts are built independently for Standard Users and Staff members based on module configuration flags."
+            ]
+        },
+        {
+            version: "8.70",
+            date: "2026-04-21",
+            type: "Added",
+            notes: [
+                "Added Top Pagination links above the Gang Hitlist table (Previous Page, Last Viewed Page, Next Page)."
+            ]
+        },
+        {
+            version: "8.69",
+            date: "2026-04-21",
+            type: "Added",
+            notes: [
+                "Added an option to wrap long pagination lists on the Gang Hitlist into multiple lines to prevent horizontal scrolling.",
+                "Added an option to automatically highlight players outside your attack range (level discrepancy > 200) on the Gang Hitlist."
+            ]
+        },
+        {
+            version: "8.68",
+            date: "2026-04-20",
+            type: "Changed",
+            notes: [
+                "Increased maximum height of the Saved Gang Posts & Payments panel in GangHelper for better visibility.",
+                "The Saved Gang Posts & Payments panel now automatically scrolls to the next pending replier or payment action smoothly so you don't lose your place."
+            ]
+        },
+        {
+            version: "8.67",
+            date: "2026-04-20",
+            type: "Added",
+            notes: [
+                "Added Cans directly to the top navigation bar alongside Points and Tokens.",
+                "The Cans icon uses CSS injection that correctly mimics native icon hover animations.",
+                "Added a global number abbreviation function \\Utils.abbreviateNumber()\\ that formats large numbers into \\k\\ and \\m\\ suffixes for cleaner UI display."
+            ]
+        }
+    ]
+};
+
 const BackpackHelper = {
+    staff: false,
     settings: [
         { key: 'BackpackHelper_Tooltips', label: 'Item Tooltips (Stats/Effects)' },
         { key: 'BackpackHelper_Favourites', label: 'Favourite Drinks UI' }
@@ -727,6 +778,7 @@ const BackpackHelper = {
 };
 
 const DisplayHelper = {
+    staff: false,
     settings: [
         { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' },
         { key: 'DisplayHelper_CustomTitles', label: 'Enable Custom Player Titles', defaultValue: true },
@@ -1120,6 +1172,7 @@ const DisplayHelper = {
 };
 
 const DrinksHelper = {
+    staff: false,
             init: function() {
                 function getInventory() {
                     const inventory = {};
@@ -1208,6 +1261,7 @@ const DrinksHelper = {
         }
 
 const FoodHelper = {
+    staff: false,
     init: function() {
         const settings = Utils.getSettings();
         if (settings?.FoodHelper?.enabled === false) return;
@@ -1512,6 +1566,7 @@ const FoodHelper = {
 
 const ActiveListHelper = {
     cmds: 'active',
+    staff: false,
     settings: [
         { key: 'ActiveListHelper_Filter', label: 'Enable Alive/Dead Filters' }
     ],
@@ -1681,6 +1736,7 @@ const ActiveListHelper = {
 
 const BankHelper = {
     cmds: 'bank',
+    staff: false,
     settings: [
         { key: 'BankHelper_5FightersLunches', label: "5 Fighter's Lunches Goal" },
         { key: 'BankHelper_FixedGoals', label: "Fixed Bank Goals (+5k, +10k, +50k)" }
@@ -1790,6 +1846,7 @@ const BankHelper = {
 
 const BernardsBasementHelper = {
     cmds: 'bernards',
+    staff: false,
     settings: [
         { key: 'BernardsBasementHelper_BasementMap', label: 'Basement Map' }
     ],
@@ -1872,6 +1929,7 @@ const BernardsBasementHelper = {
 
 const CanDepoHelper = {
     cmds: 'depo',
+    staff: false,
     init: function() {
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
 
@@ -1917,6 +1975,7 @@ const CanDepoHelper = {
 
 const FoodBankHelper = {
     cmds: 'food_bank',
+    staff: false,
     settings: [
         {
             key: 'FoodBankHelper_enabled',
@@ -2126,6 +2185,7 @@ const FoodBankHelper = {
 
 const FortSlugworthHelper = {
     cmds: 'fort_slugworth',
+    staff: false,
     init: function() {
         const settings = Utils.getSettings();
         if (settings['FortSlugworthHelper'] === false) return;
@@ -2214,6 +2274,7 @@ const FortSlugworthHelper = {
 
 const GangArmoryHelper = {
     cmds: 'gang',
+    staff: false,
     settings: [
         { key: 'GangArmoryHelper_EnableTabs', label: 'Enable Armory Tabs', default: true }
     ],
@@ -2889,6 +2950,7 @@ const GangArmoryHelper = {
 
 const GangHelper = {
     cmds: ['gang', 'gang2'],
+    staff: false,
     settings: [
         { key: 'GangHelper_EnableFeature', label: 'Enable Gang Helper' },
         { key: 'GangHelper_FormatMassMails', label: 'Format Mass Mails' },
@@ -3889,6 +3951,7 @@ const GangHelper = {
 
 const GangHitlistHelper = {
     cmds: ['gang', 'gang2'],
+    staff: false,
     settings: [
         { key: 'GangHitlistHelper_HitlistPageTracker', label: 'Hitlist Page Tracker' },
         { key: 'GangHitlistHelper_HitlistMarkRed', label: 'Hitlist Mark Red' },
@@ -4203,6 +4266,7 @@ const GangHitlistHelper = {
 
 const GangLoansHelper = {
     cmds: 'gang2',
+    staff: false,
     init: function() {
         const isLoans = window.location.search.includes('cmd=gang2') && window.location.search.includes('do=loans');
         const isLoanAdd = window.location.search.includes('cmd=gang2') && window.location.search.includes('do=loan_add');
@@ -5018,6 +5082,7 @@ const GangLoansHelper = {
 
 const HitlistHelper = {
     cmds: 'battle',
+    staff: false,
     settings: [
         { key: 'HitlistHelper_HighlightOnline', label: 'Highlight Online Players' },
         { key: 'HitlistHelper_RememberSort', label: 'Enable Client-side Sorting & Remember' }
@@ -5284,6 +5349,7 @@ const HitlistHelper = {
 
 const HospitalHelper = {
     cmds: 'hospital',
+    staff: false,
     settings: [
         { key: 'HospitalHelper_TrackHealing', label: 'Track Healing Times', defaultValue: true }
     ],
@@ -5306,6 +5372,7 @@ const HospitalHelper = {
 
 const KurtzCampHelper = {
     cmds: 'camp_kurtz',
+    staff: false,
     init: function() {
         // Check Settings
         const settings = Utils.getSettings();
@@ -5369,6 +5436,7 @@ const KurtzCampHelper = {
 
 const LiquorStoreHelper = {
     cmds: 'liquor_store',
+    staff: false,
     init: function() {
         if (window.location.href.includes('cmd=liquor_store')) {
             try {
@@ -5504,6 +5572,7 @@ const LiquorStoreHelper = {
 
 const LivingAreaHelper = {
     cmds: '',
+    staff: false,
     settings: [
         { key: 'LivingAreaHelper_StatRatioTracker', label: 'Stat Ratio Tracker' },
         { key: 'LivingAreaHelper_CopyStatsBtn', label: 'Copy Stats Button' },
@@ -6365,6 +6434,7 @@ const LockoutHelper = {
 
 const MarketHelper = {
     cmds: 'mart',
+    staff: false,
     settings: [
         { key: 'MarketHelper_Enable', label: 'Enable Market Helper' },
         { key: 'MarketHelper_TableWatcher', label: 'Convert Market Watcher to Table' },
@@ -6740,6 +6810,7 @@ const MarketHelper = {
 
 const MessageBoardHelper = {
     cmds: 'gathering',
+    staff: false,
     settings: [
         { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
         { key: 'MessageBoardHelper_RenderTables', label: 'Render Data Tables in Posts' },
@@ -7418,6 +7489,7 @@ const MessageBoardHelper = {
 
 const MixerHelper = {
     cmds: 'mixer',
+    staff: false,
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('cmd') === 'mixer') {
@@ -7805,6 +7877,7 @@ const MixerHelper = {
 
 const NorthernFenceHelper = {
     cmds: 'hill3',
+    staff: false,
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('cmd') === 'hill3') {
@@ -7950,6 +8023,7 @@ const NorthernFenceHelper = {
 
 const PlayerHelper = {
     cmds: 'player',
+    staff: false,
     settings: [
         { key: 'PlayerHelper_CopyHoboName', label: 'Show Copy [hoboname] Link' }
     ],
@@ -8040,6 +8114,7 @@ const PlayerHelper = {
 
 const RatsHelper = {
     cmds: 'rats',
+    staff: false,
     settings: [
         { key: 'RatsHelper_NewsFilter', label: 'Rat News Filter' },
         { key: 'RatsHelper_ExpBar', label: 'Show Exp Progress Indicator' },
@@ -8953,6 +9028,7 @@ const RatsHelper = {
 
 const RecyclingBinHelper = {
     cmds: 'recycling_bin',
+    staff: false,
     init: function() {
 
         const settings = Utils.getSettings();
@@ -8987,6 +9063,7 @@ const RecyclingBinHelper = {
 
 const SettingsHelper = {
     cmds: 'preferences',
+    staff: false,
     init: function() {
 
         const contentArea = document.querySelector('.content-area');
@@ -9512,6 +9589,7 @@ const SettingsHelper = {
 
 const SoupKitchenHelper = {
     cmds: 'soup_kitchen',
+    staff: false,
     init: function() {
 
         const contentArea = document.querySelector('.content-area');
@@ -9607,6 +9685,7 @@ const SoupKitchenHelper = {
 
 const TattooParlorHelper = {
     cmds: 'tattoo_parlor',
+    staff: false,
     init: function() {
         const links = document.querySelectorAll('a[href*="tattoo_parlor"]');
         links.forEach(link => {
@@ -9635,6 +9714,7 @@ const TattooParlorHelper = {
 
 const UniversityHelper = {
     cmds: 'uni',
+    staff: false,
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
         const doParam = urlParams.get('do');
@@ -9720,6 +9800,7 @@ const UniversityHelper = {
 
 const WeaponsHelper = {
     cmds: 'wep',
+    staff: false,
     settings: [
         { key: 'WeaponsHelper_EnableFeature', label: 'Enable Weapons Helper' }
     ],
@@ -9781,6 +9862,7 @@ const WeaponsHelper = {
 
 const WellnessClinicHelper = {
     cmds: 'wellness_clinic',
+    staff: false,
     init: function() {
         const url = window.location.href;
 
@@ -9913,55 +9995,6 @@ const WellnessClinicHelper = {
         }, 150);
     }
 }
-
-const ChangelogData = {
-    changes: [
-        {
-            version: "8.69",
-            date: "2026-04-21",
-            type: "Added",
-            notes: [
-                "Added an option to wrap long pagination lists on the Gang Hitlist into multiple lines to prevent horizontal scrolling.",
-                "Added an option to automatically highlight players outside your attack range (level discrepancy > 200) on the Gang Hitlist."
-            ]
-        },
-        {
-            version: "8.68",
-            date: "2026-04-20",
-            type: "Changed",
-            notes: [
-                "Increased maximum height of the Saved Gang Posts & Payments panel in GangHelper for better visibility.",
-                "The Saved Gang Posts & Payments panel now automatically scrolls to the next pending replier or payment action smoothly so you don't lose your place."
-            ]
-        },
-        {
-            version: "8.67",
-            date: "2026-04-20",
-            type: "Added",
-            notes: [
-                "Added Cans directly to the top navigation bar alongside Points and Tokens.",
-                "The Cans icon uses CSS injection that correctly mimics native icon hover animations.",
-                "Added a global number abbreviation function \\Utils.abbreviateNumber()\\ that formats large numbers into \\k\\ and \\m\\ suffixes for cleaner UI display."
-            ]
-        },
-        {
-            version: "8.66",
-            date: "2026-04-20",
-            type: "Added",
-            notes: [
-                "Added an \"Export All\" and \"Import\" functionality to the Gang Mass Mail templates (`GangHelper.js`), empowering users to easily backup, transfer, or share template data using clipboard JSON string arrays."
-            ]
-        },
-        {
-            version: "8.65",
-            date: "2026-04-19",
-            type: "Added",
-            notes: [
-                "Added a structured table view for the Market Watcher section on the SGHM page, including alternate row coloring and precise dollar value extraction."
-            ]
-        }
-    ]
-};
     const DataModules = {
         DrinksData,
         EquipmentData,
@@ -10015,7 +10048,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.69.20260421.0055';
+        window.HoboHelperVersion = '8.71.20260421.2059';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

@@ -1,5 +1,6 @@
 const ActiveListHelper = {
     cmds: 'active',
+    staff: false,
     settings: [
         { key: 'ActiveListHelper_Filter', label: 'Enable Alive/Dead Filters' }
     ],

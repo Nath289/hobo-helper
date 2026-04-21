@@ -1,5 +1,6 @@
 const SoupKitchenHelper = {
     cmds: 'soup_kitchen',
+    staff: false,
     init: function() {
 
         const contentArea = document.querySelector('.content-area');

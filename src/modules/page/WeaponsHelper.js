@@ -1,5 +1,6 @@
 const WeaponsHelper = {
     cmds: 'wep',
+    staff: false,
     settings: [
         { key: 'WeaponsHelper_EnableFeature', label: 'Enable Weapons Helper' }
     ],

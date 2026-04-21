@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.72] - 2026-04-21
+### Changed
+- Updated the release build outputs: standard release has been renamed to output/hobo-helper-member-latest.user.js, and output/hobo-helper-latest.user.js now compiles all available modules.
+- Refactored build.ps1 DEV build argument passing logic, and it now generates outputs correctly incorporating all modules.
+
+## [8.71] - 2026-04-21
+### Added
+- Added a 3-build release system with per-build templates and build-time module filtering.
+- Implemented script segregation so distinct production scripts are built independently for Standard Users and Staff members based on module configuration flags.
+
 ## [8.70] - 2026-04-21
 ### Added
 - Added Top Pagination links above the Gang Hitlist table (Previous Page, Last Viewed Page, Next Page).

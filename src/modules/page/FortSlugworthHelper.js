@@ -1,5 +1,6 @@
 const FortSlugworthHelper = {
     cmds: 'fort_slugworth',
+    staff: false,
     init: function() {
         const settings = Utils.getSettings();
         if (settings['FortSlugworthHelper'] === false) return;
