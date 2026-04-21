@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Staff)
 // @namespace    http://tampermonkey.net/
-// @version      8.78
+// @version      8.79
 // @description  Provides HoboWars staff-only helper tools.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -112,6 +112,13 @@ const Utils = {
             const bankEl = document.querySelector('.no-mobile.displayBank');
             if (bankEl) {
                 return this.parseNumber(bankEl.textContent);
+            }
+            return 0;
+        },
+        getTokenBalance: function() {
+            const tokenEl = document.querySelector('.displayTokens');
+            if (tokenEl) {
+                return this.parseNumber(tokenEl.textContent);
             }
             return 0;
         },
@@ -446,6 +453,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.79",
+            date: "2026-04-22",
+            type: "Changed",
+            notes: [
+                "Improved Skills helper layout:"
+            ]
+        },
+        {
             version: "8.78",
             date: "2026-04-22",
             type: "Changed",
@@ -475,14 +490,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Converted the Recycling Bin Helper's quick-add buttons to be fully customizable dynamically from the page via an inline floating Configure panel instead of a native prompt. Users can create, delete, and modify their preferred numeric additions with ease."
-            ]
-        },
-        {
-            version: "8.74",
-            date: "2026-04-21",
-            type: "Changed",
-            notes: [
-                "Reverted the default build script output naming conventions to protect existing users. The standard non-staff features script is now correctly output to `hobo-helper-latest.user.js` again, while the all-inclusive bundle has been shifted to `hobo-helper-all-latest.user.js`."
             ]
         }
     ]
@@ -2714,7 +2721,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.78';
+        window.HoboHelperVersion = '8.79';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

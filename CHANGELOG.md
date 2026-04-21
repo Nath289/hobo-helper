@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.79] - 2026-04-22
+### Changed
+- Improved Skills helper layout:
+  - Faded the red background alert for empty quantity skills
+  - Repositioned the "Save as Skill Set", "Set Order", and "Unequip All" configuration controls below the Skills List for better logical grouping
+  - Re-styled interaction buttons to be taller and easier to click
+  - Constrained layout bounds to prevent "Skill Shop" link overlapping
+
 ## [8.78] - 2026-04-22
 ### Changed
 - Moved the `DrinksHelper` Bartender Guide UI injection logic natively into the `BackpackHelper` module to increase efficiency and accurately target the specific game URL (`?cmd=backpack&use=3`).

@@ -100,6 +100,13 @@ const Utils = {
             }
             return 0;
         },
+        getTokenBalance: function() {
+            const tokenEl = document.querySelector('.displayTokens');
+            if (tokenEl) {
+                return this.parseNumber(tokenEl.textContent);
+            }
+            return 0;
+        },
         parseNumber: function(str) {
             if (!str) return 0;
             return parseFloat(str.replace(/[$,]/g, '')) || 0;
