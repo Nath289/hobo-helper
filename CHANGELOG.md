@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.74] - 2026-04-21
+### Changed
+- Reverted the default build script output naming conventions to protect existing users. The standard non-staff features script is now correctly output to `hobo-helper-latest.user.js` again, while the all-inclusive bundle has been shifted to `hobo-helper-all-latest.user.js`.
+
 ## [8.73] - 2026-04-21
 ### Added
 - Added completely new GangBoardStaffHelper to streamline staff tasks directly from gang message boards.

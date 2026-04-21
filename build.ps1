@@ -163,8 +163,8 @@ if ($Release) {
         -ModulesContent ($nonStaffGlobalContent + $nonStaffPageContent) `
         -GlobalExports $nonStaffGlobalExports `
         -PageExports $nonStaffPageExports
-    Set-Content -Path "output/hobo-helper-member-latest.user.js" -Value $regularContent
-    Write-Host "Build complete: output/hobo-helper-member-latest.user.js"
+    Set-Content -Path "output/hobo-helper-latest.user.js" -Value $regularContent
+    Write-Host "Build complete: output/hobo-helper-latest.user.js"
 
     # Build 2: staff modules only
     $staffContent = Build-Output `
@@ -189,8 +189,8 @@ if ($Release) {
         -ModulesContent ($allGlobalContent + $allPageContent) `
         -GlobalExports $allGlobalExports `
         -PageExports $allPageExports
-    Set-Content -Path "output/hobo-helper-latest.user.js" -Value $allContent
-    Write-Host "Build complete: output/hobo-helper-latest.user.js"
+    Set-Content -Path "output/hobo-helper-all-latest.user.js" -Value $allContent
+    Write-Host "Build complete: output/hobo-helper-all-latest.user.js"
 
 } else {
     $timestamp = (Get-Date).ToString("yyyyMMdd.HHmm")

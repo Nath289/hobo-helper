@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (All)
 // @namespace    http://tampermonkey.net/
-// @version      8.73
+// @version      8.74
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -446,6 +446,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.74",
+            date: "2026-04-21",
+            type: "Changed",
+            notes: [
+                "Reverted the default build script output naming conventions to protect existing users. The standard non-staff features script is now correctly output to `hobo-helper-latest.user.js` again, while the all-inclusive bundle has been shifted to `hobo-helper-all-latest.user.js`."
+            ]
+        },
+        {
             version: "8.73",
             date: "2026-04-21",
             type: "Added",
@@ -482,15 +490,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added Top Pagination links above the Gang Hitlist table (Previous Page, Last Viewed Page, Next Page)."
-            ]
-        },
-        {
-            version: "8.69",
-            date: "2026-04-21",
-            type: "Added",
-            notes: [
-                "Added an option to wrap long pagination lists on the Gang Hitlist into multiple lines to prevent horizontal scrolling.",
-                "Added an option to automatically highlight players outside your attack range (level discrepancy > 200) on the Gang Hitlist."
             ]
         }
     ]
@@ -9036,8 +9035,6 @@ const GangStaffHelper = {
                 // Check if we are viewing the last gang happenings
                 if (wParam === 'lastsh') {
                     this.initGangHappenings();
-                } else {
-                    this.initGangFeature();
                 }
             } else if (doParam === 'read_mail') {
                 if (savedSettings['GangStaffHelper_FormatMassMails'] !== false) {
@@ -9469,11 +9466,6 @@ const GangStaffHelper = {
                 visibleIndex++;
             }
         });
-    },
-    
-    initGangFeature: function() {
-        console.log("GangStaffHelper loaded on dashboard.");
-        // TODO: Implement gang page specifics
     },
 
     initGangMemberList: function() {
@@ -10063,7 +10055,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.73';
+        window.HoboHelperVersion = '8.74';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
