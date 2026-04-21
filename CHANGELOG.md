@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.77] - 2026-04-22
+### Changed
+- Heavily optimized the Backpack Helper by ensuring its `MutationObserver` strictly initializes when the in-page Backpack tab is clicked in the Living Area, preventing duplicate observers, verifying visibility before processing DOM elements, and avoiding unnecessary looping.
+
 ## [8.76] - 2026-04-21
 ### Changed
 - Replaced the direct DOM `visibility: hidden` script blocker approach with a custom injected `<style>` tag that properly mimics the native HoboWars "#222" dark gray background instead of glaring white, vastly improving visual comfort via reduced flash artifacting during module compilation.

@@ -1,4 +1,5 @@
 const BackpackHelper = {
+    cmds: ['backpack', ''],
     staff: false,
     settings: [
         { key: 'BackpackHelper_Tooltips', label: 'Item Tooltips (Stats/Effects)' },
@@ -10,11 +11,78 @@ const BackpackHelper = {
         const enableTooltips = settings['BackpackHelper_Tooltips'] !== false;
         const enableFavourites = settings['BackpackHelper_Favourites'] !== false;
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentCmd = urlParams.get('cmd') || '';
+
         if (enableFavourites) {
             this.initDrinkStats();
         }
 
-        this.observeBackpack(enableTooltips, enableFavourites);
+        if (currentCmd === 'backpack') {
+            this.processItems(enableTooltips, enableFavourites);
+        } else if (currentCmd === '') {
+            this.observeBackpack(enableTooltips, enableFavourites);
+        }
+    },
+
+    drinkMap: null,
+    lastInjected: 0,
+
+    processItems: function(enableTooltips, enableFavourites) {
+        const now = Date.now();
+        if (enableFavourites && (now - this.lastInjected > 1000)) {
+            this.injectFavourites();
+            this.lastInjected = now;
+        }
+
+        if (!enableTooltips) return;
+
+        const items = document.querySelectorAll('.bp-itm:not([data-bh-tooltip-processed])');
+        if (items.length === 0) return;
+
+        if (!this.drinkMap && typeof DrinksData !== 'undefined' && DrinksData.drinks) {
+            this.drinkMap = {};
+            const combined = [...DrinksData.drinks.alcoholic, ...DrinksData.drinks.mixed];
+            combined.forEach(d => {
+                this.drinkMap[d.name] = d;
+            });
+        }
+        if (!this.drinkMap) return;
+
+        items.forEach(item => {
+            item.setAttribute('data-bh-tooltip-processed', 'true');
+
+            const img = item.querySelector('img');
+            if (!img) return;
+
+            const name = (img.getAttribute('alt') || img.title || '').trim();
+            const drinkInfo = this.drinkMap[name];
+
+            if (drinkInfo) {
+                let tooltipParts = [];
+                if (drinkInfo.base_stat_gain && drinkInfo.base_stat_gain.trim() !== "") {
+                    tooltipParts.push(`Stats: ${drinkInfo.base_stat_gain.trim()}`);
+                }
+                if (drinkInfo.effect && drinkInfo.effect.trim() !== "") {
+                    tooltipParts.push(`Effect: ${drinkInfo.effect.trim()}`);
+                }
+
+                if (tooltipParts.length > 0) {
+                    const target = item.closest('td') ? item.closest('td') : item;
+                    const tooltipText = tooltipParts.join(' - ');
+                    target.setAttribute('title', tooltipText);
+
+                    if (img.hasAttribute('title')) {
+                        img.setAttribute('title', tooltipText);
+                    }
+
+                    const a = item.querySelector('a');
+                    if (a && a.hasAttribute('title')) {
+                        a.setAttribute('title', tooltipText);
+                    }
+                }
+            }
+        });
     },
 
     initDrinkStats: function() {
@@ -53,83 +121,43 @@ const BackpackHelper = {
     },
 
     observeBackpack: function(enableTooltips, enableFavourites) {
-        let drinkMap = null;
-        let lastInjected = 0;
+        // Run once immediately in case the backpack is somehow already loaded
+        this.processItems(enableTooltips, enableFavourites);
 
-        const processItems = () => {
-            const now = Date.now();
-            if (enableFavourites && (now - lastInjected > 1000)) {
-                this.injectFavourites();
-                lastInjected = now;
-            }
+        // In the Living Area, the backpack content is loaded via AJAX when the tab is clicked.
+        // We will watch for the user clicking the backpack tab and strictly trigger our observer then.
+        const backpackTabLink = document.querySelector('a[rel="backpack"]');
+        if (backpackTabLink) {
+            backpackTabLink.addEventListener('click', () => {
+                if (this._bpObserver) return; // Prevent multiple observers
 
-            if (!enableTooltips) return;
+                // When clicked, wait briefly to allow the AJAX call to initiate and the loading text to appear
+                setTimeout(() => {
+                    const targetNode = document.getElementById('backpackTab');
+                    if (targetNode) {
+                        let timeout = null;
+                        this._bpObserver = new MutationObserver(() => {
+                            // Only process if the tab is actually visible
+                            if (targetNode.style.display === 'none') return;
 
-            const items = document.querySelectorAll('.bp-itm:not([data-bh-tooltip-processed])');
-            if (items.length === 0) return;
+                            if (timeout) clearTimeout(timeout);
+                            timeout = setTimeout(() => {
+                                // Double check if items need processing before running full logic
+                                const unprocessed = targetNode.querySelectorAll('.bp-itm:not([data-bh-tooltip-processed])');
+                                const needsFavInject = enableFavourites && !targetNode.querySelector('table[data-bh-favorites-added]');
 
-            // Initialize map lazily
-            if (!drinkMap && typeof DrinksData !== 'undefined' && DrinksData.drinks) {
-                drinkMap = {};
-                const combined = [...DrinksData.drinks.alcoholic, ...DrinksData.drinks.mixed];
-                combined.forEach(d => {
-                    drinkMap[d.name] = d;
-                });
-            }
-            // If we still can't find drinks data, skip processing
-            if (!drinkMap) return;
+                                if (unprocessed.length > 0 || needsFavInject) {
+                                    this.processItems(enableTooltips, enableFavourites);
+                                }
+                            }, 250);
+                        });
 
-            items.forEach(item => {
-                // Mark processed immediately
-                item.setAttribute('data-bh-tooltip-processed', 'true');
-
-                const img = item.querySelector('img');
-                if (!img) return;
-
-                const name = (img.getAttribute('alt') || img.title || '').trim();
-                const drinkInfo = drinkMap[name];
-
-                if (drinkInfo) {
-                    let tooltipParts = [];
-                    if (drinkInfo.base_stat_gain && drinkInfo.base_stat_gain.trim() !== "") {
-                        tooltipParts.push(`Stats: ${drinkInfo.base_stat_gain.trim()}`);
+                        // We only need to observe the backpackTab container. Once it mutates (loads content), we process.
+                        this._bpObserver.observe(targetNode, { childList: true, subtree: true });
                     }
-                    if (drinkInfo.effect && drinkInfo.effect.trim() !== "") {
-                        tooltipParts.push(`Effect: ${drinkInfo.effect.trim()}`);
-                    }
-
-                    if (tooltipParts.length > 0) {
-                        const target = item.closest('td') ? item.closest('td') : item;
-                        const tooltipText = tooltipParts.join(' - ');
-                        target.setAttribute('title', tooltipText);
-
-                        // If it has children with titles (like the img), clear them so they don't override the td
-                        if (img.hasAttribute('title')) {
-                            // We can reset the img title to empty or match the parent
-                            img.setAttribute('title', tooltipText);
-                        }
-
-                        // Check if the link has a title
-                        const a = item.querySelector('a');
-                        if (a && a.hasAttribute('title')) {
-                            a.setAttribute('title', tooltipText);
-                        }
-                    }
-                }
+                }, 50);
             });
-        };
-
-        let timeout = null;
-        const observer = new MutationObserver(() => {
-            if (timeout) clearTimeout(timeout);
-            timeout = setTimeout(processItems, 250);
-        });
-
-        const targetNode = document.getElementById('backpackTab') ? document.getElementById('backpackTab') : document.body;
-        observer.observe(targetNode, { childList: true, subtree: true });
-
-        // Initial run
-        processItems();
+        }
     },
 
     injectFavourites: function() {

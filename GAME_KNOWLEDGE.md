@@ -88,3 +88,7 @@ When purchasing upgrades for your rat (Vegetarian, Life Boost, Meal Boost), keep
 ## Respect Mechanics
 - Respect rank thresholds scale from 0 to 15 (max starting at 10,000,000 respect). The rank names differ depending on whether respect is positive (e.g. `Preacher`) or negative (e.g. `Murderer`).
 - Dispay in Living Area includes the title and number inside parentheses e.g. `Preacher (1,216,971)`. It can also have negative numbers that have the same magnitude but distinct titles and a red `#FF1100` color, whereas positive numbers use `#22A100`.
+
+## Navigation & URLs
+- The Living Area (main page) does not use a `cmd=` parameter in its URL (it is just `game.php?sr=...`). This must be handled by checking for an empty `cmd` parameter (`cmd === ''`).
+- There are two distinct Backpack links: The top navigation bar image link (`cmd=backpack`) which triggers a full page load, and the in-page tab link in the Living Area (`rel='backpack'`) which loads the backpack content via AJAX.

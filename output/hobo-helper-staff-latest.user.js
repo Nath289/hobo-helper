@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Staff)
 // @namespace    http://tampermonkey.net/
-// @version      8.76
+// @version      8.77
 // @description  Provides HoboWars staff-only helper tools.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -446,6 +446,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.77",
+            date: "2026-04-22",
+            type: "Changed",
+            notes: [
+                "Heavily optimized the Backpack Helper by ensuring its `MutationObserver` strictly initializes when the in-page Backpack tab is clicked in the Living Area, preventing duplicate observers, verifying visibility before processing DOM elements, and avoiding unnecessary looping."
+            ]
+        },
+        {
             version: "8.76",
             date: "2026-04-21",
             type: "Changed",
@@ -480,15 +488,6 @@ const ChangelogData = {
                 "Organised project structure: Gang-specific admin scripts (GangStaffHelper, GangLoansHelper, and GangBoardStaffHelper) have been grouped and placed correctly within the `src/modules/page/staff/` directory.",
                 "`GangHelper` was officially renamed to `GangStaffHelper` to reflect its access constraints and internal structures. All dashboard toggles now read properly for Staff members.",
                 "Validated all remaining general member module scripts to guarantee that no staff-only logic was accidentally hidden inside the free tier."
-            ]
-        },
-        {
-            version: "8.72",
-            date: "2026-04-21",
-            type: "Changed",
-            notes: [
-                "Updated the release build outputs: standard release has been renamed to output/hobo-helper-member-latest.user.js, and output/hobo-helper-latest.user.js now compiles all available modules.",
-                "Refactored build.ps1 DEV build argument passing logic, and it now generates outputs correctly incorporating all modules."
             ]
         }
     ]
@@ -2661,7 +2660,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.76';
+        window.HoboHelperVersion = '8.77';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
