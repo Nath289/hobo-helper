@@ -5026,15 +5026,7 @@ const MessageBoardHelper = {
         { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
         { key: 'MessageBoardHelper_RenderTables', label: 'Render Data Tables in Posts' },
         { key: 'MessageBoardHelper_VoteButtons', label: 'Larger Vote Buttons' },
-        { key: 'MessageBoardHelper_CopyHoboName', label: 'Show Copy [hoboname] Link' },
-        {
-            key: 'MessageBoardHelper_AddPaidMessageTemplate',
-            label: 'Add Paid Message Text',
-            type: 'text',
-            defaultValue: '[hoboname={hoboId}][hex=777777][i]edit: [b]PAID[/b][/i][/hex]',
-            width: '100%',
-            description: 'Available variables: {hoboname}, {hoboId}, {date}'
-        }
+        { key: 'MessageBoardHelper_CopyHoboName', label: 'Show Copy [hoboname] Link' }
     ],
     init: function() {
 
@@ -5308,7 +5300,6 @@ const MessageBoardHelper = {
         }
 
         this.addHoboNameFormatButton();
-        this.addPaidMessageButton(messageArea, settings);
     },
 
     addHoboNameFormatButton: function() {
@@ -5326,52 +5317,6 @@ const MessageBoardHelper = {
 
         ddButton.parentNode.insertBefore(img, ddButton);
         ddButton.parentNode.insertBefore(document.createTextNode(' '), ddButton);
-    },
-
-    addPaidMessageButton: function(messageArea, settings) {
-        const editButton = document.querySelector('input[type="submit"][value*="Edit Post"]');
-        if (!editButton) return;
-
-        const parentDiv = editButton.parentElement;
-        if (!parentDiv) return;
-
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.textContent = 'Add Paid Message';
-        // Match existing button CSS
-        btn.style.webkitFontSmoothing = 'antialiased';
-        btn.style.color = '#636363';
-        btn.style.background = '#ddd';
-        btn.style.fontWeight = 'bold';
-        btn.style.textDecoration = 'none';
-        btn.style.padding = '5px 16px';
-        btn.style.borderRadius = '3px';
-        btn.style.border = '0';
-        btn.style.cursor = 'pointer';
-        btn.style.margin = '3px 2px';
-        btn.style.webkitAppearance = 'none';
-        btn.style.display = 'inline-block';
-        
-        btn.addEventListener('click', () => {
-            const hoboName = Utils.getHoboName() || 'Unknown';
-            const hoboId = Utils.getHoboId() || 'Unknown';
-            const dateStr = Utils.getFormattedHoboDateTime ? Utils.getFormattedHoboDateTime() : new Date().toLocaleDateString();
-
-            let rawTemplate = settings?.MessageBoardHelper_AddPaidMessageTemplate;
-            if (rawTemplate === undefined || rawTemplate === null) {
-                rawTemplate = '[hoboname={hoboId}][hex=777777][i]edit: [b]PAID[/b][/i][/hex]';
-            }
-
-            const appendText = '\n\n' + String(rawTemplate)
-                .replace(/{hoboname}/gi, hoboName)
-                .replace(/{hoboId}/gi, hoboId)
-                .replace(/{date}/gi, dateStr);
-
-            messageArea.value += appendText;
-            messageArea.focus();
-        });
-
-        parentDiv.appendChild(btn);
     }
 };
 

@@ -8,6 +8,7 @@ This document contains a general knowledge base about the mechanics, layout, and
 - Time in the game is often represented as "T" (e.g. Awake time), and resetting or gaining features is usually tied to specific server time intervals (00:00, 03:00, etc.).
 - Offline HTML snapshots stored in the `html/` directory are grouped into specific functional subfolders (e.g., `living-area/`, `gang/`, `mb/`, `rats/`, `wiki/`). Always ensure recursive matching when searching them in powershell.
 - When dynamically injecting standard `.img` icons into the topbar `.bmenu`, inline styles must apply `!important` keywords (e.g., `background-image: ... !important; background-size: contain !important;`) to resist override by native HoboWars responsive caching logic.
+- On the message boards, `do=vpost` is the URL parameter for viewing a topic and its replies, while `do=edit` is the URL parameter for editing a specific post. Some staff or helper functionalities must distinguish between these to inject UI elements in the correct location (such as on the textarea when editing, or on the topic replies table when viewing).
 
 ## Rats
 - Rats help the user fight in battles and find items (seafood, treasure, etc.).

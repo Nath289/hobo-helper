@@ -2,15 +2,28 @@ const GangBoardStaffHelper = {
     cmds: 'gathering',
     staff: true,
     settings: [
-        { key: 'GangBoardStaffHelper_Enable', label: 'Enable Gang Board Staff Tools' }
+        { key: 'GangBoardStaffHelper_Enable', label: 'Enable Gang Board Staff Tools' },
+        {
+            key: 'GangBoardStaffHelper_AddPaidMessageTemplate',
+            label: 'Add Paid Message Text',
+            type: 'text',
+            defaultValue: '[hoboname={hoboId}][hex=777777][i]edit: [b]PAID[/b][/i][/hex]',
+            width: '100%',
+            description: 'Available variables: {hoboname}, {hoboId}, {date}'
+        }
     ],
     init: function() {
-        if (!Utils.isCurrentPage('do=vpost')) return;
-
         const settings = Utils.getSettings();
         if (settings?.GangBoardStaffHelper_Enable === false) return;
 
-        this.initGangPostFeatures(settings);
+        if (Utils.isCurrentPage('do=vpost')) {
+            this.initGangPostFeatures(settings);
+        } else if (Utils.isCurrentPage('do=edit')) {
+            const messageArea = document.querySelector('textarea[name="t_message"]');
+            if (messageArea) {
+                this.addPaidMessageButton(messageArea, settings);
+            }
+        }
     },
 
     initGangPostFeatures: function(settings) {
@@ -330,7 +343,52 @@ const GangBoardStaffHelper = {
                 firstTd.appendChild(btn);
             }
         });
+    },
+
+    addPaidMessageButton: function(messageArea, settings) {
+        const editButton = document.querySelector('input[type="submit"][value*="Edit Post"]');
+        if (!editButton) return;
+
+        const parentDiv = editButton.parentElement;
+        if (!parentDiv) return;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = 'Add Paid Message';
+        // Match existing button CSS
+        btn.style.webkitFontSmoothing = 'antialiased';
+        btn.style.color = '#636363';
+        btn.style.background = '#ddd';
+        btn.style.fontWeight = 'bold';
+        btn.style.textDecoration = 'none';
+        btn.style.padding = '5px 16px';
+        btn.style.borderRadius = '3px';
+        btn.style.border = '0';
+        btn.style.cursor = 'pointer';
+        btn.style.margin = '3px 2px';
+        btn.style.webkitAppearance = 'none';
+        btn.style.display = 'inline-block';
+
+        btn.addEventListener('click', () => {
+            const hoboName = Utils.getHoboName() || 'Unknown';
+            const hoboId = Utils.getHoboId() || 'Unknown';
+            const dateStr = Utils.getFormattedHoboDateTime ? Utils.getFormattedHoboDateTime() : new Date().toLocaleDateString();
+
+            let rawTemplate = settings?.GangBoardStaffHelper_AddPaidMessageTemplate;
+            if (rawTemplate === undefined || rawTemplate === null) {
+                rawTemplate = '[hoboname={hoboId}][hex=777777][i]edit: [b]PAID[/b][/i][/hex]';
+            }
+
+            const appendText = '\n\n' + String(rawTemplate)
+                .replace(/{hoboname}/gi, hoboName)
+                .replace(/{hoboId}/gi, hoboId)
+                .replace(/{date}/gi, dateStr);
+
+            messageArea.value += appendText;
+            messageArea.focus();
+        });
+
+        parentDiv.appendChild(btn);
     }
 };
-
 

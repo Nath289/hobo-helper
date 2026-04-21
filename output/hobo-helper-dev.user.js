@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.76.20260422.0015
+// @version      8.77.20260422.0032
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -446,6 +446,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.77",
+            date: "2026-04-22",
+            type: "Changed",
+            notes: [
+                "Heavily optimized the Backpack Helper by ensuring its `MutationObserver` strictly initializes when the in-page Backpack tab is clicked in the Living Area, preventing duplicate observers, verifying visibility before processing DOM elements, and avoiding unnecessary looping."
+            ]
+        },
+        {
             version: "8.76",
             date: "2026-04-21",
             type: "Changed",
@@ -480,15 +488,6 @@ const ChangelogData = {
                 "Organised project structure: Gang-specific admin scripts (GangStaffHelper, GangLoansHelper, and GangBoardStaffHelper) have been grouped and placed correctly within the `src/modules/page/staff/` directory.",
                 "`GangHelper` was officially renamed to `GangStaffHelper` to reflect its access constraints and internal structures. All dashboard toggles now read properly for Staff members.",
                 "Validated all remaining general member module scripts to guarantee that no staff-only logic was accidentally hidden inside the free tier."
-            ]
-        },
-        {
-            version: "8.72",
-            date: "2026-04-21",
-            type: "Changed",
-            notes: [
-                "Updated the release build outputs: standard release has been renamed to output/hobo-helper-member-latest.user.js, and output/hobo-helper-latest.user.js now compiles all available modules.",
-                "Refactored build.ps1 DEV build argument passing logic, and it now generates outputs correctly incorporating all modules."
             ]
         }
     ]
@@ -5027,15 +5026,7 @@ const MessageBoardHelper = {
         { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
         { key: 'MessageBoardHelper_RenderTables', label: 'Render Data Tables in Posts' },
         { key: 'MessageBoardHelper_VoteButtons', label: 'Larger Vote Buttons' },
-        { key: 'MessageBoardHelper_CopyHoboName', label: 'Show Copy [hoboname] Link' },
-        {
-            key: 'MessageBoardHelper_AddPaidMessageTemplate',
-            label: 'Add Paid Message Text',
-            type: 'text',
-            defaultValue: '[hoboname={hoboId}][hex=777777][i]edit: [b]PAID[/b][/i][/hex]',
-            width: '100%',
-            description: 'Available variables: {hoboname}, {hoboId}, {date}'
-        }
+        { key: 'MessageBoardHelper_CopyHoboName', label: 'Show Copy [hoboname] Link' }
     ],
     init: function() {
 
@@ -5309,7 +5300,6 @@ const MessageBoardHelper = {
         }
 
         this.addHoboNameFormatButton();
-        this.addPaidMessageButton(messageArea, settings);
     },
 
     addHoboNameFormatButton: function() {
@@ -5327,52 +5317,6 @@ const MessageBoardHelper = {
 
         ddButton.parentNode.insertBefore(img, ddButton);
         ddButton.parentNode.insertBefore(document.createTextNode(' '), ddButton);
-    },
-
-    addPaidMessageButton: function(messageArea, settings) {
-        const editButton = document.querySelector('input[type="submit"][value*="Edit Post"]');
-        if (!editButton) return;
-
-        const parentDiv = editButton.parentElement;
-        if (!parentDiv) return;
-
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.textContent = 'Add Paid Message';
-        // Match existing button CSS
-        btn.style.webkitFontSmoothing = 'antialiased';
-        btn.style.color = '#636363';
-        btn.style.background = '#ddd';
-        btn.style.fontWeight = 'bold';
-        btn.style.textDecoration = 'none';
-        btn.style.padding = '5px 16px';
-        btn.style.borderRadius = '3px';
-        btn.style.border = '0';
-        btn.style.cursor = 'pointer';
-        btn.style.margin = '3px 2px';
-        btn.style.webkitAppearance = 'none';
-        btn.style.display = 'inline-block';
-        
-        btn.addEventListener('click', () => {
-            const hoboName = Utils.getHoboName() || 'Unknown';
-            const hoboId = Utils.getHoboId() || 'Unknown';
-            const dateStr = Utils.getFormattedHoboDateTime ? Utils.getFormattedHoboDateTime() : new Date().toLocaleDateString();
-
-            let rawTemplate = settings?.MessageBoardHelper_AddPaidMessageTemplate;
-            if (rawTemplate === undefined || rawTemplate === null) {
-                rawTemplate = '[hoboname={hoboId}][hex=777777][i]edit: [b]PAID[/b][/i][/hex]';
-            }
-
-            const appendText = '\n\n' + String(rawTemplate)
-                .replace(/{hoboname}/gi, hoboName)
-                .replace(/{hoboId}/gi, hoboId)
-                .replace(/{date}/gi, dateStr);
-
-            messageArea.value += appendText;
-            messageArea.focus();
-        });
-
-        parentDiv.appendChild(btn);
     }
 };
 
@@ -7986,15 +7930,28 @@ const GangBoardStaffHelper = {
     cmds: 'gathering',
     staff: true,
     settings: [
-        { key: 'GangBoardStaffHelper_Enable', label: 'Enable Gang Board Staff Tools' }
+        { key: 'GangBoardStaffHelper_Enable', label: 'Enable Gang Board Staff Tools' },
+        {
+            key: 'GangBoardStaffHelper_AddPaidMessageTemplate',
+            label: 'Add Paid Message Text',
+            type: 'text',
+            defaultValue: '[hoboname={hoboId}][hex=777777][i]edit: [b]PAID[/b][/i][/hex]',
+            width: '100%',
+            description: 'Available variables: {hoboname}, {hoboId}, {date}'
+        }
     ],
     init: function() {
-        if (!Utils.isCurrentPage('do=vpost')) return;
-
         const settings = Utils.getSettings();
         if (settings?.GangBoardStaffHelper_Enable === false) return;
 
-        this.initGangPostFeatures(settings);
+        if (Utils.isCurrentPage('do=vpost')) {
+            this.initGangPostFeatures(settings);
+        } else if (Utils.isCurrentPage('do=edit')) {
+            const messageArea = document.querySelector('textarea[name="t_message"]');
+            if (messageArea) {
+                this.addPaidMessageButton(messageArea, settings);
+            }
+        }
     },
 
     initGangPostFeatures: function(settings) {
@@ -8314,6 +8271,52 @@ const GangBoardStaffHelper = {
                 firstTd.appendChild(btn);
             }
         });
+    },
+
+    addPaidMessageButton: function(messageArea, settings) {
+        const editButton = document.querySelector('input[type="submit"][value*="Edit Post"]');
+        if (!editButton) return;
+
+        const parentDiv = editButton.parentElement;
+        if (!parentDiv) return;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = 'Add Paid Message';
+        // Match existing button CSS
+        btn.style.webkitFontSmoothing = 'antialiased';
+        btn.style.color = '#636363';
+        btn.style.background = '#ddd';
+        btn.style.fontWeight = 'bold';
+        btn.style.textDecoration = 'none';
+        btn.style.padding = '5px 16px';
+        btn.style.borderRadius = '3px';
+        btn.style.border = '0';
+        btn.style.cursor = 'pointer';
+        btn.style.margin = '3px 2px';
+        btn.style.webkitAppearance = 'none';
+        btn.style.display = 'inline-block';
+
+        btn.addEventListener('click', () => {
+            const hoboName = Utils.getHoboName() || 'Unknown';
+            const hoboId = Utils.getHoboId() || 'Unknown';
+            const dateStr = Utils.getFormattedHoboDateTime ? Utils.getFormattedHoboDateTime() : new Date().toLocaleDateString();
+
+            let rawTemplate = settings?.GangBoardStaffHelper_AddPaidMessageTemplate;
+            if (rawTemplate === undefined || rawTemplate === null) {
+                rawTemplate = '[hoboname={hoboId}][hex=777777][i]edit: [b]PAID[/b][/i][/hex]';
+            }
+
+            const appendText = '\n\n' + String(rawTemplate)
+                .replace(/{hoboname}/gi, hoboName)
+                .replace(/{hoboId}/gi, hoboId)
+                .replace(/{date}/gi, dateStr);
+
+            messageArea.value += appendText;
+            messageArea.focus();
+        });
+
+        parentDiv.appendChild(btn);
     }
 };
 
@@ -10179,7 +10182,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.76.20260422.0015';
+        window.HoboHelperVersion = '8.77.20260422.0032';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
