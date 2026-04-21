@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         HoboWars Helper Toolkit
+// @name         HoboWars Helper Toolkit (All)
 // @namespace    http://tampermonkey.net/
 // @version      8.70
-// @description  Combines original HoboWars helpers into a single modular script (non-staff modules).
+// @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
 // @match        *://hobowars.com/game/game.php?*
