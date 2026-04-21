@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (All)
 // @namespace    http://tampermonkey.net/
-// @version      8.75
+// @version      8.76
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -446,6 +446,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.76",
+            date: "2026-04-21",
+            type: "Changed",
+            notes: [
+                "Replaced the direct DOM `visibility: hidden` script blocker approach with a custom injected `<style>` tag that properly mimics the native HoboWars \"#222\" dark gray background instead of glaring white, vastly improving visual comfort via reduced flash artifacting during module compilation."
+            ]
+        },
+        {
             version: "8.75",
             date: "2026-04-21",
             type: "Changed",
@@ -481,15 +489,6 @@ const ChangelogData = {
             notes: [
                 "Updated the release build outputs: standard release has been renamed to output/hobo-helper-member-latest.user.js, and output/hobo-helper-latest.user.js now compiles all available modules.",
                 "Refactored build.ps1 DEV build argument passing logic, and it now generates outputs correctly incorporating all modules."
-            ]
-        },
-        {
-            version: "8.71",
-            date: "2026-04-21",
-            type: "Added",
-            notes: [
-                "Added a 3-build release system with per-build templates and build-time module filtering.",
-                "Implemented script segregation so distinct production scripts are built independently for Standard Users and Staff members based on module configuration flags."
             ]
         }
     ]
@@ -10152,7 +10151,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.75';
+        window.HoboHelperVersion = '8.76';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
@@ -10168,7 +10167,13 @@ const GangStaffHelper = {
 
     // To prevent DOM flash, run script at document-start, hide the document visually, apply modifications, then show it.
     if (document.documentElement) {
-        document.documentElement.style.visibility = 'hidden';
+        const flashStyle = document.createElement('style');
+        flashStyle.id = 'hh-flash-prevention';
+        flashStyle.innerHTML = `
+            html { background-color: #222 !important; }
+            body { visibility: hidden !important; }
+        `;
+        document.documentElement.appendChild(flashStyle);
     }
 
     const initModules = () => {
@@ -10214,9 +10219,8 @@ const GangStaffHelper = {
         });
 
         // Show document again after modifications
-        if (document.documentElement) {
-            document.documentElement.style.visibility = '';
-        }
+        const styleRemover = document.getElementById('hh-flash-prevention');
+        if (styleRemover) styleRemover.remove();
     };
 
     if (document.readyState === 'loading') {

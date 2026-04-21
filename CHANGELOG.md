@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.76] - 2026-04-21
+### Changed
+- Replaced the direct DOM `visibility: hidden` script blocker approach with a custom injected `<style>` tag that properly mimics the native HoboWars "#222" dark gray background instead of glaring white, vastly improving visual comfort via reduced flash artifacting during module compilation.
+
 ## [8.75] - 2026-04-21
 ### Changed
 - Converted the Recycling Bin Helper's quick-add buttons to be fully customizable dynamically from the page via an inline floating Configure panel instead of a native prompt. Users can create, delete, and modify their preferred numeric additions with ease.

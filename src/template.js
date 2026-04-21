@@ -47,7 +47,13 @@
 
     // To prevent DOM flash, run script at document-start, hide the document visually, apply modifications, then show it.
     if (document.documentElement) {
-        document.documentElement.style.visibility = 'hidden';
+        const flashStyle = document.createElement('style');
+        flashStyle.id = 'hh-flash-prevention';
+        flashStyle.innerHTML = `
+            html { background-color: #222 !important; }
+            body { visibility: hidden !important; }
+        `;
+        document.documentElement.appendChild(flashStyle);
     }
 
     const initModules = () => {
@@ -93,9 +99,8 @@
         });
 
         // Show document again after modifications
-        if (document.documentElement) {
-            document.documentElement.style.visibility = '';
-        }
+        const styleRemover = document.getElementById('hh-flash-prevention');
+        if (styleRemover) styleRemover.remove();
     };
 
     if (document.readyState === 'loading') {

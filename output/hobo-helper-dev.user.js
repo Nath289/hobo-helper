@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.74.20260421.2341
+// @version      8.75.20260421.2348
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -446,6 +446,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.75",
+            date: "2026-04-21",
+            type: "Changed",
+            notes: [
+                "Converted the Recycling Bin Helper's quick-add buttons to be fully customizable dynamically from the page via an inline floating Configure panel instead of a native prompt. Users can create, delete, and modify their preferred numeric additions with ease."
+            ]
+        },
+        {
             version: "8.74",
             date: "2026-04-21",
             type: "Changed",
@@ -482,14 +490,6 @@ const ChangelogData = {
             notes: [
                 "Added a 3-build release system with per-build templates and build-time module filtering.",
                 "Implemented script segregation so distinct production scripts are built independently for Standard Users and Staff members based on module configuration flags."
-            ]
-        },
-        {
-            version: "8.70",
-            date: "2026-04-21",
-            type: "Added",
-            notes: [
-                "Added Top Pagination links above the Gang Hitlist table (Previous Page, Last Viewed Page, Next Page)."
             ]
         }
     ]
@@ -6909,7 +6909,7 @@ const RecyclingBinHelper = {
         if (sCansInput && submitBtn) {
             let amountsStr = settings?.RecyclingBinHelper_Amounts;
             if (amountsStr === undefined || amountsStr === null) {
-                amountsStr = '100, 200, 500, 750';
+                amountsStr = '100, 200, 500, 750, 900';
             }
 
             let amounts = amountsStr.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
@@ -10152,7 +10152,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.74.20260421.2341';
+        window.HoboHelperVersion = '8.75.20260421.2348';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
@@ -10168,7 +10168,13 @@ const GangStaffHelper = {
 
     // To prevent DOM flash, run script at document-start, hide the document visually, apply modifications, then show it.
     if (document.documentElement) {
-        document.documentElement.style.visibility = 'hidden';
+        const flashStyle = document.createElement('style');
+        flashStyle.id = 'hh-flash-prevention';
+        flashStyle.innerHTML = `
+            html { background-color: #222 !important; }
+            body { visibility: hidden !important; }
+        `;
+        document.documentElement.appendChild(flashStyle);
     }
 
     const initModules = () => {
@@ -10214,9 +10220,8 @@ const GangStaffHelper = {
         });
 
         // Show document again after modifications
-        if (document.documentElement) {
-            document.documentElement.style.visibility = '';
-        }
+        const styleRemover = document.getElementById('hh-flash-prevention');
+        if (styleRemover) styleRemover.remove();
     };
 
     if (document.readyState === 'loading') {
