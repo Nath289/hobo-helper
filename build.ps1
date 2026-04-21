@@ -68,9 +68,9 @@ if ($changes.Count -gt 0) {
 
 $utilsContent = Get-Content -Path "src/utils.js" -Raw
 
-$dataModules = Get-ChildItem -Path "src/modules/data/*.js" -ErrorAction SilentlyContinue
-$globalModules = Get-ChildItem -Path "src/modules/global/*.js" -ErrorAction SilentlyContinue
-$pageModules = Get-ChildItem -Path "src/modules/page/*.js" -ErrorAction SilentlyContinue
+$dataModules = Get-ChildItem -Path "src/modules/data" -Filter "*.js" -Recurse -File -ErrorAction SilentlyContinue
+$globalModules = Get-ChildItem -Path "src/modules/global" -Filter "*.js" -Recurse -File -ErrorAction SilentlyContinue
+$pageModules = Get-ChildItem -Path "src/modules/page" -Filter "*.js" -Recurse -File -ErrorAction SilentlyContinue
 
 # Data modules are always included in every build
 $dataModulesContent = ""

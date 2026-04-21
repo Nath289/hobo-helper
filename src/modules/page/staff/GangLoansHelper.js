@@ -1,6 +1,6 @@
 const GangLoansHelper = {
     cmds: 'gang2',
-    staff: false,
+    staff: true,
     init: function() {
         const isLoans = window.location.search.includes('cmd=gang2') && window.location.search.includes('do=loans');
         const isLoanAdd = window.location.search.includes('cmd=gang2') && window.location.search.includes('do=loan_add');

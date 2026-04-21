@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.73] - 2026-04-21
+### Added
+- Added completely new GangBoardStaffHelper to streamline staff tasks directly from gang message boards.
+- Added "Save Repliers List" on Gang message boards allowing staff to collect a quick list of everyone who has replied to a staff topic.
+- Added "Add Payment" side panel strictly on topic replies to define specific event payouts directly over the thread natively, seamlessly exporting to the Gang Loans Manager.
+
+### Changed
+- Organised project structure: Gang-specific admin scripts (GangStaffHelper, GangLoansHelper, and GangBoardStaffHelper) have been grouped and placed correctly within the `src/modules/page/staff/` directory.
+- `GangHelper` was officially renamed to `GangStaffHelper` to reflect its access constraints and internal structures. All dashboard toggles now read properly for Staff members.
+- Validated all remaining general member module scripts to guarantee that no staff-only logic was accidentally hidden inside the free tier.
+
 ## [8.72] - 2026-04-21
 ### Changed
 - Updated the release build outputs: standard release has been renamed to output/hobo-helper-member-latest.user.js, and output/hobo-helper-latest.user.js now compiles all available modules.

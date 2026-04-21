@@ -104,7 +104,7 @@ A new helper designed to operate on the Weapons page (`cmd=wep`).
 - **Highlight Equipped Items**: Automatically highlights weapons, armor, and rings that you currently have equipped in your inventory list.
 - **Quick Equip/Unequip**: Converts item images into clickable links that will instantly equip or unequip the item based on its current state.
 
-### 24. Gang Helper (`GangHelper.js`)
+### 24. Gang Staff Helper (`GangStaffHelper.js`)
 Helper designed to function on Gang-related pages (`cmd=gang`).
 - **Gang Event Data Save**: Injects an admin-only dashboard specifically within the event stats for events like "Gangsters Sunday = Funday", dynamically tracking and storing custom event payments.
 - **Member List Columns**: Exposes a completely configurable column selection UI right above the "list members" table so users aren't locked into the rigid pre-set columns. Fully integrated with LocalStorage and safely adapts between User and Staff column restrictions.
@@ -135,6 +135,16 @@ Helper functionality for the Active List page (`cmd=active`).
 ### 29. Player Helper (\PlayerHelper.js\)
 Provides enhanced functionality and specific shortcuts when viewing the \cmd=player\ profiles.
 - **Copy Hoboname**: Embeds a clickable icon under the "Citizen Information" box that allows for quickly copying the player's formatted \[hoboname=ID]\ tag. Can be disabled in Settings.
+
+### 30. Gang Board Staff Helper (`GangBoardStaffHelper.js`)
+Helper available on Message Board threads exclusively designed for Gang Staff.
+- **Save Repliers List**: Collects the names and IDs of everyone who has replied to a staff topic and saves it locally for future events, roll-calls, or loan administration.
+- **Payment Distribution UI**: Adds an "Add Payment" capability to every single board reply allowing staff members to quickly define a scheduled payout for event attendees directly from the thread view. This directly exports to the Gang Loans Dashboard.
+
+### Display Helpers
+Helper available on Message Board threads exclusively designed for Gang Staff.
+- **Save Repliers List**: Collects the names and IDs of everyone who has replied to a staff topic and saves it locally for future events, roll-calls, or loan administration.
+- **Payment Distribution UI**: Adds an "Add Payment" capability to every single board reply allowing staff members to quickly define a scheduled payout for event attendees directly from the thread view. This directly exports to the Gang Loans Dashboard.
 
 ### Display Helpers
 - **Improved Avatars**: Restyles user avatars to have rounded edges, distinctive borders (special styling for Donators), and custom pulsing online status indicators.

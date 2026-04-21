@@ -1,10 +1,9 @@
-const GangHelper = {
+const GangStaffHelper = {
     cmds: ['gang', 'gang2'],
-    staff: false,
+    staff: true,
     settings: [
-        { key: 'GangHelper_EnableFeature', label: 'Enable Gang Helper' },
-        { key: 'GangHelper_FormatMassMails', label: 'Format Mass Mails' },
-        { key: 'GangHelper_MassMailTemplates', label: 'Mass Mail Templates' }
+        { key: 'GangStaffHelper_FormatMassMails', label: 'Format Mass Mails' },
+        { key: 'GangStaffHelper_MassMailTemplates', label: 'Mass Mail Templates' }
     ],
     init: function () {
         const queryParams = new URLSearchParams(window.location.search);
@@ -18,22 +17,20 @@ const GangHelper = {
 
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
 
-        if (savedSettings['GangHelper_EnableFeature'] !== false) {
+        if (savedSettings['GangStaffHelper_EnableFeature'] !== false) {
             if (doParam === 'list_mem') {
                 this.initGangMemberList();
             } else if (doParam === 'enter') {
                 // Check if we are viewing the last gang happenings
                 if (wParam === 'lastsh') {
                     this.initGangHappenings();
-                } else {
-                    this.initGangFeature();
                 }
             } else if (doParam === 'read_mail') {
-                if (savedSettings['GangHelper_FormatMassMails'] !== false) {
+                if (savedSettings['GangStaffHelper_FormatMassMails'] !== false) {
                     this.formatMassMail();
                 }
             } else if (doParam === 'mail') {
-                if (savedSettings['GangHelper_MassMailTemplates'] !== false) {
+                if (savedSettings['GangStaffHelper_MassMailTemplates'] !== false) {
                     this.initGangMassMail();
                 }
             }
@@ -459,14 +456,9 @@ const GangHelper = {
             }
         });
     },
-    
-    initGangFeature: function() {
-        console.log("GangHelper loaded on dashboard.");
-        // TODO: Implement gang page specifics
-    },
 
     initGangMemberList: function() {
-        console.log("GangHelper loaded on member list page.");
+        console.log("GangStaffHelper loaded on member list page.");
 
         const style = document.createElement('style');
         style.textContent = `
@@ -661,26 +653,26 @@ const GangHelper = {
     },
 
     initGangHappenings: function() {
-        console.log("GangHelper loaded on last happenings page.");
+        console.log("GangStaffHelper loaded on last happenings page.");
 
         // Verify this is the correct event by checking the raw HTML Structure
         const htmlContent = document.body.innerHTML || "";
         const isSundayFunday = /<b>\s*<u>Last Gang Happening Stats:<\/u><\/b>\s*Gangsters Sunday = Funday/i.test(htmlContent);
 
         if (!isSundayFunday) {
-            console.log("GangHelper: Event is not 'Gangsters Sunday = Funday'. Aborting.");
+            console.log("GangStaffHelper: Event is not 'Gangsters Sunday = Funday'. Aborting.");
             return;
         }
 
         // Verify user is Gang Staff by checking for Manage Loans access
         const isStaff = !!document.querySelector('a[href*="cmd=gang2&do=loans"]');
         if (!isStaff) {
-            console.log("GangHelper: User is not Gang Staff. Aborting.");
+            console.log("GangStaffHelper: User is not Gang Staff. Aborting.");
             return;
         }
 
-        console.log("GangHelper: 'Gangsters Sunday = Funday' event detected! Ready for next steps.");
-        
+        console.log("GangStaffHelper: 'Gangsters Sunday = Funday' event detected! Ready for next steps.");
+
         const table = document.querySelector('table[cellspacing="2"][cellpadding="3"]');
         if (!table) return;
 
@@ -954,7 +946,7 @@ const GangHelper = {
 
     handleGangEnter: function() {
         const settings = Utils.getSettings();
-        if (settings['GangHelper_MailList']) {
+        if (settings['GangStaffHelper_MailList']) {
             const mailLink = document.querySelector('a[href="?sr=101&cmd=gang&w=mail"]');
             if (mailLink) {
                 mailLink.click();
@@ -966,12 +958,12 @@ const GangHelper = {
 
     handleCurrentHappenings: function() {
         const settings = Utils.getSettings();
-        if (settings['GangHelper_EventPayouts'] === false) return;
+        if (settings['GangStaffHelper_EventPayouts'] === false) return;
 
         // Verify user is Gang Staff by checking for Manage Loans access
         const isStaff = !!document.querySelector('a[href*="cmd=gang2&do=loans"]');
         if (!isStaff) {
-            console.log("GangHelper (Current Happenings): User is not Gang Staff. Aborting projected payouts panel.");
+            console.log("GangStaffHelper (Current Happenings): User is not Gang Staff. Aborting projected payouts panel.");
             return;
         }
 
