@@ -130,7 +130,7 @@ Set-Content -Path $outputFile -Value $finalContent
 Write-Host "Build complete: $outputFile"
 
 if ($Release) {
-    $staffOutputFile = "output/staff-latest.js"
+    $staffOutputFile = "output/hobo-helper-staff-latest.user.js"
     Set-Content -Path $staffOutputFile -Value $finalContent
     Write-Host "Build complete: $staffOutputFile"
 }
