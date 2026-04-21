@@ -160,18 +160,18 @@ if ($Release) {
         -Template $templateRegular `
         -Name "HoboWars Helper Toolkit" `
         -Version $version `
-        -ModulesContent $nonStaffGlobalContent + $nonStaffPageContent `
+        -ModulesContent ($nonStaffGlobalContent + $nonStaffPageContent) `
         -GlobalExports $nonStaffGlobalExports `
         -PageExports $nonStaffPageExports
-    Set-Content -Path "output/hobo-helper-latest.user.js" -Value $regularContent
-    Write-Host "Build complete: output/hobo-helper-latest.user.js"
+    Set-Content -Path "output/hobo-helper-member-latest.user.js" -Value $regularContent
+    Write-Host "Build complete: output/hobo-helper-member-latest.user.js"
 
     # Build 2: staff modules only
     $staffContent = Build-Output `
         -Template $templateStaff `
         -Name "HoboWars Helper Toolkit (Staff)" `
         -Version $version `
-        -ModulesContent $staffGlobalContent + $staffPageContent `
+        -ModulesContent ($staffGlobalContent + $staffPageContent) `
         -GlobalExports $staffGlobalExports `
         -PageExports $staffPageExports
     Set-Content -Path "output/hobo-helper-staff-latest.user.js" -Value $staffContent
@@ -186,18 +186,18 @@ if ($Release) {
         -Template $templateAll `
         -Name "HoboWars Helper Toolkit (All)" `
         -Version $version `
-        -ModulesContent $allGlobalContent + $allPageContent `
+        -ModulesContent ($allGlobalContent + $allPageContent) `
         -GlobalExports $allGlobalExports `
         -PageExports $allPageExports
-    Set-Content -Path "output/hobo-helper-all-latest.user.js" -Value $allContent
-    Write-Host "Build complete: output/hobo-helper-all-latest.user.js"
+    Set-Content -Path "output/hobo-helper-latest.user.js" -Value $allContent
+    Write-Host "Build complete: output/hobo-helper-latest.user.js"
 
 } else {
     $timestamp = (Get-Date).ToString("yyyyMMdd.HHmm")
     $version = "$baseVersion.$timestamp"
     Write-Host "Building DEV version: $version"
 
-    $templateContent = Get-Content -Path "src/template.js" -Raw
+    $templateContent = Get-Content -Path "src/template-all.js" -Raw
 
     # Dev build includes all modules for testing
     $allGlobalContent = $nonStaffGlobalContent + $staffGlobalContent
@@ -208,7 +208,7 @@ if ($Release) {
         -Template $templateContent `
         -Name "HoboWars Helper Toolkit (Dev)" `
         -Version $version `
-        -ModulesContent $allGlobalContent + $allPageContent `
+        -ModulesContent ($allGlobalContent + $allPageContent) `
         -GlobalExports $allGlobalExports `
         -PageExports $allPageExports
     Set-Content -Path "output/hobo-helper-dev.user.js" -Value $devContent

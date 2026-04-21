@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Staff)
 // @namespace    http://tampermonkey.net/
-// @version      8.70
+// @version      8.72
 // @description  Provides HoboWars staff-only helper tools.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -446,6 +446,24 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.72",
+            date: "2026-04-21",
+            type: "Changed",
+            notes: [
+                "Updated the release build outputs: standard release has been renamed to output/hobo-helper-member-latest.user.js, and output/hobo-helper-latest.user.js now compiles all available modules.",
+                "Refactored build.ps1 DEV build argument passing logic, and it now generates outputs correctly incorporating all modules."
+            ]
+        },
+        {
+            version: "8.71",
+            date: "2026-04-21",
+            type: "Added",
+            notes: [
+                "Added a 3-build release system with per-build templates and build-time module filtering.",
+                "Implemented script segregation so distinct production scripts are built independently for Standard Users and Staff members based on module configuration flags."
+            ]
+        },
+        {
             version: "8.70",
             date: "2026-04-21",
             type: "Added",
@@ -469,24 +487,6 @@ const ChangelogData = {
             notes: [
                 "Increased maximum height of the Saved Gang Posts & Payments panel in GangHelper for better visibility.",
                 "The Saved Gang Posts & Payments panel now automatically scrolls to the next pending replier or payment action smoothly so you don't lose your place."
-            ]
-        },
-        {
-            version: "8.67",
-            date: "2026-04-20",
-            type: "Added",
-            notes: [
-                "Added Cans directly to the top navigation bar alongside Points and Tokens.",
-                "The Cans icon uses CSS injection that correctly mimics native icon hover animations.",
-                "Added a global number abbreviation function \\Utils.abbreviateNumber()\\ that formats large numbers into \\k\\ and \\m\\ suffixes for cleaner UI display."
-            ]
-        },
-        {
-            version: "8.66",
-            date: "2026-04-20",
-            type: "Added",
-            notes: [
-                "Added an \"Export All\" and \"Import\" functionality to the Gang Mass Mail templates (`GangHelper.js`), empowering users to easily backup, transfer, or share template data using clipboard JSON string arrays."
             ]
         }
     ]
@@ -513,7 +513,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.70';
+        window.HoboHelperVersion = '8.72';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
