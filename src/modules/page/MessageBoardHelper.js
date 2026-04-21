@@ -1,5 +1,6 @@
 const MessageBoardHelper = {
     cmds: 'gathering',
+    staff: false,
     settings: [
         { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
         { key: 'MessageBoardHelper_RenderTables', label: 'Render Data Tables in Posts' },

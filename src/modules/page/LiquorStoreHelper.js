@@ -1,5 +1,6 @@
 const LiquorStoreHelper = {
     cmds: 'liquor_store',
+    staff: false,
     init: function() {
         if (window.location.href.includes('cmd=liquor_store')) {
             try {

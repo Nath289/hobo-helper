@@ -1,5 +1,6 @@
 const CanDepoHelper = {
     cmds: 'depo',
+    staff: false,
     init: function() {
         const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
 

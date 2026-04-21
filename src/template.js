@@ -44,6 +44,7 @@
     const globalEnabled = savedSettings['global_enabled'] !== false;
     const urlParams = new URLSearchParams(window.location.search);
     const currentCmd = urlParams.get('cmd') || '';
+    const IS_STAFF_BUILD = {{IS_STAFF}};
 
     // To prevent DOM flash, run script at document-start, hide the document visually, apply modifications, then show it.
     if (document.documentElement) {
@@ -53,6 +54,7 @@
     const initModules = () => {
         // Initialize Global Modules first
         Object.entries(GlobalModules).forEach(([moduleName, module]) => {
+            if (module.staff === true && !IS_STAFF_BUILD) return;
             if (typeof module.alwaysInit === 'function') {
                 module.alwaysInit();
             }
@@ -68,6 +70,7 @@
 
         // Filter and Initialize Page Modules in a single pass
         Object.entries(PageModules).forEach(([moduleName, module]) => {
+            if (module.staff === true && !IS_STAFF_BUILD) return;
             let isMatch = false;
             if (module.cmds === undefined || module.cmds === null) {
                 isMatch = true;

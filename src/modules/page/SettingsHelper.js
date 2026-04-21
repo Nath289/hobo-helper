@@ -1,5 +1,6 @@
 const SettingsHelper = {
     cmds: 'preferences',
+    staff: false,
     init: function() {
 
         const contentArea = document.querySelector('.content-area');

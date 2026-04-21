@@ -1,5 +1,6 @@
 ﻿const HospitalHelper = {
     cmds: 'hospital',
+    staff: false,
     settings: [
         { key: 'HospitalHelper_TrackHealing', label: 'Track Healing Times', defaultValue: true }
     ],

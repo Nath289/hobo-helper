@@ -1,5 +1,6 @@
 const PlayerHelper = {
     cmds: 'player',
+    staff: false,
     settings: [
         { key: 'PlayerHelper_CopyHoboName', label: 'Show Copy [hoboname] Link' }
     ],

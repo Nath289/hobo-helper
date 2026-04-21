@@ -1,5 +1,6 @@
 const NorthernFenceHelper = {
     cmds: 'hill3',
+    staff: false,
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('cmd') === 'hill3') {

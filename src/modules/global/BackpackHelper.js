@@ -1,4 +1,5 @@
 const BackpackHelper = {
+    staff: false,
     settings: [
         { key: 'BackpackHelper_Tooltips', label: 'Item Tooltips (Stats/Effects)' },
         { key: 'BackpackHelper_Favourites', label: 'Favourite Drinks UI' }

@@ -1,5 +1,6 @@
 const WellnessClinicHelper = {
     cmds: 'wellness_clinic',
+    staff: false,
     init: function() {
         const url = window.location.href;
 

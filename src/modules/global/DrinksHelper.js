@@ -1,4 +1,5 @@
 const DrinksHelper = {
+    staff: false,
             init: function() {
                 function getInventory() {
                     const inventory = {};

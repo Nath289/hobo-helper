@@ -1,5 +1,6 @@
 const BankHelper = {
     cmds: 'bank',
+    staff: false,
     settings: [
         { key: 'BankHelper_5FightersLunches', label: "5 Fighter's Lunches Goal" },
         { key: 'BankHelper_FixedGoals', label: "Fixed Bank Goals (+5k, +10k, +50k)" }

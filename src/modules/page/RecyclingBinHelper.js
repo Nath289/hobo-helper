@@ -1,5 +1,6 @@
 const RecyclingBinHelper = {
     cmds: 'recycling_bin',
+    staff: false,
     init: function() {
 
         const settings = Utils.getSettings();

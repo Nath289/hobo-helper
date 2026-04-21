@@ -1,5 +1,6 @@
 const GangHelper = {
     cmds: ['gang', 'gang2'],
+    staff: false,
     settings: [
         { key: 'GangHelper_EnableFeature', label: 'Enable Gang Helper' },
         { key: 'GangHelper_FormatMassMails', label: 'Format Mass Mails' },

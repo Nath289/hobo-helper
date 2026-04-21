@@ -126,11 +126,15 @@ $finalContent = $finalContent.Replace("// {{PAGE_MODULE_EXPORTS}}", $pageModuleE
 $finalContent = $finalContent.Replace("{{NAME}}", $scriptName)
 $finalContent = $finalContent.Replace("{{VERSION}}", $version)
 
+$preIsStaffContent = $finalContent
+$finalContent = $finalContent.Replace("{{IS_STAFF}}", "false")
+
 Set-Content -Path $outputFile -Value $finalContent
 Write-Host "Build complete: $outputFile"
 
 if ($Release) {
     $staffOutputFile = "output/hobo-helper-staff-latest.user.js"
-    Set-Content -Path $staffOutputFile -Value $finalContent
+    $staffContent = $preIsStaffContent.Replace("{{IS_STAFF}}", "true")
+    Set-Content -Path $staffOutputFile -Value $staffContent
     Write-Host "Build complete: $staffOutputFile"
 }
