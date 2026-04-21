@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Staff)
 // @namespace    http://tampermonkey.net/
-// @version      8.74
+// @version      8.75
 // @description  Provides HoboWars staff-only helper tools.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -446,6 +446,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.75",
+            date: "2026-04-21",
+            type: "Changed",
+            notes: [
+                "Converted the Recycling Bin Helper's quick-add buttons to be fully customizable dynamically from the page via an inline floating Configure panel instead of a native prompt. Users can create, delete, and modify their preferred numeric additions with ease."
+            ]
+        },
+        {
             version: "8.74",
             date: "2026-04-21",
             type: "Changed",
@@ -482,14 +490,6 @@ const ChangelogData = {
             notes: [
                 "Added a 3-build release system with per-build templates and build-time module filtering.",
                 "Implemented script segregation so distinct production scripts are built independently for Standard Users and Staff members based on module configuration flags."
-            ]
-        },
-        {
-            version: "8.70",
-            date: "2026-04-21",
-            type: "Added",
-            notes: [
-                "Added Top Pagination links above the Gang Hitlist table (Previous Page, Last Viewed Page, Next Page)."
             ]
         }
     ]
@@ -2662,7 +2662,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.74';
+        window.HoboHelperVersion = '8.75';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

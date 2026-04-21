@@ -57,7 +57,7 @@ Assists when selling cans at the Can Depo (`cmd=depo`).
 
 ### 14. Recycling Bin Helper (`RecyclingBinHelper.js`)
 Helper functionality for the Recycling Bin screen.
-- **Quick Recycle Buttons**: Adds "+100", "+200", and "+500" buttons next to the recycle button to quickly add those amounts to the recycle input.
+- **Quick Recycle Buttons**: Adds customizable quick-add amount buttons next to the native recycle input. Values can be added, removed, or changed dynamically via an inline configuration panel.
 
 ### 15. Backpack Helper (`BackpackHelper.js`)
 Assists with inventory management when viewing the Backpack.

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.72.20260421.2302
+// @version      8.74.20260421.2341
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -446,6 +446,27 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.74",
+            date: "2026-04-21",
+            type: "Changed",
+            notes: [
+                "Reverted the default build script output naming conventions to protect existing users. The standard non-staff features script is now correctly output to `hobo-helper-latest.user.js` again, while the all-inclusive bundle has been shifted to `hobo-helper-all-latest.user.js`."
+            ]
+        },
+        {
+            version: "8.73",
+            date: "2026-04-21",
+            type: "Added",
+            notes: [
+                "Added completely new GangBoardStaffHelper to streamline staff tasks directly from gang message boards.",
+                "Added \"Save Repliers List\" on Gang message boards allowing staff to collect a quick list of everyone who has replied to a staff topic.",
+                "Added \"Add Payment\" side panel strictly on topic replies to define specific event payouts directly over the thread natively, seamlessly exporting to the Gang Loans Manager.",
+                "Organised project structure: Gang-specific admin scripts (GangStaffHelper, GangLoansHelper, and GangBoardStaffHelper) have been grouped and placed correctly within the `src/modules/page/staff/` directory.",
+                "`GangHelper` was officially renamed to `GangStaffHelper` to reflect its access constraints and internal structures. All dashboard toggles now read properly for Staff members.",
+                "Validated all remaining general member module scripts to guarantee that no staff-only logic was accidentally hidden inside the free tier."
+            ]
+        },
+        {
             version: "8.72",
             date: "2026-04-21",
             type: "Changed",
@@ -469,24 +490,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added Top Pagination links above the Gang Hitlist table (Previous Page, Last Viewed Page, Next Page)."
-            ]
-        },
-        {
-            version: "8.69",
-            date: "2026-04-21",
-            type: "Added",
-            notes: [
-                "Added an option to wrap long pagination lists on the Gang Hitlist into multiple lines to prevent horizontal scrolling.",
-                "Added an option to automatically highlight players outside your attack range (level discrepancy > 200) on the Gang Hitlist."
-            ]
-        },
-        {
-            version: "8.68",
-            date: "2026-04-20",
-            type: "Changed",
-            notes: [
-                "Increased maximum height of the Saved Gang Posts & Payments panel in GangHelper for better visibility.",
-                "The Saved Gang Posts & Payments panel now automatically scrolls to the next pending replier or payment action smoothly so you don't lose your place."
             ]
         }
     ]
@@ -6888,21 +6891,29 @@ const RatsHelper = {
 const RecyclingBinHelper = {
     cmds: 'recycling_bin',
     staff: false,
+    settings: [
+        { key: 'RecyclingBinHelper_Enable', label: 'Enable Recycling Quick-Add Buttons' },
+        { key: 'RecyclingBinHelper_Amounts', label: 'Quick-Add Amounts', type: 'text', defaultValue: '100, 200, 500, 750', description: 'Comma separated list of amounts for quick-add buttons' }
+    ],
     init: function() {
-
         const settings = Utils.getSettings();
-        if (settings.global_enabled === false) return;
-        if (settings.RecyclingBinHelper === false) return;
+        if (settings?.RecyclingBinHelper_Enable === false) return;
 
-        this.initRecycleButtons();
+        this.initRecycleButtons(settings);
     },
 
-    initRecycleButtons: function() {
+    initRecycleButtons: function(settings) {
         const sCansInput = document.getElementById('s_cans');
         const submitBtn = document.querySelector('form[name="bin"] input[type="submit"][name="Submit"]');
 
         if (sCansInput && submitBtn) {
-            const amounts = [100, 200, 500, 750];
+            let amountsStr = settings?.RecyclingBinHelper_Amounts;
+            if (amountsStr === undefined || amountsStr === null) {
+                amountsStr = '100, 200, 500, 750';
+            }
+
+            let amounts = amountsStr.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+            if (amounts.length === 0) amounts = [100, 200, 500, 750];
 
             amounts.forEach(amount => {
                 const btn = document.createElement('input');
@@ -6916,6 +6927,95 @@ const RecyclingBinHelper = {
                 };
                 submitBtn.parentNode.insertBefore(btn, submitBtn);
             });
+
+            const configBtn = document.createElement('input');
+            configBtn.type = 'button';
+            configBtn.value = '⚙ Configure';
+            configBtn.style.marginLeft = '5px';
+            configBtn.title = 'Configure the amounts for the quick-add buttons';
+            configBtn.onclick = function(e) {
+                e.preventDefault();
+                let panel = document.getElementById('hh_recycling_panel');
+                if (panel) {
+                    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                    return;
+                }
+
+                submitBtn.parentNode.style.position = 'relative';
+
+                panel = document.createElement('div');
+                panel.id = 'hh_recycling_panel';
+                panel.style.cssText = 'position: absolute; bottom: 35px; left: 100px; background: #fdfdfd; border: 2px solid #555; padding: 10px; box-shadow: 2px 2px 8px rgba(0,0,0,0.2); z-index: 1000; font-family: Tahoma, sans-serif; font-size: 12px; color: #333; display: block; width: 220px;';
+
+                let currentEditAmounts = [...amounts];
+
+                panel.innerHTML = `
+                    <div style="font-weight:bold; margin-bottom:5px; border-bottom:1px solid #ccc; padding-bottom:5px;">Configure Amounts</div>
+                    <div id="hh_recycling_inputs_container" style="margin-bottom:10px; max-height: 150px; overflow-y: auto;"></div>
+                    <div style="margin-bottom:10px;">
+                        <button type="button" id="hh_recycling_add" style="cursor:pointer; padding:2px 6px; font-size:11px; background:#ddd; border:1px solid #999; border-radius:3px;">+ Add Amount</button>
+                    </div>
+                    <div style="text-align: right;">
+                        <button type="button" id="hh_recycling_save" style="cursor:pointer; font-weight:bold; margin-right:5px; padding:2px 8px; background:#eee; border:1px solid #aaa; border-radius:3px;">Save</button>
+                        <button type="button" id="hh_recycling_cancel" style="cursor:pointer; padding:2px 8px; background:#eee; border:1px solid #aaa; border-radius:3px;">Cancel</button>
+                    </div>
+                `;
+
+                submitBtn.parentNode.appendChild(panel);
+
+                const renderInputs = () => {
+                    const container = document.getElementById('hh_recycling_inputs_container');
+                    container.innerHTML = '';
+                    currentEditAmounts.forEach((amt, idx) => {
+                        const row = document.createElement('div');
+                        row.style.marginBottom = '5px';
+                        row.innerHTML = `
+                            <input type="number" class="hh_recycling_amount_input" value="${amt}" style="width: 100px; padding: 2px; font-size: 11px;" />
+                            <button type="button" data-idx="${idx}" class="hh_recycling_del_btn" style="cursor:pointer; font-size:10px; margin-left:5px; color:red; border:1px solid red; background:none; border-radius:3px;">X</button>
+                        `;
+                        container.appendChild(row);
+                    });
+
+                    container.querySelectorAll('.hh_recycling_del_btn').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            updateCurrentFromDOM();
+                            const idx = parseInt(e.target.getAttribute('data-idx'), 10);
+                            currentEditAmounts.splice(idx, 1);
+                            renderInputs();
+                        });
+                    });
+                };
+
+                const updateCurrentFromDOM = () => {
+                    currentEditAmounts = [];
+                    document.querySelectorAll('.hh_recycling_amount_input').forEach(input => {
+                        const val = parseInt(input.value, 10);
+                        if (!isNaN(val)) currentEditAmounts.push(val);
+                    });
+                };
+
+                renderInputs();
+
+                document.getElementById('hh_recycling_add').addEventListener('click', () => {
+                    updateCurrentFromDOM();
+                    currentEditAmounts.push(100);
+                    renderInputs();
+                });
+
+                document.getElementById('hh_recycling_save').addEventListener('click', () => {
+                    updateCurrentFromDOM();
+                    const val = currentEditAmounts.join(', ');
+                    const currentSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+                    currentSettings['RecyclingBinHelper_Amounts'] = val;
+                    localStorage.setItem('hw_helper_settings', JSON.stringify(currentSettings));
+                    window.location.reload();
+                });
+
+                document.getElementById('hh_recycling_cancel').addEventListener('click', () => {
+                    panel.style.display = 'none';
+                });
+            };
+            submitBtn.parentNode.insertBefore(configBtn, submitBtn.nextSibling);
         }
     }
 };
@@ -9032,8 +9132,6 @@ const GangStaffHelper = {
                 // Check if we are viewing the last gang happenings
                 if (wParam === 'lastsh') {
                     this.initGangHappenings();
-                } else {
-                    this.initGangFeature();
                 }
             } else if (doParam === 'read_mail') {
                 if (savedSettings['GangStaffHelper_FormatMassMails'] !== false) {
@@ -9465,11 +9563,6 @@ const GangStaffHelper = {
                 visibleIndex++;
             }
         });
-    },
-    
-    initGangFeature: function() {
-        console.log("GangStaffHelper loaded on dashboard.");
-        // TODO: Implement gang page specifics
     },
 
     initGangMemberList: function() {
@@ -10059,7 +10152,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.72.20260421.2302';
+        window.HoboHelperVersion = '8.74.20260421.2341';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

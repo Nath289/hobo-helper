@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.75] - 2026-04-21
+### Changed
+- Converted the Recycling Bin Helper's quick-add buttons to be fully customizable dynamically from the page via an inline floating Configure panel instead of a native prompt. Users can create, delete, and modify their preferred numeric additions with ease.
+
 ## [8.74] - 2026-04-21
 ### Changed
 - Reverted the default build script output naming conventions to protect existing users. The standard non-staff features script is now correctly output to `hobo-helper-latest.user.js` again, while the all-inclusive bundle has been shifted to `hobo-helper-all-latest.user.js`.
