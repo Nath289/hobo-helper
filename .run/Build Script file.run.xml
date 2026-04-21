@@ -1,6 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Build Script file" type="PowerShellRunType" factoryName="PowerShell" scriptUrl="D:\dev\projects\hobo-helper\build.ps1" commandOptions="-ExecutionPolicy Bypass" executablePath="C:/WINDOWS/System32/WindowsPowerShell/v1.0/powershell.exe">
-    <envs />
-    <method v="2" />
-  </configuration>
-</component>
