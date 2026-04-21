@@ -129,3 +129,8 @@ $finalContent = $finalContent.Replace("{{VERSION}}", $version)
 Set-Content -Path $outputFile -Value $finalContent
 Write-Host "Build complete: $outputFile"
 
+if ($Release) {
+    $staffOutputFile = "output/staff-latest.js"
+    Set-Content -Path $staffOutputFile -Value $finalContent
+    Write-Host "Build complete: $staffOutputFile"
+}
