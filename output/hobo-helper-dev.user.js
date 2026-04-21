@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.69.20260421.0055
+// @version      8.70.20260421.0830
 // @description  Combines original HoboWars helpers into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -9917,6 +9917,14 @@ const WellnessClinicHelper = {
 const ChangelogData = {
     changes: [
         {
+            version: "8.70",
+            date: "2026-04-21",
+            type: "Added",
+            notes: [
+                "Added Top Pagination links above the Gang Hitlist table (Previous Page, Last Viewed Page, Next Page)."
+            ]
+        },
+        {
             version: "8.69",
             date: "2026-04-21",
             type: "Added",
@@ -9950,14 +9958,6 @@ const ChangelogData = {
             type: "Added",
             notes: [
                 "Added an \"Export All\" and \"Import\" functionality to the Gang Mass Mail templates (`GangHelper.js`), empowering users to easily backup, transfer, or share template data using clipboard JSON string arrays."
-            ]
-        },
-        {
-            version: "8.65",
-            date: "2026-04-19",
-            type: "Added",
-            notes: [
-                "Added a structured table view for the Market Watcher section on the SGHM page, including alternate row coloring and precise dollar value extraction."
             ]
         }
     ]
@@ -10015,7 +10015,7 @@ const ChangelogData = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.69.20260421.0055';
+        window.HoboHelperVersion = '8.70.20260421.0830';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
