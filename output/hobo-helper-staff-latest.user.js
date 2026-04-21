@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Staff)
 // @namespace    http://tampermonkey.net/
-// @version      8.77
+// @version      8.78
 // @description  Provides HoboWars staff-only helper tools.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -446,6 +446,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.78",
+            date: "2026-04-22",
+            type: "Changed",
+            notes: [
+                "Moved the `DrinksHelper` Bartender Guide UI injection logic natively into the `BackpackHelper` module to increase efficiency and accurately target the specific game URL (`?cmd=backpack&use=3`)."
+            ]
+        },
+        {
             version: "8.77",
             date: "2026-04-22",
             type: "Changed",
@@ -475,19 +483,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Reverted the default build script output naming conventions to protect existing users. The standard non-staff features script is now correctly output to `hobo-helper-latest.user.js` again, while the all-inclusive bundle has been shifted to `hobo-helper-all-latest.user.js`."
-            ]
-        },
-        {
-            version: "8.73",
-            date: "2026-04-21",
-            type: "Added",
-            notes: [
-                "Added completely new GangBoardStaffHelper to streamline staff tasks directly from gang message boards.",
-                "Added \"Save Repliers List\" on Gang message boards allowing staff to collect a quick list of everyone who has replied to a staff topic.",
-                "Added \"Add Payment\" side panel strictly on topic replies to define specific event payouts directly over the thread natively, seamlessly exporting to the Gang Loans Manager.",
-                "Organised project structure: Gang-specific admin scripts (GangStaffHelper, GangLoansHelper, and GangBoardStaffHelper) have been grouped and placed correctly within the `src/modules/page/staff/` directory.",
-                "`GangHelper` was officially renamed to `GangStaffHelper` to reflect its access constraints and internal structures. All dashboard toggles now read properly for Staff members.",
-                "Validated all remaining general member module scripts to guarantee that no staff-only logic was accidentally hidden inside the free tier."
             ]
         }
     ]
@@ -2719,7 +2714,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.77';
+        window.HoboHelperVersion = '8.78';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

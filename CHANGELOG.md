@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.78] - 2026-04-22
+### Changed
+- Moved the `DrinksHelper` Bartender Guide UI injection logic natively into the `BackpackHelper` module to increase efficiency and accurately target the specific game URL (`?cmd=backpack&use=3`).
+
 ## [8.77] - 2026-04-22
 ### Changed
 - Heavily optimized the Backpack Helper by ensuring its `MutationObserver` strictly initializes when the in-page Backpack tab is clicked in the Living Area, preventing duplicate observers, verifying visibility before processing DOM elements, and avoiding unnecessary looping.

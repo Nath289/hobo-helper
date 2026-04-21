@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (All)
 // @namespace    http://tampermonkey.net/
-// @version      8.77
+// @version      8.78
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -446,6 +446,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.78",
+            date: "2026-04-22",
+            type: "Changed",
+            notes: [
+                "Moved the `DrinksHelper` Bartender Guide UI injection logic natively into the `BackpackHelper` module to increase efficiency and accurately target the specific game URL (`?cmd=backpack&use=3`)."
+            ]
+        },
+        {
             version: "8.77",
             date: "2026-04-22",
             type: "Changed",
@@ -475,19 +483,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Reverted the default build script output naming conventions to protect existing users. The standard non-staff features script is now correctly output to `hobo-helper-latest.user.js` again, while the all-inclusive bundle has been shifted to `hobo-helper-all-latest.user.js`."
-            ]
-        },
-        {
-            version: "8.73",
-            date: "2026-04-21",
-            type: "Added",
-            notes: [
-                "Added completely new GangBoardStaffHelper to streamline staff tasks directly from gang message boards.",
-                "Added \"Save Repliers List\" on Gang message boards allowing staff to collect a quick list of everyone who has replied to a staff topic.",
-                "Added \"Add Payment\" side panel strictly on topic replies to define specific event payouts directly over the thread natively, seamlessly exporting to the Gang Loans Manager.",
-                "Organised project structure: Gang-specific admin scripts (GangStaffHelper, GangLoansHelper, and GangBoardStaffHelper) have been grouped and placed correctly within the `src/modules/page/staff/` directory.",
-                "`GangHelper` was officially renamed to `GangStaffHelper` to reflect its access constraints and internal structures. All dashboard toggles now read properly for Staff members.",
-                "Validated all remaining general member module scripts to guarantee that no staff-only logic was accidentally hidden inside the free tier."
             ]
         }
     ]
@@ -886,95 +881,6 @@ const DisplayHelper = {
         }
     }
 };
-
-const DrinksHelper = {
-    staff: false,
-            init: function() {
-                function getInventory() {
-                    const inventory = {};
-                    document.querySelectorAll('.bp-itm').forEach(item => {
-                        try {
-                            const img = item.querySelector('img');
-                            if (!img) return;
-
-                            const name = img.title.trim();
-                            const text = item.textContent.trim();
-                            const countMatch = text.match(/\((\d+)\)/);
-                            const count = countMatch ? parseInt(countMatch[1], 10) : 1;
-
-                            inventory[name] = (inventory[name] || 0) + count;
-                        } catch (e) { /* silent fail on malformed items */ }
-                    });
-                    return inventory;
-                }
-
-                function handleBartenderGuide() {
-                    const mixerLinks = document.querySelectorAll('a[href*="cmd=mixer&make="]');
-                    if (mixerLinks.length === 0) return;
-
-                    const inventory = getInventory();
-
-                    mixerLinks.forEach(link => {
-                        try {
-                            const row = link.closest('tr');
-                            if (!row || row.hasAttribute('data-dh-processed')) return;
-
-                            row.setAttribute('data-dh-processed', 'true');
-
-                            const cells = row.querySelectorAll('td');
-                            if (cells.length < 2) return;
-
-                            const recipeCell = cells[0];
-                            const actionCell = cells[1];
-
-                            const images = recipeCell.querySelectorAll('img');
-                            const ingredients = Array.from(images).slice(1).map(img => img.title.trim());
-
-                            if (ingredients.length === 0) return;
-
-                            let maxCanMake = Infinity;
-                            let limitingIngredient = "Unknown";
-
-                            ingredients.forEach(ing => {
-                                const owned = inventory[ing] || 0;
-                                if (owned < maxCanMake) {
-                                    maxCanMake = owned;
-                                    limitingIngredient = ing;
-                                }
-                            });
-
-                            const limiterDiv = document.createElement('div');
-                            limiterDiv.className = 'dh-helper-text';
-                            limiterDiv.style.fontSize = '0.82em';
-                            limiterDiv.style.marginTop = '4px';
-                            limiterDiv.style.display = 'block';
-
-                            if (maxCanMake > 0) {
-                                limiterDiv.style.color = '#555';
-                                limiterDiv.textContent = `Limit: ${limitingIngredient}`;
-                            } else {
-                                limiterDiv.style.color = '#aa0000';
-                                limiterDiv.style.fontWeight = 'bold';
-                                limiterDiv.textContent = `Missing: ${limitingIngredient}`;
-                            }
-
-                            actionCell.appendChild(limiterDiv);
-                        } catch (err) {
-                            console.error("HoboWars Drinks Helper Error:", err);
-                        }
-                    });
-                }
-
-                let timeout = null;
-                const observer = new MutationObserver(() => {
-                    if (timeout) clearTimeout(timeout);
-                    timeout = setTimeout(handleBartenderGuide, 100);
-                });
-
-                observer.observe(document.body, { childList: true, subtree: true });
-                handleBartenderGuide();
-            }
-        }
 
 const FoodHelper = {
     staff: false,
@@ -1455,13 +1361,15 @@ const BackpackHelper = {
     staff: false,
     settings: [
         { key: 'BackpackHelper_Tooltips', label: 'Item Tooltips (Stats/Effects)' },
-        { key: 'BackpackHelper_Favourites', label: 'Favourite Drinks UI' }
+        { key: 'BackpackHelper_Favourites', label: 'Favourite Drinks UI' },
+        { key: 'BackpackHelper_BartenderGuide', label: 'Bartender Guide Limits' }
     ],
     init: function() {
         const settings = Utils.getSettings();
 
         const enableTooltips = settings['BackpackHelper_Tooltips'] !== false;
         const enableFavourites = settings['BackpackHelper_Favourites'] !== false;
+        const enableBartenderGuide = settings['BackpackHelper_BartenderGuide'] !== false;
 
         const urlParams = new URLSearchParams(window.location.search);
         const currentCmd = urlParams.get('cmd') || '';
@@ -1471,20 +1379,26 @@ const BackpackHelper = {
         }
 
         if (currentCmd === 'backpack') {
-            this.processItems(enableTooltips, enableFavourites);
+            this.processItems(enableTooltips, enableFavourites, enableBartenderGuide);
         } else if (currentCmd === '') {
-            this.observeBackpack(enableTooltips, enableFavourites);
+            this.observeBackpack(enableTooltips, enableFavourites, enableBartenderGuide);
         }
     },
 
     drinkMap: null,
     lastInjected: 0,
 
-    processItems: function(enableTooltips, enableFavourites) {
+    processItems: function(enableTooltips, enableFavourites, enableBartenderGuide) {
         const now = Date.now();
         if (enableFavourites && (now - this.lastInjected > 1000)) {
             this.injectFavourites();
             this.lastInjected = now;
+        }
+
+        if (!enableTooltips && (!enableBartenderGuide || document.querySelectorAll('a[href*="cmd=mixer&make="]').length === 0)) return;
+
+        if (enableBartenderGuide) {
+            this.handleBartenderGuide();
         }
 
         if (!enableTooltips) return;
@@ -1572,9 +1486,9 @@ const BackpackHelper = {
         document.addEventListener('click', this.handleDrinkClick);
     },
 
-    observeBackpack: function(enableTooltips, enableFavourites) {
+    observeBackpack: function(enableTooltips, enableFavourites, enableBartenderGuide) {
         // Run once immediately in case the backpack is somehow already loaded
-        this.processItems(enableTooltips, enableFavourites);
+        this.processItems(enableTooltips, enableFavourites, enableBartenderGuide);
 
         // In the Living Area, the backpack content is loaded via AJAX when the tab is clicked.
         // We will watch for the user clicking the backpack tab and strictly trigger our observer then.
@@ -1597,9 +1511,10 @@ const BackpackHelper = {
                                 // Double check if items need processing before running full logic
                                 const unprocessed = targetNode.querySelectorAll('.bp-itm:not([data-bh-tooltip-processed])');
                                 const needsFavInject = enableFavourites && !targetNode.querySelector('table[data-bh-favorites-added]');
+                                const needsBartenderGuide = enableBartenderGuide && targetNode.querySelectorAll('a[href*="cmd=mixer&make="]:not([data-dh-processed])').length > 0;
 
-                                if (unprocessed.length > 0 || needsFavInject) {
-                                    this.processItems(enableTooltips, enableFavourites);
+                                if (unprocessed.length > 0 || needsFavInject || needsBartenderGuide) {
+                                    this.processItems(enableTooltips, enableFavourites, enableBartenderGuide);
                                 }
                             }, 250);
                         });
@@ -1758,6 +1673,81 @@ const BackpackHelper = {
                     this.showStatsModal();
                 }
             });
+        });
+    },
+
+    getInventory: function() {
+        const inventory = {};
+        document.querySelectorAll('.bp-itm').forEach(item => {
+            try {
+                const img = item.querySelector('img');
+                if (!img) return;
+
+                const name = img.title.trim();
+                const text = item.textContent.trim();
+                const countMatch = text.match(/\((\d+)\)/);
+                const count = countMatch ? parseInt(countMatch[1], 10) : 1;
+
+                inventory[name] = (inventory[name] || 0) + count;
+            } catch (e) { /* silent fail on malformed items */ }
+        });
+        return inventory;
+    },
+
+    handleBartenderGuide: function() {
+        const mixerLinks = document.querySelectorAll('a[href*="cmd=mixer&make="]');
+        if (mixerLinks.length === 0) return;
+
+        const inventory = this.getInventory();
+
+        mixerLinks.forEach(link => {
+            try {
+                const row = link.closest('tr');
+                if (!row || row.hasAttribute('data-dh-processed')) return;
+
+                row.setAttribute('data-dh-processed', 'true');
+
+                const cells = row.querySelectorAll('td');
+                if (cells.length < 2) return;
+
+                const recipeCell = cells[0];
+                const actionCell = cells[1];
+
+                const images = recipeCell.querySelectorAll('img');
+                const ingredients = Array.from(images).slice(1).map(img => img.title.trim());
+
+                if (ingredients.length === 0) return;
+
+                let maxCanMake = Infinity;
+                let limitingIngredient = "Unknown";
+
+                ingredients.forEach(ing => {
+                    const owned = inventory[ing] || 0;
+                    if (owned < maxCanMake) {
+                        maxCanMake = owned;
+                        limitingIngredient = ing;
+                    }
+                });
+
+                const limiterDiv = document.createElement('div');
+                limiterDiv.className = 'dh-helper-text';
+                limiterDiv.style.fontSize = '0.82em';
+                limiterDiv.style.marginTop = '4px';
+                limiterDiv.style.display = 'block';
+
+                if (maxCanMake > 0) {
+                    limiterDiv.style.color = '#555';
+                    limiterDiv.textContent = `Limit: ${limitingIngredient}`;
+                } else {
+                    limiterDiv.style.color = '#aa0000';
+                    limiterDiv.style.fontWeight = 'bold';
+                    limiterDiv.textContent = `Missing: ${limitingIngredient}`;
+                }
+
+                actionCell.appendChild(limiterDiv);
+            } catch (err) {
+                console.error("HoboWars Drinks Helper Error:", err);
+            }
         });
     }
 };
@@ -10140,7 +10130,6 @@ const GangStaffHelper = {
 
     const GlobalModules = {
         DisplayHelper,
-        DrinksHelper,
         FoodHelper,
     };
 
@@ -10182,7 +10171,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.77';
+        window.HoboHelperVersion = '8.78';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

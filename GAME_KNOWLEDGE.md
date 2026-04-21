@@ -93,3 +93,6 @@ When purchasing upgrades for your rat (Vegetarian, Life Boost, Meal Boost), keep
 ## Navigation & URLs
 - The Living Area (main page) does not use a `cmd=` parameter in its URL (it is just `game.php?sr=...`). This must be handled by checking for an empty `cmd` parameter (`cmd === ''`).
 - There are two distinct Backpack links: The top navigation bar image link (`cmd=backpack`) which triggers a full page load, and the in-page tab link in the Living Area (`rel='backpack'`) which loads the backpack content via AJAX.
+
+ -   * * B a r t e n d e r   G u i d e : * *   T h i s   g a m e   U I   i s   a c c e s s e d   v i a   ` ? c m d = b a c k p a c k & u s e = 3 ` .   T h e   g u i d e   d i s p l a y s   a   l i s t   o f   p o s s i b l e   d r i n k s   t h a t   c a n   b e   m i x e d   a n d   i s   i n j e c t e d   n a t i v e l y   i n t o   t h e   b a c k p a c k   t a b   o r   a r e a .  
+ 
