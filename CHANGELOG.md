@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.84] - 2026-04-23
+### Fixed
+- Reverted a regression in `FoodHelper` where marking "crap" food inadvertently cleared out items that were unseen on the page, restoring accurate retention of the list across different device sorting views.
+
 ## [8.83] - 2026-04-23
 ### Changed
 - Reverted the `DocumentFragment` updates from the `GangArmoryHelper` due to JavaScript iteration bottlenecking causing lag during initial render.

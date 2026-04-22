@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.82.20260423.0025
+// @version      8.83.20260423.0903
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -453,6 +453,15 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.83",
+            date: "2026-04-23",
+            type: "Changed",
+            notes: [
+                "Reverted the `DocumentFragment` updates from the `GangArmoryHelper` due to JavaScript iteration bottlenecking causing lag during initial render.",
+                "Refactored `ActiveListHelper` and `BackpackHelper` DOM generation logic to inject batched elements via `DocumentFragments` to prevent multi-reflow UI execution slowdowns."
+            ]
+        },
+        {
             version: "8.82",
             date: "2026-04-22",
             type: "Changed",
@@ -484,14 +493,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Improved Skills helper layout:"
-            ]
-        },
-        {
-            version: "8.78",
-            date: "2026-04-22",
-            type: "Changed",
-            notes: [
-                "Moved the `DrinksHelper` Bartender Guide UI injection logic natively into the `BackpackHelper` module to increase efficiency and accurately target the specific game URL (`?cmd=backpack&use=3`)."
             ]
         }
     ]
@@ -2215,17 +2216,28 @@ const FoodHelper = {
             if (foodName) {
                 if (cb.checked) {
                     presentFoods[foodName] = true; // At least one is checked, keep it
-                } else if (crapList.includes(foodName)) {
-                    // If it's in the crap list and not checked, remove from list
-                    presentFoods[foodName] = false;
+                } else if (presentFoods[foodName] === undefined) {
+                    presentFoods[foodName] = false; // Seen but not checked (yet)
                 }
             }
         });
 
-        // Update the crap list based on visible foods
-        crapList = Object.keys(presentFoods).filter(food => presentFoods[food] === false);
+        // Update the crapList based on the visible foods' states
+        Object.keys(presentFoods).forEach(foodName => {
+            if (presentFoods[foodName]) {
+                if (!crapList.includes(foodName)) {
+                    crapList.push(foodName);
+                }
+            } else {
+                crapList = crapList.filter(name => name !== foodName);
+            }
+        });
 
         localStorage.setItem('hw_helper_food_crap', JSON.stringify(crapList));
+        if (btn) {
+            btn.value = `Γ Updated Crap!`;
+            setTimeout(() => { btn.value = 'Mark as Crap'; }, 3000);
+        }
 
         // Reselect crap items after marking
         this.selectCrap();
@@ -10472,7 +10484,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.82.20260423.0025';
+        window.HoboHelperVersion = '8.83.20260423.0903';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

@@ -293,17 +293,28 @@ const FoodHelper = {
             if (foodName) {
                 if (cb.checked) {
                     presentFoods[foodName] = true; // At least one is checked, keep it
-                } else if (crapList.includes(foodName)) {
-                    // If it's in the crap list and not checked, remove from list
-                    presentFoods[foodName] = false;
+                } else if (presentFoods[foodName] === undefined) {
+                    presentFoods[foodName] = false; // Seen but not checked (yet)
                 }
             }
         });
 
-        // Update the crap list based on visible foods
-        crapList = Object.keys(presentFoods).filter(food => presentFoods[food] === false);
+        // Update the crapList based on the visible foods' states
+        Object.keys(presentFoods).forEach(foodName => {
+            if (presentFoods[foodName]) {
+                if (!crapList.includes(foodName)) {
+                    crapList.push(foodName);
+                }
+            } else {
+                crapList = crapList.filter(name => name !== foodName);
+            }
+        });
 
         localStorage.setItem('hw_helper_food_crap', JSON.stringify(crapList));
+        if (btn) {
+            btn.value = `Γ Updated Crap!`;
+            setTimeout(() => { btn.value = 'Mark as Crap'; }, 3000);
+        }
 
         // Reselect crap items after marking
         this.selectCrap();
