@@ -1,18 +1,34 @@
 const FoodHelper = {
+    cmds: ['food', ''],
     staff: false,
     init: function() {
-        const settings = Utils.getSettings();
-        if (settings?.FoodHelper?.enabled === false) return;
-
-        // Ensure we are either on the food page or living area page
         const urlParams = new URLSearchParams(window.location.search);
-        const cmd = urlParams.get('cmd');
-        const isFoodMenu = cmd === 'food';
-        const isLivingArea = !cmd; // Matches null or ""
+        const cmd = urlParams.get('cmd') || '';
 
-        if (!isFoodMenu && !isLivingArea) return;
+        if (cmd === 'food') {
+            this.observeFood();
+        } else if (cmd === '') {
+            this.observeLivingArea();
+        }
+    },
 
+    observeLivingArea: function() {
+        // Run once in case it's already there
         this.observeFood();
+
+        // In the Living Area, the food content is loaded via AJAX when the tab is clicked.
+        // We will watch for the user clicking the food tab and strictly trigger our observer then.
+        const foodTabLink = document.querySelector('a[rel="food"]');
+        if (foodTabLink) {
+            foodTabLink.addEventListener('click', () => {
+                if (this._foodObserverAdded) return;
+                this._foodObserverAdded = true;
+
+                setTimeout(() => {
+                    this.observeFood();
+                }, 50);
+            });
+        }
     },
 
     observeFood: function() {
@@ -61,8 +77,8 @@ const FoodHelper = {
             rafId = requestAnimationFrame(bindButtons);
         });
 
-        // The UI might be inside a #foodTab container (living area) or the main document body
-        const targetNode = document.getElementById('foodTab') ? document.getElementById('foodTab') : document.body;
+        // The UI might be inside a #foodTab container (living area), a #food_table, or the main document body
+        const targetNode = document.getElementById('foodTab') || document.body;
         if (targetNode) {
             observer.observe(targetNode, { childList: true, subtree: true });
         }
@@ -277,27 +293,19 @@ const FoodHelper = {
             if (foodName) {
                 if (cb.checked) {
                     presentFoods[foodName] = true; // At least one is checked, keep it
-                } else if (presentFoods[foodName] === undefined) {
-                    presentFoods[foodName] = false; // Seen but not checked (yet)
+                } else if (crapList.includes(foodName)) {
+                    // If it's in the crap list and not checked, remove from list
+                    presentFoods[foodName] = false;
                 }
             }
         });
 
-        // Update the crapList based on the visible foods' states
-        Object.keys(presentFoods).forEach(foodName => {
-            if (presentFoods[foodName]) {
-                if (!crapList.includes(foodName)) {
-                    crapList.push(foodName);
-                }
-            } else {
-                crapList = crapList.filter(name => name !== foodName);
-            }
-        });
+        // Update the crap list based on visible foods
+        crapList = Object.keys(presentFoods).filter(food => presentFoods[food] === false);
 
         localStorage.setItem('hw_helper_food_crap', JSON.stringify(crapList));
-        if (btn) {
-            btn.value = `✅ Updated Crap!`;
-            setTimeout(() => { btn.value = 'Mark as Crap'; }, 3000);
-        }
-    }
+
+        // Reselect crap items after marking
+        this.selectCrap();
+    },
 };

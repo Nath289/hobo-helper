@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.80] - 2026-04-22
+### Changed
+- Refactored `FoodHelper` from a global module to a specific page module (`src/modules/page/FoodHelper.js`) to increase execution efficiency.
+- Modified the `FoodHelper` table injection specifically restricting the code to only initiate when explicitly matching the standalone page (`cmd=food`) or when the "Food" tab (`a[rel="food"]`) within the Living Area is actively clicked by the user.
+
 ## [8.79] - 2026-04-22
 ### Changed
 - Improved Skills helper layout:
