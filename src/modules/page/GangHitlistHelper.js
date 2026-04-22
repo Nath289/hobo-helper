@@ -158,7 +158,7 @@ const GangHitlistHelper = {
         if (!isNaN(savedPageIdx)) {
             const savedDisplayNum = savedPageIdx + 1;
             if (savedDisplayNum !== currentPage && savedDisplayNum > 0) {
-                midDiv.appendChild(createButton(`Last Page (${savedDisplayNum})`, savedDisplayNum, true));
+                midDiv.appendChild(createButton(`Last Viewed Page (${savedDisplayNum})`, savedDisplayNum, true));
             }
         }
 

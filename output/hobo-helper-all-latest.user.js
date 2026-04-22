@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (All)
 // @namespace    http://tampermonkey.net/
-// @version      8.80
+// @version      8.81
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -453,6 +453,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.81",
+            date: "2026-04-22",
+            type: "Changed",
+            notes: [
+                "Changed the \"Last Page\" button in the Gang Hitlist top pagination to \"Last Viewed Page\"."
+            ]
+        },
+        {
             version: "8.80",
             date: "2026-04-22",
             type: "Changed",
@@ -483,14 +491,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Heavily optimized the Backpack Helper by ensuring its `MutationObserver` strictly initializes when the in-page Backpack tab is clicked in the Living Area, preventing duplicate observers, verifying visibility before processing DOM elements, and avoiding unnecessary looping."
-            ]
-        },
-        {
-            version: "8.76",
-            date: "2026-04-21",
-            type: "Changed",
-            notes: [
-                "Replaced the direct DOM `visibility: hidden` script blocker approach with a custom injected `<style>` tag that properly mimics the native HoboWars \"#222\" dark gray background instead of glaring white, vastly improving visual comfort via reduced flash artifacting during module compilation."
             ]
         }
     ]
@@ -3142,7 +3142,7 @@ const GangHitlistHelper = {
         if (!isNaN(savedPageIdx)) {
             const savedDisplayNum = savedPageIdx + 1;
             if (savedDisplayNum !== currentPage && savedDisplayNum > 0) {
-                midDiv.appendChild(createButton(`Last Page (${savedDisplayNum})`, savedDisplayNum, true));
+                midDiv.appendChild(createButton(`Last Viewed Page (${savedDisplayNum})`, savedDisplayNum, true));
             }
         }
 
@@ -10451,7 +10451,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.80';
+        window.HoboHelperVersion = '8.81';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

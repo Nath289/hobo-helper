@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.79.20260422.1950
+// @version      8.80.20260422.2221
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -453,6 +453,15 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.80",
+            date: "2026-04-22",
+            type: "Changed",
+            notes: [
+                "Refactored `FoodHelper` from a global module to a specific page module (`src/modules/page/FoodHelper.js`) to increase execution efficiency.",
+                "Modified the `FoodHelper` table injection specifically restricting the code to only initiate when explicitly matching the standalone page (`cmd=food`) or when the \"Food\" tab (`a[rel=\"food\"]`) within the Living Area is actively clicked by the user."
+            ]
+        },
+        {
             version: "8.79",
             date: "2026-04-22",
             type: "Changed",
@@ -482,14 +491,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Replaced the direct DOM `visibility: hidden` script blocker approach with a custom injected `<style>` tag that properly mimics the native HoboWars \"#222\" dark gray background instead of glaring white, vastly improving visual comfort via reduced flash artifacting during module compilation."
-            ]
-        },
-        {
-            version: "8.75",
-            date: "2026-04-21",
-            type: "Changed",
-            notes: [
-                "Converted the Recycling Bin Helper's quick-add buttons to be fully customizable dynamically from the page via an inline floating Configure panel instead of a native prompt. Users can create, delete, and modify their preferred numeric additions with ease."
             ]
         }
     ]
@@ -3141,7 +3142,7 @@ const GangHitlistHelper = {
         if (!isNaN(savedPageIdx)) {
             const savedDisplayNum = savedPageIdx + 1;
             if (savedDisplayNum !== currentPage && savedDisplayNum > 0) {
-                midDiv.appendChild(createButton(`Last Page (${savedDisplayNum})`, savedDisplayNum, true));
+                midDiv.appendChild(createButton(`Last Viewed Page (${savedDisplayNum})`, savedDisplayNum, true));
             }
         }
 
@@ -10450,7 +10451,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.79.20260422.1950';
+        window.HoboHelperVersion = '8.80.20260422.2221';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

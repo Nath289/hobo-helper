@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.81] - 2026-04-22
+### Changed
+- Changed the "Last Page" button in the Gang Hitlist top pagination to "Last Viewed Page".
+
 ## [8.80] - 2026-04-22
 ### Changed
 - Refactored `FoodHelper` from a global module to a specific page module (`src/modules/page/FoodHelper.js`) to increase execution efficiency.
