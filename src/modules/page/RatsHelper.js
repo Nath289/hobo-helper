@@ -731,9 +731,15 @@ const RatsHelper = {
     },
 
     initFeedUI: function() {
+        let ul = null;
         const feedLink = document.querySelector('a[href*="&foodID="]');
-        if (!feedLink) return;
-        const ul = feedLink.closest('ul');
+        if (feedLink) {
+            ul = feedLink.closest('ul');
+        } else {
+            const meatLi = Array.from(document.querySelectorAll('li')).find(li => li.title === 'Eww, meat!' || li.textContent.includes('Eww, meat!'));
+            if (meatLi) ul = meatLi.closest('ul');
+        }
+
         if (!ul) return;
 
         const items = Array.from(ul.querySelectorAll('li'));

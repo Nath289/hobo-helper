@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Staff)
 // @namespace    http://tampermonkey.net/
-// @version      8.81
+// @version      8.82
 // @description  Provides HoboWars staff-only helper tools.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -453,6 +453,15 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.82",
+            date: "2026-04-22",
+            type: "Changed",
+            notes: [
+                "Heavily optimized the Gang Armory page (`GangArmoryHelper`) by buffering UI element construction inside off-DOM `DocumentFragments` before appending them, significantly improving performance by preventing repetitive browser native layout calculation slowdowns.",
+                "Fixed an issue in `RatsHelper` where the grid UI failed to render for Vegetarian rats when the only items in the player's trolley were meat, introducing a defensive fallback to detect \"Eww, meat!\" items when action links natively disappear."
+            ]
+        },
+        {
             version: "8.81",
             date: "2026-04-22",
             type: "Changed",
@@ -483,14 +492,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Moved the `DrinksHelper` Bartender Guide UI injection logic natively into the `BackpackHelper` module to increase efficiency and accurately target the specific game URL (`?cmd=backpack&use=3`)."
-            ]
-        },
-        {
-            version: "8.77",
-            date: "2026-04-22",
-            type: "Changed",
-            notes: [
-                "Heavily optimized the Backpack Helper by ensuring its `MutationObserver` strictly initializes when the in-page Backpack tab is clicked in the Living Area, preventing duplicate observers, verifying visibility before processing DOM elements, and avoiding unnecessary looping."
             ]
         }
     ]
@@ -2722,7 +2723,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.81';
+        window.HoboHelperVersion = '8.82';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

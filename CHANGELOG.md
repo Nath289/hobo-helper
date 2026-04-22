@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.82] - 2026-04-22
+### Changed
+- Heavily optimized the Gang Armory page (`GangArmoryHelper`) by buffering UI element construction inside off-DOM `DocumentFragments` before appending them, significantly improving performance by preventing repetitive browser native layout calculation slowdowns.
+### Fixed
+- Fixed an issue in `RatsHelper` where the grid UI failed to render for Vegetarian rats when the only items in the player's trolley were meat, introducing a defensive fallback to detect "Eww, meat!" items when action links natively disappear.
+
 ## [8.81] - 2026-04-22
 ### Changed
 - Changed the "Last Page" button in the Gang Hitlist top pagination to "Last Viewed Page".

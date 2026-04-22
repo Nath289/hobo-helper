@@ -27,7 +27,7 @@ This document contains a general knowledge base about the mechanics, layout, and
   - 50-99T: +17 exp / +3 life
   - 100T: +21 exp / +1 life
   *Exceptions:* Fruit by the Furlong (+17 exp / -7 life), Kit Rat Bar (+10 exp / +8 life). *Note: Kit Rat Bars are rare Halloween Event items found by dumping Trick-or-Treat Baskets into Trollys or discarded in Improved Dumpsters. They grant 20T and the Chocorat status effect.*
-- **Vegetarianism:** A "one off" rat upgrade. It generally adds +1 Exp and +1 Life to non-meat foods. If the player possesses the **Rattoo** tattoo in their Living Area, the Vegetarianism bonus doubles to +2 Exp and +2 Life. Meat cannot be fed to a vegetarian rat.
+- **Vegetarianism:** A "one off" rat upgrade. It generally adds +1 Exp and +1 Life to non-meat foods. If the player possesses the **Rattoo** tattoo in their Living Area, the Vegetarianism bonus doubles to +2 Exp and +2 Life. Meat cannot be fed to a vegetarian rat. If a vegetarian rat only has meat in the trolley, the UI displays "Eww, meat!" as a list item instead of a feed link.
 - **Common Feeding Regimes:** For easily accessible foods, players typically use one of two approaches:
   - **Fighter's Lunches → Apples:** Feeds high-Exp Fighter's Lunches early to quickly level the rat up so it becomes useful in battles and item finding sooner, then switches to Apples (high-Life, low-T food) later to sustain its lifespan against compounding age decay.
   - **Apples → Fighter's Lunches:** Builds a massive life buffer early on with Apples, then switches to Fighter's Lunches later for experience.
@@ -95,7 +95,7 @@ When purchasing upgrades for your rat (Vegetarian, Life Boost, Meal Boost), keep
 - There are two distinct Backpack links: The top navigation bar image link (`cmd=backpack`) which triggers a full page load, and the in-page tab link in the Living Area (`rel='backpack'`) which loads the backpack content via AJAX.
 - Just like the Backpack, the Food tab within the Living Area is loaded dynamically via AJAX when the in-page tab link (`rel='food'`) is clicked. Wait for DOM mutations or an explicitly attached click event on the tab when interacting with Living Area food inventories.
 
- -   * * B a r t e n d e r   G u i d e : * *   T h i s   g a m e   U I   i s   a c c e s s e d   v i a   ` ? c m d = b a c k p a c k & u s e = 3 ` .   T h e   g u i d e   d i s p l a y s   a   l i s t   o f   p o s s i b l e   d r i n k s   t h a t   c a n   b e   m i x e d   a n d   i s   i n j e c t e d   n a t i v e l y   i n t o   t h e   b a c k p a c k   t a b   o r   a r e a . 
+ -   * * B a r t e n d e r   G u i d e : * *   T h i s   ga m e   U I   i s   a c c e s s e d   v i a   ` ? c m d = b a c k p a c k & u s e = 3 ` .   T h e   g u i d e   d i s p l a y s   a   l i s t   o f   p o s s i b l e   d r i n k s   t h a t   c a n   b e   m i x e d   a n d   i s   i n j e c t e d   n a t i v e l y   i n t o   t h e   b a c k p a c k   t a b   o r   a r e a . 
  
  
 ### Skills Page (cmd=skills)

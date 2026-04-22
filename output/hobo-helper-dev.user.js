@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.80.20260422.2221
+// @version      8.81.20260422.2339
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -453,6 +453,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.81",
+            date: "2026-04-22",
+            type: "Changed",
+            notes: [
+                "Changed the \"Last Page\" button in the Gang Hitlist top pagination to \"Last Viewed Page\"."
+            ]
+        },
+        {
             version: "8.80",
             date: "2026-04-22",
             type: "Changed",
@@ -483,14 +491,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Heavily optimized the Backpack Helper by ensuring its `MutationObserver` strictly initializes when the in-page Backpack tab is clicked in the Living Area, preventing duplicate observers, verifying visibility before processing DOM elements, and avoiding unnecessary looping."
-            ]
-        },
-        {
-            version: "8.76",
-            date: "2026-04-21",
-            type: "Changed",
-            notes: [
-                "Replaced the direct DOM `visibility: hidden` script blocker approach with a custom injected `<style>` tag that properly mimics the native HoboWars \"#222\" dark gray background instead of glaring white, vastly improving visual comfort via reduced flash artifacting during module compilation."
             ]
         }
     ]
@@ -2674,6 +2674,8 @@ const GangArmoryHelper = {
 
             const myId = Utils.getHoboId();
 
+            const tbodyFragment = document.createDocumentFragment();
+
             keys.forEach((coreName, groupIndex) => {
                 const group = grouped[coreName].items;
 
@@ -2820,9 +2822,10 @@ const GangArmoryHelper = {
                     toggleTr.appendChild(toggleTd);
                     tbody.appendChild(toggleTr);
                 }
-                table.appendChild(tbody);
+                tbodyFragment.appendChild(tbody);
             });
 
+            table.appendChild(tbodyFragment);
             content.appendChild(table);
         });
 
@@ -2877,6 +2880,8 @@ const GangArmoryHelper = {
             favTable.appendChild(ftrHead);
             
             const myId = Utils.getHoboId();
+
+            const favFragment = document.createDocumentFragment();
 
             savedFavs.forEach(favName => {
                 let foundItems = [];
@@ -2958,9 +2963,10 @@ const GangArmoryHelper = {
                     }
                     tr.appendChild(tdDays);
 
-                    favTable.appendChild(tr);
+                    favFragment.appendChild(tr);
                 }
             });
+            favTable.appendChild(favFragment);
             favContainer.appendChild(favTable);
             activeFavContainer = favContainer;
         }
@@ -2969,15 +2975,16 @@ const GangArmoryHelper = {
         if (firstTabBtn) firstTabBtn.classList.add('active');
         contentContainers[categories[0]].classList.add('active');
 
+        const finalFragment = document.createDocumentFragment();
+        if (activeFavContainer) finalFragment.appendChild(activeFavContainer);
+        finalFragment.appendChild(tabContainer);
+        categories.forEach(cat => finalFragment.appendChild(contentContainers[cat]));
+
         const insertBeforeNode = Array.from(form.childNodes).find(n => n.nodeName === 'SELECT' || (n.tagName === 'INPUT' && n.type !== 'hidden') || n.tagName === 'BUTTON' || (n.nodeName === 'BR'));
         if (insertBeforeNode) {
-            if (activeFavContainer) form.insertBefore(activeFavContainer, insertBeforeNode);
-            form.insertBefore(tabContainer, insertBeforeNode);
-            categories.forEach(cat => form.insertBefore(contentContainers[cat], insertBeforeNode));
+            form.insertBefore(finalFragment, insertBeforeNode);
         } else {
-            if (activeFavContainer) form.appendChild(activeFavContainer);
-            form.appendChild(tabContainer);
-            categories.forEach(cat => form.appendChild(contentContainers[cat]));
+            form.appendChild(finalFragment);
         }
     }
 };
@@ -6684,9 +6691,15 @@ const RatsHelper = {
     },
 
     initFeedUI: function() {
+        let ul = null;
         const feedLink = document.querySelector('a[href*="&foodID="]');
-        if (!feedLink) return;
-        const ul = feedLink.closest('ul');
+        if (feedLink) {
+            ul = feedLink.closest('ul');
+        } else {
+            const meatLi = Array.from(document.querySelectorAll('li')).find(li => li.title === 'Eww, meat!' || li.textContent.includes('Eww, meat!'));
+            if (meatLi) ul = meatLi.closest('ul');
+        }
+
         if (!ul) return;
 
         const items = Array.from(ul.querySelectorAll('li'));
@@ -10451,7 +10464,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.80.20260422.2221';
+        window.HoboHelperVersion = '8.81.20260422.2339';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
