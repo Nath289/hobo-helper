@@ -312,7 +312,7 @@ const FoodHelper = {
 
         localStorage.setItem('hw_helper_food_crap', JSON.stringify(crapList));
         if (btn) {
-            btn.value = `Γ Updated Crap!`;
+            btn.value = `✅ Updated Crap!`;
             setTimeout(() => { btn.value = 'Mark as Crap'; }, 3000);
         }
 

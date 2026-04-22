@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Staff)
 // @namespace    http://tampermonkey.net/
-// @version      8.84
+// @version      8.85
 // @description  Provides HoboWars staff-only helper tools.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -453,6 +453,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.85",
+            date: "2026-04-23",
+            type: "Fixed",
+            notes: [
+                "Replaced the purple check mark with a proper green tick emoji in the `FoodHelper` \"Updated Crap!\" notification button for better visual feedback."
+            ]
+        },
+        {
             version: "8.84",
             date: "2026-04-23",
             type: "Fixed",
@@ -484,15 +492,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Changed the \"Last Page\" button in the Gang Hitlist top pagination to \"Last Viewed Page\"."
-            ]
-        },
-        {
-            version: "8.80",
-            date: "2026-04-22",
-            type: "Changed",
-            notes: [
-                "Refactored `FoodHelper` from a global module to a specific page module (`src/modules/page/FoodHelper.js`) to increase execution efficiency.",
-                "Modified the `FoodHelper` table injection specifically restricting the code to only initiate when explicitly matching the standalone page (`cmd=food`) or when the \"Food\" tab (`a[rel=\"food\"]`) within the Living Area is actively clicked by the user."
             ]
         }
     ]
@@ -2724,7 +2723,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.84';
+        window.HoboHelperVersion = '8.85';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

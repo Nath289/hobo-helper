@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.83.20260423.0903
+// @version      8.84.20260423.0929
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -453,6 +453,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.84",
+            date: "2026-04-23",
+            type: "Fixed",
+            notes: [
+                "Reverted a regression in `FoodHelper` where marking \"crap\" food inadvertently cleared out items that were unseen on the page, restoring accurate retention of the list across different device sorting views."
+            ]
+        },
+        {
             version: "8.83",
             date: "2026-04-23",
             type: "Changed",
@@ -485,14 +493,6 @@ const ChangelogData = {
             notes: [
                 "Refactored `FoodHelper` from a global module to a specific page module (`src/modules/page/FoodHelper.js`) to increase execution efficiency.",
                 "Modified the `FoodHelper` table injection specifically restricting the code to only initiate when explicitly matching the standalone page (`cmd=food`) or when the \"Food\" tab (`a[rel=\"food\"]`) within the Living Area is actively clicked by the user."
-            ]
-        },
-        {
-            version: "8.79",
-            date: "2026-04-22",
-            type: "Changed",
-            notes: [
-                "Improved Skills helper layout:"
             ]
         }
     ]
@@ -2235,7 +2235,7 @@ const FoodHelper = {
 
         localStorage.setItem('hw_helper_food_crap', JSON.stringify(crapList));
         if (btn) {
-            btn.value = `Γ Updated Crap!`;
+            btn.value = `✅ Updated Crap!`;
             setTimeout(() => { btn.value = 'Mark as Crap'; }, 3000);
         }
 
@@ -10484,7 +10484,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.83.20260423.0903';
+        window.HoboHelperVersion = '8.84.20260423.0929';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

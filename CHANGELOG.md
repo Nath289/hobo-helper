@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.85] - 2026-04-23
+### Fixed
+- Replaced the purple check mark with a proper green tick emoji in the `FoodHelper` "Updated Crap!" notification button for better visual feedback.
+
 ## [8.84] - 2026-04-23
 ### Fixed
 - Reverted a regression in `FoodHelper` where marking "crap" food inadvertently cleared out items that were unseen on the page, restoring accurate retention of the list across different device sorting views.
