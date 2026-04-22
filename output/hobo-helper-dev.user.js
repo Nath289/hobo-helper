@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.81.20260422.2339
+// @version      8.82.20260423.0025
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -453,6 +453,15 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.82",
+            date: "2026-04-22",
+            type: "Changed",
+            notes: [
+                "Heavily optimized the Gang Armory page (`GangArmoryHelper`) by buffering UI element construction inside off-DOM `DocumentFragments` before appending them, significantly improving performance by preventing repetitive browser native layout calculation slowdowns.",
+                "Fixed an issue in `RatsHelper` where the grid UI failed to render for Vegetarian rats when the only items in the player's trolley were meat, introducing a defensive fallback to detect \"Eww, meat!\" items when action links natively disappear."
+            ]
+        },
+        {
             version: "8.81",
             date: "2026-04-22",
             type: "Changed",
@@ -483,14 +492,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Moved the `DrinksHelper` Bartender Guide UI injection logic natively into the `BackpackHelper` module to increase efficiency and accurately target the specific game URL (`?cmd=backpack&use=3`)."
-            ]
-        },
-        {
-            version: "8.77",
-            date: "2026-04-22",
-            type: "Changed",
-            notes: [
-                "Heavily optimized the Backpack Helper by ensuring its `MutationObserver` strictly initializes when the in-page Backpack tab is clicked in the Living Area, preventing duplicate observers, verifying visibility before processing DOM elements, and avoiding unnecessary looping."
             ]
         }
     ]
@@ -949,6 +950,8 @@ const ActiveListHelper = {
         let isAlive = false;
         let isDead = false;
         const nodes = Array.from(contentArea.childNodes);
+        
+        const frag = document.createDocumentFragment();
 
         nodes.forEach(node => {
             // Check if node is the start of a player line (date pattern e.g., "4/12 11:01.27 PM: ")
@@ -956,7 +959,7 @@ const ActiveListHelper = {
                 currentWrapper = document.createElement('span');
                 currentWrapper.className = 'hobo-helper-player-row';
                 // Span is used instead of div to avoid unexpected block spacing since they end with BR natively
-                contentArea.insertBefore(currentWrapper, node);
+                frag.appendChild(currentWrapper);
                 currentWrapper.appendChild(node);
                 isAlive = false;
                 isDead = false;
@@ -979,8 +982,15 @@ const ActiveListHelper = {
                     
                     currentWrapper = null;
                 }
+            } else {
+                // Push non-player row nodes (like headers or empty space) into the fragment
+                frag.appendChild(node);
             }
         });
+        
+        // Re-inject the parsed, grouped DOM in one single reflow
+        contentArea.innerHTML = '';
+        contentArea.appendChild(frag);
 
         // Retrieve saved filter
         const savedFilter = localStorage.getItem('ActiveListHelper_CurrentFilter') || 'all';
@@ -1256,6 +1266,7 @@ const BackpackHelper = {
 
         usableRow.parentNode.insertBefore(favRow, usableRow);
 
+        const fragment = document.createDocumentFragment();
         let tr = document.createElement('tr');
         let count = 0;
 
@@ -1292,7 +1303,7 @@ const BackpackHelper = {
             count++;
 
             if (count % 3 === 0) {
-                usableRow.parentNode.insertBefore(tr, usableRow);
+                fragment.appendChild(tr);
                 tr = document.createElement('tr');
             }
         });
@@ -1303,9 +1314,13 @@ const BackpackHelper = {
                 tr.appendChild(td);
                 count++;
             }
-            usableRow.parentNode.insertBefore(tr, usableRow);
+            fragment.appendChild(tr);
         } else if (count === 0) {
             favRow.remove();
+        }
+        
+        if (fragment.childNodes.length > 0) {
+            usableRow.parentNode.insertBefore(fragment, usableRow);
         }
 
         const statsBtn = document.getElementById('bh_view_drink_stats');
@@ -2674,8 +2689,6 @@ const GangArmoryHelper = {
 
             const myId = Utils.getHoboId();
 
-            const tbodyFragment = document.createDocumentFragment();
-
             keys.forEach((coreName, groupIndex) => {
                 const group = grouped[coreName].items;
 
@@ -2822,10 +2835,9 @@ const GangArmoryHelper = {
                     toggleTr.appendChild(toggleTd);
                     tbody.appendChild(toggleTr);
                 }
-                tbodyFragment.appendChild(tbody);
+                table.appendChild(tbody);
             });
 
-            table.appendChild(tbodyFragment);
             content.appendChild(table);
         });
 
@@ -2880,8 +2892,6 @@ const GangArmoryHelper = {
             favTable.appendChild(ftrHead);
             
             const myId = Utils.getHoboId();
-
-            const favFragment = document.createDocumentFragment();
 
             savedFavs.forEach(favName => {
                 let foundItems = [];
@@ -2963,10 +2973,9 @@ const GangArmoryHelper = {
                     }
                     tr.appendChild(tdDays);
 
-                    favFragment.appendChild(tr);
+                    favTable.appendChild(tr);
                 }
             });
-            favTable.appendChild(favFragment);
             favContainer.appendChild(favTable);
             activeFavContainer = favContainer;
         }
@@ -2975,16 +2984,15 @@ const GangArmoryHelper = {
         if (firstTabBtn) firstTabBtn.classList.add('active');
         contentContainers[categories[0]].classList.add('active');
 
-        const finalFragment = document.createDocumentFragment();
-        if (activeFavContainer) finalFragment.appendChild(activeFavContainer);
-        finalFragment.appendChild(tabContainer);
-        categories.forEach(cat => finalFragment.appendChild(contentContainers[cat]));
-
         const insertBeforeNode = Array.from(form.childNodes).find(n => n.nodeName === 'SELECT' || (n.tagName === 'INPUT' && n.type !== 'hidden') || n.tagName === 'BUTTON' || (n.nodeName === 'BR'));
         if (insertBeforeNode) {
-            form.insertBefore(finalFragment, insertBeforeNode);
+            if (activeFavContainer) form.insertBefore(activeFavContainer, insertBeforeNode);
+            form.insertBefore(tabContainer, insertBeforeNode);
+            categories.forEach(cat => form.insertBefore(contentContainers[cat], insertBeforeNode));
         } else {
-            form.appendChild(finalFragment);
+            if (activeFavContainer) form.appendChild(activeFavContainer);
+            form.appendChild(tabContainer);
+            categories.forEach(cat => form.appendChild(contentContainers[cat]));
         }
     }
 };
@@ -10464,7 +10472,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.81.20260422.2339';
+        window.HoboHelperVersion = '8.82.20260423.0025';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

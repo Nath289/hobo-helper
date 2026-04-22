@@ -366,8 +366,6 @@ const GangArmoryHelper = {
 
             const myId = Utils.getHoboId();
 
-            const tbodyFragment = document.createDocumentFragment();
-
             keys.forEach((coreName, groupIndex) => {
                 const group = grouped[coreName].items;
 
@@ -514,10 +512,9 @@ const GangArmoryHelper = {
                     toggleTr.appendChild(toggleTd);
                     tbody.appendChild(toggleTr);
                 }
-                tbodyFragment.appendChild(tbody);
+                table.appendChild(tbody);
             });
 
-            table.appendChild(tbodyFragment);
             content.appendChild(table);
         });
 
@@ -572,8 +569,6 @@ const GangArmoryHelper = {
             favTable.appendChild(ftrHead);
             
             const myId = Utils.getHoboId();
-
-            const favFragment = document.createDocumentFragment();
 
             savedFavs.forEach(favName => {
                 let foundItems = [];
@@ -655,10 +650,9 @@ const GangArmoryHelper = {
                     }
                     tr.appendChild(tdDays);
 
-                    favFragment.appendChild(tr);
+                    favTable.appendChild(tr);
                 }
             });
-            favTable.appendChild(favFragment);
             favContainer.appendChild(favTable);
             activeFavContainer = favContainer;
         }
@@ -667,16 +661,15 @@ const GangArmoryHelper = {
         if (firstTabBtn) firstTabBtn.classList.add('active');
         contentContainers[categories[0]].classList.add('active');
 
-        const finalFragment = document.createDocumentFragment();
-        if (activeFavContainer) finalFragment.appendChild(activeFavContainer);
-        finalFragment.appendChild(tabContainer);
-        categories.forEach(cat => finalFragment.appendChild(contentContainers[cat]));
-
         const insertBeforeNode = Array.from(form.childNodes).find(n => n.nodeName === 'SELECT' || (n.tagName === 'INPUT' && n.type !== 'hidden') || n.tagName === 'BUTTON' || (n.nodeName === 'BR'));
         if (insertBeforeNode) {
-            form.insertBefore(finalFragment, insertBeforeNode);
+            if (activeFavContainer) form.insertBefore(activeFavContainer, insertBeforeNode);
+            form.insertBefore(tabContainer, insertBeforeNode);
+            categories.forEach(cat => form.insertBefore(contentContainers[cat], insertBeforeNode));
         } else {
-            form.appendChild(finalFragment);
+            if (activeFavContainer) form.appendChild(activeFavContainer);
+            form.appendChild(tabContainer);
+            categories.forEach(cat => form.appendChild(contentContainers[cat]));
         }
     }
 };

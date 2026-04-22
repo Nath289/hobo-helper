@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Staff)
 // @namespace    http://tampermonkey.net/
-// @version      8.82
+// @version      8.83
 // @description  Provides HoboWars staff-only helper tools.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -453,6 +453,15 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.83",
+            date: "2026-04-23",
+            type: "Changed",
+            notes: [
+                "Reverted the `DocumentFragment` updates from the `GangArmoryHelper` due to JavaScript iteration bottlenecking causing lag during initial render.",
+                "Refactored `ActiveListHelper` and `BackpackHelper` DOM generation logic to inject batched elements via `DocumentFragments` to prevent multi-reflow UI execution slowdowns."
+            ]
+        },
+        {
             version: "8.82",
             date: "2026-04-22",
             type: "Changed",
@@ -484,14 +493,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Improved Skills helper layout:"
-            ]
-        },
-        {
-            version: "8.78",
-            date: "2026-04-22",
-            type: "Changed",
-            notes: [
-                "Moved the `DrinksHelper` Bartender Guide UI injection logic natively into the `BackpackHelper` module to increase efficiency and accurately target the specific game URL (`?cmd=backpack&use=3`)."
             ]
         }
     ]
@@ -2723,7 +2724,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.82';
+        window.HoboHelperVersion = '8.83';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

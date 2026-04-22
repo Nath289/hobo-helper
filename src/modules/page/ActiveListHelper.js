@@ -57,6 +57,8 @@ const ActiveListHelper = {
         let isAlive = false;
         let isDead = false;
         const nodes = Array.from(contentArea.childNodes);
+        
+        const frag = document.createDocumentFragment();
 
         nodes.forEach(node => {
             // Check if node is the start of a player line (date pattern e.g., "4/12 11:01.27 PM: ")
@@ -64,7 +66,7 @@ const ActiveListHelper = {
                 currentWrapper = document.createElement('span');
                 currentWrapper.className = 'hobo-helper-player-row';
                 // Span is used instead of div to avoid unexpected block spacing since they end with BR natively
-                contentArea.insertBefore(currentWrapper, node);
+                frag.appendChild(currentWrapper);
                 currentWrapper.appendChild(node);
                 isAlive = false;
                 isDead = false;
@@ -87,8 +89,15 @@ const ActiveListHelper = {
                     
                     currentWrapper = null;
                 }
+            } else {
+                // Push non-player row nodes (like headers or empty space) into the fragment
+                frag.appendChild(node);
             }
         });
+        
+        // Re-inject the parsed, grouped DOM in one single reflow
+        contentArea.innerHTML = '';
+        contentArea.appendChild(frag);
 
         // Retrieve saved filter
         const savedFilter = localStorage.getItem('ActiveListHelper_CurrentFilter') || 'all';

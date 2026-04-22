@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.83] - 2026-04-23
+### Changed
+- Reverted the `DocumentFragment` updates from the `GangArmoryHelper` due to JavaScript iteration bottlenecking causing lag during initial render.
+- Refactored `ActiveListHelper` and `BackpackHelper` DOM generation logic to inject batched elements via `DocumentFragments` to prevent multi-reflow UI execution slowdowns.
+
 ## [8.82] - 2026-04-22
 ### Changed
 - Heavily optimized the Gang Armory page (`GangArmoryHelper`) by buffering UI element construction inside off-DOM `DocumentFragments` before appending them, significantly improving performance by preventing repetitive browser native layout calculation slowdowns.

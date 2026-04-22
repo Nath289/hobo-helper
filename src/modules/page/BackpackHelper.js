@@ -194,6 +194,7 @@ const BackpackHelper = {
 
         usableRow.parentNode.insertBefore(favRow, usableRow);
 
+        const fragment = document.createDocumentFragment();
         let tr = document.createElement('tr');
         let count = 0;
 
@@ -230,7 +231,7 @@ const BackpackHelper = {
             count++;
 
             if (count % 3 === 0) {
-                usableRow.parentNode.insertBefore(tr, usableRow);
+                fragment.appendChild(tr);
                 tr = document.createElement('tr');
             }
         });
@@ -241,9 +242,13 @@ const BackpackHelper = {
                 tr.appendChild(td);
                 count++;
             }
-            usableRow.parentNode.insertBefore(tr, usableRow);
+            fragment.appendChild(tr);
         } else if (count === 0) {
             favRow.remove();
+        }
+        
+        if (fragment.childNodes.length > 0) {
+            usableRow.parentNode.insertBefore(fragment, usableRow);
         }
 
         const statsBtn = document.getElementById('bh_view_drink_stats');
