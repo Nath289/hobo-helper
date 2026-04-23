@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.86] - 2026-04-24
+- **Added:** New system to track continuous "session rejoin time", preventing 30-min-inactive users from being marked active initially until they establish a 30s session.
+- **Added:** New logic to conditionally bypass 30s session tracking wait if the user returns with 0 Awakeness.
+- **Added:** Display of calculated "Lost Awake" for players logging back in with a full awake bar after being inactive for more than 30 mins.
+- **Changed:** Rewrote the donator checking logic to solely utilize the newer `.becomedon` interface matching standard DOM text content, greatly improving check speed and dropping legacy regex evaluations.
+- **Changed:** Slightly increased the height of action buttons in the Rats UI.
+- **Fixed:** Corrected an issue where checkboxes inside the Food Helper UI did not trigger the underlying game event listeners for updating row highlights.
+- **Removed:** staff-latest.user.js from the build compilation pipeline.
+
 ## [8.85] - 2026-04-23
 ### Fixed
 - Replaced the purple check mark with a proper green tick emoji in the `FoodHelper` "Updated Crap!" notification button for better visual feedback.

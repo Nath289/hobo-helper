@@ -152,7 +152,6 @@ if ($Release) {
     Write-Host "Building RELEASE version: $version"
 
     $templateRegular = Get-Content -Path "src/template.js" -Raw
-    $templateStaff   = Get-Content -Path "src/template-staff.js" -Raw
     $templateAll     = Get-Content -Path "src/template-all.js" -Raw
 
     # Build 1: non-staff modules only
@@ -166,16 +165,6 @@ if ($Release) {
     Set-Content -Path "output/hobo-helper-latest.user.js" -Value $regularContent
     Write-Host "Build complete: output/hobo-helper-latest.user.js"
 
-    # Build 2: staff modules only
-    $staffContent = Build-Output `
-        -Template $templateStaff `
-        -Name "HoboWars Helper Toolkit (Staff)" `
-        -Version $version `
-        -ModulesContent ($staffGlobalContent + $staffPageContent) `
-        -GlobalExports $staffGlobalExports `
-        -PageExports $staffPageExports
-    Set-Content -Path "output/hobo-helper-staff-latest.user.js" -Value $staffContent
-    Write-Host "Build complete: output/hobo-helper-staff-latest.user.js"
 
     # Build 3: all modules
     $allGlobalContent = $nonStaffGlobalContent + $staffGlobalContent

@@ -64,6 +64,16 @@ const Utils = {
             }
             return 0; // Default if not found
         },
+        getAwakeness: function() {
+            const awakeSpan = document.getElementById('awakeValue');
+            if (awakeSpan) {
+                const match = awakeSpan.textContent.match(/(\d+)/);
+                if (match) {
+                    return parseInt(match[1], 10);
+                }
+            }
+            return 0;
+        },
         getHoboName: function() {
             const nameElement = document.querySelector('.pname span a');
             if (nameElement) {
@@ -146,6 +156,10 @@ const Utils = {
         getSr: function() {
             const params = new URLSearchParams(window.location.search);
             return params.get('sr');
+        },
+        isDonator: function() {
+            const donDiv = document.querySelector('.becomedon');
+            return donDiv !== null && donDiv.textContent.includes('Donator Information');
         }
-
-};
+    };
+    window.Utils = Utils;

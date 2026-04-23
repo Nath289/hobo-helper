@@ -4,6 +4,7 @@ This document contains a general knowledge base about the mechanics, layout, and
 
 ## General Information
 - The game has various layouts. This project focuses strictly on **"The Future"** layout.
+- Awakeness Regeneration: Donators regenerate 5 Awakeness every 10 minutes. Non-donators regenerate 5 Awakeness every 15 minutes.
 - The UI often uses standard HTML tables (`<tr>`, `<td>`) structured around older design principles.
 - Time in the game is often represented as "T" (e.g. Awake time), and resetting or gaining features is usually tied to specific server time intervals (00:00, 03:00, etc.).
 - Offline HTML snapshots stored in the `html/` directory are grouped into specific functional subfolders (e.g., `living-area/`, `gang/`, `mb/`, `rats/`, `wiki/`). Always ensure recursive matching when searching them in powershell.

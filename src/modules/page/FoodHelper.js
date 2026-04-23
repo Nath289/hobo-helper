@@ -258,6 +258,13 @@ const FoodHelper = {
                     break;
                 }
             }
+
+            // Ensure native checking all updates row highlighting
+            checkAll.addEventListener('change', () => {
+                setTimeout(() => {
+                    checkboxes.forEach(cb => cb.dispatchEvent(new Event('change')));
+                }, 10); // small delay to let native script run first
+            });
         }
 
         // Trigger change on checkboxes to set initial state correctly
@@ -278,6 +285,7 @@ const FoodHelper = {
             } else {
                 cb.checked = false;
             }
+            cb.dispatchEvent(new Event('change'));
         });
     },
 

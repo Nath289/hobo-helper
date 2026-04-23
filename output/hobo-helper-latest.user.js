@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.85
+// @version      8.86
 // @description  Combines original HoboWars helpers into a single modular script (non-staff modules).
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -78,6 +78,16 @@ const Utils = {
                 return this.parseNumber(levelSpan.textContent);
             }
             return 0; // Default if not found
+        },
+        getAwakeness: function() {
+            const awakeSpan = document.getElementById('awakeValue');
+            if (awakeSpan) {
+                const match = awakeSpan.textContent.match(/(\d+)/);
+                if (match) {
+                    return parseInt(match[1], 10);
+                }
+            }
+            return 0;
         },
         getHoboName: function() {
             const nameElement = document.querySelector('.pname span a');
@@ -161,9 +171,13 @@ const Utils = {
         getSr: function() {
             const params = new URLSearchParams(window.location.search);
             return params.get('sr');
+        },
+        isDonator: function() {
+            const donDiv = document.querySelector('.becomedon');
+            return donDiv !== null && donDiv.textContent.includes('Donator Information');
         }
-
-};
+    };
+    window.Utils = Utils;
 const DrinksData = {
             // Data structure containing all drinks in the game
             drinks: {
@@ -453,6 +467,20 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.86",
+            date: "2026-04-24",
+            type: "Changed",
+            notes: [
+                "**Added:** New system to track continuous \"session rejoin time\", preventing 30-min-inactive users from being marked active initially until they establish a 30s session.",
+                "**Added:** New logic to conditionally bypass 30s session tracking wait if the user returns with 0 Awakeness.",
+                "**Added:** Display of calculated \"Lost Awake\" for players logging back in with a full awake bar after being inactive for more than 30 mins.",
+                "**Changed:** Rewrote the donator checking logic to solely utilize the newer `.becomedon` interface matching standard DOM text content, greatly improving check speed and dropping legacy regex evaluations.",
+                "**Changed:** Slightly increased the height of action buttons in the Rats UI.",
+                "**Fixed:** Corrected an issue where checkboxes inside the Food Helper UI did not trigger the underlying game event listeners for updating row highlights.",
+                "**Removed:** staff-latest.user.js from the build compilation pipeline."
+            ]
+        },
+        {
             version: "8.85",
             date: "2026-04-23",
             type: "Fixed",
@@ -485,14 +513,6 @@ const ChangelogData = {
                 "Heavily optimized the Gang Armory page (`GangArmoryHelper`) by buffering UI element construction inside off-DOM `DocumentFragments` before appending them, significantly improving performance by preventing repetitive browser native layout calculation slowdowns.",
                 "Fixed an issue in `RatsHelper` where the grid UI failed to render for Vegetarian rats when the only items in the player's trolley were meat, introducing a defensive fallback to detect \"Eww, meat!\" items when action links natively disappear."
             ]
-        },
-        {
-            version: "8.81",
-            date: "2026-04-22",
-            type: "Changed",
-            notes: [
-                "Changed the \"Last Page\" button in the Gang Hitlist top pagination to \"Last Viewed Page\"."
-            ]
         }
     ]
 };
@@ -509,9 +529,12 @@ const DisplayHelper = {
         { key: 'DisplayHelper_AwakeNotifyInactive', label: 'Notify Only if Inactive (mins)', type: 'number', defaultValue: 30, parent: 'DisplayHelper_AwakeNotify' },
         { key: 'DisplayHelper_InterestingLevel', label: 'Show Next Interesting Level', defaultValue: true },
         { key: 'DisplayHelper_LiveAliveTime', label: 'Show Live Alive Time in Top Menu', defaultValue: true },
-        { key: 'DisplayHelper_ShowCans', label: 'Show Cans in Top Menu', defaultValue: true }
+        { key: 'DisplayHelper_ShowCans', label: 'Show Cans in Top Menu', defaultValue: true },
+        { key: 'DisplayHelper_LastActiveTime', label: 'Display Last Active Time in Panel', defaultValue: true }
     ],
     init: function() {
+        this.initLastActiveTimeTracking();
+
         const settings = Utils.getSettings();
         // This function only runs if the global helper is enabled,
         // and if this specific 'DisplayHelper' is enabled via SettingsHelper.
@@ -546,6 +569,112 @@ const DisplayHelper = {
         if (settings['DisplayHelper_ShowCans'] !== false) {
             this.initShowCans();
         }
+        if (settings['DisplayHelper_LastActiveTime'] !== false) {
+            this.initLastActiveTimeDisplay();
+        }
+    },
+    initLastActiveTimeTracking: function() {
+        // Track last active time, updating at most every 30 seconds
+        const now = Date.now();
+        const lastActiveTime = parseInt(localStorage.getItem('hw_last_active_time') || '0', 10);
+        const timeSinceLast = now - lastActiveTime;
+
+        const updateLastActive = () => {
+            localStorage.setItem('hw_last_active_time', now.toString());
+            localStorage.removeItem('hw_rejoin_time');
+            localStorage.setItem('hw_last_active_awakeness', Utils.getAwakeness().toString());
+            localStorage.removeItem('hw_session_lost_awake_checked');
+            localStorage.removeItem('hw_session_lost_awake');
+        };
+
+        if (timeSinceLast > 1800000) { // 30 minutes
+            // Calculate lost awakeness
+            if (lastActiveTime > 0 && !localStorage.getItem('hw_session_lost_awake_checked')) {
+                const prevAwake = parseInt(localStorage.getItem('hw_last_active_awakeness') || '0', 10);
+                const inactiveMins = timeSinceLast / 60000;
+                const isDonator = Utils.isDonator();
+                const tickInterval = isDonator ? 10 : 15;
+                const ticks = Math.floor(inactiveMins / tickInterval);
+                const estimatedAwake = prevAwake + (ticks * 5);
+                
+                let maxAwake = 100;
+                const currentAwake = Utils.getAwakeness();
+                const awakeSpan = document.getElementById('awakeValue');
+                if (awakeSpan) {
+                    const awakeMatch = awakeSpan.textContent.match(/(\d+)\/(\d+)/);
+                    if (awakeMatch) maxAwake = parseInt(awakeMatch[2], 10);
+                }
+
+                if (currentAwake >= maxAwake && estimatedAwake > maxAwake) {
+                    const lost = estimatedAwake - maxAwake;
+                    localStorage.setItem('hw_session_lost_awake', lost.toString());
+                }
+                localStorage.setItem('hw_session_lost_awake_checked', '1');
+            }
+
+            if (Utils.getAwakeness() === 0) {
+                // If awakeness is 0, they are already playing/active, immediately log active time
+                updateLastActive();
+            } else {
+                const rejoinTime = parseInt(localStorage.getItem('hw_rejoin_time') || '0', 10);
+                // If starting a new session (or it's been > 5 mins since our initial rejoin attempt)
+                if (rejoinTime === 0 || (now - rejoinTime) > 300000) {
+                    localStorage.setItem('hw_rejoin_time', now.toString());
+                } else if (now - rejoinTime >= 30000) {
+                    // If they've been active for at least 30 seconds since rejoining
+                    updateLastActive();
+                }
+            }
+        } else if (timeSinceLast > 30000) {
+            updateLastActive();
+        }
+    },
+    initLastActiveTimeDisplay: function() {
+        const leftPanel = document.querySelector('.left-panel');
+        if (!leftPanel) return;
+
+        const displayDiv = document.createElement('div');
+        displayDiv.style.textAlign = 'center';
+        displayDiv.style.fontSize = '12px';
+        displayDiv.style.padding = '5px 2px';
+        displayDiv.style.backgroundColor = '#f8f9fc';
+        displayDiv.style.borderBottom = '1px solid #d3e0f0';
+        displayDiv.style.marginBottom = '5px';
+        displayDiv.style.color = '#333';
+        displayDiv.style.fontWeight = 'bold';
+        
+        leftPanel.insertBefore(displayDiv, leftPanel.firstChild);
+
+        const updateDisplay = () => {
+            const lastActive = parseInt(localStorage.getItem('hw_last_active_time') || '0', 10);
+            if (!lastActive) {
+                displayDiv.textContent = 'Last Active: Unknown';
+                return;
+            }
+
+            const elapsedSecs = Math.floor((Date.now() - lastActive) / 1000);
+            if (elapsedSecs < 60) {
+                displayDiv.textContent = 'Active: Just now';
+                return;
+            }
+            
+            const hours = Math.floor(elapsedSecs / 3600);
+            const mins = Math.floor((elapsedSecs % 3600) / 60);
+
+            let timeParts = [];
+            if (hours > 0) timeParts.push(`${hours}h`);
+            if (mins > 0 || hours === 0) timeParts.push(`${mins}m`);
+            
+            let displayStr = `Last Active: ${timeParts.join(' ')} ago`;
+            const lostAwake = parseInt(localStorage.getItem('hw_session_lost_awake') || '0', 10);
+            if (lostAwake > 0) {
+                displayStr += `<br><span style="color: #d9534f; font-weight: normal;">Lost Awake: ${lostAwake}</span>`;
+            }
+            displayDiv.innerHTML = displayStr;
+        };
+
+        updateDisplay();
+        setInterval(updateDisplay, 30000); // 30 seconds interval check
     },
     initShowCans: function() {
         if (!document.getElementById('hobohelper-cans-style')) {
@@ -843,13 +972,7 @@ const DisplayHelper = {
         const currentAwake = parseInt(awakeMatch[1], 10);
         const maxAwake = parseInt(awakeMatch[2], 10);
 
-        let isDonator = false;
-        if (document.documentElement.innerHTML.match(/var\s+donator=(\d+);/)) {
-            const m = document.documentElement.innerHTML.match(/var\s+donator=(\d+);/);
-            if (m && parseInt(m[1], 10) > 0) isDonator = true;
-        } else if (document.documentElement.innerHTML.includes('Donator Days:')) {
-            isDonator = true;
-        }
+        let isDonator = Utils.isDonator();
 
         const now = Date.now();
         localStorage.setItem('hw_awake_last_active', now.toString());
@@ -2180,6 +2303,13 @@ const FoodHelper = {
                     break;
                 }
             }
+
+            // Ensure native checking all updates row highlighting
+            checkAll.addEventListener('change', () => {
+                setTimeout(() => {
+                    checkboxes.forEach(cb => cb.dispatchEvent(new Event('change')));
+                }, 10); // small delay to let native script run first
+            });
         }
 
         // Trigger change on checkboxes to set initial state correctly
@@ -2200,6 +2330,7 @@ const FoodHelper = {
             } else {
                 cb.checked = false;
             }
+            cb.dispatchEvent(new Event('change'));
         });
     },
 
@@ -6055,7 +6186,7 @@ const RatsHelper = {
                 background: #ddd;
                 font-weight: bold;
                 text-decoration: none;
-                padding: 3px 12px;
+                padding: 6px 12px;
                 border-radius: 3px;
                 border: 0;
                 cursor: pointer;
@@ -8277,7 +8408,7 @@ const WellnessClinicHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.85';
+        window.HoboHelperVersion = '8.86';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

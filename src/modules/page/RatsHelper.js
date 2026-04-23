@@ -76,7 +76,7 @@ const RatsHelper = {
                 background: #ddd;
                 font-weight: bold;
                 text-decoration: none;
-                padding: 3px 12px;
+                padding: 6px 12px;
                 border-radius: 3px;
                 border: 0;
                 cursor: pointer;
