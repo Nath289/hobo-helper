@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (All)
 // @namespace    http://tampermonkey.net/
-// @version      8.87
+// @version      8.89
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -467,6 +467,22 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.89",
+            date: "2026-04-24",
+            type: "Changed",
+            notes: [
+                "**Changed:** Swapped the Battle Graph chart types: Health Remaining is now a descending Line chart for continuous tracking, and Damage Dealt is now a stacked Bar chart to better illustrate each fighter's individual hits per round without jarring line drops."
+            ]
+        },
+        {
+            version: "8.88",
+            date: "2026-04-24",
+            type: "Changed",
+            notes: [
+                "**Enhanced:** The Battle Graph panel is now resizable via CSS `resize: both`. The internal jqplot charts automatically resize to fit using a ResizeObserver to maintain aspect ratios correctly alongside the frame."
+            ]
+        },
+        {
             version: "8.87",
             date: "2026-04-24",
             type: "Changed",
@@ -494,23 +510,6 @@ const ChangelogData = {
             type: "Fixed",
             notes: [
                 "Replaced the purple check mark with a proper green tick emoji in the `FoodHelper` \"Updated Crap!\" notification button for better visual feedback."
-            ]
-        },
-        {
-            version: "8.84",
-            date: "2026-04-23",
-            type: "Fixed",
-            notes: [
-                "Reverted a regression in `FoodHelper` where marking \"crap\" food inadvertently cleared out items that were unseen on the page, restoring accurate retention of the list across different device sorting views."
-            ]
-        },
-        {
-            version: "8.83",
-            date: "2026-04-23",
-            type: "Changed",
-            notes: [
-                "Reverted the `DocumentFragment` updates from the `GangArmoryHelper` due to JavaScript iteration bottlenecking causing lag during initial render.",
-                "Refactored `ActiveListHelper` and `BackpackHelper` DOM generation logic to inject batched elements via `DocumentFragments` to prevent multi-reflow UI execution slowdowns."
             ]
         }
     ]
@@ -1821,6 +1820,9 @@ const BattleHelper = {
         panel.style.zIndex = '9999';
         panel.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
         panel.style.width = panelWidth + 'px';
+        panel.style.height = '80vh';
+        panel.style.resize = 'both';
+        panel.style.overflow = 'hidden';
 
         const closeDiv = document.createElement('div');
         closeDiv.style.textAlign = 'right';
@@ -1835,18 +1837,23 @@ const BattleHelper = {
         panel.appendChild(closeDiv);
 
         const chartContainer = document.createElement('div');
+        chartContainer.style.height = 'calc(100% - 30px)';
+        chartContainer.style.display = 'flex';
+        chartContainer.style.flexDirection = 'column';
 
         const chartDivHP = document.createElement('div');
         chartDivHP.id = 'fightGraphCanvasHP';
-        chartDivHP.style.width = canvasWidth + 'px';
-        chartDivHP.style.height = '35vh';
+        chartDivHP.style.width = '100%';
+        chartDivHP.style.flex = '1';
+        chartDivHP.style.minHeight = '150px';
         chartDivHP.style.marginBottom = '20px';
         chartContainer.appendChild(chartDivHP);
 
         const chartDivDmg = document.createElement('div');
         chartDivDmg.id = 'fightGraphCanvasDmg';
-        chartDivDmg.style.width = canvasWidth + 'px';
-        chartDivDmg.style.height = '35vh';
+        chartDivDmg.style.width = '100%';
+        chartDivDmg.style.flex = '1';
+        chartDivDmg.style.minHeight = '150px';
         chartContainer.appendChild(chartDivDmg);
 
         panel.appendChild(chartContainer);
@@ -1861,6 +1868,8 @@ const BattleHelper = {
             document.head.appendChild(script);
         };
 
+        let plotHP, plotDmg;
+
         const drawChart = () => {
             let jqPlotCss = document.createElement('link');
             jqPlotCss.rel = 'stylesheet';
@@ -1870,12 +1879,8 @@ const BattleHelper = {
             setTimeout(() => {
                 if (typeof $ === 'undefined' || !$.jqplot) return;
 
-                $.jqplot('fightGraphCanvasHP', [hp1, hp2], {
+                plotHP = $.jqplot('fightGraphCanvasHP', [hp1, hp2], {
                     title: 'Health Remaining',
-                    seriesDefaults: {
-                        renderer: $.jqplot.BarRenderer,
-                        rendererOptions: { barPadding: 2, barMargin: 2 }
-                    },
                     axes: {
                         xaxis: { pad: 1.05, label: 'Round' },
                         yaxis: { min: 0, label: 'HP' }
@@ -1888,8 +1893,13 @@ const BattleHelper = {
                     cursor: { show: true, zoom: true, showTooltip: false }
                 });
 
-                $.jqplot('fightGraphCanvasDmg', [dmg2, dmg1], {
+                plotDmg = $.jqplot('fightGraphCanvasDmg', [dmg2, dmg1], {
                     title: 'Damage Dealt',
+                    stackSeries: true,
+                    seriesDefaults: {
+                        renderer: $.jqplot.BarRenderer,
+                        rendererOptions: { barPadding: 2, barMargin: 2 }
+                    },
                     axes: {
                         xaxis: { pad: 1.05, label: 'Round' },
                         yaxis: { min: 0, label: 'Damage' }
@@ -1901,6 +1911,14 @@ const BattleHelper = {
                     legend: { show: true, location: 'ne', placement: 'inside' },
                     cursor: { show: true, zoom: true, showTooltip: false }
                 });
+
+                const resizeObserver = new ResizeObserver(() => {
+                    if (plotHP && plotDmg) {
+                        plotHP.replot({ resetAxes: false });
+                        plotDmg.replot({ resetAxes: false });
+                    }
+                });
+                resizeObserver.observe(panel);
             }, 100);
         };
 
@@ -10836,7 +10854,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.87';
+        window.HoboHelperVersion = '8.89';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

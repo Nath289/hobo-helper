@@ -120,6 +120,9 @@ const BattleHelper = {
         panel.style.zIndex = '9999';
         panel.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
         panel.style.width = panelWidth + 'px';
+        panel.style.height = '80vh';
+        panel.style.resize = 'both';
+        panel.style.overflow = 'hidden';
 
         const closeDiv = document.createElement('div');
         closeDiv.style.textAlign = 'right';
@@ -134,18 +137,23 @@ const BattleHelper = {
         panel.appendChild(closeDiv);
 
         const chartContainer = document.createElement('div');
+        chartContainer.style.height = 'calc(100% - 30px)';
+        chartContainer.style.display = 'flex';
+        chartContainer.style.flexDirection = 'column';
 
         const chartDivHP = document.createElement('div');
         chartDivHP.id = 'fightGraphCanvasHP';
-        chartDivHP.style.width = canvasWidth + 'px';
-        chartDivHP.style.height = '35vh';
+        chartDivHP.style.width = '100%';
+        chartDivHP.style.flex = '1';
+        chartDivHP.style.minHeight = '150px';
         chartDivHP.style.marginBottom = '20px';
         chartContainer.appendChild(chartDivHP);
 
         const chartDivDmg = document.createElement('div');
         chartDivDmg.id = 'fightGraphCanvasDmg';
-        chartDivDmg.style.width = canvasWidth + 'px';
-        chartDivDmg.style.height = '35vh';
+        chartDivDmg.style.width = '100%';
+        chartDivDmg.style.flex = '1';
+        chartDivDmg.style.minHeight = '150px';
         chartContainer.appendChild(chartDivDmg);
 
         panel.appendChild(chartContainer);
@@ -160,6 +168,8 @@ const BattleHelper = {
             document.head.appendChild(script);
         };
 
+        let plotHP, plotDmg;
+
         const drawChart = () => {
             let jqPlotCss = document.createElement('link');
             jqPlotCss.rel = 'stylesheet';
@@ -169,12 +179,8 @@ const BattleHelper = {
             setTimeout(() => {
                 if (typeof $ === 'undefined' || !$.jqplot) return;
 
-                $.jqplot('fightGraphCanvasHP', [hp1, hp2], {
+                plotHP = $.jqplot('fightGraphCanvasHP', [hp1, hp2], {
                     title: 'Health Remaining',
-                    seriesDefaults: {
-                        renderer: $.jqplot.BarRenderer,
-                        rendererOptions: { barPadding: 2, barMargin: 2 }
-                    },
                     axes: {
                         xaxis: { pad: 1.05, label: 'Round' },
                         yaxis: { min: 0, label: 'HP' }
@@ -187,8 +193,13 @@ const BattleHelper = {
                     cursor: { show: true, zoom: true, showTooltip: false }
                 });
 
-                $.jqplot('fightGraphCanvasDmg', [dmg2, dmg1], {
+                plotDmg = $.jqplot('fightGraphCanvasDmg', [dmg2, dmg1], {
                     title: 'Damage Dealt',
+                    stackSeries: true,
+                    seriesDefaults: {
+                        renderer: $.jqplot.BarRenderer,
+                        rendererOptions: { barPadding: 2, barMargin: 2 }
+                    },
                     axes: {
                         xaxis: { pad: 1.05, label: 'Round' },
                         yaxis: { min: 0, label: 'Damage' }
@@ -200,6 +211,14 @@ const BattleHelper = {
                     legend: { show: true, location: 'ne', placement: 'inside' },
                     cursor: { show: true, zoom: true, showTooltip: false }
                 });
+
+                const resizeObserver = new ResizeObserver(() => {
+                    if (plotHP && plotDmg) {
+                        plotHP.replot({ resetAxes: false });
+                        plotDmg.replot({ resetAxes: false });
+                    }
+                });
+                resizeObserver.observe(panel);
             }, 100);
         };
 

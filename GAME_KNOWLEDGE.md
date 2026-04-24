@@ -4,7 +4,7 @@ This document contains a general knowledge base about the mechanics, layout, and
 
 ## General Information
 - The game has various layouts. This project focuses strictly on **"The Future"** layout.
-- The game uses `jqplot` for charting natively. To render graphs, you can load `/js/jqplot/jquery.jqplot.min.js` and plugins like `jqplot.barRenderer.min.js` if they are not currently loaded in the DOM.
+- The game uses `jqplot` for charting natively. To render graphs, you can load `/js/jqplot/jquery.jqplot.min.js` and plugins like `jqplot.barRenderer.min.js` if they are not currently loaded in the DOM. If your graph container is dynamically resizable via CSS `resize: both`, use a `ResizeObserver` along with `plot.replot({ resetAxes: false })` to seamlessly rescale the graph.
 - Awakeness Regeneration: Donators regenerate 5 Awakeness every 10 minutes. Non-donators regenerate 5 Awakeness every 15 minutes.
 - The UI often uses standard HTML tables (`<tr>`, `<td>`) structured around older design principles.
 - Time in the game is often represented as "T" (e.g. Awake time), and resetting or gaining features is usually tied to specific server time intervals (00:00, 03:00, etc.).
