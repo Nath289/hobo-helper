@@ -118,10 +118,6 @@ const DisplayHelper = {
         displayDiv.style.textAlign = 'center';
         displayDiv.style.fontSize = '12px';
         displayDiv.style.padding = '5px 2px';
-        displayDiv.style.backgroundColor = '#f8f9fc';
-        displayDiv.style.borderBottom = '1px solid #d3e0f0';
-        displayDiv.style.marginBottom = '5px';
-        displayDiv.style.color = '#333';
         displayDiv.style.fontWeight = 'bold';
         
         leftPanel.insertBefore(displayDiv, leftPanel.firstChild);

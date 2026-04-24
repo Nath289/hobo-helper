@@ -379,3 +379,4 @@ Helper available on Message Board threads exclusively designed for Gang Staff.
 - **Jack Reacher**: Automatically prepends "Major" with a bright green shadow to any user link pointing to "Jack Reacher" (ID `107380`).
 - **Widen Content Area**: Expands the historically narrow game content container to a customizable width (default 660px) for better readability on modern monitors.
 - **Swipeable Topbar Menu**: Converts the crowded top navigation bar (Dirt Road, Recycling Bin, etc.) into a horizontally scrollable container, preventing off-screen clipping on mobile devices.
+- **Battle Helper:** Adds a button to view a line graph of the fight inside a floating panel on the results page.
