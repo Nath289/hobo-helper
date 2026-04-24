@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.86.20260424.1242
+// @version      8.87.20260424.1248
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -467,6 +467,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.87",
+            date: "2026-04-24",
+            type: "Changed",
+            notes: [
+                "**Added:** Added a [show graph] button to battle results pages. Clicking it opens a floating panel containing two jqplot graphs: a bar chart displaying health remaining per round, and a line chart plotting damage dealt per round."
+            ]
+        },
+        {
             version: "8.86",
             date: "2026-04-24",
             type: "Changed",
@@ -503,15 +511,6 @@ const ChangelogData = {
             notes: [
                 "Reverted the `DocumentFragment` updates from the `GangArmoryHelper` due to JavaScript iteration bottlenecking causing lag during initial render.",
                 "Refactored `ActiveListHelper` and `BackpackHelper` DOM generation logic to inject batched elements via `DocumentFragments` to prevent multi-reflow UI execution slowdowns."
-            ]
-        },
-        {
-            version: "8.82",
-            date: "2026-04-22",
-            type: "Changed",
-            notes: [
-                "Heavily optimized the Gang Armory page (`GangArmoryHelper`) by buffering UI element construction inside off-DOM `DocumentFragments` before appending them, significantly improving performance by preventing repetitive browser native layout calculation slowdowns.",
-                "Fixed an issue in `RatsHelper` where the grid UI failed to render for Vegetarian rats when the only items in the player's trolley were meat, introducing a defensive fallback to detect \"Eww, meat!\" items when action links natively disappear."
             ]
         }
     ]
@@ -1746,34 +1745,37 @@ const BattleHelper = {
         let hpTracker = { [fighters[0]]: [], [fighters[1]]: [] };
         let dmgTracker = { [fighters[0]]: [], [fighters[1]]: [] };
         let lines = fightDisplay.innerHTML.split(/<br\s*\/?>/i);
-        const getRecipient = (htmlLine, fighters) => {
-            let div = document.createElement('div');
-            div.innerHTML = htmlLine;
-            let plain = div.textContent;
-            let parenIdx = plain.indexOf('(');
-            if (parenIdx === -1) parenIdx = plain.length;
-            let maxIdx = -1;
-            let rec = null;
-            for (let f of fighters) {
-                let fIdx = plain.lastIndexOf(f, parenIdx);
-                if (fIdx > maxIdx) {
-                    maxIdx = fIdx;
-                    rec = f;
-                }
-            }
-            return rec;
-        };
         lines.forEach(line => {
-            let match = line.match(/([\d,]+)(?:<\/font>)?(?:<\/b>)?\s+(?:life(?:\.)?|damage).*?\((?:<font[^>]*>)?([\d,]+)(?:<\/font>)?\s+life\)/i);
+            let div = document.createElement('div');
+            div.innerHTML = line;
+            let plain = div.textContent.trim();
+
+            let match = plain.match(/([\d,]+)\s+(?:life(?:.)?|damage).*?\(([\d,]+)\s+life\)/i);
             if (match) {
                 let change = parseFloat(match[1].replace(/,/g, ''));
                 let hp = parseFloat(match[2].replace(/,/g, ''));
-                let receiver = getRecipient(line, fighters);
+
+                let parenIdx = plain.indexOf('(');
+                if (parenIdx === -1) parenIdx = plain.length;
+                let maxIdx = -1;
+                let receiver = null;
+                for (let f of fighters) {
+                    let fIdx = plain.lastIndexOf(f, parenIdx);
+                    if (fIdx > maxIdx) {
+                        maxIdx = fIdx;
+                        receiver = f;
+                    }
+                }
                 if (!receiver) {
                     receiver = fighters[0]; // arbitrary fallback
                 }
+
+                let hasTurnNumber = /^\d+\./.test(plain);
+                let isHeal = /regain|heal/i.test(plain);
+                let damageDealt = (hasTurnNumber && !isHeal) ? change : 0;
+
                 hpTracker[receiver].push(hp);
-                dmgTracker[receiver].push(change);
+                dmgTracker[receiver].push(damageDealt);
 
                 let other = receiver === fighters[0] ? fighters[1] : fighters[0];
                 let lastOther = hpTracker[other].length > 0 ? hpTracker[other][hpTracker[other].length - 1] : null;
@@ -10834,7 +10836,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.86.20260424.1242';
+        window.HoboHelperVersion = '8.87.20260424.1248';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

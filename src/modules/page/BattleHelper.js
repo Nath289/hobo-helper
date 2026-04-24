@@ -44,34 +44,37 @@ const BattleHelper = {
         let hpTracker = { [fighters[0]]: [], [fighters[1]]: [] };
         let dmgTracker = { [fighters[0]]: [], [fighters[1]]: [] };
         let lines = fightDisplay.innerHTML.split(/<br\s*\/?>/i);
-        const getRecipient = (htmlLine, fighters) => {
-            let div = document.createElement('div');
-            div.innerHTML = htmlLine;
-            let plain = div.textContent;
-            let parenIdx = plain.indexOf('(');
-            if (parenIdx === -1) parenIdx = plain.length;
-            let maxIdx = -1;
-            let rec = null;
-            for (let f of fighters) {
-                let fIdx = plain.lastIndexOf(f, parenIdx);
-                if (fIdx > maxIdx) {
-                    maxIdx = fIdx;
-                    rec = f;
-                }
-            }
-            return rec;
-        };
         lines.forEach(line => {
-            let match = line.match(/([\d,]+)(?:<\/font>)?(?:<\/b>)?\s+(?:life(?:\.)?|damage).*?\((?:<font[^>]*>)?([\d,]+)(?:<\/font>)?\s+life\)/i);
+            let div = document.createElement('div');
+            div.innerHTML = line;
+            let plain = div.textContent.trim();
+
+            let match = plain.match(/([\d,]+)\s+(?:life(?:.)?|damage).*?\(([\d,]+)\s+life\)/i);
             if (match) {
                 let change = parseFloat(match[1].replace(/,/g, ''));
                 let hp = parseFloat(match[2].replace(/,/g, ''));
-                let receiver = getRecipient(line, fighters);
+
+                let parenIdx = plain.indexOf('(');
+                if (parenIdx === -1) parenIdx = plain.length;
+                let maxIdx = -1;
+                let receiver = null;
+                for (let f of fighters) {
+                    let fIdx = plain.lastIndexOf(f, parenIdx);
+                    if (fIdx > maxIdx) {
+                        maxIdx = fIdx;
+                        receiver = f;
+                    }
+                }
                 if (!receiver) {
                     receiver = fighters[0]; // arbitrary fallback
                 }
+
+                let hasTurnNumber = /^\d+\./.test(plain);
+                let isHeal = /regain|heal/i.test(plain);
+                let damageDealt = (hasTurnNumber && !isHeal) ? change : 0;
+
                 hpTracker[receiver].push(hp);
-                dmgTracker[receiver].push(change);
+                dmgTracker[receiver].push(damageDealt);
 
                 let other = receiver === fighters[0] ? fighters[1] : fighters[0];
                 let lastOther = hpTracker[other].length > 0 ? hpTracker[other][hpTracker[other].length - 1] : null;
