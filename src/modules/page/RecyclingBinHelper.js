@@ -41,7 +41,7 @@ const RecyclingBinHelper = {
             const configBtn = document.createElement('input');
             configBtn.type = 'button';
             configBtn.value = '⚙ Configure';
-            configBtn.style.marginLeft = '5px';
+            configBtn.style.float = 'right';
             configBtn.title = 'Configure the amounts for the quick-add buttons';
             configBtn.onclick = function(e) {
                 e.preventDefault();

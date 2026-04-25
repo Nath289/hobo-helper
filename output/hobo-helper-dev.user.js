@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.88.20260424.1905
+// @version      8.89.20260425.1332
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -467,6 +467,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.89",
+            date: "2026-04-24",
+            type: "Changed",
+            notes: [
+                "**Changed:** Swapped the Battle Graph chart types: Health Remaining is now a descending Line chart for continuous tracking, and Damage Dealt is now a stacked Bar chart to better illustrate each fighter's individual hits per round without jarring line drops."
+            ]
+        },
+        {
             version: "8.88",
             date: "2026-04-24",
             type: "Changed",
@@ -502,14 +510,6 @@ const ChangelogData = {
             type: "Fixed",
             notes: [
                 "Replaced the purple check mark with a proper green tick emoji in the `FoodHelper` \"Updated Crap!\" notification button for better visual feedback."
-            ]
-        },
-        {
-            version: "8.84",
-            date: "2026-04-23",
-            type: "Fixed",
-            notes: [
-                "Reverted a regression in `FoodHelper` where marking \"crap\" food inadvertently cleared out items that were unseen on the page, restoring accurate retention of the list across different device sorting views."
             ]
         }
     ]
@@ -7310,7 +7310,7 @@ const RecyclingBinHelper = {
             const configBtn = document.createElement('input');
             configBtn.type = 'button';
             configBtn.value = '⚙ Configure';
-            configBtn.style.marginLeft = '5px';
+            configBtn.style.float = 'right';
             configBtn.title = 'Configure the amounts for the quick-add buttons';
             configBtn.onclick = function(e) {
                 e.preventDefault();
@@ -10854,7 +10854,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.88.20260424.1905';
+        window.HoboHelperVersion = '8.89.20260425.1332';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

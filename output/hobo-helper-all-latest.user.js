@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (All)
 // @namespace    http://tampermonkey.net/
-// @version      8.89
+// @version      8.90
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -467,6 +467,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.90",
+            date: "2026-04-25",
+            type: "Changed",
+            notes: [
+                "**Changed:** Moved the Configure button in the Recycling Bin Helper to the far right of the submit controls for better layout flow."
+            ]
+        },
+        {
             version: "8.89",
             date: "2026-04-24",
             type: "Changed",
@@ -502,14 +510,6 @@ const ChangelogData = {
                 "**Changed:** Slightly increased the height of action buttons in the Rats UI.",
                 "**Fixed:** Corrected an issue where checkboxes inside the Food Helper UI did not trigger the underlying game event listeners for updating row highlights.",
                 "**Removed:** staff-latest.user.js from the build compilation pipeline."
-            ]
-        },
-        {
-            version: "8.85",
-            date: "2026-04-23",
-            type: "Fixed",
-            notes: [
-                "Replaced the purple check mark with a proper green tick emoji in the `FoodHelper` \"Updated Crap!\" notification button for better visual feedback."
             ]
         }
     ]
@@ -7310,7 +7310,7 @@ const RecyclingBinHelper = {
             const configBtn = document.createElement('input');
             configBtn.type = 'button';
             configBtn.value = '⚙ Configure';
-            configBtn.style.marginLeft = '5px';
+            configBtn.style.float = 'right';
             configBtn.title = 'Configure the amounts for the quick-add buttons';
             configBtn.onclick = function(e) {
                 e.preventDefault();
@@ -10854,7 +10854,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.89';
+        window.HoboHelperVersion = '8.90';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
