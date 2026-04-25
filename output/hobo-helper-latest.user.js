@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.90
+// @version      8.91
 // @description  Combines original HoboWars helpers into a single modular script (non-staff modules).
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -467,6 +467,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.91",
+            date: "2026-04-25",
+            type: "Changed",
+            notes: [
+                "**Changed:** Restructured the `HitlistHelper` multi-column sorting configuration UI to start collapsed above the table, drastically reducing vertical clutter while remaining easily accessible for editing."
+            ]
+        },
+        {
             version: "8.90",
             date: "2026-04-25",
             type: "Changed",
@@ -496,20 +504,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "**Added:** Added a [show graph] button to battle results pages. Clicking it opens a floating panel containing two jqplot graphs: a bar chart displaying health remaining per round, and a line chart plotting damage dealt per round."
-            ]
-        },
-        {
-            version: "8.86",
-            date: "2026-04-24",
-            type: "Changed",
-            notes: [
-                "**Added:** New system to track continuous \"session rejoin time\", preventing 30-min-inactive users from being marked active initially until they establish a 30s session.",
-                "**Added:** New logic to conditionally bypass 30s session tracking wait if the user returns with 0 Awakeness.",
-                "**Added:** Display of calculated \"Lost Awake\" for players logging back in with a full awake bar after being inactive for more than 30 mins.",
-                "**Changed:** Rewrote the donator checking logic to solely utilize the newer `.becomedon` interface matching standard DOM text content, greatly improving check speed and dropping legacy regex evaluations.",
-                "**Changed:** Slightly increased the height of action buttons in the Rats UI.",
-                "**Fixed:** Corrected an issue where checkboxes inside the Food Helper UI did not trigger the underlying game event listeners for updating row highlights.",
-                "**Removed:** staff-latest.user.js from the build compilation pipeline."
             ]
         }
     ]
@@ -3792,12 +3786,29 @@ const HitlistHelper = {
 
         // Build Multi-Sort UI Form
         const container = document.createElement('div');
-        container.style.marginTop = '15px';
-        container.style.padding = '10px';
+        container.style.marginBottom = '15px';
+        container.style.padding = '2px';
         container.style.background = '#eee';
         container.style.border = '1px solid #ccc';
         container.style.borderRadius = '5px';
-        container.innerHTML = `<strong>Multi-Column Hitlist Sort</strong><br/><br/>`;
+
+        const header = document.createElement('div');
+        header.innerHTML = `<strong>Multi-Column Hitlist Sort</strong>`;
+        header.style.display = 'flex';
+        header.style.justifyContent = 'space-between';
+        header.style.alignItems = 'center';
+
+        const editBtn = document.createElement('button');
+        editBtn.textContent = 'Edit Sort';
+        editBtn.className = 'btn';
+        header.appendChild(editBtn);
+
+        const configPanel = document.createElement('div');
+        configPanel.style.display = 'none';
+        configPanel.style.marginTop = '10px';
+
+        container.appendChild(header);
+        container.appendChild(configPanel);
 
         const sorts = ['Sort 1', 'Sort 2', 'Sort 3'];
         const options = [
@@ -3833,7 +3844,7 @@ const HitlistHelper = {
 
             wrapper.appendChild(sel);
             wrapper.appendChild(dirSel);
-            container.appendChild(wrapper);
+            configPanel.appendChild(wrapper);
             selects.push(sel);
             dirSelects.push(dirSel);
         });
@@ -3842,7 +3853,7 @@ const HitlistHelper = {
         btn.textContent = 'Apply Sort';
         btn.className = 'btn';
         btn.style.marginLeft = '10px';
-        container.appendChild(btn);
+        configPanel.appendChild(btn);
 
         // Load Default or Saved
         let savedConfig;
@@ -3866,6 +3877,14 @@ const HitlistHelper = {
             }
         });
 
+        editBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const isHidden = configPanel.style.display === 'none';
+            configPanel.style.display = isHidden ? 'block' : 'none';
+            editBtn.textContent = isHidden ? 'Cancel' : 'Edit Sort';
+            container.style.padding = isHidden ? '10px' : '4px 10px';
+        });
+
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             const config = [];
@@ -3876,9 +3895,13 @@ const HitlistHelper = {
             }
             localStorage.setItem('hw_hitlist_multisort', JSON.stringify(config));
             this.applyMultiSort(dataRows, tbody, config);
+
+            configPanel.style.display = 'none';
+            editBtn.textContent = 'Edit Sort';
+            container.style.padding = '4px 10px';
         });
 
-        table.parentElement.insertBefore(container, table.nextSibling);
+        table.parentElement.insertBefore(container, table);
 
         // Auto apply sort on load
         this.applyMultiSort(dataRows, tbody, savedConfig);
@@ -8648,7 +8671,7 @@ const WellnessClinicHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.90';
+        window.HoboHelperVersion = '8.91';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

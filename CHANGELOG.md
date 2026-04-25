@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.91] - 2026-04-25
+- **Changed:** Restructured the `HitlistHelper` multi-column sorting configuration UI to start collapsed above the table, drastically reducing vertical clutter while remaining easily accessible for editing.
+
 ## [8.90] - 2026-04-25
 - **Changed:** Moved the Configure button in the Recycling Bin Helper to the far right of the submit controls for better layout flow.
 

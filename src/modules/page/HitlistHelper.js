@@ -97,12 +97,29 @@ const HitlistHelper = {
 
         // Build Multi-Sort UI Form
         const container = document.createElement('div');
-        container.style.marginTop = '15px';
-        container.style.padding = '10px';
+        container.style.marginBottom = '15px';
+        container.style.padding = '2px';
         container.style.background = '#eee';
         container.style.border = '1px solid #ccc';
         container.style.borderRadius = '5px';
-        container.innerHTML = `<strong>Multi-Column Hitlist Sort</strong><br/><br/>`;
+
+        const header = document.createElement('div');
+        header.innerHTML = `<strong>Multi-Column Hitlist Sort</strong>`;
+        header.style.display = 'flex';
+        header.style.justifyContent = 'space-between';
+        header.style.alignItems = 'center';
+
+        const editBtn = document.createElement('button');
+        editBtn.textContent = 'Edit Sort';
+        editBtn.className = 'btn';
+        header.appendChild(editBtn);
+
+        const configPanel = document.createElement('div');
+        configPanel.style.display = 'none';
+        configPanel.style.marginTop = '10px';
+
+        container.appendChild(header);
+        container.appendChild(configPanel);
 
         const sorts = ['Sort 1', 'Sort 2', 'Sort 3'];
         const options = [
@@ -138,7 +155,7 @@ const HitlistHelper = {
 
             wrapper.appendChild(sel);
             wrapper.appendChild(dirSel);
-            container.appendChild(wrapper);
+            configPanel.appendChild(wrapper);
             selects.push(sel);
             dirSelects.push(dirSel);
         });
@@ -147,7 +164,7 @@ const HitlistHelper = {
         btn.textContent = 'Apply Sort';
         btn.className = 'btn';
         btn.style.marginLeft = '10px';
-        container.appendChild(btn);
+        configPanel.appendChild(btn);
 
         // Load Default or Saved
         let savedConfig;
@@ -171,6 +188,14 @@ const HitlistHelper = {
             }
         });
 
+        editBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const isHidden = configPanel.style.display === 'none';
+            configPanel.style.display = isHidden ? 'block' : 'none';
+            editBtn.textContent = isHidden ? 'Cancel' : 'Edit Sort';
+            container.style.padding = isHidden ? '10px' : '4px 10px';
+        });
+
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             const config = [];
@@ -181,9 +206,13 @@ const HitlistHelper = {
             }
             localStorage.setItem('hw_hitlist_multisort', JSON.stringify(config));
             this.applyMultiSort(dataRows, tbody, config);
+
+            configPanel.style.display = 'none';
+            editBtn.textContent = 'Edit Sort';
+            container.style.padding = '4px 10px';
         });
 
-        table.parentElement.insertBefore(container, table.nextSibling);
+        table.parentElement.insertBefore(container, table);
 
         // Auto apply sort on load
         this.applyMultiSort(dataRows, tbody, savedConfig);
