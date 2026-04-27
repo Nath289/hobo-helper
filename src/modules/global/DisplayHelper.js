@@ -23,12 +23,7 @@ const DisplayHelper = {
             this.initImprovedAvatars();
         }
         if (settings['DisplayHelper_CustomTitles'] !== false) {
-            this.initFakeQwee();
-            this.initJackReacher();
-            this.initGrabow();
-            this.initPirateKingMugi();
-            this.initUberLeetRoot();
-            this.initSeventhHeaven();
+            this.initCustomTitles();
         }
         if (settings['DisplayHelper_ScrollableTopbar'] !== false) {
             this.initScrollableTopbar();
@@ -325,48 +320,52 @@ const DisplayHelper = {
             });
         }
     },
-    addTitleToPlayer: function(targetHoboId, plainTitle, styledTitle, position = 'prefix') {
-        const playerLinks = document.querySelectorAll(`a[href*="cmd=player&ID=${targetHoboId}"]`);
-        playerLinks.forEach(link => {
-            if (!link.innerHTML.includes(plainTitle) && 
-                !link.innerHTML.includes('<img') && 
-                !link.classList.contains('pavatar') && 
-                !link.innerHTML.includes('avatar-circle')) {
-                if (position === 'suffix') {
-                    link.innerHTML = link.innerHTML + ` ${styledTitle}`;
-                } else {
-                    link.innerHTML = `${styledTitle} ` + link.innerHTML;
+    initCustomTitles: function() {
+        const titleRules = {
+            "2924510": [{ plain: "The Fake", styled: `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">The Fake</span>`, position: 'prefix' }],
+            "107380": [{ plain: "Major", styled: `<span style="color: #00EE00; font-weight: bold; text-shadow: 1px 1px 2px black;">Major</span>`, position: 'prefix' }],
+            "1003713": [
+                { plain: "The", styled: `<span style="color: #A71930; font-weight: bold;">The</span>`, position: 'prefix' },
+                { plain: "the Great", styled: `<span style="color: #A71930; font-weight: bold;">the Great</span>`, position: 'suffix' }
+            ],
+            "1554846": [{ plain: "Pirate King", styled: `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">Pirate King</span>`, position: 'prefix' }],
+            "1140606": [{ type: 'custom', apply: (link) => {
+                if (!link.innerHTML.includes('1337')) {
+                    link.innerHTML = `<span style="color: #36ba01;">${link.innerHTML}</span> <span style="color: #0561CB; font-weight: bold; text-shadow: 1px 1px 2px black;">1337</span>`;
                 }
+            }}],
+            "2924238": [{ plain: "Нeaveп", styled: `<span style="color: #40e0d0; font-weight: bold; text-shadow: 1px 1px 2px black;">Нeaveп</span>`, position: 'suffix' }]
+        };
+
+        const allLinks = document.querySelectorAll('a[href*="cmd=player&ID="]');
+        allLinks.forEach(link => {
+            if (link.innerHTML.includes('<img') ||
+                link.classList.contains('pavatar') ||
+                link.innerHTML.includes('avatar-circle')) {
+                return;
+            }
+
+            const match = link.href.match(/ID=(\d+)/);
+            if (!match) return;
+            const id = match[1];
+
+            const rules = titleRules[id];
+            if (rules) {
+                rules.forEach(rule => {
+                    if (rule.type === 'custom') {
+                        rule.apply(link);
+                    } else {
+                        if (!link.innerHTML.includes(rule.plain)) {
+                            if (rule.position === 'suffix') {
+                                link.innerHTML = link.innerHTML + ` ${rule.styled}`;
+                            } else {
+                                link.innerHTML = `${rule.styled} ` + link.innerHTML;
+                            }
+                        }
+                    }
+                });
             }
         });
-    },
-    initFakeQwee: function() {
-        this.addTitleToPlayer("2924510", "The Fake", `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">The Fake</span>`, 'prefix');
-    },
-    initJackReacher: function() {
-        this.addTitleToPlayer("107380", "Major", `<span style="color: #00EE00; font-weight: bold; text-shadow: 1px 1px 2px black;">Major</span>`, 'prefix');
-    },
-    initGrabow: function() {
-        this.addTitleToPlayer("1003713", "The", `<span style="color: #A71930; font-weight: bold;">The</span>`, 'prefix');
-        this.addTitleToPlayer("1003713", "the Great", `<span style="color: #A71930; font-weight: bold;">the Great</span>`, 'suffix');
-    },
-    initPirateKingMugi: function() {
-        this.addTitleToPlayer("1554846", "Pirate King", `<span style="color: red; font-weight: bold; text-shadow: 1px 1px 2px black;">Pirate King</span>`, 'prefix');
-    },
-    initUberLeetRoot: function() {
-        const targetHoboId = "1140606";
-        const playerLinks = document.querySelectorAll(`a[href*="cmd=player&ID=${targetHoboId}"]`);
-        playerLinks.forEach(link => {
-            if (!link.innerHTML.includes('1337') && 
-                !link.innerHTML.includes('<img') && 
-                !link.classList.contains('pavatar') && 
-                !link.innerHTML.includes('avatar-circle')) {
-                link.innerHTML = `<span style="color: #36ba01;">${link.innerHTML}</span> <span style="color: #0561CB; font-weight: bold; text-shadow: 1px 1px 2px black;">1337</span>`;
-            }
-        });
-    },
-    initSeventhHeaven: function() {
-        this.addTitleToPlayer("2924238", "Нeaveп", `<span style="color: #40e0d0; font-weight: bold; text-shadow: 1px 1px 2px black;">Нeaveп</span>`, 'suffix');
     },
     initInterestingLevel: function() {
         const levelSpan = document.getElementById('statValueLvl');
