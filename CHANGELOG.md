@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.93] - 2026-04-28
+- **Changed:** Heavily optimized DisplayHelper sub-features by batching injected `<style>` elements into a single DOM paint, significantly reducing browser CSS recalculations.
+- **Fixed:** Replaced `innerHTML` destructive mutations with `insertAdjacentHTML` when applying Custom Player Titles, eliminating heavy DOM serialization processing in high-density member pages.
+
 ## [8.92] - 2026-04-28
 - **Changed:** Refactored the Display Helper Custom Player Titles feature to utilize a single unified array mapped DOM scanner, resulting in dramatically improved script performance on pages with high member concentrations compared to iterating multiple separate DOM scans.
 

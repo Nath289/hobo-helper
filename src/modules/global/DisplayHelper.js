@@ -13,7 +13,9 @@ const DisplayHelper = {
         { key: 'DisplayHelper_ShowCans', label: 'Show Cans in Top Menu', defaultValue: true },
         { key: 'DisplayHelper_LastActiveTime', label: 'Display Last Active Time in Panel', defaultValue: true }
     ],
+    addedStyles: '',
     init: function() {
+        this.addedStyles = '';
         this.initLastActiveTimeTracking();
 
         const settings = Utils.getSettings();
@@ -47,6 +49,12 @@ const DisplayHelper = {
         }
         if (settings['DisplayHelper_LastActiveTime'] !== false) {
             this.initLastActiveTimeDisplay();
+        }
+
+        if (this.addedStyles) {
+            const style = document.createElement('style');
+            style.innerHTML = this.addedStyles;
+            document.head.appendChild(style);
         }
     },
     initLastActiveTimeTracking: function() {
@@ -267,18 +275,15 @@ const DisplayHelper = {
         setInterval(updateAliveTime, 1000);
     },
     initWidenPage: function(width) {
-        const style = document.createElement('style');
-        style.innerHTML = `
+        this.addedStyles += `
             .content-area {
                 max-width: ${width}px !important;
                 min-width: ${width}px !important;
             }
         `;
-        document.head.appendChild(style);
     },
     initScrollableTopbar: function() {
-        const style = document.createElement('style');
-        style.innerHTML = `
+        this.addedStyles += `
             .topbar-menu, .topbar {
                 overflow-x: auto;
                 white-space: nowrap;
@@ -295,7 +300,6 @@ const DisplayHelper = {
                 display: inline-block;
             }
         `;
-        document.head.appendChild(style);
 
         // Optional mouse drag-to-scroll support for desktop testing
         const topbar = document.querySelector('.topbar-menu') || document.querySelector('.topbar');
@@ -355,11 +359,11 @@ const DisplayHelper = {
                     if (rule.type === 'custom') {
                         rule.apply(link);
                     } else {
-                        if (!link.innerHTML.includes(rule.plain)) {
+                        if (!link.textContent.includes(rule.plain) && !link.innerHTML.includes(rule.styled)) {
                             if (rule.position === 'suffix') {
-                                link.innerHTML = link.innerHTML + ` ${rule.styled}`;
+                                link.insertAdjacentHTML('beforeend', ` ${rule.styled}`);
                             } else {
-                                link.innerHTML = `${rule.styled} ` + link.innerHTML;
+                                link.insertAdjacentHTML('afterbegin', `${rule.styled} `);
                             }
                         }
                     }
@@ -391,8 +395,7 @@ const DisplayHelper = {
     },
 
     initImprovedAvatars: function() {
-        const style = document.createElement('style');
-        style.innerHTML = `
+        this.addedStyles += `
             /* Avatars */
             .pavatar .avatar-circle {
                 border-radius: 35% 35% 25% 35% !important;
@@ -436,7 +439,6 @@ const DisplayHelper = {
                 padding: 0 !important;
             }
         `;
-        document.head.appendChild(style);
     },
     initAwakeNotification: function(inactiveWaitMins) {
         const awakeSpan = document.getElementById('awakeValue');

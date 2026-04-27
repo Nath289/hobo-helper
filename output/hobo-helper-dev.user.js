@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.91.20260428.0003
+// @version      8.92.20260428.0018
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -467,6 +467,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.92",
+            date: "2026-04-28",
+            type: "Changed",
+            notes: [
+                "**Changed:** Refactored the Display Helper Custom Player Titles feature to utilize a single unified array mapped DOM scanner, resulting in dramatically improved script performance on pages with high member concentrations compared to iterating multiple separate DOM scans."
+            ]
+        },
+        {
             version: "8.91",
             date: "2026-04-25",
             type: "Changed",
@@ -497,14 +505,6 @@ const ChangelogData = {
             notes: [
                 "**Enhanced:** The Battle Graph panel is now resizable via CSS `resize: both`. The internal jqplot charts automatically resize to fit using a ResizeObserver to maintain aspect ratios correctly alongside the frame."
             ]
-        },
-        {
-            version: "8.87",
-            date: "2026-04-24",
-            type: "Changed",
-            notes: [
-                "**Added:** Added a [show graph] button to battle results pages. Clicking it opens a floating panel containing two jqplot graphs: a bar chart displaying health remaining per round, and a line chart plotting damage dealt per round."
-            ]
         }
     ]
 };
@@ -524,7 +524,9 @@ const DisplayHelper = {
         { key: 'DisplayHelper_ShowCans', label: 'Show Cans in Top Menu', defaultValue: true },
         { key: 'DisplayHelper_LastActiveTime', label: 'Display Last Active Time in Panel', defaultValue: true }
     ],
+    addedStyles: '',
     init: function() {
+        this.addedStyles = '';
         this.initLastActiveTimeTracking();
 
         const settings = Utils.getSettings();
@@ -558,6 +560,12 @@ const DisplayHelper = {
         }
         if (settings['DisplayHelper_LastActiveTime'] !== false) {
             this.initLastActiveTimeDisplay();
+        }
+
+        if (this.addedStyles) {
+            const style = document.createElement('style');
+            style.innerHTML = this.addedStyles;
+            document.head.appendChild(style);
         }
     },
     initLastActiveTimeTracking: function() {
@@ -778,18 +786,15 @@ const DisplayHelper = {
         setInterval(updateAliveTime, 1000);
     },
     initWidenPage: function(width) {
-        const style = document.createElement('style');
-        style.innerHTML = `
+        this.addedStyles += `
             .content-area {
                 max-width: ${width}px !important;
                 min-width: ${width}px !important;
             }
         `;
-        document.head.appendChild(style);
     },
     initScrollableTopbar: function() {
-        const style = document.createElement('style');
-        style.innerHTML = `
+        this.addedStyles += `
             .topbar-menu, .topbar {
                 overflow-x: auto;
                 white-space: nowrap;
@@ -806,7 +811,6 @@ const DisplayHelper = {
                 display: inline-block;
             }
         `;
-        document.head.appendChild(style);
 
         // Optional mouse drag-to-scroll support for desktop testing
         const topbar = document.querySelector('.topbar-menu') || document.querySelector('.topbar');
@@ -866,11 +870,11 @@ const DisplayHelper = {
                     if (rule.type === 'custom') {
                         rule.apply(link);
                     } else {
-                        if (!link.innerHTML.includes(rule.plain)) {
+                        if (!link.textContent.includes(rule.plain) && !link.innerHTML.includes(rule.styled)) {
                             if (rule.position === 'suffix') {
-                                link.innerHTML = link.innerHTML + ` ${rule.styled}`;
+                                link.insertAdjacentHTML('beforeend', ` ${rule.styled}`);
                             } else {
-                                link.innerHTML = `${rule.styled} ` + link.innerHTML;
+                                link.insertAdjacentHTML('afterbegin', `${rule.styled} `);
                             }
                         }
                     }
@@ -902,8 +906,7 @@ const DisplayHelper = {
     },
 
     initImprovedAvatars: function() {
-        const style = document.createElement('style');
-        style.innerHTML = `
+        this.addedStyles += `
             /* Avatars */
             .pavatar .avatar-circle {
                 border-radius: 35% 35% 25% 35% !important;
@@ -947,7 +950,6 @@ const DisplayHelper = {
                 padding: 0 !important;
             }
         `;
-        document.head.appendChild(style);
     },
     initAwakeNotification: function(inactiveWaitMins) {
         const awakeSpan = document.getElementById('awakeValue');
@@ -10876,7 +10878,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.91.20260428.0003';
+        window.HoboHelperVersion = '8.92.20260428.0018';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
