@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.96] - 2026-04-29
+- **Added:** Introduced granular configuration settings to the `Explore Helper` allowing users to specifically toggle exactly which events (`Shiny Objects`, `Arena Passes`) populate their custom exploration log.
+- **Added:** The `Explore Helper` now detects and records "Arena Pass" discovery events highlighting them in bold purple within the log interface.
+
 ## [8.95] - 2026-04-28
 - **Added:** Implemented the `ExploreHelper` to track and log in-game explore events across the main Lobby and Movement screens (`cmd=explore`). Events are stored persistently across sessions.
 - **Added:** Explore Log now specifically captures vanishing "Shiny Objects" with a gold color-coding mapping, tracking the time and exact coordinates.

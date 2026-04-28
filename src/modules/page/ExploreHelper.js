@@ -3,17 +3,17 @@ const ExploreHelper = {
     staff: false,
     settings: [
         { key: 'ExploreHelper_Enable', label: 'Enable Explore Helper', defaultValue: true },
-        { key: 'ExploreHelper_Log', label: 'Display Explore Log', defaultValue: true }
+        { key: 'ExploreHelper_Log', label: 'Display Explore Log', defaultValue: true },
+        { key: 'ExploreHelper_LogShiny', label: 'Log Shiny Objects', defaultValue: true, parent: 'ExploreHelper_Log' },
+        { key: 'ExploreHelper_LogArena', label: 'Log Arena Passes', defaultValue: true, parent: 'ExploreHelper_Log' }
     ],
     init: function() {
         const settings = Utils.getSettings();
-        if (settings['ExploreHelper_Enable'] === false) return;
 
         const urlParams = new URLSearchParams(window.location.search);
         const doParam = urlParams.get('do');
-        const enterParam = urlParams.get('enter');
 
-        const isMovePage = doParam === 'move' || enterParam === 'true';
+        const isMovePage = doParam === 'move';
 
         if (isMovePage) {
             this.initMovePage();
@@ -82,13 +82,19 @@ const ExploreHelper = {
     },
 
     initMovePage: function() {
+        const settings = Utils.getSettings();
         const contentArea = document.querySelector('.content-area') || document.body;
         const text = contentArea.textContent;
         const coords = this.getCurrentCoordinates();
 
         // 1. Detect Shiny Object
-        if (text.includes('You see a shiny object, but as soon as you go to pick it up it vanishes.')) {
+        if (settings['ExploreHelper_LogShiny'] !== false && text.includes('You see a shiny object, but as soon as you go to pick it up it vanishes.')) {
             this.addToLog('Saw a vanishing shiny object.', 'shiny', coords);
+        }
+
+        // 2. Detect Arena Pass
+        if (settings['ExploreHelper_LogArena'] !== false && text.includes('You found the Arena Pass.')) {
+            this.addToLog('Found the Arena Pass.', 'arena', coords);
         }
 
         // Other events can be easily added here
@@ -126,11 +132,13 @@ const ExploreHelper = {
                                 date.getSeconds().toString().padStart(2, '0');
 
                 let color = '#333';
+                let fontWeight = 'normal';
                 if (log.type === 'shiny') color = '#B8860B'; // Goldenrod for Shiny Items
+                if (log.type === 'arena') { color = '#8A2BE2'; fontWeight = 'bold'; } // BlueViolet for Arena Pass
 
                 html += `
-                    <li style="color: ${color}; list-style-type: square;">
-                        <span style="color: #999; font-size: 10px;">[${timeStr}]</span> 
+                    <li style="color: ${color}; font-weight: ${fontWeight}; list-style-type: square;">
+                        <span style="color: #999; font-size: 10px; font-weight: normal;">[${timeStr}]</span> 
                         <strong style="color: #555;">(${log.x}, ${log.y})</strong> - ${log.message}
                     </li>`;
             });

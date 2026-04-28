@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.94.20260428.2345
+// @version      8.95.20260429.0026
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -467,6 +467,15 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.95",
+            date: "2026-04-28",
+            type: "Changed",
+            notes: [
+                "**Added:** Implemented the `ExploreHelper` to track and log in-game explore events across the main Lobby and Movement screens (`cmd=explore`). Events are stored persistently across sessions.",
+                "**Added:** Explore Log now specifically captures vanishing \"Shiny Objects\" with a gold color-coding mapping, tracking the time and exact coordinates."
+            ]
+        },
+        {
             version: "8.94",
             date: "2026-04-28",
             type: "Changed",
@@ -498,14 +507,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "**Changed:** Restructured the `HitlistHelper` multi-column sorting configuration UI to start collapsed above the table, drastically reducing vertical clutter while remaining easily accessible for editing."
-            ]
-        },
-        {
-            version: "8.90",
-            date: "2026-04-25",
-            type: "Changed",
-            notes: [
-                "**Changed:** Moved the Configure button in the Recycling Bin Helper to the far right of the submit controls for better layout flow."
             ]
         }
     ]
@@ -2078,17 +2079,17 @@ const ExploreHelper = {
     staff: false,
     settings: [
         { key: 'ExploreHelper_Enable', label: 'Enable Explore Helper', defaultValue: true },
-        { key: 'ExploreHelper_Log', label: 'Display Explore Log', defaultValue: true }
+        { key: 'ExploreHelper_Log', label: 'Display Explore Log', defaultValue: true },
+        { key: 'ExploreHelper_LogShiny', label: 'Log Shiny Objects', defaultValue: true, parent: 'ExploreHelper_Log' },
+        { key: 'ExploreHelper_LogArena', label: 'Log Arena Passes', defaultValue: true, parent: 'ExploreHelper_Log' }
     ],
     init: function() {
         const settings = Utils.getSettings();
-        if (settings['ExploreHelper_Enable'] === false) return;
 
         const urlParams = new URLSearchParams(window.location.search);
         const doParam = urlParams.get('do');
-        const enterParam = urlParams.get('enter');
 
-        const isMovePage = doParam === 'move' || enterParam === 'true';
+        const isMovePage = doParam === 'move';
 
         if (isMovePage) {
             this.initMovePage();
@@ -2157,13 +2158,19 @@ const ExploreHelper = {
     },
 
     initMovePage: function() {
+        const settings = Utils.getSettings();
         const contentArea = document.querySelector('.content-area') || document.body;
         const text = contentArea.textContent;
         const coords = this.getCurrentCoordinates();
 
         // 1. Detect Shiny Object
-        if (text.includes('You see a shiny object, but as soon as you go to pick it up it vanishes.')) {
+        if (settings['ExploreHelper_LogShiny'] !== false && text.includes('You see a shiny object, but as soon as you go to pick it up it vanishes.')) {
             this.addToLog('Saw a vanishing shiny object.', 'shiny', coords);
+        }
+
+        // 2. Detect Arena Pass
+        if (settings['ExploreHelper_LogArena'] !== false && text.includes('You found the Arena Pass.')) {
+            this.addToLog('Found the Arena Pass.', 'arena', coords);
         }
 
         // Other events can be easily added here
@@ -2201,11 +2208,13 @@ const ExploreHelper = {
                                 date.getSeconds().toString().padStart(2, '0');
 
                 let color = '#333';
+                let fontWeight = 'normal';
                 if (log.type === 'shiny') color = '#B8860B'; // Goldenrod for Shiny Items
+                if (log.type === 'arena') { color = '#8A2BE2'; fontWeight = 'bold'; } // BlueViolet for Arena Pass
 
                 html += `
-                    <li style="color: ${color}; list-style-type: square;">
-                        <span style="color: #999; font-size: 10px;">[${timeStr}]</span> 
+                    <li style="color: ${color}; font-weight: ${fontWeight}; list-style-type: square;">
+                        <span style="color: #999; font-size: 10px; font-weight: normal;">[${timeStr}]</span> 
                         <strong style="color: #555;">(${log.x}, ${log.y})</strong> - ${log.message}
                     </li>`;
             });
@@ -11045,7 +11054,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.94.20260428.2345';
+        window.HoboHelperVersion = '8.95.20260429.0026';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
