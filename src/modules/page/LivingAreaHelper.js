@@ -96,6 +96,11 @@ const LivingAreaHelper = {
             const aliveText = aliveLine.textContent;
             let totalSeconds = 0;
 
+            const hrMatch = aliveText.match(/(\d+)\s*(?:hr|hour)s?/i);
+            if (hrMatch) {
+                totalSeconds += parseInt(hrMatch[1], 10) * 3600;
+            }
+
             const minMatch = aliveText.match(/(\d+)\s*mins?/i);
             if (minMatch) {
                 totalSeconds += parseInt(minMatch[1], 10) * 60;

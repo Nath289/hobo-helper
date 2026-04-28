@@ -259,11 +259,15 @@ const DisplayHelper = {
                 return;
             }
 
-            const mins = Math.floor(elapsedSecs / 60);
+            const hours = Math.floor(elapsedSecs / 3600);
+            const mins = Math.floor((elapsedSecs % 3600) / 60);
             const secs = elapsedSecs % 60;
             
             let timeStr = 'Alive: ';
-            if (mins > 0) {
+            if (hours > 0) {
+                timeStr += `${hours.toString().padStart(2, '0')} hr${hours === 1 ? '' : 's'} `;
+            }
+            if (mins > 0 || hours > 0) {
                 timeStr += `${mins.toString().padStart(2, '0')} min${mins === 1 ? '' : 's'} `;
             }
             timeStr += `${secs.toString().padStart(2, '0')} sec${secs === 1 ? '' : 's'}`;

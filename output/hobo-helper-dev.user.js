@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.92.20260428.0018
+// @version      8.93.20260428.2331
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -467,6 +467,15 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.93",
+            date: "2026-04-28",
+            type: "Changed",
+            notes: [
+                "**Changed:** Heavily optimized DisplayHelper sub-features by batching injected `<style>` elements into a single DOM paint, significantly reducing browser CSS recalculations.",
+                "**Fixed:** Replaced `innerHTML` destructive mutations with `insertAdjacentHTML` when applying Custom Player Titles, eliminating heavy DOM serialization processing in high-density member pages."
+            ]
+        },
+        {
             version: "8.92",
             date: "2026-04-28",
             type: "Changed",
@@ -496,14 +505,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "**Changed:** Swapped the Battle Graph chart types: Health Remaining is now a descending Line chart for continuous tracking, and Damage Dealt is now a stacked Bar chart to better illustrate each fighter's individual hits per round without jarring line drops."
-            ]
-        },
-        {
-            version: "8.88",
-            date: "2026-04-24",
-            type: "Changed",
-            notes: [
-                "**Enhanced:** The Battle Graph panel is now resizable via CSS `resize: both`. The internal jqplot charts automatically resize to fit using a ResizeObserver to maintain aspect ratios correctly alongside the frame."
             ]
         }
     ]
@@ -4304,6 +4305,11 @@ const LivingAreaHelper = {
         if (aliveLine) {
             const aliveText = aliveLine.textContent;
             let totalSeconds = 0;
+
+            const hrMatch = aliveText.match(/(\d+)\s*(?:hr|hour)s?/i);
+            if (hrMatch) {
+                totalSeconds += parseInt(hrMatch[1], 10) * 3600;
+            }
 
             const minMatch = aliveText.match(/(\d+)\s*mins?/i);
             if (minMatch) {
@@ -10878,7 +10884,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.92.20260428.0018';
+        window.HoboHelperVersion = '8.93.20260428.2331';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');

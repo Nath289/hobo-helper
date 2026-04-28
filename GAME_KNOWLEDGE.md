@@ -77,7 +77,7 @@ When purchasing upgrades for your rat (Vegetarian, Life Boost, Meal Boost), keep
 ## Player State & Alive Time
 - The "Alive" state of a player is represented in the global navigation panel (`<span id="lifeValue">`).
 - When a player is dead, the element's text simply says `"0%"`, not "Dead".
-- When alive, the "Alive Time" text can contain several dynamic formats including singular and plural variations: `Alive: 01 min 14 sec`, `Alive: 27 mins 30 secs`, `Alive: 03 secs`, or `Alive: 05 min 25 sec`. Parsing it requires case-insensitive regex accounting for the optional 's' (`/(\d+)\s*mins?/i`, `/(\d+)\s*secs?/i`).
+- When alive, the "Alive Time" text can contain several dynamic formats including singular and plural variations: `Alive: 01 hr 12 min 05 sec`, `Alive: 01 min 14 sec`, `Alive: 27 mins 30 secs`, `Alive: 03 secs`, or `Alive: 05 min 25 sec`. Parsing it requires case-insensitive regex accounting for the optional 's' and alternate spellings (`/(\d+)\s*(?:hr|hour)s?/i`, `/(\d+)\s*mins?/i`, `/(\d+)\s*secs?/i`).
 
 ## Automation Rules
 - Automation of game activities (Macros, Refreshers, Autonomous Scripts) is strictly forbidden by the game rules. Always use manual user interaction like buttons instead of fully automated tasks. Never create a feature that clicks buttons or refreshes pages on a timer without direct user input.

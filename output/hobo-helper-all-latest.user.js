@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (All)
 // @namespace    http://tampermonkey.net/
-// @version      8.93
+// @version      8.94
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -467,6 +467,15 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.94",
+            date: "2026-04-28",
+            type: "Changed",
+            notes: [
+                "**Added:** Display Helper's Live Alive Time string will now dynamically render hour increments for significantly extended sessions.",
+                "**Fixed:** The Living Area Helper offline healing timer array parser correctly hooks into durations exceeding an hour with non-standard formatting gaps syntax (`Alive: 01 hr 12 min 05 sec`)."
+            ]
+        },
+        {
             version: "8.93",
             date: "2026-04-28",
             type: "Changed",
@@ -497,14 +506,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "**Changed:** Moved the Configure button in the Recycling Bin Helper to the far right of the submit controls for better layout flow."
-            ]
-        },
-        {
-            version: "8.89",
-            date: "2026-04-24",
-            type: "Changed",
-            notes: [
-                "**Changed:** Swapped the Battle Graph chart types: Health Remaining is now a descending Line chart for continuous tracking, and Damage Dealt is now a stacked Bar chart to better illustrate each fighter's individual hits per round without jarring line drops."
             ]
         }
     ]
@@ -771,11 +772,15 @@ const DisplayHelper = {
                 return;
             }
 
-            const mins = Math.floor(elapsedSecs / 60);
+            const hours = Math.floor(elapsedSecs / 3600);
+            const mins = Math.floor((elapsedSecs % 3600) / 60);
             const secs = elapsedSecs % 60;
             
             let timeStr = 'Alive: ';
-            if (mins > 0) {
+            if (hours > 0) {
+                timeStr += `${hours.toString().padStart(2, '0')} hr${hours === 1 ? '' : 's'} `;
+            }
+            if (mins > 0 || hours > 0) {
                 timeStr += `${mins.toString().padStart(2, '0')} min${mins === 1 ? '' : 's'} `;
             }
             timeStr += `${secs.toString().padStart(2, '0')} sec${secs === 1 ? '' : 's'}`;
@@ -4305,6 +4310,11 @@ const LivingAreaHelper = {
         if (aliveLine) {
             const aliveText = aliveLine.textContent;
             let totalSeconds = 0;
+
+            const hrMatch = aliveText.match(/(\d+)\s*(?:hr|hour)s?/i);
+            if (hrMatch) {
+                totalSeconds += parseInt(hrMatch[1], 10) * 3600;
+            }
 
             const minMatch = aliveText.match(/(\d+)\s*mins?/i);
             if (minMatch) {
@@ -10879,7 +10889,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.93';
+        window.HoboHelperVersion = '8.94';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
