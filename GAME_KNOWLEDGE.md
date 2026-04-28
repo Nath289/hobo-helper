@@ -103,3 +103,8 @@ When purchasing upgrades for your rat (Vegetarian, Life Boost, Meal Boost), keep
 ### Skills Page (cmd=skills)
 - **Layout**: Contains a list of saved Skill Sets and several un-styled links for removing and unequipping skills.
 - **Forms**: The page contains multiple forms side-by-side, such as the Set Order form (input[name=BAT]) and the Save As Skill Set form (input[name=save_set]). Be cautious when manipulating these DOM elements to preserve their nested form boundaries.
+
+## Explore
+- The Explore City page (\cmd=explore\) has a lobby and an active move page (\cmd=explore&do=move\).
+- The player's current map coordinates can be scraped either from the yellow (\ackground-color: yellow\) \	d\ tile within the \#miniMap\ table, or extracted from the URL query parameters (\x\ and \y\) of the directional movement links in the main view.
+

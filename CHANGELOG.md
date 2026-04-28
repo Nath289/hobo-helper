@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.95] - 2026-04-28
+- **Added:** Implemented the `ExploreHelper` to track and log in-game explore events across the main Lobby and Movement screens (`cmd=explore`). Events are stored persistently across sessions.
+- **Added:** Explore Log now specifically captures vanishing "Shiny Objects" with a gold color-coding mapping, tracking the time and exact coordinates.
+
 ## [8.94] - 2026-04-28
 - **Added:** Display Helper's Live Alive Time string will now dynamically render hour increments for significantly extended sessions.
 - **Fixed:** The Living Area Helper offline healing timer array parser correctly hooks into durations exceeding an hour with non-standard formatting gaps syntax (`Alive: 01 hr 12 min 05 sec`).

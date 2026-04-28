@@ -380,3 +380,7 @@ Helper available on Message Board threads exclusively designed for Gang Staff.
 - **Widen Content Area**: Expands the historically narrow game content container to a customizable width (default 660px) for better readability on modern monitors.
 - **Swipeable Topbar Menu**: Converts the crowded top navigation bar (Dirt Road, Recycling Bin, etc.) into a horizontally scrollable container, preventing off-screen clipping on mobile devices.
 - **Battle Helper:** Adds a button to view a line graph of the fight inside a floating panel on the results page.
+
+### 31. Explore Helper (ExploreHelper.js)
+Provides quality of life improvements and functionality to the Explore Lobby and Movement pages.
+
