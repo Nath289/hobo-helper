@@ -24,7 +24,7 @@ const SoupKitchenHelper = {
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
 
-        const hoboAgeDays = localStorage.getItem('hw_helper_hobo_age_days');
+        const hoboAgeDays = Utils.getItem('hw_helper_hobo_age_days');
         if (hoboAgeDays) {
             this.renderAgeDisplay(contentArea, hoboAgeDays);
         }
@@ -93,4 +93,5 @@ const SoupKitchenHelper = {
         contentArea.appendChild(tableContainer);
     }
 };
+
 

@@ -5,7 +5,7 @@ const BernardsBasementHelper = {
         { key: 'BernardsBasementHelper_BasementMap', label: 'Basement Map' }
     ],
     init: function() {
-        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
         
         if (savedSettings['BernardsBasementHelper_BasementMap'] !== false) {
             this.initBasementMap();
@@ -80,3 +80,4 @@ const BernardsBasementHelper = {
         wrapper.appendChild(mapContainer);
     }
 };
+

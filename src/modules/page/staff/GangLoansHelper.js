@@ -16,14 +16,14 @@ const GangLoansHelper = {
             if (pendingStr) {
                 try {
                     const pending = JSON.parse(pendingStr);
-                    const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                    const d = JSON.parse(Utils.getItem('hw_helper_gang_posts') || '{}');
                     if (d[pending.topic]) {
                         if (pending.type === 'bulk' && d[pending.topic].hobos && d[pending.topic].hobos[pending.index]) {
                             d[pending.topic].hobos[pending.index].completed = true;
                         } else if (pending.type === 'payment' && d[pending.topic].paymentsToHobos && d[pending.topic].paymentsToHobos[pending.index]) {
                             d[pending.topic].paymentsToHobos[pending.index].completed = true;
                         }
-                        localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                        Utils.setItem('hw_helper_gang_posts', JSON.stringify(d));
                     }
                 } catch (e) {
                     console.error('Error parsing pending loan', e);
@@ -37,14 +37,14 @@ const GangLoansHelper = {
             if (pendingClearStr) {
                 try {
                     const pending = JSON.parse(pendingClearStr);
-                    const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                    const d = JSON.parse(Utils.getItem('hw_helper_gang_posts') || '{}');
                     if (d[pending.topic]) {
                         if (pending.type === 'bulk' && d[pending.topic].hobos && d[pending.topic].hobos[pending.index]) {
                             d[pending.topic].hobos[pending.index].cleared = true;
                         } else if (pending.type === 'payment' && d[pending.topic].paymentsToHobos && d[pending.topic].paymentsToHobos[pending.index]) {
                             d[pending.topic].paymentsToHobos[pending.index].cleared = true;
                         }
-                        localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                        Utils.setItem('hw_helper_gang_posts', JSON.stringify(d));
                     }
                 } catch (e) {
                     console.error('Error parsing pending clear', e);
@@ -132,7 +132,7 @@ const GangLoansHelper = {
     },
 
     renderPanel: function(container) {
-        const savedPosts = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+        const savedPosts = JSON.parse(Utils.getItem('hw_helper_gang_posts') || '{}');
         const postKeys = Object.keys(savedPosts);
 
         const banksEl = document.getElementById('banks');
@@ -399,7 +399,7 @@ const GangLoansHelper = {
                     const topicBtn = exportTotalsBtn || exportRepliersBtn;
                     if (topicBtn) {
                         const topicStr = topicBtn.getAttribute('data-topic');
-                        const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                        const d = JSON.parse(Utils.getItem('hw_helper_gang_posts') || '{}');
                         const topicPayments = d[topicStr]?.paymentsToHobos || [];
                         const topicHobos = d[topicStr]?.hobos || [];
 
@@ -425,7 +425,7 @@ const GangLoansHelper = {
         if (clearAllBtn) {
             clearAllBtn.addEventListener('click', () => {
                 if (confirm('Are you absolutely sure you want to clear all saved gang posts and payment data? This cannot be undone.')) {
-                    localStorage.removeItem('hw_helper_gang_posts');
+                    Utils.removeItem('hw_helper_gang_posts');
                     window.location.reload();
                 }
             });
@@ -436,9 +436,9 @@ const GangLoansHelper = {
             btn.addEventListener('click', (e) => {
                 const targetTopic = e.target.getAttribute('data-topic');
                 if (confirm(`Remove saved data for topic "${targetTopic}"?`)) {
-                    let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                    let d = JSON.parse(Utils.getItem('hw_helper_gang_posts') || '{}');
                     delete d[targetTopic];
-                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    Utils.setItem('hw_helper_gang_posts', JSON.stringify(d));
 
                     // re-render by reloading
                     window.location.reload();
@@ -449,10 +449,10 @@ const GangLoansHelper = {
         panel.querySelectorAll('.hw-topic-bank').forEach(sel => {
             sel.addEventListener('change', (e) => {
                 const topic = e.target.getAttribute('data-topic');
-                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                let d = JSON.parse(Utils.getItem('hw_helper_gang_posts') || '{}');
                 if (d[topic]) {
                     d[topic].bankAccount = e.target.value;
-                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    Utils.setItem('hw_helper_gang_posts', JSON.stringify(d));
                 }
             });
         });
@@ -464,11 +464,11 @@ const GangLoansHelper = {
                 const bulkAmtInput = document.getElementById('amt-' + ctrlId);
                 const bulkMemoInput = document.getElementById('memo-' + ctrlId);
                 
-                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                let d = JSON.parse(Utils.getItem('hw_helper_gang_posts') || '{}');
                 if (d[topic]) {
                     d[topic].bulkAmount = bulkAmtInput ? bulkAmtInput.value : '';
                     d[topic].bulkMemo = bulkMemoInput ? bulkMemoInput.value.substring(0, 60) : '';
-                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    Utils.setItem('hw_helper_gang_posts', JSON.stringify(d));
                     
                     const oldText = e.target.textContent;
                     e.target.textContent = 'Saved!';
@@ -493,7 +493,7 @@ const GangLoansHelper = {
                 if (amtField) amtField.value = e.target.getAttribute('data-amount').replace(/[^0-9.]/g, ''); // strip non-numeric just in case
                 if (memoField) memoField.value = e.target.getAttribute('data-desc').substring(0, 60);
 
-                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                let d = JSON.parse(Utils.getItem('hw_helper_gang_posts') || '{}');
                 if (bankField && d[topic] && d[topic].bankAccount) {
                     bankField.value = d[topic].bankAccount;
                 }
@@ -509,10 +509,10 @@ const GangLoansHelper = {
                 const topic = e.target.getAttribute('data-topic');
                 const index = parseInt(e.target.getAttribute('data-index'), 10);
 
-                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                let d = JSON.parse(Utils.getItem('hw_helper_gang_posts') || '{}');
                 if (d[topic] && d[topic].paymentsToHobos) {
                     d[topic].paymentsToHobos.splice(index, 1);
-                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    Utils.setItem('hw_helper_gang_posts', JSON.stringify(d));
                     window.location.reload();
                 }
             });
@@ -524,10 +524,10 @@ const GangLoansHelper = {
                 const topic = e.target.getAttribute('data-topic');
                 const index = parseInt(e.target.getAttribute('data-index'), 10);
 
-                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                let d = JSON.parse(Utils.getItem('hw_helper_gang_posts') || '{}');
                 if (d[topic] && d[topic].paymentsToHobos) {
                     d[topic].paymentsToHobos[index].completed = !d[topic].paymentsToHobos[index].completed;
-                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    Utils.setItem('hw_helper_gang_posts', JSON.stringify(d));
                     window.location.reload();
                 }
             });
@@ -553,7 +553,7 @@ const GangLoansHelper = {
                 if (amtField && bulkAmtInput) amtField.value = bulkAmtInput.value.replace(/[^0-9]/g, '');
                 if (memoField && bulkMemoInput) memoField.value = bulkMemoInput.value.substring(0, 60);
 
-                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                let d = JSON.parse(Utils.getItem('hw_helper_gang_posts') || '{}');
                 if (bankField && d[topic] && d[topic].bankAccount) {
                     bankField.value = d[topic].bankAccount;
                 }
@@ -568,10 +568,10 @@ const GangLoansHelper = {
                 const topic = e.target.getAttribute('data-topic');
                 const index = parseInt(e.target.getAttribute('data-index'), 10);
 
-                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                let d = JSON.parse(Utils.getItem('hw_helper_gang_posts') || '{}');
                 if (d[topic] && d[topic].hobos) {
                     d[topic].hobos[index].completed = true;
-                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    Utils.setItem('hw_helper_gang_posts', JSON.stringify(d));
                     window.location.reload();
                 }
             });
@@ -582,10 +582,10 @@ const GangLoansHelper = {
                 const topic = e.target.getAttribute('data-topic');
                 const index = parseInt(e.target.getAttribute('data-index'), 10);
 
-                let d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                let d = JSON.parse(Utils.getItem('hw_helper_gang_posts') || '{}');
                 if (d[topic] && d[topic].hobos) {
                     d[topic].hobos.splice(index, 1);
-                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(d));
+                    Utils.setItem('hw_helper_gang_posts', JSON.stringify(d));
                     window.location.reload();
                 }
             });
@@ -626,7 +626,7 @@ const GangLoansHelper = {
             btn.addEventListener('click', (e) => {
                 const topic = e.target.getAttribute('data-topic');
                 const ctrlId = e.target.getAttribute('data-ctrl');
-                const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                const d = JSON.parse(Utils.getItem('hw_helper_gang_posts') || '{}');
                 const hobos = d[topic]?.hobos || [];
                 
                 const bulkInput = document.getElementById('amt-' + ctrlId);
@@ -659,7 +659,7 @@ const GangLoansHelper = {
         panel.querySelectorAll('.hw-export-payments').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const topic = e.target.getAttribute('data-topic');
-                const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                const d = JSON.parse(Utils.getItem('hw_helper_gang_posts') || '{}');
                 const payments = d[topic]?.paymentsToHobos || [];
                 
                 const dateStr = typeof Utils !== 'undefined' && Utils.getFormattedHoboDateTime ? Utils.getFormattedHoboDateTime() : 'Unknown Date';
@@ -679,7 +679,7 @@ const GangLoansHelper = {
             btn.addEventListener('click', (e) => {
                 const topic = e.target.getAttribute('data-topic');
                 const ctrlId = e.target.getAttribute('data-ctrl');
-                const d = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                const d = JSON.parse(Utils.getItem('hw_helper_gang_posts') || '{}');
                 const payments = d[topic]?.paymentsToHobos || [];
                 const hobos = d[topic]?.hobos || [];
 
@@ -813,6 +813,7 @@ const GangLoansHelper = {
         return match ? match[1] : '';
     }
 };
+
 
 
 

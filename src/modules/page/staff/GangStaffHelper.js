@@ -15,7 +15,7 @@ const GangStaffHelper = {
             this.handleCurrentHappenings();
         }
 
-        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
 
         if (savedSettings['GangStaffHelper_EnableFeature'] !== false) {
             if (doParam === 'list_mem') {
@@ -41,7 +41,7 @@ const GangStaffHelper = {
         const form = document.querySelector('form[action*="do=mail"]');
         if (!form) return;
 
-        let templates = JSON.parse(localStorage.getItem('hw_helper_gang_mail_templates') || '[]');
+        let templates = JSON.parse(Utils.getItem('hw_helper_gang_mail_templates') || '[]');
         let currentTemplateName = null;
 
         const panel = document.createElement('div');
@@ -146,7 +146,7 @@ const GangStaffHelper = {
             }
 
             templates.sort((a,b) => a.name.localeCompare(b.name));
-            localStorage.setItem('hw_helper_gang_mail_templates', JSON.stringify(templates));
+            Utils.setItem('hw_helper_gang_mail_templates', JSON.stringify(templates));
 
             currentTemplateName = name;
             updateSelect();
@@ -194,7 +194,7 @@ const GangStaffHelper = {
             if (!confirm(`Are you sure you want to delete template "${selected}"?`)) return;
 
             templates = templates.filter(t => t.name !== selected);
-            localStorage.setItem('hw_helper_gang_mail_templates', JSON.stringify(templates));
+            Utils.setItem('hw_helper_gang_mail_templates', JSON.stringify(templates));
             if (currentTemplateName === selected) {
                 currentTemplateName = null;
             }
@@ -259,7 +259,7 @@ const GangStaffHelper = {
                 
                 if (added > 0 || updated > 0) {
                     templates.sort((a,b) => a.name.localeCompare(b.name));
-                    localStorage.setItem('hw_helper_gang_mail_templates', JSON.stringify(templates));
+                    Utils.setItem('hw_helper_gang_mail_templates', JSON.stringify(templates));
                     updateSelect();
                     updateSaveBtnText();
                     alert(`Successfully imported templates!\\nAdded: ${added}\\nUpdated: ${updated}`);
@@ -458,7 +458,7 @@ const GangStaffHelper = {
     },
 
     initGangMemberList: function() {
-        console.log("GangStaffHelper loaded on member list page.");
+        Utils.log("GangStaffHelper loaded on member list page.");
 
         const style = document.createElement('style');
         style.textContent = `
@@ -534,7 +534,7 @@ const GangStaffHelper = {
         const panel = document.createElement('div');
         panel.style.cssText = 'margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; background: #eee; font-family: Tahoma, sans-serif; text-align: left; display: flex; flex-wrap: wrap; gap: 8px;';
         
-        const savedColsStr = localStorage.getItem('hw_helper_gang_cols');
+        const savedColsStr = Utils.getItem('hw_helper_gang_cols');
         const availableColIds = cols.map(c => c.id);
         let selectedCols = savedColsStr ? JSON.parse(savedColsStr) : ['ts_name', 'ts_level', 'ts_age', 'ts_la', 'ts_chamber', 'ts_tired', 'ts_options'];
         
@@ -550,7 +550,7 @@ const GangStaffHelper = {
                     cell.style.display = isSelected ? 'table-cell' : 'none';
                 });
             });
-            localStorage.setItem('hw_helper_gang_cols', JSON.stringify(selectedCols));
+            Utils.setItem('hw_helper_gang_cols', JSON.stringify(selectedCols));
         };
 
         const updateCheckboxes = () => {
@@ -653,25 +653,25 @@ const GangStaffHelper = {
     },
 
     initGangHappenings: function() {
-        console.log("GangStaffHelper loaded on last happenings page.");
+        Utils.log("GangStaffHelper loaded on last happenings page.");
 
         // Verify this is the correct event by checking the raw HTML Structure
         const htmlContent = document.body.innerHTML || "";
         const isSundayFunday = /<b>\s*<u>Last Gang Happening Stats:<\/u><\/b>\s*Gangsters Sunday = Funday/i.test(htmlContent);
 
         if (!isSundayFunday) {
-            console.log("GangStaffHelper: Event is not 'Gangsters Sunday = Funday'. Aborting.");
+            Utils.log("GangStaffHelper: Event is not 'Gangsters Sunday = Funday'. Aborting.");
             return;
         }
 
         // Verify user is Gang Staff by checking for Manage Loans access
         const isStaff = !!document.querySelector('a[href*="cmd=gang2&do=loans"]');
         if (!isStaff) {
-            console.log("GangStaffHelper: User is not Gang Staff. Aborting.");
+            Utils.log("GangStaffHelper: User is not Gang Staff. Aborting.");
             return;
         }
 
-        console.log("GangStaffHelper: 'Gangsters Sunday = Funday' event detected! Ready for next steps.");
+        Utils.log("GangStaffHelper: 'Gangsters Sunday = Funday' event detected! Ready for next steps.");
 
         const table = document.querySelector('table[cellspacing="2"][cellpadding="3"]');
         if (!table) return;
@@ -683,7 +683,7 @@ const GangStaffHelper = {
         const panel = document.createElement('div');
         panel.style.cssText = 'margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; background: #eee; font-family: Tahoma, sans-serif; text-align: left; max-width: 600px;';
 
-        let savedTiers = JSON.parse(localStorage.getItem('hw_helper_sf_tiers') || '[]');
+        let savedTiers = JSON.parse(Utils.getItem('hw_helper_sf_tiers') || '[]');
         if (savedTiers.length === 0) {
             savedTiers = [
                 { min: 0, max: 100, rate: 60000 },
@@ -691,7 +691,7 @@ const GangStaffHelper = {
                 { min: 200, max: 300, rate: 100000 }
             ];
         }
-        let maxPayout = parseInt(localStorage.getItem('hw_helper_sf_max') || '5000000', 10);
+        let maxPayout = parseInt(Utils.getItem('hw_helper_sf_max') || '5000000', 10);
 
         let panelHtml = `
             <div style="font-weight: bold; margin-bottom: 10px; font-size: 14px;">Gangsters Sunday = Funday Payouts ${isCurrent ? '(Projected)' : ''}</div>
@@ -872,7 +872,7 @@ const GangStaffHelper = {
         };
 
         const saveAndRenderTiers = () => {
-            localStorage.setItem('hw_helper_sf_tiers', JSON.stringify(savedTiers));
+            Utils.setItem('hw_helper_sf_tiers', JSON.stringify(savedTiers));
             renderTiers();
         };
 
@@ -888,7 +888,7 @@ const GangStaffHelper = {
 
         panel.querySelector('.hh_sf_max').addEventListener('change', (e) => {
             const val = parseInt(e.target.value.replace(/,/g, ''), 10) || 0;
-            localStorage.setItem('hw_helper_sf_max', val.toString());
+            Utils.setItem('hw_helper_sf_max', val.toString());
             e.target.value = val.toLocaleString();
             updateProjectedTotal();
         });
@@ -897,10 +897,10 @@ const GangStaffHelper = {
 
         panel.querySelector('.hh_sf_save_tiers_btn').addEventListener('click', () => {
             updateTiersFromDOM();
-            localStorage.setItem('hw_helper_sf_tiers', JSON.stringify(savedTiers));
+            Utils.setItem('hw_helper_sf_tiers', JSON.stringify(savedTiers));
             const currentMaxPayoutStr = panel.querySelector('.hh_sf_max').value;
             const currentMaxPayout = parseInt(currentMaxPayoutStr.replace(/,/g, ''), 10) || 0;
-            localStorage.setItem('hw_helper_sf_max', currentMaxPayout.toString());
+            Utils.setItem('hw_helper_sf_max', currentMaxPayout.toString());
             
             const statusEl = panel.querySelector('.hh_sf_tiers_status');
             statusEl.textContent = `✅ Saved settings!`;
@@ -912,16 +912,16 @@ const GangStaffHelper = {
         if (!isCurrent) {
             panel.querySelector('.hh_sf_save_btn').addEventListener('click', () => {
                 updateTiersFromDOM();
-                localStorage.setItem('hw_helper_sf_tiers', JSON.stringify(savedTiers));
+                Utils.setItem('hw_helper_sf_tiers', JSON.stringify(savedTiers));
                 const currentMaxPayoutStr = panel.querySelector('.hh_sf_max').value;
                 const currentMaxPayout = parseInt(currentMaxPayoutStr.replace(/,/g, ''), 10) || 0;
-                localStorage.setItem('hw_helper_sf_max', currentMaxPayout.toString());
+                Utils.setItem('hw_helper_sf_max', currentMaxPayout.toString());
 
                 const { payments } = calculateTotalPayout();
 
                 if (payments.length > 0) {
                     const topicName = "Gangsters Sunday = Funday Payouts";
-                    const savedPosts = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                    const savedPosts = JSON.parse(Utils.getItem('hw_helper_gang_posts') || '{}');
                     savedPosts[topicName] = {
                         timestamp: Date.now(),
                         topic: topicName,
@@ -929,7 +929,7 @@ const GangStaffHelper = {
                         hobos: [],
                         paymentsToHobos: payments
                     };
-                    localStorage.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
+                    Utils.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
 
                     const statusEl = panel.querySelector('.hh_sf_status');
                     statusEl.textContent = `✅ Saved ${payments.length} payouts to Gang Loans dashboard!`;
@@ -963,7 +963,7 @@ const GangStaffHelper = {
         // Verify user is Gang Staff by checking for Manage Loans access
         const isStaff = !!document.querySelector('a[href*="cmd=gang2&do=loans"]');
         if (!isStaff) {
-            console.log("GangStaffHelper (Current Happenings): User is not Gang Staff. Aborting projected payouts panel.");
+            Utils.log("GangStaffHelper (Current Happenings): User is not Gang Staff. Aborting projected payouts panel.");
             return;
         }
 
@@ -990,3 +990,5 @@ const GangStaffHelper = {
         this.renderTierSettingsPanel(scoresTable, true);
     }
 };
+
+

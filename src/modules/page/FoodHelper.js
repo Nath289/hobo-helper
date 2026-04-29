@@ -275,7 +275,7 @@ const FoodHelper = {
     },
 
     selectCrap: function() {
-        const crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
+        const crapList = JSON.parse(Utils.getItem('hw_helper_food_crap') || '[]');
         const checkboxes = document.querySelectorAll('.checkMe');
 
         checkboxes.forEach(cb => {
@@ -291,7 +291,7 @@ const FoodHelper = {
 
     markAsCrap: function(btn) {
         const checkboxes = document.querySelectorAll('.checkMe');
-        let crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
+        let crapList = JSON.parse(Utils.getItem('hw_helper_food_crap') || '[]');
 
         // Track the desired state of foods currently visible on the page
         const presentFoods = {};
@@ -318,7 +318,7 @@ const FoodHelper = {
             }
         });
 
-        localStorage.setItem('hw_helper_food_crap', JSON.stringify(crapList));
+        Utils.setItem('hw_helper_food_crap', JSON.stringify(crapList));
         if (btn) {
             btn.value = `✅ Updated Crap!`;
             setTimeout(() => { btn.value = 'Mark as Crap'; }, 3000);
@@ -328,3 +328,4 @@ const FoodHelper = {
         this.selectCrap();
     },
 };
+

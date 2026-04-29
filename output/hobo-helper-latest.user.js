@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      8.97
+// @version      8.98
 // @description  Combines original HoboWars helpers into a single modular script (non-staff modules).
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
 // @match        *://hobowars.com/game/game.php?*
 // @grant        GM_notification
+// @grant        GM_xmlhttpRequest
 // @noframes
 // @run-at       document-start
 // ==/UserScript==
@@ -155,7 +156,7 @@ const Utils = {
             return window.location.search.includes(query);
         },
         getSettings: function() {
-            return JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+            return JSON.parse(this.getItem('hw_helper_settings') || '{}');
         },
         getFightersLunchCost: function(level) {
             return ((10 * (level + 3)) / 2) * 2;
@@ -249,9 +250,79 @@ const Utils = {
             }
 
             document.body.appendChild(modal);
+        },
+        /**
+     * Set a configuration value securely
+     */
+    setConfig: function(key, value) {
+        if (!key) return; // Prevent setting blank keys
+
+        let config = this.getSettings();
+        config[key] = value;
+        // Don't use Utils.setItem here to prevent sync looping, this uses the main settings key
+        localStorage.setItem('hw_helper_settings', JSON.stringify(config));
+
+        if (typeof SyncHelper !== 'undefined') {
+            SyncHelper.recordLocalUpdate('hw_helper_settings');
+            SyncHelper.triggerSync();
         }
-    };
-    window.Utils = Utils;
+    },
+
+    /**
+     * Centralized localStorage getItem
+     * @param {string} key
+     * @returns {string|null}
+     */
+    getItem: function(key) {
+        return localStorage.getItem(key);
+    },
+
+    /**
+     * Centralized localStorage setItem
+     * @param {string} key
+     * @param {string} value
+     */
+    setItem: function(key, value) {
+        localStorage.setItem(key, value);
+        if (typeof SyncHelper !== 'undefined') {
+            SyncHelper.recordLocalUpdate(key);
+            SyncHelper.triggerSync();
+        }
+    },
+
+    /**
+     * Centralized localStorage removeItem
+     * @param {string} key
+     */
+    removeItem: function(key) {
+        localStorage.removeItem(key);
+        if (typeof SyncHelper !== 'undefined') {
+            SyncHelper.recordLocalUpdate(key);
+            SyncHelper.triggerSync();
+        }
+    },
+
+    /**
+     * Force sync to remote
+     */
+    syncAllNow: function() {
+        if (typeof SyncHelper !== 'undefined') {
+            SyncHelper.syncAllNow();
+        }
+    },
+
+    /**
+     * Log messages if in dev mode
+     */
+    log: function(...args) {
+        const versionStr = (typeof window !== 'undefined' && window.HoboHelperVersion) ? window.HoboHelperVersion : (typeof GM_info !== 'undefined' && GM_info.script ? GM_info.script.version : 'Unknown');
+        const isDev = versionStr !== 'Unknown' && versionStr.split('.').length > 2;
+        if (isDev) {
+            console.log(...args);
+        }
+    }
+};
+//# sourceMappingURL=utils.js.map
 const DrinksData = {
             // Data structure containing all drinks in the game
             drinks: {
@@ -541,6 +612,18 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.98",
+            date: "2026-04-30",
+            type: "Changed",
+            notes: [
+                "**Added:** Implemented seamless cross-browser Cloud Sync via the new `SyncHelper`! By placing custom CouchDB configuration credentials directly in your Preferences menu, your device will now automatically push and pull local script data using intelligent, bidirectional conflict resolution merging.",
+                "**Added:** A \"Force Sync\" quick-toggle button has been added directly to the \"Hobo Helper Version\" footer block inside your Living Area.",
+                "**Added:** Testing backend connection integrity is now possible directly from within the Preferences page with a functional status text readout.",
+                "**Changed:** Rewrote internal helper memory cache handling to natively interface with `Utils.setItem`, `Utils.getItem`, `Utils.removeItem`, unifying and protecting Cloud Sync trigger hooks.",
+                "**Changed:** Restricted internal debugger output directly to local `Dev` builds by wrapping `console.log` instances inside `Utils.log`."
+            ]
+        },
+        {
             version: "8.97",
             date: "2026-04-29",
             type: "Changed",
@@ -619,14 +702,6 @@ const ChangelogData = {
             notes: [
                 "**Changed:** Swapped the Battle Graph chart types: Health Remaining is now a descending Line chart for continuous tracking, and Damage Dealt is now a stacked Bar chart to better illustrate each fighter's individual hits per round without jarring line drops."
             ]
-        },
-        {
-            version: "8.88",
-            date: "2026-04-24",
-            type: "Changed",
-            notes: [
-                "**Enhanced:** The Battle Graph panel is now resizable via CSS `resize: both`. The internal jqplot charts automatically resize to fit using a ResizeObserver to maintain aspect ratios correctly alongside the frame."
-            ]
         }
     ]
 };
@@ -694,7 +769,7 @@ const DisplayHelper = {
     },
     initUpdateChecker: function() {
         const settings = Utils.getSettings();
-        const savedVersion = localStorage.getItem('hw_helper_version');
+        const savedVersion = Utils.getItem('hw_helper_version');
         const currentVersion = (typeof Modules !== 'undefined' && Modules.ChangelogData && Modules.ChangelogData.changes && Modules.ChangelogData.changes.length > 0) ? Modules.ChangelogData.changes[0].version : null;
 
         if (currentVersion) {
@@ -705,27 +780,27 @@ const DisplayHelper = {
                     Utils.showChangelogModal(null, savedVersion);
                 }
             }
-            localStorage.setItem('hw_helper_version', currentVersion);
+            Utils.setItem('hw_helper_version', currentVersion);
         }
     },
     initLastActiveTimeTracking: function() {
         // Track last active time, updating at most every 30 seconds
         const now = Date.now();
-        const lastActiveTime = parseInt(localStorage.getItem('hw_last_active_time') || '0', 10);
+        const lastActiveTime = parseInt(Utils.getItem('hw_last_active_time') || '0', 10);
         const timeSinceLast = now - lastActiveTime;
 
         const updateLastActive = () => {
-            localStorage.setItem('hw_last_active_time', now.toString());
-            localStorage.removeItem('hw_rejoin_time');
-            localStorage.setItem('hw_last_active_awakeness', Utils.getAwakeness().toString());
-            localStorage.removeItem('hw_session_lost_awake_checked');
-            localStorage.removeItem('hw_session_lost_awake');
+            Utils.setItem('hw_last_active_time', now.toString());
+            Utils.removeItem('hw_rejoin_time');
+            Utils.setItem('hw_last_active_awakeness', Utils.getAwakeness().toString());
+            Utils.removeItem('hw_session_lost_awake_checked');
+            Utils.removeItem('hw_session_lost_awake');
         };
 
         if (timeSinceLast > 1800000) { // 30 minutes
             // Calculate lost awakeness
-            if (lastActiveTime > 0 && !localStorage.getItem('hw_session_lost_awake_checked')) {
-                const prevAwake = parseInt(localStorage.getItem('hw_last_active_awakeness') || '0', 10);
+            if (lastActiveTime > 0 && !Utils.getItem('hw_session_lost_awake_checked')) {
+                const prevAwake = parseInt(Utils.getItem('hw_last_active_awakeness') || '0', 10);
                 const inactiveMins = timeSinceLast / 60000;
                 const isDonator = Utils.isDonator();
                 const tickInterval = isDonator ? 10 : 15;
@@ -742,19 +817,19 @@ const DisplayHelper = {
 
                 if (currentAwake >= maxAwake && estimatedAwake > maxAwake) {
                     const lost = estimatedAwake - maxAwake;
-                    localStorage.setItem('hw_session_lost_awake', lost.toString());
+                    Utils.setItem('hw_session_lost_awake', lost.toString());
                 }
-                localStorage.setItem('hw_session_lost_awake_checked', '1');
+                Utils.setItem('hw_session_lost_awake_checked', '1');
             }
 
             if (Utils.getAwakeness() === 0) {
                 // If awakeness is 0, they are already playing/active, immediately log active time
                 updateLastActive();
             } else {
-                const rejoinTime = parseInt(localStorage.getItem('hw_rejoin_time') || '0', 10);
+                const rejoinTime = parseInt(Utils.getItem('hw_rejoin_time') || '0', 10);
                 // If starting a new session (or it's been > 5 mins since our initial rejoin attempt)
                 if (rejoinTime === 0 || (now - rejoinTime) > 300000) {
-                    localStorage.setItem('hw_rejoin_time', now.toString());
+                    Utils.setItem('hw_rejoin_time', now.toString());
                 } else if (now - rejoinTime >= 30000) {
                     // If they've been active for at least 30 seconds since rejoining
                     updateLastActive();
@@ -777,7 +852,7 @@ const DisplayHelper = {
         leftPanel.insertBefore(displayDiv, leftPanel.firstChild);
 
         const updateDisplay = () => {
-            const lastActive = parseInt(localStorage.getItem('hw_last_active_time') || '0', 10);
+            const lastActive = parseInt(Utils.getItem('hw_last_active_time') || '0', 10);
             if (!lastActive) {
                 displayDiv.textContent = 'Last Active: Unknown';
                 return;
@@ -797,7 +872,7 @@ const DisplayHelper = {
             if (mins > 0 || hours === 0) timeParts.push(`${mins}m`);
             
             let displayStr = `Last Active: ${timeParts.join(' ')} ago`;
-            const lostAwake = parseInt(localStorage.getItem('hw_session_lost_awake') || '0', 10);
+            const lostAwake = parseInt(Utils.getItem('hw_session_lost_awake') || '0', 10);
             if (lostAwake > 0) {
                 displayStr += `<br><span style="color: #d9534f; font-weight: normal;">Lost Awake: ${lostAwake}</span>`;
             }
@@ -884,11 +959,11 @@ const DisplayHelper = {
         
         const lifeLabel = document.getElementById('lifeValue');
         if (lifeLabel && lifeLabel.textContent.trim() === '0%') {
-            localStorage.removeItem('hw_healing_last_used');
+            Utils.removeItem('hw_healing_last_used');
             return;
         }
 
-        const lastHealSaved = localStorage.getItem('hw_healing_last_used');
+        const lastHealSaved = Utils.getItem('hw_healing_last_used');
         // Do not render anything if they have never healed/synced since the script update
         if (!lastHealSaved) return;
 
@@ -901,7 +976,7 @@ const DisplayHelper = {
         topbarUl.appendChild(li);
 
         const updateAliveTime = () => {
-            const currentSaved = localStorage.getItem('hw_healing_last_used');
+            const currentSaved = Utils.getItem('hw_healing_last_used');
             if (!currentSaved) return;
 
             const elapsedSecs = Math.floor((Date.now() - parseInt(currentSaved, 10)) / 1000);
@@ -1034,7 +1109,7 @@ const DisplayHelper = {
         if (isNaN(currentLevel)) return;
 
         if (typeof PrimesData === 'undefined') {
-            console.log("DisplayHelper: PrimesData is not defined.");
+            Utils.log("DisplayHelper: PrimesData is not defined.");
             return;
         }
 
@@ -1108,29 +1183,29 @@ const DisplayHelper = {
         let isDonator = Utils.isDonator();
 
         const now = Date.now();
-        localStorage.setItem('hw_awake_last_active', now.toString());
-        localStorage.setItem('hw_awake_current', currentAwake.toString());
-        localStorage.setItem('hw_awake_max', maxAwake.toString());
-        localStorage.setItem('hw_awake_is_donator', isDonator.toString());
-        localStorage.removeItem('hw_awake_notified');
+        Utils.setItem('hw_awake_last_active', now.toString());
+        Utils.setItem('hw_awake_current', currentAwake.toString());
+        Utils.setItem('hw_awake_max', maxAwake.toString());
+        Utils.setItem('hw_awake_is_donator', isDonator.toString());
+        Utils.removeItem('hw_awake_notified');
 
         if (currentAwake < maxAwake) {
             setInterval(() => {
-                const lastActive = parseInt(localStorage.getItem('hw_awake_last_active') || '0', 10);
-                const isNotified = localStorage.getItem('hw_awake_notified');
+                const lastActive = parseInt(Utils.getItem('hw_awake_last_active') || '0', 10);
+                const isNotified = Utils.getItem('hw_awake_notified');
                 if (isNotified) return;
 
                 const inactiveMins = (Date.now() - lastActive) / 60000;
-                const savedCurrent = parseInt(localStorage.getItem('hw_awake_current') || '0', 10);
-                const savedMax = parseInt(localStorage.getItem('hw_awake_max') || '100', 10);
-                const savedDonator = localStorage.getItem('hw_awake_is_donator') === 'true';
+                const savedCurrent = parseInt(Utils.getItem('hw_awake_current') || '0', 10);
+                const savedMax = parseInt(Utils.getItem('hw_awake_max') || '100', 10);
+                const savedDonator = Utils.getItem('hw_awake_is_donator') === 'true';
 
                 const tickInterval = savedDonator ? 10 : 15;
                 const ticks = Math.floor(inactiveMins / tickInterval);
                 const estimatedAwake = Math.min(savedMax, savedCurrent + (ticks * 5));
 
                 if (estimatedAwake >= savedMax && inactiveMins >= inactiveWaitMins) {
-                    localStorage.setItem('hw_awake_notified', '1');
+                    Utils.setItem('hw_awake_notified', '1');
                     if (typeof GM_notification !== 'undefined') {
                         GM_notification({
                             title: 'HoboWars Awake Full',
@@ -1145,6 +1220,233 @@ const DisplayHelper = {
             }, 60000);
         }
     }
+};
+
+const SyncHelper = {
+    settings: [
+        { key: 'SyncHelper_Enable', label: 'Enable Cloud Sync (CouchDB)', defaultValue: false },
+        { key: 'SyncHelper_ServerURL', label: 'Sync Server URL', type: 'text' },
+        { key: 'SyncHelper_Username', label: 'Sync Username', type: 'text' },
+        { key: 'SyncHelper_Password', label: 'Sync Password', type: 'password' }
+    ],
+
+    // Local variables
+    syncTimeout: null,
+    isSyncing: false,
+
+    getLocalTimestamps: function() {
+        return JSON.parse(localStorage.getItem('hw_sync_timestamps') || '{}');
+    },
+
+    saveLocalTimestamps: function(timestamps) {
+        localStorage.setItem('hw_sync_timestamps', JSON.stringify(timestamps));
+    },
+
+    recordLocalUpdate: function(key) {
+        // Exclude the timestamp tracker itself
+        if (key === 'hw_sync_timestamps') return;
+
+        let timestamps = this.getLocalTimestamps();
+        timestamps[key] = Date.now();
+        this.saveLocalTimestamps(timestamps);
+    },
+
+    init: function() {
+        const settings = Utils.getSettings();
+        if (!settings['SyncHelper_Enable']) return;
+
+        // Auto sync on load if enabled
+        const url = settings['SyncHelper_ServerURL'];
+        if (url) {
+            this.syncAllNow();
+        }
+    },
+
+    getBaseDbUrl: function() {
+        const settings = Utils.getSettings();
+        const url = settings['SyncHelper_ServerURL'];
+        
+        if (!url) return null;
+        
+        try {
+            const dbUrl = new URL(url);
+            // We strip auth from the URL to prevent Chrome "Request cannot be constructed from a URL that includes credentials" error
+            dbUrl.username = '';
+            dbUrl.password = '';
+            // Ensure no trailing slash
+            return dbUrl.toString().replace(/\/$/, '');
+        } catch(e) {
+            return null;
+        }
+    },
+
+    getAuthHeaders: function(customHeaders = {}) {
+        const settings = Utils.getSettings();
+        const user = settings['SyncHelper_Username'];
+        const pass = settings['SyncHelper_Password'];
+        
+        const headers = { ...customHeaders };
+        if (user && pass) {
+            headers['Authorization'] = 'Basic ' + btoa(user + ':' + pass);
+        }
+        return headers;
+    },
+
+    getDocId: function() {
+        const hoboId = Utils.getHoboId();
+        return hoboId && hoboId !== 'Unknown' ? `hobo_sync_${hoboId}` : 'hobo_sync_general';
+    },
+
+    triggerSync: function() {
+        if (!Utils.getSettings()['SyncHelper_Enable']) return;
+
+        if (this.syncTimeout) clearTimeout(this.syncTimeout);
+        this.syncTimeout = setTimeout(() => {
+            this.performSync();
+        }, 5000); // 5 second debounce
+    },
+
+    fetchGM: function(url, options = {}) {
+        return new Promise((resolve, reject) => {
+            if (typeof GM_xmlhttpRequest === 'undefined') {
+                reject(new Error('GM_xmlhttpRequest is not available. Please ensure your userscript manager is configured correctly.'));
+                return;
+            }
+            
+            GM_xmlhttpRequest({
+                method: options.method || 'GET',
+                url: url,
+                headers: options.headers || {},
+                data: options.body,
+                onload: function(response) {
+                    resolve({
+                        ok: response.status >= 200 && response.status < 300,
+                        status: response.status,
+                        statusText: response.statusText,
+                        json: () => {
+                            try {
+                                return Promise.resolve(JSON.parse(response.responseText || '{}'));
+                            } catch(e) {
+                                return Promise.resolve({});
+                            }
+                        },
+                        text: () => Promise.resolve(response.responseText)
+                    });
+                },
+                onerror: function(err) {
+                    reject(new Error('Network or CORS error via GM_xmlhttpRequest'));
+                }
+            });
+        });
+    },
+
+    syncAllNow: function() {
+        return this.performSync();
+    },
+
+    getLocalStorageData: function() {
+        const data = {};
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            // Sync all hw_ keys that the helper uses
+            if (key && (key.startsWith('hw_') || key.startsWith('hobowars') || key.startsWith('hof_') || key.startsWith('ActiveListHelper') || key.startsWith('bh_') || key.startsWith('GangArmory'))) {
+                if (key !== 'hw_sync_timestamps') { // Prevent infinite loops
+                    data[key] = localStorage.getItem(key);
+                }
+            }
+        }
+        return data;
+    },
+
+    performSync: async function() {
+        if (this.isSyncing) return;
+        const dbUrl = this.getBaseDbUrl();
+        if (!dbUrl) return;
+
+        this.isSyncing = true;
+        try {
+            const docId = this.getDocId();
+            let remoteDoc = null;
+            let rev = null;
+
+            try {
+                const getRes = await this.fetchGM(`${dbUrl}/${docId}`, { headers: this.getAuthHeaders() });
+                if (getRes.ok) {
+                    remoteDoc = await getRes.json();
+                    rev = remoteDoc._rev;
+                }
+            } catch(e) { }
+
+            const localData = this.getLocalStorageData();
+            const localTimestamps = this.getLocalTimestamps();
+            const now = Date.now();
+
+            // Setup new payload starting with remote if it exists
+            const payload = {
+                data: remoteDoc && remoteDoc.data ? { ...remoteDoc.data } : {},
+                timestamps: remoteDoc && remoteDoc.timestamps ? { ...remoteDoc.timestamps } : {},
+                last_updated: now
+            };
+
+            let needsPush = false;
+            let localChanged = false;
+
+            // Merge logic
+            // 1. Process remote keys first
+            if (remoteDoc && remoteDoc.data && remoteDoc.timestamps) {
+                for (const [key, remoteVal] of Object.entries(remoteDoc.data)) {
+                    const remoteTime = remoteDoc.timestamps[key] || 0;
+                    const localTime = localTimestamps[key] || 0;
+
+                    if (remoteTime > localTime) {
+                        // Remote is newer, update local storage
+                        const currentLocalVal = localStorage.getItem(key);
+                        if (currentLocalVal !== remoteVal) {
+                            localStorage.setItem(key, remoteVal);
+                            localTimestamps[key] = remoteTime;
+                            localChanged = true;
+                        }
+                    }
+                }
+            }
+
+            // 2. Process local keys
+            for (const [key, localVal] of Object.entries(localData)) {
+                const localTime = localTimestamps[key] || 0;
+                const remoteTime = payload.timestamps[key] || 0;
+
+                // Push new or modified local keys
+                if (localTime > remoteTime || (!remoteDoc && localVal)) {
+                    payload.data[key] = localVal;
+                    payload.timestamps[key] = localTime || now; // Make sure it has a timestamp
+                    needsPush = true;
+                }
+            }
+
+            if (localChanged) {
+                this.saveLocalTimestamps(localTimestamps);
+                if (window.location.search.includes('cmd=')) {
+                    Utils.log('HoboHelper sync pulled new data.');
+                }
+            }
+
+            // Push to remote if any local overrides were stronger or doc is brand new
+            if (needsPush || !remoteDoc) {
+                if (rev) payload._rev = rev;
+
+                await this.fetchGM(`${dbUrl}/${docId}`, {
+                    method: 'PUT',
+                    headers: this.getAuthHeaders({ 'Content-Type': 'application/json' }),
+                    body: JSON.stringify(payload)
+                });
+            }
+
+        } catch (e) {
+            console.error('HoboHelper Sync Error:', e);
+        } finally {
+            this.isSyncing = false;
+        }
+    },
 };
 
 const ActiveListHelper = {
@@ -1249,8 +1551,8 @@ const ActiveListHelper = {
         contentArea.appendChild(frag);
 
         // Retrieve saved filter
-        const savedFilter = localStorage.getItem('ActiveListHelper_CurrentFilter') || 'all';
-        const savedRange = localStorage.getItem('ActiveListHelper_CurrentRangeFilter') === 'true';
+        const savedFilter = Utils.getItem('ActiveListHelper_CurrentFilter') || 'all';
+        const savedRange = Utils.getItem('ActiveListHelper_CurrentRangeFilter') === 'true';
 
         // Create UI Filter Buttons
         const filterContainer = document.createElement('div');
@@ -1275,8 +1577,8 @@ const ActiveListHelper = {
             const filter = activeBtn ? activeBtn.getAttribute('data-filter') : 'all';
             const rangeOnly = filterContainer.querySelector('#hobo-helper-range-checkbox').checked;
 
-            localStorage.setItem('ActiveListHelper_CurrentFilter', filter);
-            localStorage.setItem('ActiveListHelper_CurrentRangeFilter', rangeOnly);
+            Utils.setItem('ActiveListHelper_CurrentFilter', filter);
+            Utils.setItem('ActiveListHelper_CurrentRangeFilter', rangeOnly);
 
             const allRows = contentArea.querySelectorAll('.hobo-helper-player-row');
 
@@ -1422,8 +1724,8 @@ const BackpackHelper = {
     },
 
     initDrinkStats: function() {
-        if (!localStorage.getItem('bh_drink_stats')) {
-            localStorage.setItem('bh_drink_stats', JSON.stringify({}));
+        if (!Utils.getItem('bh_drink_stats')) {
+            Utils.setItem('bh_drink_stats', JSON.stringify({}));
         }
 
         document.removeEventListener('click', this.handleDrinkClick);
@@ -1438,7 +1740,7 @@ const BackpackHelper = {
                 const name = img ? (img.getAttribute('alt') || img.title).trim() : a.textContent.trim();
                 const src = img ? img.getAttribute('src') : '';
                 if (name) {
-                    let stats = JSON.parse(localStorage.getItem('bh_drink_stats') || '{}');
+                    let stats = JSON.parse(Utils.getItem('bh_drink_stats') || '{}');
                     let current = stats[name];
                     if (typeof current === 'number') {
                         current = { count: current, src: src };
@@ -1449,7 +1751,7 @@ const BackpackHelper = {
                     }
                     current.count++;
                     stats[name] = current;
-                    localStorage.setItem('bh_drink_stats', JSON.stringify(stats));
+                    Utils.setItem('bh_drink_stats', JSON.stringify(stats));
                 }
             }
         };
@@ -1507,7 +1809,7 @@ const BackpackHelper = {
         
         bpTable.setAttribute('data-bh-favorites-added', 'true');
 
-        let stats = JSON.parse(localStorage.getItem('bh_drink_stats') || '{}');
+        let stats = JSON.parse(Utils.getItem('bh_drink_stats') || '{}');
         const getCount = (val) => typeof val === 'number' ? val : (val ? val.count : 0);
         const sortedDrinks = Object.keys(stats).sort((a,b) => getCount(stats[b]) - getCount(stats[a])).slice(0, 5);
 
@@ -1594,7 +1896,7 @@ const BackpackHelper = {
             modal.remove();
         }
 
-        let stats = JSON.parse(localStorage.getItem('bh_drink_stats') || '{}');
+        let stats = JSON.parse(Utils.getItem('bh_drink_stats') || '{}');
         const getCount = (val) => typeof val === 'number' ? val : (val ? val.count : 0);
         const getSrc = (name, val) => {
             if (val && val.src && !val.src.startsWith('data:')) return val.src;
@@ -1632,7 +1934,7 @@ const BackpackHelper = {
         if (resetBtn) {
             resetBtn.addEventListener('click', () => {
                 if (confirm('Are you sure you want to reset all your drink stats?')) {
-                    localStorage.setItem('bh_drink_stats', JSON.stringify({}));
+                    Utils.setItem('bh_drink_stats', JSON.stringify({}));
                     this.showStatsModal();
                 }
             });
@@ -1642,9 +1944,9 @@ const BackpackHelper = {
             btn.addEventListener('click', (e) => {
                 let drink = e.target.getAttribute('data-drink');
                 if (confirm(`Are you sure you want to remove stats for: ${drink}?`)) {
-                    let currentStats = JSON.parse(localStorage.getItem('bh_drink_stats') || '{}');
+                    let currentStats = JSON.parse(Utils.getItem('bh_drink_stats') || '{}');
                     delete currentStats[drink];
-                    localStorage.setItem('bh_drink_stats', JSON.stringify(currentStats));
+                    Utils.setItem('bh_drink_stats', JSON.stringify(currentStats));
                     this.showStatsModal();
                 }
             });
@@ -1736,7 +2038,7 @@ const BankHelper = {
     ],
     getBankGoals: function() {
         try {
-            return JSON.parse(localStorage.getItem('hw_bank_goals') || '{}');
+            return JSON.parse(Utils.getItem('hw_bank_goals') || '{}');
         } catch(e) {
             return {};
         }
@@ -1749,9 +2051,9 @@ const BankHelper = {
             goals[actionName] = cost;
         }
         if (Object.keys(goals).length === 0) {
-            localStorage.removeItem('hw_bank_goals');
+            Utils.removeItem('hw_bank_goals');
         } else {
-            localStorage.setItem('hw_bank_goals', JSON.stringify(goals));
+            Utils.setItem('hw_bank_goals', JSON.stringify(goals));
         }
     },
     init: function() {
@@ -2089,7 +2391,7 @@ const BernardsBasementHelper = {
         { key: 'BernardsBasementHelper_BasementMap', label: 'Basement Map' }
     ],
     init: function() {
-        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
         
         if (savedSettings['BernardsBasementHelper_BasementMap'] !== false) {
             this.initBasementMap();
@@ -2169,7 +2471,7 @@ const CanDepoHelper = {
     cmds: 'depo',
     staff: false,
     init: function() {
-        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
 
         if (savedSettings['CanDepoHelper_TotalValue'] !== false) {
             this.initTotalValue();
@@ -2262,7 +2564,7 @@ const ExploreHelper = {
     },
 
     addToLog: function(message, type, coords) {
-        let logs = JSON.parse(localStorage.getItem('hw_explore_log') || '[]');
+        let logs = JSON.parse(Utils.getItem('hw_explore_log') || '[]');
 
         const now = Date.now();
         // Prevent duplicate logging (caused by browser reload within 5 seconds of event)
@@ -2287,7 +2589,7 @@ const ExploreHelper = {
         // Keep last 50 logs
         if (logs.length > 50) logs = logs.slice(0, 50);
 
-        localStorage.setItem('hw_explore_log', JSON.stringify(logs));
+        Utils.setItem('hw_explore_log', JSON.stringify(logs));
     },
 
     initLobbyPage: function() {
@@ -2320,7 +2622,7 @@ const ExploreHelper = {
         const existingLog = document.getElementById('hh_explore_log_wrapper');
         if (existingLog) existingLog.remove();
 
-        const logs = JSON.parse(localStorage.getItem('hw_explore_log') || '[]');
+        const logs = JSON.parse(Utils.getItem('hw_explore_log') || '[]');
 
         const logWrapper = document.createElement('div');
         logWrapper.id = 'hh_explore_log_wrapper';
@@ -2366,7 +2668,7 @@ const ExploreHelper = {
         if (clearBtn) {
             clearBtn.onclick = () => {
                 if (confirm('Are you sure you want to clear your entire Explore Log?')) {
-                    localStorage.removeItem('hw_explore_log');
+                    Utils.removeItem('hw_explore_log');
                     this.renderLogPanel();
                 }
             };
@@ -2861,7 +3163,7 @@ const FoodHelper = {
     },
 
     selectCrap: function() {
-        const crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
+        const crapList = JSON.parse(Utils.getItem('hw_helper_food_crap') || '[]');
         const checkboxes = document.querySelectorAll('.checkMe');
 
         checkboxes.forEach(cb => {
@@ -2877,7 +3179,7 @@ const FoodHelper = {
 
     markAsCrap: function(btn) {
         const checkboxes = document.querySelectorAll('.checkMe');
-        let crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
+        let crapList = JSON.parse(Utils.getItem('hw_helper_food_crap') || '[]');
 
         // Track the desired state of foods currently visible on the page
         const presentFoods = {};
@@ -2904,7 +3206,7 @@ const FoodHelper = {
             }
         });
 
-        localStorage.setItem('hw_helper_food_crap', JSON.stringify(crapList));
+        Utils.setItem('hw_helper_food_crap', JSON.stringify(crapList));
         if (btn) {
             btn.value = `✅ Updated Crap!`;
             setTimeout(() => { btn.value = 'Mark as Crap'; }, 3000);
@@ -3000,7 +3302,7 @@ const FortSlugworthHelper = {
             tilesContainer.appendChild(tile);
         });
 
-        console.log('FortSlugworthHelper: Room 4 (The Ripaparter) loaded tiles.');
+        Utils.log('FortSlugworthHelper: Room 4 (The Ripaparter) loaded tiles.');
     }
 };
 
@@ -3197,11 +3499,11 @@ const GangArmoryHelper = {
         hideBtn.onclick = (e) => {
             e.preventDefault();
             const checkboxes = document.querySelectorAll('.fav-checkbox');
-            let hiddenList = JSON.parse(localStorage.getItem('GangArmory_Hidden') || '[]');
+            let hiddenList = JSON.parse(Utils.getItem('GangArmory_Hidden') || '[]');
             checkboxes.forEach(cb => {
                 if (cb.checked && !hiddenList.includes(cb.value)) hiddenList.push(cb.value);
             });
-            localStorage.setItem('GangArmory_Hidden', JSON.stringify(hiddenList));
+            Utils.setItem('GangArmory_Hidden', JSON.stringify(hiddenList));
             
             // Explicitly uncheck to prevent browser state restoration on reload
             checkboxes.forEach(cb => cb.checked = false);
@@ -3216,11 +3518,11 @@ const GangArmoryHelper = {
         saveFavBtn.onclick = (e) => {
             e.preventDefault();
             const checkboxes = document.querySelectorAll('.fav-checkbox');
-            const favs = JSON.parse(localStorage.getItem('GangArmory_Favorites') || '[]');
+            const favs = JSON.parse(Utils.getItem('GangArmory_Favorites') || '[]');
             checkboxes.forEach(cb => {
                 if (cb.checked && !favs.includes(cb.value)) favs.push(cb.value);
             });
-            localStorage.setItem('GangArmory_Favorites', JSON.stringify(favs));
+            Utils.setItem('GangArmory_Favorites', JSON.stringify(favs));
             
             // Explicitly uncheck to prevent browser state restoration on reload
             checkboxes.forEach(cb => cb.checked = false);
@@ -3346,7 +3648,7 @@ const GangArmoryHelper = {
             table.appendChild(trHead);
 
             const allItems = [...availableItems[cat], ...loanedItems[cat]];
-            const savedHidden = JSON.parse(localStorage.getItem('GangArmory_Hidden') || '[]');
+            const savedHidden = JSON.parse(Utils.getItem('GangArmory_Hidden') || '[]');
 
             const grouped = {};
             allItems.forEach(item => {
@@ -3551,7 +3853,7 @@ const GangArmoryHelper = {
 
         // Render Favorites List Above Tabs
         let activeFavContainer = null;
-        const savedFavs = JSON.parse(localStorage.getItem('GangArmory_Favorites') || '[]');
+        const savedFavs = JSON.parse(Utils.getItem('GangArmory_Favorites') || '[]');
         if (savedFavs.length > 0) {
             const favContainer = document.createElement('div');
             favContainer.style.marginBottom = '20px';
@@ -3835,7 +4137,7 @@ const GangHitlistHelper = {
             leftDiv.appendChild(btn);
         }
 
-        const savedPageRaw = localStorage.getItem('hw_helper_gang_hitlist_page');
+        const savedPageRaw = Utils.getItem('hw_helper_gang_hitlist_page');
         const savedPageIdx = parseInt(savedPageRaw, 10);
         if (!isNaN(savedPageIdx)) {
             const savedDisplayNum = savedPageIdx + 1;
@@ -3864,12 +4166,12 @@ const GangHitlistHelper = {
 
     initGangHitlistPageTracker: function(queryParams) {
         const pageParam = queryParams.get('page');
-        let savedPage = localStorage.getItem('hw_helper_gang_hitlist_page');
+        let savedPage = Utils.getItem('hw_helper_gang_hitlist_page');
 
         if (pageParam !== null) {
             if (parseInt(pageParam, 10) > 0) {
                 savedPage = pageParam;
-                localStorage.setItem('hw_helper_gang_hitlist_page', savedPage);
+                Utils.setItem('hw_helper_gang_hitlist_page', savedPage);
             }
         }
 
@@ -3920,7 +4222,7 @@ const GangHitlistHelper = {
             }
         }
 
-        let markedHobos = JSON.parse(localStorage.getItem('hw_helper_gang_hitlist_marked') || '[]');
+        let markedHobos = JSON.parse(Utils.getItem('hw_helper_gang_hitlist_marked') || '[]');
         const playerLvl = Utils.getHoboLevel();
 
         for (let i = 1; i < hitlistTable.rows.length; i++) {
@@ -3979,7 +4281,7 @@ const GangHitlistHelper = {
                                 } else {
                                     if (!markedHobos.includes(hoboId)) markedHobos.push(hoboId);
                                 }
-                                localStorage.setItem('hw_helper_gang_hitlist_marked', JSON.stringify(markedHobos));
+                                Utils.setItem('hw_helper_gang_hitlist_marked', JSON.stringify(markedHobos));
                                 renderRow();
                             });
                         }
@@ -4011,7 +4313,7 @@ const HitlistHelper = {
         const settings = Utils.getSettings();
         if (settings?.HitlistHelper?.enabled === false) return;
 
-        console.log('[Hobo Helper] Initializing HitlistHelper');
+        Utils.log('[Hobo Helper] Initializing HitlistHelper');
 
         if (settings?.HitlistHelper_HighlightOnline !== false) {
             this.highlightOnlinePlayers();
@@ -4166,7 +4468,7 @@ const HitlistHelper = {
         // Load Default or Saved
         let savedConfig;
         try {
-            savedConfig = JSON.parse(localStorage.getItem('hw_hitlist_multisort'));
+            savedConfig = JSON.parse(Utils.getItem('hw_hitlist_multisort'));
         } catch(e) {}
 
         if (!savedConfig || !savedConfig.length) {
@@ -4201,7 +4503,7 @@ const HitlistHelper = {
                     config.push({ col: selects[i].value, dir: dirSelects[i].value });
                 }
             }
-            localStorage.setItem('hw_hitlist_multisort', JSON.stringify(config));
+            Utils.setItem('hw_hitlist_multisort', JSON.stringify(config));
             this.applyMultiSort(dataRows, tbody, config);
 
             configPanel.style.display = 'none';
@@ -4308,7 +4610,7 @@ const HospitalHelper = {
         const healForms = document.querySelectorAll('form.healButton');
         healForms.forEach(form => {
             form.addEventListener('submit', () => {
-                localStorage.setItem('hw_healing_last_used', Date.now().toString());
+                Utils.setItem('hw_healing_last_used', Date.now().toString());
             });
         });
     },
@@ -4330,18 +4632,18 @@ const KurtzCampHelper = {
         const content = document.querySelector('.content-area');
         if (!content) return;
 
-        let fireCount = parseInt(localStorage.getItem('hw_kurtz_fire_count') || '0');
-        let bottleCount = parseInt(localStorage.getItem('hw_kurtz_bottle_count') || '0');
+        let fireCount = parseInt(Utils.getItem('hw_kurtz_fire_count') || '0');
+        let bottleCount = parseInt(Utils.getItem('hw_kurtz_bottle_count') || '0');
 
         // Check for Fire
         if (content.innerHTML.includes('<b>Fire</b>')) {
             fireCount++;
-            localStorage.setItem('hw_kurtz_fire_count', fireCount);
+            Utils.setItem('hw_kurtz_fire_count', fireCount);
         }
         // Check for Empty Bottles (case-insensitive check for Empty Bottle(s))
         else if (content.innerHTML.toLowerCase().includes('empty bottle')) {
             bottleCount++;
-            localStorage.setItem('hw_kurtz_bottle_count', bottleCount);
+            Utils.setItem('hw_kurtz_bottle_count', bottleCount);
         }
     },
 
@@ -4349,8 +4651,8 @@ const KurtzCampHelper = {
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
 
-        let fireCount = parseInt(localStorage.getItem('hw_kurtz_fire_count') || '0');
-        let bottleCount = parseInt(localStorage.getItem('hw_kurtz_bottle_count') || '0');
+        let fireCount = parseInt(Utils.getItem('hw_kurtz_fire_count') || '0');
+        let bottleCount = parseInt(Utils.getItem('hw_kurtz_bottle_count') || '0');
 
         const tallyDiv = document.createElement('div');
         tallyDiv.style.textAlign = 'center';
@@ -4370,8 +4672,8 @@ const KurtzCampHelper = {
 
         document.getElementById('resetKurtzTally').addEventListener('click', () => {
             if (confirm('Reset your Kurtz Camp tallies?')) {
-                localStorage.setItem('hw_kurtz_fire_count', '0');
-                localStorage.setItem('hw_kurtz_bottle_count', '0');
+                Utils.setItem('hw_kurtz_fire_count', '0');
+                Utils.setItem('hw_kurtz_bottle_count', '0');
                 location.reload();
             }
         });
@@ -4410,7 +4712,7 @@ const LiquorStoreHelper = {
                 }
 
                 if (purchasedItem && purchasedAmount > 0) {
-                    const shoppingListStr = localStorage.getItem('hobowarsDrinkShoppingList');
+                    const shoppingListStr = Utils.getItem('hobowarsDrinkShoppingList');
                     if (shoppingListStr) {
                         let shoppingList = JSON.parse(shoppingListStr);
                         if (shoppingList[purchasedItem]) {
@@ -4419,10 +4721,10 @@ const LiquorStoreHelper = {
                                 delete shoppingList[purchasedItem];
                             }
                             if (Object.keys(shoppingList).length === 0) {
-                                localStorage.removeItem('hobowarsDrinkShoppingList');
-                                localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
+                                Utils.removeItem('hobowarsDrinkShoppingList');
+                                Utils.removeItem('hobowarsDrinkShoppingList_TargetDrink');
                             } else {
-                                localStorage.setItem('hobowarsDrinkShoppingList', JSON.stringify(shoppingList));
+                                Utils.setItem('hobowarsDrinkShoppingList', JSON.stringify(shoppingList));
                             }
                         }
                     }
@@ -4431,13 +4733,13 @@ const LiquorStoreHelper = {
                 console.error('Error handling purchase check', e);
             }
 
-            const shoppingListStr = localStorage.getItem('hobowarsDrinkShoppingList');
+            const shoppingListStr = Utils.getItem('hobowarsDrinkShoppingList');
             if (shoppingListStr) {
                 try {
                     const shoppingList = JSON.parse(shoppingListStr);
                     const items = Object.keys(shoppingList);
                     if (items.length > 0) {
-                        const targetDrink = localStorage.getItem('hobowarsDrinkShoppingList_TargetDrink');
+                        const targetDrink = Utils.getItem('hobowarsDrinkShoppingList_TargetDrink');
                         const titleText = targetDrink ? `🛍️ Mixer Shopping List - ${targetDrink}` : `🛍️ Mixer Shopping List`;
 
                         let contentHtml = `
@@ -4471,8 +4773,8 @@ const LiquorStoreHelper = {
 
                         document.getElementById('clear-shopping-list').addEventListener('click', function(e) {
                             e.preventDefault();
-                            localStorage.removeItem('hobowarsDrinkShoppingList');
-                            localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
+                            Utils.removeItem('hobowarsDrinkShoppingList');
+                            Utils.removeItem('hobowarsDrinkShoppingList_TargetDrink');
                             listContainer.style.display = 'none';
                         });
 
@@ -4636,7 +4938,7 @@ const LivingAreaHelper = {
                 // If it differs by more than 5s, the game's actual server time is offset from local storage.
                 if (!lastHealSaved || Math.abs(estimatedHealTime - savedTime) > 5000) {
                     localStorage.setItem('hw_healing_last_used', estimatedHealTime.toString());
-                    console.log('LivingAreaHelper: Synced healing tracker local storage to server Alive time.');
+                    Utils.log('LivingAreaHelper: Synced healing tracker local storage to server Alive time.');
                 }
             }
         }
@@ -4858,10 +5160,15 @@ const LivingAreaHelper = {
             latestVersion = Modules.ChangelogData.changes[0].version;
         }
 
+        let syncHtml = '';
+        if (Utils.getSettings()['SyncHelper_Enable'] === true) {
+            syncHtml = `<br><a href="#" id="hh_force_sync" style="color: #009933; text-decoration: none;">Force Sync</a> <span id="hh_force_sync_status" style="color: #4CAF50; display: none;">(&#10003;)</span>`;
+        }
+
         const versionHtml = `
             <div style="text-align: center; font-size: 11px; margin-top: 8px; color: #666; font-family: Tahoma, Arial, sans-serif; display: block; width: 100%;">
                 Hobo Helper v${latestVersion}<br>
-                <a href="#" id="hh_show_changelog" style="color: #0066cc; text-decoration: none;">View Changelog</a>
+                <a href="#" id="hh_show_changelog" style="color: #0066cc; text-decoration: none;">View Changelog</a>${syncHtml}
             </div>
         `;
 
@@ -4884,6 +5191,27 @@ const LivingAreaHelper = {
         const link = document.getElementById('hh_show_changelog');
         if (link) {
             link.addEventListener('click', (e) => Utils.showChangelogModal(e));
+        }
+
+        const syncLink = document.getElementById('hh_force_sync');
+        if (syncLink && typeof SyncHelper !== 'undefined') {
+            syncLink.addEventListener('click', async (e) => {
+                e.preventDefault();
+                syncLink.textContent = 'Syncing...';
+                syncLink.style.opacity = '0.5';
+                syncLink.style.pointerEvents = 'none';
+
+                await SyncHelper.syncAllNow();
+
+                const status = document.getElementById('hh_force_sync_status');
+                if (status) {
+                    status.style.display = 'inline';
+                }
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            });
         }
     },
 
@@ -5236,7 +5564,7 @@ const LockoutHelper = {
 
         if (!isLockoutScreen) return;
 
-        console.log("LockoutHelper: Detected game lockout screen.");
+        Utils.log("LockoutHelper: Detected game lockout screen.");
 
         const savedSettings = Utils.getSettings();
 
@@ -6361,11 +6689,11 @@ const MixerHelper = {
                                         }
                                     });
 
-                                    localStorage.setItem('hobowarsDrinkShoppingList', JSON.stringify(saveObj));
+                                    Utils.setItem('hobowarsDrinkShoppingList', JSON.stringify(saveObj));
                                     if (window.lastClickedRecipe && window.lastClickedRecipe.name) {
-                                        localStorage.setItem('hobowarsDrinkShoppingList_TargetDrink', window.lastClickedRecipe.name);
+                                        Utils.setItem('hobowarsDrinkShoppingList_TargetDrink', window.lastClickedRecipe.name);
                                     } else {
-                                        localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
+                                        Utils.removeItem('hobowarsDrinkShoppingList_TargetDrink');
                                     }
                                 });
                                 bankBtnContainer.appendChild(bankBtn);
@@ -6495,10 +6823,10 @@ const NorthernFenceHelper = {
         const currentPageNum = urlPage ? parseInt(urlPage) + 1 : 1;
 
         if (foundPlayer) {
-            localStorage.setItem('hof_player_page', currentPageNum);
+            Utils.setItem('hof_player_page', currentPageNum);
         }
 
-        const savedPageNum = localStorage.getItem('hof_player_page');
+        const savedPageNum = Utils.getItem('hof_player_page');
         if (savedPageNum) {
             const strongs = document.querySelectorAll('.content-area strong');
             let pagesContainer = null;
@@ -6634,7 +6962,7 @@ const RatsHelper = {
         { key: 'RatsHelper_UpgradeUI', label: 'Custom Upgrade Buttons UI' }
     ],
     init: function() {
-        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
         const enableNewsFilter = savedSettings['RatsHelper_NewsFilter'] !== false;
         const enableExpBar = savedSettings['RatsHelper_ExpBar'] !== false;
         const enableLifeBar = savedSettings['RatsHelper_LifeBar'] !== false;
@@ -6642,7 +6970,7 @@ const RatsHelper = {
         const enableActionButtons = savedSettings['RatsHelper_ActionButtons'] !== false;
         const enableUpgradeUI = savedSettings['RatsHelper_UpgradeUI'] !== false;
 
-        const savedTattoo = localStorage.getItem('hw_helper_tattoo') || '';
+        const savedTattoo = Utils.getItem('hw_helper_tattoo') || '';
         this.assumeRattoo = assumeRattoo || savedTattoo === 'Rattoo';
 
         const style = document.createElement('style');
@@ -6798,7 +7126,7 @@ const RatsHelper = {
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
 
-        console.log('[Hobo Helper] Initializing RatsHelper');
+        Utils.log('[Hobo Helper] Initializing RatsHelper');
 
         // Reposition upgrade images below the main rat images safely
         const ratCells = document.querySelectorAll('.ratcell');
@@ -7286,7 +7614,7 @@ const RatsHelper = {
         ul.parentNode.replaceChild(container, ul);
 
         // Add tattoo display below the links
-        const savedTattoo = localStorage.getItem('hw_helper_tattoo');
+        const savedTattoo = Utils.getItem('hw_helper_tattoo');
         if (savedTattoo) {
             const tattooDisplay = document.createElement('div');
             tattooDisplay.style.cssText = 'text-align: center; margin-top: 10px; font-size: 11px; color: #555;';
@@ -7659,9 +7987,9 @@ const RecyclingBinHelper = {
                 document.getElementById('hh_recycling_save').addEventListener('click', () => {
                     updateCurrentFromDOM();
                     const val = currentEditAmounts.join(', ');
-                    const currentSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+                    const currentSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
                     currentSettings['RecyclingBinHelper_Amounts'] = val;
-                    localStorage.setItem('hw_helper_settings', JSON.stringify(currentSettings));
+                    Utils.setItem('hw_helper_settings', JSON.stringify(currentSettings));
                     window.location.reload();
                 });
 
@@ -7682,7 +8010,7 @@ const SettingsHelper = {
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
 
-        console.log('Settings Helper loaded for preferences page');
+        Utils.log('Settings Helper loaded for preferences page');
         
         // Add divider and title
         const headerContainer = document.createElement('div');
@@ -7762,7 +8090,7 @@ const SettingsHelper = {
 
         contentArea.appendChild(headerContainer);
 
-        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
         
         // Helper function for toggles
         const createToggle = (key, labelText, isGlobal = false, defaultValue = true) => {
@@ -7798,9 +8126,9 @@ const SettingsHelper = {
 
             let toastTimeout;
             checkbox.addEventListener('change', (e) => {
-                const settings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+                const settings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
                 settings[key] = e.target.checked;
-                localStorage.setItem('hw_helper_settings', JSON.stringify(settings));
+                Utils.setItem('hw_helper_settings', JSON.stringify(settings));
                 
                 // Show saved toast or reload prompt
                 toast.style.display = 'inline';
@@ -7861,9 +8189,9 @@ const SettingsHelper = {
 
             let toastTimeout;
             input.addEventListener('input', (e) => {
-                const settings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+                const settings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
                 settings[key] = e.target.value;
-                localStorage.setItem('hw_helper_settings', JSON.stringify(settings));
+                Utils.setItem('hw_helper_settings', JSON.stringify(settings));
                 
                 toast.style.display = 'inline';
                 clearTimeout(toastTimeout);
@@ -7974,7 +8302,7 @@ const SettingsHelper = {
                     subFeatures[modName].forEach(feature => {
                         let el;
                         const strippedLabel = feature.label ? feature.label.replace(/^Enable\s+/i, '') : feature.key;
-                        if (feature.type === 'number' || feature.type === 'text') {
+                        if (feature.type === 'number' || feature.type === 'text' || feature.type === 'password') {
                             el = createInput({ ...feature, label: strippedLabel });
                         } else {
                             el = createToggle(feature.key, strippedLabel, false, feature.defaultValue !== false);
@@ -8020,7 +8348,7 @@ const SettingsHelper = {
                     listContainer.style.borderRadius = '4px';
                     listContainer.style.maxWidth = '100%';
 
-                    const crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
+                    const crapList = JSON.parse(Utils.getItem('hw_helper_food_crap') || '[]');
                     if (crapList.length === 0) {
                         listContainer.textContent = 'No foods marked as crap.';
                     } else {
@@ -8038,9 +8366,9 @@ const SettingsHelper = {
                             a.title = 'Remove from Crap list';
                             a.onclick = (e) => {
                                 e.preventDefault();
-                                let currentList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
+                                let currentList = JSON.parse(Utils.getItem('hw_helper_food_crap') || '[]');
                                 const updatedList = currentList.filter(f => f !== food);
-                                localStorage.setItem('hw_helper_food_crap', JSON.stringify(updatedList));
+                                Utils.setItem('hw_helper_food_crap', JSON.stringify(updatedList));
                                 li.remove();
                                 if (updatedList.length === 0) {
                                     listContainer.textContent = 'No foods marked as crap.';
@@ -8054,6 +8382,72 @@ const SettingsHelper = {
                     }
                     foodContainer.appendChild(listContainer);
                     moduleOptionsContainer.appendChild(foodContainer);
+                }
+
+                // Custom settings for SyncHelper
+                if (modName === 'SyncHelper') {
+                    const syncContainer = document.createElement('div');
+                    syncContainer.style.paddingLeft = '25px';
+                    syncContainer.style.marginTop = '10px';
+
+                    const testBtn = document.createElement('button');
+                    testBtn.textContent = 'Test Connection';
+                    testBtn.className = 'btn';
+                    testBtn.style.padding = '4px 8px';
+                    testBtn.style.cursor = 'pointer';
+                    testBtn.style.userSelect = 'none';
+                    testBtn.style.webkitUserSelect = 'none';
+
+                    const statusSpan = document.createElement('span');
+                    statusSpan.style.marginLeft = '10px';
+                    statusSpan.style.fontSize = '13px';
+                    statusSpan.style.fontWeight = 'bold';
+
+                    testBtn.onclick = async (e) => {
+                        e.preventDefault();
+                        if (typeof SyncHelper === 'undefined') {
+                            statusSpan.textContent = 'SyncHelper module missing.';
+                            statusSpan.style.color = '#d9534f';
+                            return;
+                        }
+
+                        const dbUrl = SyncHelper.getBaseDbUrl();
+                        if (!dbUrl) {
+                            statusSpan.textContent = 'Please enter a valid URL first.';
+                            statusSpan.style.color = '#d9534f';
+                            return;
+                        }
+
+                        testBtn.disabled = true;
+                        statusSpan.textContent = 'Testing...';
+                        statusSpan.style.color = '#666';
+
+                        try {
+                            const res = await SyncHelper.fetchGM(dbUrl, { headers: SyncHelper.getAuthHeaders() });
+                            if (res.ok) {
+                                statusSpan.textContent = 'Connection Successful! ✓';
+                                statusSpan.style.color = '#4CAF50';
+                            } else if (res.status === 401 || res.status === 403) {
+                                statusSpan.textContent = 'Auth Failed (Incorrect Username/Password).';
+                                statusSpan.style.color = '#d9534f';
+                            } else if (res.status === 404) {
+                                statusSpan.textContent = 'Database not found at URL.';
+                                statusSpan.style.color = '#d9534f';
+                            } else {
+                                statusSpan.textContent = `Connected, but error: HTTP ${res.status}`;
+                                statusSpan.style.color = '#d9534f';
+                            }
+                        } catch (err) {
+                            statusSpan.textContent = 'Connection Failed (Network error or CORS).';
+                            statusSpan.style.color = '#d9534f';
+                        } finally {
+                            testBtn.disabled = false;
+                        }
+                    };
+
+                    syncContainer.appendChild(testBtn);
+                    syncContainer.appendChild(statusSpan);
+                    moduleOptionsContainer.appendChild(syncContainer);
                 }
 
                 // Custom settings for GangArmoryHelper
@@ -8077,7 +8471,7 @@ const SettingsHelper = {
 
                     const renderFavList = () => {
                         listContainer.innerHTML = '';
-                        const favList = JSON.parse(localStorage.getItem('GangArmory_Favorites') || '[]');
+                        const favList = JSON.parse(Utils.getItem('GangArmory_Favorites') || '[]');
                         if (favList.length === 0) {
                             listContainer.textContent = 'No favorites selected.';
                         } else {
@@ -8095,9 +8489,9 @@ const SettingsHelper = {
                                 a.title = 'Remove ' + fav;
                                 a.onclick = (e) => {
                                     e.preventDefault();
-                                    let currentList = JSON.parse(localStorage.getItem('GangArmory_Favorites') || '[]');
+                                    let currentList = JSON.parse(Utils.getItem('GangArmory_Favorites') || '[]');
                                     const updatedList = currentList.filter(f => f !== fav);
-                                    localStorage.setItem('GangArmory_Favorites', JSON.stringify(updatedList));
+                                    Utils.setItem('GangArmory_Favorites', JSON.stringify(updatedList));
                                     renderFavList();
                                 };
                                 li.appendChild(a);
@@ -8113,7 +8507,7 @@ const SettingsHelper = {
                             btnReset.style.cursor = 'pointer';
                             btnReset.onclick = () => {
                                 if(confirm('Are you sure you want to remove all favorites?')) {
-                                    localStorage.removeItem('GangArmory_Favorites');
+                                    Utils.removeItem('GangArmory_Favorites');
                                     renderFavList();
                                 }
                             };
@@ -8138,7 +8532,7 @@ const SettingsHelper = {
 
                     const renderHiddenList = () => {
                         hiddenListContainer.innerHTML = '';
-                        const hiddenList = JSON.parse(localStorage.getItem('GangArmory_Hidden') || '[]');
+                        const hiddenList = JSON.parse(Utils.getItem('GangArmory_Hidden') || '[]');
                         if (hiddenList.length === 0) {
                             hiddenListContainer.textContent = 'No hidden items selected.';
                         } else {
@@ -8156,9 +8550,9 @@ const SettingsHelper = {
                                 a.title = 'Remove ' + fav;
                                 a.onclick = (e) => {
                                     e.preventDefault();
-                                    let currentList = JSON.parse(localStorage.getItem('GangArmory_Hidden') || '[]');
+                                    let currentList = JSON.parse(Utils.getItem('GangArmory_Hidden') || '[]');
                                     const updatedList = currentList.filter(f => f !== fav);
-                                    localStorage.setItem('GangArmory_Hidden', JSON.stringify(updatedList));
+                                    Utils.setItem('GangArmory_Hidden', JSON.stringify(updatedList));
                                     renderHiddenList();
                                 };
                                 li.appendChild(a);
@@ -8174,7 +8568,7 @@ const SettingsHelper = {
                             btnReset.style.cursor = 'pointer';
                             btnReset.onclick = () => {
                                 if(confirm('Are you sure you want to remove all hidden items?')) {
-                                    localStorage.removeItem('GangArmory_Hidden');
+                                    Utils.removeItem('GangArmory_Hidden');
                                     renderHiddenList();
                                 }
                             };
@@ -8489,7 +8883,7 @@ const SoupKitchenHelper = {
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
 
-        const hoboAgeDays = localStorage.getItem('hw_helper_hobo_age_days');
+        const hoboAgeDays = Utils.getItem('hw_helper_hobo_age_days');
         if (hoboAgeDays) {
             this.renderAgeDisplay(contentArea, hoboAgeDays);
         }
@@ -8612,7 +9006,7 @@ const UniversityHelper = {
             let amount = Utils.parseNumber(gainMatch[1]);
             const stat = gainMatch[2].toLowerCase();
             
-            const statsConfigStr = localStorage.getItem('hoboStatRatio');
+            const statsConfigStr = Utils.getItem('hoboStatRatio');
             if (statsConfigStr) {
                 try {
                     let config = JSON.parse(statsConfigStr);
@@ -8620,7 +9014,7 @@ const UniversityHelper = {
                         config.needs[stat] -= amount;
                         // Keep integer values consistent and avoid float precision issues later
                         config.needs[stat] = Math.round(config.needs[stat] * 10) / 10;
-                        localStorage.setItem('hoboStatRatio', JSON.stringify(config));
+                        Utils.setItem('hoboStatRatio', JSON.stringify(config));
                     }
                 } catch (e) {}
             }
@@ -8628,7 +9022,7 @@ const UniversityHelper = {
     },
     
     displayNeededStats: function() {
-        const statsConfigStr = localStorage.getItem('hoboStatRatio');
+        const statsConfigStr = Utils.getItem('hoboStatRatio');
         if (!statsConfigStr) return;
         
         let config;
@@ -8686,7 +9080,7 @@ const WeaponsHelper = {
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
 
-        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
         const enableFeature = savedSettings['WeaponsHelper_EnableFeature'] !== false;
 
         if (enableFeature) {
@@ -8883,6 +9277,7 @@ const WellnessClinicHelper = {
 
     const GlobalModules = {
         DisplayHelper,
+        SyncHelper,
     };
 
     const PageModules = {
@@ -8924,10 +9319,10 @@ const WellnessClinicHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.97';
+        window.HoboHelperVersion = '8.98';
     }
 
-    const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+    const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
 
     // Cache the settings globally so individual modules do not repeatedly block the main thread on synchronous LocalStorage I/O during initialization
     if (typeof Utils !== 'undefined') {
@@ -9002,4 +9397,5 @@ const WellnessClinicHelper = {
         initModules();
     }
 })();
+
 

@@ -153,7 +153,7 @@ const GangHitlistHelper = {
             leftDiv.appendChild(btn);
         }
 
-        const savedPageRaw = localStorage.getItem('hw_helper_gang_hitlist_page');
+        const savedPageRaw = Utils.getItem('hw_helper_gang_hitlist_page');
         const savedPageIdx = parseInt(savedPageRaw, 10);
         if (!isNaN(savedPageIdx)) {
             const savedDisplayNum = savedPageIdx + 1;
@@ -182,12 +182,12 @@ const GangHitlistHelper = {
 
     initGangHitlistPageTracker: function(queryParams) {
         const pageParam = queryParams.get('page');
-        let savedPage = localStorage.getItem('hw_helper_gang_hitlist_page');
+        let savedPage = Utils.getItem('hw_helper_gang_hitlist_page');
 
         if (pageParam !== null) {
             if (parseInt(pageParam, 10) > 0) {
                 savedPage = pageParam;
-                localStorage.setItem('hw_helper_gang_hitlist_page', savedPage);
+                Utils.setItem('hw_helper_gang_hitlist_page', savedPage);
             }
         }
 
@@ -238,7 +238,7 @@ const GangHitlistHelper = {
             }
         }
 
-        let markedHobos = JSON.parse(localStorage.getItem('hw_helper_gang_hitlist_marked') || '[]');
+        let markedHobos = JSON.parse(Utils.getItem('hw_helper_gang_hitlist_marked') || '[]');
         const playerLvl = Utils.getHoboLevel();
 
         for (let i = 1; i < hitlistTable.rows.length; i++) {
@@ -297,7 +297,7 @@ const GangHitlistHelper = {
                                 } else {
                                     if (!markedHobos.includes(hoboId)) markedHobos.push(hoboId);
                                 }
-                                localStorage.setItem('hw_helper_gang_hitlist_marked', JSON.stringify(markedHobos));
+                                Utils.setItem('hw_helper_gang_hitlist_marked', JSON.stringify(markedHobos));
                                 renderRow();
                             });
                         }
@@ -312,3 +312,4 @@ const GangHitlistHelper = {
         }
     }
 };
+

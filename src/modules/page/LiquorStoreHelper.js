@@ -30,7 +30,7 @@ const LiquorStoreHelper = {
                 }
 
                 if (purchasedItem && purchasedAmount > 0) {
-                    const shoppingListStr = localStorage.getItem('hobowarsDrinkShoppingList');
+                    const shoppingListStr = Utils.getItem('hobowarsDrinkShoppingList');
                     if (shoppingListStr) {
                         let shoppingList = JSON.parse(shoppingListStr);
                         if (shoppingList[purchasedItem]) {
@@ -39,10 +39,10 @@ const LiquorStoreHelper = {
                                 delete shoppingList[purchasedItem];
                             }
                             if (Object.keys(shoppingList).length === 0) {
-                                localStorage.removeItem('hobowarsDrinkShoppingList');
-                                localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
+                                Utils.removeItem('hobowarsDrinkShoppingList');
+                                Utils.removeItem('hobowarsDrinkShoppingList_TargetDrink');
                             } else {
-                                localStorage.setItem('hobowarsDrinkShoppingList', JSON.stringify(shoppingList));
+                                Utils.setItem('hobowarsDrinkShoppingList', JSON.stringify(shoppingList));
                             }
                         }
                     }
@@ -51,13 +51,13 @@ const LiquorStoreHelper = {
                 console.error('Error handling purchase check', e);
             }
 
-            const shoppingListStr = localStorage.getItem('hobowarsDrinkShoppingList');
+            const shoppingListStr = Utils.getItem('hobowarsDrinkShoppingList');
             if (shoppingListStr) {
                 try {
                     const shoppingList = JSON.parse(shoppingListStr);
                     const items = Object.keys(shoppingList);
                     if (items.length > 0) {
-                        const targetDrink = localStorage.getItem('hobowarsDrinkShoppingList_TargetDrink');
+                        const targetDrink = Utils.getItem('hobowarsDrinkShoppingList_TargetDrink');
                         const titleText = targetDrink ? `🛍️ Mixer Shopping List - ${targetDrink}` : `🛍️ Mixer Shopping List`;
 
                         let contentHtml = `
@@ -91,8 +91,8 @@ const LiquorStoreHelper = {
 
                         document.getElementById('clear-shopping-list').addEventListener('click', function(e) {
                             e.preventDefault();
-                            localStorage.removeItem('hobowarsDrinkShoppingList');
-                            localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
+                            Utils.removeItem('hobowarsDrinkShoppingList');
+                            Utils.removeItem('hobowarsDrinkShoppingList_TargetDrink');
                             listContainer.style.display = 'none';
                         });
 
@@ -133,3 +133,4 @@ const LiquorStoreHelper = {
         }
     }
 }
+

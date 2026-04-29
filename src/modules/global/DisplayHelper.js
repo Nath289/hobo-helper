@@ -61,7 +61,7 @@ const DisplayHelper = {
     },
     initUpdateChecker: function() {
         const settings = Utils.getSettings();
-        const savedVersion = localStorage.getItem('hw_helper_version');
+        const savedVersion = Utils.getItem('hw_helper_version');
         const currentVersion = (typeof Modules !== 'undefined' && Modules.ChangelogData && Modules.ChangelogData.changes && Modules.ChangelogData.changes.length > 0) ? Modules.ChangelogData.changes[0].version : null;
 
         if (currentVersion) {
@@ -72,27 +72,27 @@ const DisplayHelper = {
                     Utils.showChangelogModal(null, savedVersion);
                 }
             }
-            localStorage.setItem('hw_helper_version', currentVersion);
+            Utils.setItem('hw_helper_version', currentVersion);
         }
     },
     initLastActiveTimeTracking: function() {
         // Track last active time, updating at most every 30 seconds
         const now = Date.now();
-        const lastActiveTime = parseInt(localStorage.getItem('hw_last_active_time') || '0', 10);
+        const lastActiveTime = parseInt(Utils.getItem('hw_last_active_time') || '0', 10);
         const timeSinceLast = now - lastActiveTime;
 
         const updateLastActive = () => {
-            localStorage.setItem('hw_last_active_time', now.toString());
-            localStorage.removeItem('hw_rejoin_time');
-            localStorage.setItem('hw_last_active_awakeness', Utils.getAwakeness().toString());
-            localStorage.removeItem('hw_session_lost_awake_checked');
-            localStorage.removeItem('hw_session_lost_awake');
+            Utils.setItem('hw_last_active_time', now.toString());
+            Utils.removeItem('hw_rejoin_time');
+            Utils.setItem('hw_last_active_awakeness', Utils.getAwakeness().toString());
+            Utils.removeItem('hw_session_lost_awake_checked');
+            Utils.removeItem('hw_session_lost_awake');
         };
 
         if (timeSinceLast > 1800000) { // 30 minutes
             // Calculate lost awakeness
-            if (lastActiveTime > 0 && !localStorage.getItem('hw_session_lost_awake_checked')) {
-                const prevAwake = parseInt(localStorage.getItem('hw_last_active_awakeness') || '0', 10);
+            if (lastActiveTime > 0 && !Utils.getItem('hw_session_lost_awake_checked')) {
+                const prevAwake = parseInt(Utils.getItem('hw_last_active_awakeness') || '0', 10);
                 const inactiveMins = timeSinceLast / 60000;
                 const isDonator = Utils.isDonator();
                 const tickInterval = isDonator ? 10 : 15;
@@ -109,19 +109,19 @@ const DisplayHelper = {
 
                 if (currentAwake >= maxAwake && estimatedAwake > maxAwake) {
                     const lost = estimatedAwake - maxAwake;
-                    localStorage.setItem('hw_session_lost_awake', lost.toString());
+                    Utils.setItem('hw_session_lost_awake', lost.toString());
                 }
-                localStorage.setItem('hw_session_lost_awake_checked', '1');
+                Utils.setItem('hw_session_lost_awake_checked', '1');
             }
 
             if (Utils.getAwakeness() === 0) {
                 // If awakeness is 0, they are already playing/active, immediately log active time
                 updateLastActive();
             } else {
-                const rejoinTime = parseInt(localStorage.getItem('hw_rejoin_time') || '0', 10);
+                const rejoinTime = parseInt(Utils.getItem('hw_rejoin_time') || '0', 10);
                 // If starting a new session (or it's been > 5 mins since our initial rejoin attempt)
                 if (rejoinTime === 0 || (now - rejoinTime) > 300000) {
-                    localStorage.setItem('hw_rejoin_time', now.toString());
+                    Utils.setItem('hw_rejoin_time', now.toString());
                 } else if (now - rejoinTime >= 30000) {
                     // If they've been active for at least 30 seconds since rejoining
                     updateLastActive();
@@ -144,7 +144,7 @@ const DisplayHelper = {
         leftPanel.insertBefore(displayDiv, leftPanel.firstChild);
 
         const updateDisplay = () => {
-            const lastActive = parseInt(localStorage.getItem('hw_last_active_time') || '0', 10);
+            const lastActive = parseInt(Utils.getItem('hw_last_active_time') || '0', 10);
             if (!lastActive) {
                 displayDiv.textContent = 'Last Active: Unknown';
                 return;
@@ -164,7 +164,7 @@ const DisplayHelper = {
             if (mins > 0 || hours === 0) timeParts.push(`${mins}m`);
             
             let displayStr = `Last Active: ${timeParts.join(' ')} ago`;
-            const lostAwake = parseInt(localStorage.getItem('hw_session_lost_awake') || '0', 10);
+            const lostAwake = parseInt(Utils.getItem('hw_session_lost_awake') || '0', 10);
             if (lostAwake > 0) {
                 displayStr += `<br><span style="color: #d9534f; font-weight: normal;">Lost Awake: ${lostAwake}</span>`;
             }
@@ -251,11 +251,11 @@ const DisplayHelper = {
         
         const lifeLabel = document.getElementById('lifeValue');
         if (lifeLabel && lifeLabel.textContent.trim() === '0%') {
-            localStorage.removeItem('hw_healing_last_used');
+            Utils.removeItem('hw_healing_last_used');
             return;
         }
 
-        const lastHealSaved = localStorage.getItem('hw_healing_last_used');
+        const lastHealSaved = Utils.getItem('hw_healing_last_used');
         // Do not render anything if they have never healed/synced since the script update
         if (!lastHealSaved) return;
 
@@ -268,7 +268,7 @@ const DisplayHelper = {
         topbarUl.appendChild(li);
 
         const updateAliveTime = () => {
-            const currentSaved = localStorage.getItem('hw_healing_last_used');
+            const currentSaved = Utils.getItem('hw_healing_last_used');
             if (!currentSaved) return;
 
             const elapsedSecs = Math.floor((Date.now() - parseInt(currentSaved, 10)) / 1000);
@@ -401,7 +401,7 @@ const DisplayHelper = {
         if (isNaN(currentLevel)) return;
 
         if (typeof PrimesData === 'undefined') {
-            console.log("DisplayHelper: PrimesData is not defined.");
+            Utils.log("DisplayHelper: PrimesData is not defined.");
             return;
         }
 
@@ -475,29 +475,29 @@ const DisplayHelper = {
         let isDonator = Utils.isDonator();
 
         const now = Date.now();
-        localStorage.setItem('hw_awake_last_active', now.toString());
-        localStorage.setItem('hw_awake_current', currentAwake.toString());
-        localStorage.setItem('hw_awake_max', maxAwake.toString());
-        localStorage.setItem('hw_awake_is_donator', isDonator.toString());
-        localStorage.removeItem('hw_awake_notified');
+        Utils.setItem('hw_awake_last_active', now.toString());
+        Utils.setItem('hw_awake_current', currentAwake.toString());
+        Utils.setItem('hw_awake_max', maxAwake.toString());
+        Utils.setItem('hw_awake_is_donator', isDonator.toString());
+        Utils.removeItem('hw_awake_notified');
 
         if (currentAwake < maxAwake) {
             setInterval(() => {
-                const lastActive = parseInt(localStorage.getItem('hw_awake_last_active') || '0', 10);
-                const isNotified = localStorage.getItem('hw_awake_notified');
+                const lastActive = parseInt(Utils.getItem('hw_awake_last_active') || '0', 10);
+                const isNotified = Utils.getItem('hw_awake_notified');
                 if (isNotified) return;
 
                 const inactiveMins = (Date.now() - lastActive) / 60000;
-                const savedCurrent = parseInt(localStorage.getItem('hw_awake_current') || '0', 10);
-                const savedMax = parseInt(localStorage.getItem('hw_awake_max') || '100', 10);
-                const savedDonator = localStorage.getItem('hw_awake_is_donator') === 'true';
+                const savedCurrent = parseInt(Utils.getItem('hw_awake_current') || '0', 10);
+                const savedMax = parseInt(Utils.getItem('hw_awake_max') || '100', 10);
+                const savedDonator = Utils.getItem('hw_awake_is_donator') === 'true';
 
                 const tickInterval = savedDonator ? 10 : 15;
                 const ticks = Math.floor(inactiveMins / tickInterval);
                 const estimatedAwake = Math.min(savedMax, savedCurrent + (ticks * 5));
 
                 if (estimatedAwake >= savedMax && inactiveMins >= inactiveWaitMins) {
-                    localStorage.setItem('hw_awake_notified', '1');
+                    Utils.setItem('hw_awake_notified', '1');
                     if (typeof GM_notification !== 'undefined') {
                         GM_notification({
                             title: 'HoboWars Awake Full',
@@ -513,3 +513,5 @@ const DisplayHelper = {
         }
     }
 };
+
+

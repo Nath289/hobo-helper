@@ -10,7 +10,7 @@ const WeaponsHelper = {
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
 
-        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
         const enableFeature = savedSettings['WeaponsHelper_EnableFeature'] !== false;
 
         if (enableFeature) {
@@ -59,4 +59,5 @@ const WeaponsHelper = {
         });
     }
 };
+
 

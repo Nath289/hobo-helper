@@ -12,7 +12,7 @@ const LockoutHelper = {
 
         if (!isLockoutScreen) return;
 
-        console.log("LockoutHelper: Detected game lockout screen.");
+        Utils.log("LockoutHelper: Detected game lockout screen.");
 
         const savedSettings = Utils.getSettings();
 
@@ -95,4 +95,6 @@ const LockoutHelper = {
         }
     }
 };
+
+
 

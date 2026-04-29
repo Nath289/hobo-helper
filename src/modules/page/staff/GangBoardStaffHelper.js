@@ -96,14 +96,14 @@ const GangBoardStaffHelper = {
 
             const hoboList = Array.from(hoboMap.values());
 
-            const savedPosts = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+            const savedPosts = JSON.parse(Utils.getItem('hw_helper_gang_posts') || '{}');
             savedPosts[topicName] = {
                 timestamp: Date.now(),
                 topic: topicName,
                 totalHobos: hoboList.length,
                 hobos: hoboList
             };
-            localStorage.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
+            Utils.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
 
             btn.textContent = `✅ Saved ${hoboList.length} Unique Hobos!`;
             setTimeout(() => { btn.textContent = '💾 Save Repliers List'; }, 3000);
@@ -144,7 +144,7 @@ const GangBoardStaffHelper = {
                 btn.style.cursor = 'pointer';
                 btn.setAttribute('data-post-id', postId);
 
-                const initSaved = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                const initSaved = JSON.parse(Utils.getItem('hw_helper_gang_posts') || '{}');
                 const isAlreadyAdded = (initSaved[topicName] && initSaved[topicName].paymentsToHobos)
                     ? initSaved[topicName].paymentsToHobos.some(p => String(p.postId) === String(postId))
                     : false;
@@ -192,7 +192,7 @@ const GangBoardStaffHelper = {
                         parsedAmount = '$' + Math.round(num).toLocaleString();
                     }
 
-                    const savedPostsCheck = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                    const savedPostsCheck = JSON.parse(Utils.getItem('hw_helper_gang_posts') || '{}');
                     const existingPayments = (savedPostsCheck[topicName] && savedPostsCheck[topicName].paymentsToHobos) ? savedPostsCheck[topicName].paymentsToHobos : [];
                     const existingPayment = existingPayments.find(p => String(p.postId) === String(postId));
 
@@ -263,7 +263,7 @@ const GangBoardStaffHelper = {
                         const descVal = document.getElementById(`pay-desc-${postId}`).value.trim();
                         const amtVal = document.getElementById(`pay-amt-${postId}`).value.trim();
 
-                        const savedPosts = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                        const savedPosts = JSON.parse(Utils.getItem('hw_helper_gang_posts') || '{}');
 
                         if (!savedPosts[topicName]) {
                             savedPosts[topicName] = {
@@ -296,7 +296,7 @@ const GangBoardStaffHelper = {
                             savedPosts[topicName].paymentsToHobos.push(newPaymentObj);
                         }
 
-                        localStorage.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
+                        Utils.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
 
                         document.getElementById(`pay-remove-${postId}`).style.display = 'inline-block';
 
@@ -309,12 +309,12 @@ const GangBoardStaffHelper = {
                     });
 
                     document.getElementById('pay-remove-' + postId).addEventListener('click', () => {
-                        const savedPosts = JSON.parse(localStorage.getItem('hw_helper_gang_posts') || '{}');
+                        const savedPosts = JSON.parse(Utils.getItem('hw_helper_gang_posts') || '{}');
                         if (savedPosts[topicName] && savedPosts[topicName].paymentsToHobos) {
                             const existingIdx = savedPosts[topicName].paymentsToHobos.findIndex(p => String(p.postId) === String(postId));
                             if (existingIdx !== -1) {
                                 savedPosts[topicName].paymentsToHobos.splice(existingIdx, 1);
-                                localStorage.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
+                                Utils.setItem('hw_helper_gang_posts', JSON.stringify(savedPosts));
                             }
                         }
 
@@ -391,4 +391,5 @@ const GangBoardStaffHelper = {
         parentDiv.appendChild(btn);
     }
 };
+
 

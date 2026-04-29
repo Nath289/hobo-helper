@@ -14,18 +14,18 @@ const KurtzCampHelper = {
         const content = document.querySelector('.content-area');
         if (!content) return;
 
-        let fireCount = parseInt(localStorage.getItem('hw_kurtz_fire_count') || '0');
-        let bottleCount = parseInt(localStorage.getItem('hw_kurtz_bottle_count') || '0');
+        let fireCount = parseInt(Utils.getItem('hw_kurtz_fire_count') || '0');
+        let bottleCount = parseInt(Utils.getItem('hw_kurtz_bottle_count') || '0');
 
         // Check for Fire
         if (content.innerHTML.includes('<b>Fire</b>')) {
             fireCount++;
-            localStorage.setItem('hw_kurtz_fire_count', fireCount);
+            Utils.setItem('hw_kurtz_fire_count', fireCount);
         }
         // Check for Empty Bottles (case-insensitive check for Empty Bottle(s))
         else if (content.innerHTML.toLowerCase().includes('empty bottle')) {
             bottleCount++;
-            localStorage.setItem('hw_kurtz_bottle_count', bottleCount);
+            Utils.setItem('hw_kurtz_bottle_count', bottleCount);
         }
     },
 
@@ -33,8 +33,8 @@ const KurtzCampHelper = {
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
 
-        let fireCount = parseInt(localStorage.getItem('hw_kurtz_fire_count') || '0');
-        let bottleCount = parseInt(localStorage.getItem('hw_kurtz_bottle_count') || '0');
+        let fireCount = parseInt(Utils.getItem('hw_kurtz_fire_count') || '0');
+        let bottleCount = parseInt(Utils.getItem('hw_kurtz_bottle_count') || '0');
 
         const tallyDiv = document.createElement('div');
         tallyDiv.style.textAlign = 'center';
@@ -54,11 +54,12 @@ const KurtzCampHelper = {
 
         document.getElementById('resetKurtzTally').addEventListener('click', () => {
             if (confirm('Reset your Kurtz Camp tallies?')) {
-                localStorage.setItem('hw_kurtz_fire_count', '0');
-                localStorage.setItem('hw_kurtz_bottle_count', '0');
+                Utils.setItem('hw_kurtz_fire_count', '0');
+                Utils.setItem('hw_kurtz_bottle_count', '0');
                 location.reload();
             }
         });
     }
 };
+
 

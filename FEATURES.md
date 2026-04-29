@@ -28,6 +28,9 @@ Assists in navigating Fort Slugworth (`cmd=fort_slugworth`).
 ### 6. Settings Helper (`SettingsHelper.js`)
 Integrates directly into your HoboWars in-game "Preferences" page (`cmd=preferences`). It provides a centralized hub to customize how Hobo Helper behaves across the game, allowing you to globally disable the script or granularly toggle individual modules and sub-features (like toggling specific Living Area Helper functionalities) to tailor your experience.
 
+### 7. Cloud Sync Helper (`SyncHelper.js`)
+Synchronizes your script's settings, custom tracked stats (like ratios, crap food, hitlists), and history seamlessly across multiple devices/browsers! By pointing it at a custom CouchDB or PouchDB instance, you can effortlessly pull and push a continuous state using its built-in bidirectional merging logic, completely bypassing manual exports. Can be fully configured via the Settings Helper (Preferences page), providing a secure backend connection over HTTPS via native `GM_xmlhttpRequest`.
+
 ### 7. Tattoo Parlor Helper (`TattooParlorHelper.js`)
 Helps optimize your time at the Tattoo Parlor. Displays relevant stat impacts of different tattoos so you can plan your character build efficiently.
 

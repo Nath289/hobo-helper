@@ -120,7 +120,7 @@ const LivingAreaHelper = {
                 // If it differs by more than 5s, the game's actual server time is offset from local storage.
                 if (!lastHealSaved || Math.abs(estimatedHealTime - savedTime) > 5000) {
                     localStorage.setItem('hw_healing_last_used', estimatedHealTime.toString());
-                    console.log('LivingAreaHelper: Synced healing tracker local storage to server Alive time.');
+                    Utils.log('LivingAreaHelper: Synced healing tracker local storage to server Alive time.');
                 }
             }
         }
@@ -342,10 +342,15 @@ const LivingAreaHelper = {
             latestVersion = Modules.ChangelogData.changes[0].version;
         }
 
+        let syncHtml = '';
+        if (Utils.getSettings()['SyncHelper_Enable'] === true) {
+            syncHtml = `<br><a href="#" id="hh_force_sync" style="color: #009933; text-decoration: none;">Force Sync</a> <span id="hh_force_sync_status" style="color: #4CAF50; display: none;">(&#10003;)</span>`;
+        }
+
         const versionHtml = `
             <div style="text-align: center; font-size: 11px; margin-top: 8px; color: #666; font-family: Tahoma, Arial, sans-serif; display: block; width: 100%;">
                 Hobo Helper v${latestVersion}<br>
-                <a href="#" id="hh_show_changelog" style="color: #0066cc; text-decoration: none;">View Changelog</a>
+                <a href="#" id="hh_show_changelog" style="color: #0066cc; text-decoration: none;">View Changelog</a>${syncHtml}
             </div>
         `;
 
@@ -368,6 +373,27 @@ const LivingAreaHelper = {
         const link = document.getElementById('hh_show_changelog');
         if (link) {
             link.addEventListener('click', (e) => Utils.showChangelogModal(e));
+        }
+
+        const syncLink = document.getElementById('hh_force_sync');
+        if (syncLink && typeof SyncHelper !== 'undefined') {
+            syncLink.addEventListener('click', async (e) => {
+                e.preventDefault();
+                syncLink.textContent = 'Syncing...';
+                syncLink.style.opacity = '0.5';
+                syncLink.style.pointerEvents = 'none';
+
+                await SyncHelper.syncAllNow();
+
+                const status = document.getElementById('hh_force_sync_status');
+                if (status) {
+                    status.style.display = 'inline';
+                }
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            });
         }
     },
 
@@ -705,3 +731,5 @@ const LivingAreaHelper = {
         }
     }
 }
+
+

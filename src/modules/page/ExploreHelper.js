@@ -49,7 +49,7 @@ const ExploreHelper = {
     },
 
     addToLog: function(message, type, coords) {
-        let logs = JSON.parse(localStorage.getItem('hw_explore_log') || '[]');
+        let logs = JSON.parse(Utils.getItem('hw_explore_log') || '[]');
 
         const now = Date.now();
         // Prevent duplicate logging (caused by browser reload within 5 seconds of event)
@@ -74,7 +74,7 @@ const ExploreHelper = {
         // Keep last 50 logs
         if (logs.length > 50) logs = logs.slice(0, 50);
 
-        localStorage.setItem('hw_explore_log', JSON.stringify(logs));
+        Utils.setItem('hw_explore_log', JSON.stringify(logs));
     },
 
     initLobbyPage: function() {
@@ -107,7 +107,7 @@ const ExploreHelper = {
         const existingLog = document.getElementById('hh_explore_log_wrapper');
         if (existingLog) existingLog.remove();
 
-        const logs = JSON.parse(localStorage.getItem('hw_explore_log') || '[]');
+        const logs = JSON.parse(Utils.getItem('hw_explore_log') || '[]');
 
         const logWrapper = document.createElement('div');
         logWrapper.id = 'hh_explore_log_wrapper';
@@ -153,10 +153,11 @@ const ExploreHelper = {
         if (clearBtn) {
             clearBtn.onclick = () => {
                 if (confirm('Are you sure you want to clear your entire Explore Log?')) {
-                    localStorage.removeItem('hw_explore_log');
+                    Utils.removeItem('hw_explore_log');
                     this.renderLogPanel();
                 }
             };
         }
     }
 };
+

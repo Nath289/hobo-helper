@@ -10,7 +10,7 @@ const RatsHelper = {
         { key: 'RatsHelper_UpgradeUI', label: 'Custom Upgrade Buttons UI' }
     ],
     init: function() {
-        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
         const enableNewsFilter = savedSettings['RatsHelper_NewsFilter'] !== false;
         const enableExpBar = savedSettings['RatsHelper_ExpBar'] !== false;
         const enableLifeBar = savedSettings['RatsHelper_LifeBar'] !== false;
@@ -18,7 +18,7 @@ const RatsHelper = {
         const enableActionButtons = savedSettings['RatsHelper_ActionButtons'] !== false;
         const enableUpgradeUI = savedSettings['RatsHelper_UpgradeUI'] !== false;
 
-        const savedTattoo = localStorage.getItem('hw_helper_tattoo') || '';
+        const savedTattoo = Utils.getItem('hw_helper_tattoo') || '';
         this.assumeRattoo = assumeRattoo || savedTattoo === 'Rattoo';
 
         const style = document.createElement('style');
@@ -174,7 +174,7 @@ const RatsHelper = {
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
 
-        console.log('[Hobo Helper] Initializing RatsHelper');
+        Utils.log('[Hobo Helper] Initializing RatsHelper');
 
         // Reposition upgrade images below the main rat images safely
         const ratCells = document.querySelectorAll('.ratcell');
@@ -662,7 +662,7 @@ const RatsHelper = {
         ul.parentNode.replaceChild(container, ul);
 
         // Add tattoo display below the links
-        const savedTattoo = localStorage.getItem('hw_helper_tattoo');
+        const savedTattoo = Utils.getItem('hw_helper_tattoo');
         if (savedTattoo) {
             const tattooDisplay = document.createElement('div');
             tattooDisplay.style.cssText = 'text-align: center; margin-top: 10px; font-size: 11px; color: #555;';
@@ -917,3 +917,5 @@ const RatsHelper = {
         form.parentNode.insertBefore(filterContainer, form);
     }
 };
+
+

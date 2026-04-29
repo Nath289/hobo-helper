@@ -2,7 +2,7 @@ const CanDepoHelper = {
     cmds: 'depo',
     staff: false,
     init: function() {
-        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
 
         if (savedSettings['CanDepoHelper_TotalValue'] !== false) {
             this.initTotalValue();
@@ -43,3 +43,4 @@ const CanDepoHelper = {
         }
     }
 };
+

@@ -298,3 +298,4 @@ const MessageBoardHelper = {
         ddButton.parentNode.insertBefore(document.createTextNode(' '), ddButton);
     }
 };
+

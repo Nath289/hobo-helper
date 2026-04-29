@@ -362,11 +362,11 @@ const MixerHelper = {
                                         }
                                     });
 
-                                    localStorage.setItem('hobowarsDrinkShoppingList', JSON.stringify(saveObj));
+                                    Utils.setItem('hobowarsDrinkShoppingList', JSON.stringify(saveObj));
                                     if (window.lastClickedRecipe && window.lastClickedRecipe.name) {
-                                        localStorage.setItem('hobowarsDrinkShoppingList_TargetDrink', window.lastClickedRecipe.name);
+                                        Utils.setItem('hobowarsDrinkShoppingList_TargetDrink', window.lastClickedRecipe.name);
                                     } else {
-                                        localStorage.removeItem('hobowarsDrinkShoppingList_TargetDrink');
+                                        Utils.removeItem('hobowarsDrinkShoppingList_TargetDrink');
                                     }
                                 });
                                 bankBtnContainer.appendChild(bankBtn);
@@ -385,4 +385,5 @@ const MixerHelper = {
         }
     }
 }
+
 

@@ -115,9 +115,9 @@ const RecyclingBinHelper = {
                 document.getElementById('hh_recycling_save').addEventListener('click', () => {
                     updateCurrentFromDOM();
                     const val = currentEditAmounts.join(', ');
-                    const currentSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+                    const currentSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
                     currentSettings['RecyclingBinHelper_Amounts'] = val;
-                    localStorage.setItem('hw_helper_settings', JSON.stringify(currentSettings));
+                    Utils.setItem('hw_helper_settings', JSON.stringify(currentSettings));
                     window.location.reload();
                 });
 
@@ -129,3 +129,4 @@ const RecyclingBinHelper = {
         }
     }
 };
+

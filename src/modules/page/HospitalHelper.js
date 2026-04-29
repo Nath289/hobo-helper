@@ -1,4 +1,4 @@
-﻿const HospitalHelper = {
+const HospitalHelper = {
     cmds: 'hospital',
     staff: false,
     settings: [
@@ -15,8 +15,9 @@
         const healForms = document.querySelectorAll('form.healButton');
         healForms.forEach(form => {
             form.addEventListener('submit', () => {
-                localStorage.setItem('hw_healing_last_used', Date.now().toString());
+                Utils.setItem('hw_healing_last_used', Date.now().toString());
             });
         });
     },
 };
+

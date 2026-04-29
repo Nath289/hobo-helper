@@ -7,7 +7,7 @@ const BankHelper = {
     ],
     getBankGoals: function() {
         try {
-            return JSON.parse(localStorage.getItem('hw_bank_goals') || '{}');
+            return JSON.parse(Utils.getItem('hw_bank_goals') || '{}');
         } catch(e) {
             return {};
         }
@@ -20,9 +20,9 @@ const BankHelper = {
             goals[actionName] = cost;
         }
         if (Object.keys(goals).length === 0) {
-            localStorage.removeItem('hw_bank_goals');
+            Utils.removeItem('hw_bank_goals');
         } else {
-            localStorage.setItem('hw_bank_goals', JSON.stringify(goals));
+            Utils.setItem('hw_bank_goals', JSON.stringify(goals));
         }
     },
     init: function() {
@@ -107,3 +107,4 @@ const BankHelper = {
         });
     }
 }
+

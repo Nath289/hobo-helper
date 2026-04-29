@@ -22,7 +22,7 @@ const UniversityHelper = {
             let amount = Utils.parseNumber(gainMatch[1]);
             const stat = gainMatch[2].toLowerCase();
             
-            const statsConfigStr = localStorage.getItem('hoboStatRatio');
+            const statsConfigStr = Utils.getItem('hoboStatRatio');
             if (statsConfigStr) {
                 try {
                     let config = JSON.parse(statsConfigStr);
@@ -30,7 +30,7 @@ const UniversityHelper = {
                         config.needs[stat] -= amount;
                         // Keep integer values consistent and avoid float precision issues later
                         config.needs[stat] = Math.round(config.needs[stat] * 10) / 10;
-                        localStorage.setItem('hoboStatRatio', JSON.stringify(config));
+                        Utils.setItem('hoboStatRatio', JSON.stringify(config));
                     }
                 } catch (e) {}
             }
@@ -38,7 +38,7 @@ const UniversityHelper = {
     },
     
     displayNeededStats: function() {
-        const statsConfigStr = localStorage.getItem('hoboStatRatio');
+        const statsConfigStr = Utils.getItem('hoboStatRatio');
         if (!statsConfigStr) return;
         
         let config;
@@ -83,4 +83,5 @@ const UniversityHelper = {
         });
     }
 };
+
 

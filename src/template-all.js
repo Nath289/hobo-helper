@@ -7,6 +7,7 @@
 // @match        *://www.hobowars.com/game/game.php?*
 // @match        *://hobowars.com/game/game.php?*
 // @grant        GM_notification
+// @grant        GM_xmlhttpRequest
 // @noframes
 // @run-at       document-start
 // ==/UserScript==
@@ -34,7 +35,7 @@
         window.HoboHelperVersion = '{{VERSION}}';
     }
 
-    const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+    const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
 
     // Cache the settings globally so individual modules do not repeatedly block the main thread on synchronous LocalStorage I/O during initialization
     if (typeof Utils !== 'undefined') {
@@ -109,3 +110,4 @@
         initModules();
     }
 })();
+

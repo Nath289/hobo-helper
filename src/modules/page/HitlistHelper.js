@@ -14,7 +14,7 @@ const HitlistHelper = {
         const settings = Utils.getSettings();
         if (settings?.HitlistHelper?.enabled === false) return;
 
-        console.log('[Hobo Helper] Initializing HitlistHelper');
+        Utils.log('[Hobo Helper] Initializing HitlistHelper');
 
         if (settings?.HitlistHelper_HighlightOnline !== false) {
             this.highlightOnlinePlayers();
@@ -169,7 +169,7 @@ const HitlistHelper = {
         // Load Default or Saved
         let savedConfig;
         try {
-            savedConfig = JSON.parse(localStorage.getItem('hw_hitlist_multisort'));
+            savedConfig = JSON.parse(Utils.getItem('hw_hitlist_multisort'));
         } catch(e) {}
 
         if (!savedConfig || !savedConfig.length) {
@@ -204,7 +204,7 @@ const HitlistHelper = {
                     config.push({ col: selects[i].value, dir: dirSelects[i].value });
                 }
             }
-            localStorage.setItem('hw_hitlist_multisort', JSON.stringify(config));
+            Utils.setItem('hw_hitlist_multisort', JSON.stringify(config));
             this.applyMultiSort(dataRows, tbody, config);
 
             configPanel.style.display = 'none';
@@ -293,3 +293,5 @@ const HitlistHelper = {
         });
     }
 };
+
+

@@ -6,7 +6,7 @@ const SettingsHelper = {
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
 
-        console.log('Settings Helper loaded for preferences page');
+        Utils.log('Settings Helper loaded for preferences page');
         
         // Add divider and title
         const headerContainer = document.createElement('div');
@@ -86,7 +86,7 @@ const SettingsHelper = {
 
         contentArea.appendChild(headerContainer);
 
-        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+        const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
         
         // Helper function for toggles
         const createToggle = (key, labelText, isGlobal = false, defaultValue = true) => {
@@ -122,9 +122,9 @@ const SettingsHelper = {
 
             let toastTimeout;
             checkbox.addEventListener('change', (e) => {
-                const settings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+                const settings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
                 settings[key] = e.target.checked;
-                localStorage.setItem('hw_helper_settings', JSON.stringify(settings));
+                Utils.setItem('hw_helper_settings', JSON.stringify(settings));
                 
                 // Show saved toast or reload prompt
                 toast.style.display = 'inline';
@@ -185,9 +185,9 @@ const SettingsHelper = {
 
             let toastTimeout;
             input.addEventListener('input', (e) => {
-                const settings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+                const settings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
                 settings[key] = e.target.value;
-                localStorage.setItem('hw_helper_settings', JSON.stringify(settings));
+                Utils.setItem('hw_helper_settings', JSON.stringify(settings));
                 
                 toast.style.display = 'inline';
                 clearTimeout(toastTimeout);
@@ -298,7 +298,7 @@ const SettingsHelper = {
                     subFeatures[modName].forEach(feature => {
                         let el;
                         const strippedLabel = feature.label ? feature.label.replace(/^Enable\s+/i, '') : feature.key;
-                        if (feature.type === 'number' || feature.type === 'text') {
+                        if (feature.type === 'number' || feature.type === 'text' || feature.type === 'password') {
                             el = createInput({ ...feature, label: strippedLabel });
                         } else {
                             el = createToggle(feature.key, strippedLabel, false, feature.defaultValue !== false);
@@ -344,7 +344,7 @@ const SettingsHelper = {
                     listContainer.style.borderRadius = '4px';
                     listContainer.style.maxWidth = '100%';
 
-                    const crapList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
+                    const crapList = JSON.parse(Utils.getItem('hw_helper_food_crap') || '[]');
                     if (crapList.length === 0) {
                         listContainer.textContent = 'No foods marked as crap.';
                     } else {
@@ -362,9 +362,9 @@ const SettingsHelper = {
                             a.title = 'Remove from Crap list';
                             a.onclick = (e) => {
                                 e.preventDefault();
-                                let currentList = JSON.parse(localStorage.getItem('hw_helper_food_crap') || '[]');
+                                let currentList = JSON.parse(Utils.getItem('hw_helper_food_crap') || '[]');
                                 const updatedList = currentList.filter(f => f !== food);
-                                localStorage.setItem('hw_helper_food_crap', JSON.stringify(updatedList));
+                                Utils.setItem('hw_helper_food_crap', JSON.stringify(updatedList));
                                 li.remove();
                                 if (updatedList.length === 0) {
                                     listContainer.textContent = 'No foods marked as crap.';
@@ -378,6 +378,72 @@ const SettingsHelper = {
                     }
                     foodContainer.appendChild(listContainer);
                     moduleOptionsContainer.appendChild(foodContainer);
+                }
+
+                // Custom settings for SyncHelper
+                if (modName === 'SyncHelper') {
+                    const syncContainer = document.createElement('div');
+                    syncContainer.style.paddingLeft = '25px';
+                    syncContainer.style.marginTop = '10px';
+
+                    const testBtn = document.createElement('button');
+                    testBtn.textContent = 'Test Connection';
+                    testBtn.className = 'btn';
+                    testBtn.style.padding = '4px 8px';
+                    testBtn.style.cursor = 'pointer';
+                    testBtn.style.userSelect = 'none';
+                    testBtn.style.webkitUserSelect = 'none';
+
+                    const statusSpan = document.createElement('span');
+                    statusSpan.style.marginLeft = '10px';
+                    statusSpan.style.fontSize = '13px';
+                    statusSpan.style.fontWeight = 'bold';
+
+                    testBtn.onclick = async (e) => {
+                        e.preventDefault();
+                        if (typeof SyncHelper === 'undefined') {
+                            statusSpan.textContent = 'SyncHelper module missing.';
+                            statusSpan.style.color = '#d9534f';
+                            return;
+                        }
+
+                        const dbUrl = SyncHelper.getBaseDbUrl();
+                        if (!dbUrl) {
+                            statusSpan.textContent = 'Please enter a valid URL first.';
+                            statusSpan.style.color = '#d9534f';
+                            return;
+                        }
+
+                        testBtn.disabled = true;
+                        statusSpan.textContent = 'Testing...';
+                        statusSpan.style.color = '#666';
+
+                        try {
+                            const res = await SyncHelper.fetchGM(dbUrl, { headers: SyncHelper.getAuthHeaders() });
+                            if (res.ok) {
+                                statusSpan.textContent = 'Connection Successful! ✓';
+                                statusSpan.style.color = '#4CAF50';
+                            } else if (res.status === 401 || res.status === 403) {
+                                statusSpan.textContent = 'Auth Failed (Incorrect Username/Password).';
+                                statusSpan.style.color = '#d9534f';
+                            } else if (res.status === 404) {
+                                statusSpan.textContent = 'Database not found at URL.';
+                                statusSpan.style.color = '#d9534f';
+                            } else {
+                                statusSpan.textContent = `Connected, but error: HTTP ${res.status}`;
+                                statusSpan.style.color = '#d9534f';
+                            }
+                        } catch (err) {
+                            statusSpan.textContent = 'Connection Failed (Network error or CORS).';
+                            statusSpan.style.color = '#d9534f';
+                        } finally {
+                            testBtn.disabled = false;
+                        }
+                    };
+
+                    syncContainer.appendChild(testBtn);
+                    syncContainer.appendChild(statusSpan);
+                    moduleOptionsContainer.appendChild(syncContainer);
                 }
 
                 // Custom settings for GangArmoryHelper
@@ -401,7 +467,7 @@ const SettingsHelper = {
 
                     const renderFavList = () => {
                         listContainer.innerHTML = '';
-                        const favList = JSON.parse(localStorage.getItem('GangArmory_Favorites') || '[]');
+                        const favList = JSON.parse(Utils.getItem('GangArmory_Favorites') || '[]');
                         if (favList.length === 0) {
                             listContainer.textContent = 'No favorites selected.';
                         } else {
@@ -419,9 +485,9 @@ const SettingsHelper = {
                                 a.title = 'Remove ' + fav;
                                 a.onclick = (e) => {
                                     e.preventDefault();
-                                    let currentList = JSON.parse(localStorage.getItem('GangArmory_Favorites') || '[]');
+                                    let currentList = JSON.parse(Utils.getItem('GangArmory_Favorites') || '[]');
                                     const updatedList = currentList.filter(f => f !== fav);
-                                    localStorage.setItem('GangArmory_Favorites', JSON.stringify(updatedList));
+                                    Utils.setItem('GangArmory_Favorites', JSON.stringify(updatedList));
                                     renderFavList();
                                 };
                                 li.appendChild(a);
@@ -437,7 +503,7 @@ const SettingsHelper = {
                             btnReset.style.cursor = 'pointer';
                             btnReset.onclick = () => {
                                 if(confirm('Are you sure you want to remove all favorites?')) {
-                                    localStorage.removeItem('GangArmory_Favorites');
+                                    Utils.removeItem('GangArmory_Favorites');
                                     renderFavList();
                                 }
                             };
@@ -462,7 +528,7 @@ const SettingsHelper = {
 
                     const renderHiddenList = () => {
                         hiddenListContainer.innerHTML = '';
-                        const hiddenList = JSON.parse(localStorage.getItem('GangArmory_Hidden') || '[]');
+                        const hiddenList = JSON.parse(Utils.getItem('GangArmory_Hidden') || '[]');
                         if (hiddenList.length === 0) {
                             hiddenListContainer.textContent = 'No hidden items selected.';
                         } else {
@@ -480,9 +546,9 @@ const SettingsHelper = {
                                 a.title = 'Remove ' + fav;
                                 a.onclick = (e) => {
                                     e.preventDefault();
-                                    let currentList = JSON.parse(localStorage.getItem('GangArmory_Hidden') || '[]');
+                                    let currentList = JSON.parse(Utils.getItem('GangArmory_Hidden') || '[]');
                                     const updatedList = currentList.filter(f => f !== fav);
-                                    localStorage.setItem('GangArmory_Hidden', JSON.stringify(updatedList));
+                                    Utils.setItem('GangArmory_Hidden', JSON.stringify(updatedList));
                                     renderHiddenList();
                                 };
                                 li.appendChild(a);
@@ -498,7 +564,7 @@ const SettingsHelper = {
                             btnReset.style.cursor = 'pointer';
                             btnReset.onclick = () => {
                                 if(confirm('Are you sure you want to remove all hidden items?')) {
-                                    localStorage.removeItem('GangArmory_Hidden');
+                                    Utils.removeItem('GangArmory_Hidden');
                                     renderHiddenList();
                                 }
                             };
@@ -523,3 +589,5 @@ const SettingsHelper = {
         }
     }
 }
+
+

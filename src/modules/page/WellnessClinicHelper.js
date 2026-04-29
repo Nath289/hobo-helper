@@ -133,3 +133,4 @@ const WellnessClinicHelper = {
         }, 150);
     }
 }
+

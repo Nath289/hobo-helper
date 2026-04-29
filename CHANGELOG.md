@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.98] - 2026-04-30
+- **Added:** Implemented seamless cross-browser Cloud Sync via the new `SyncHelper`! By placing custom CouchDB configuration credentials directly in your Preferences menu, your device will now automatically push and pull local script data using intelligent, bidirectional conflict resolution merging.
+- **Added:** A "Force Sync" quick-toggle button has been added directly to the "Hobo Helper Version" footer block inside your Living Area.
+- **Added:** Testing backend connection integrity is now possible directly from within the Preferences page with a functional status text readout.
+- **Changed:** Rewrote internal helper memory cache handling to natively interface with `Utils.setItem`, `Utils.getItem`, `Utils.removeItem`, unifying and protecting Cloud Sync trigger hooks.
+- **Changed:** Restricted internal debugger output directly to local `Dev` builds by wrapping `console.log` instances inside `Utils.log`.
+
 ## [8.97] - 2026-04-29
 - **Added:** Added a note to the bottom of the automatic update popup indicating that it can be disabled in the preferences via the Display Helper settings.
 - **Changed:** Centered the changelog modal vertically and horizontally on the screen for better readability.

@@ -191,11 +191,11 @@ const GangArmoryHelper = {
         hideBtn.onclick = (e) => {
             e.preventDefault();
             const checkboxes = document.querySelectorAll('.fav-checkbox');
-            let hiddenList = JSON.parse(localStorage.getItem('GangArmory_Hidden') || '[]');
+            let hiddenList = JSON.parse(Utils.getItem('GangArmory_Hidden') || '[]');
             checkboxes.forEach(cb => {
                 if (cb.checked && !hiddenList.includes(cb.value)) hiddenList.push(cb.value);
             });
-            localStorage.setItem('GangArmory_Hidden', JSON.stringify(hiddenList));
+            Utils.setItem('GangArmory_Hidden', JSON.stringify(hiddenList));
             
             // Explicitly uncheck to prevent browser state restoration on reload
             checkboxes.forEach(cb => cb.checked = false);
@@ -210,11 +210,11 @@ const GangArmoryHelper = {
         saveFavBtn.onclick = (e) => {
             e.preventDefault();
             const checkboxes = document.querySelectorAll('.fav-checkbox');
-            const favs = JSON.parse(localStorage.getItem('GangArmory_Favorites') || '[]');
+            const favs = JSON.parse(Utils.getItem('GangArmory_Favorites') || '[]');
             checkboxes.forEach(cb => {
                 if (cb.checked && !favs.includes(cb.value)) favs.push(cb.value);
             });
-            localStorage.setItem('GangArmory_Favorites', JSON.stringify(favs));
+            Utils.setItem('GangArmory_Favorites', JSON.stringify(favs));
             
             // Explicitly uncheck to prevent browser state restoration on reload
             checkboxes.forEach(cb => cb.checked = false);
@@ -340,7 +340,7 @@ const GangArmoryHelper = {
             table.appendChild(trHead);
 
             const allItems = [...availableItems[cat], ...loanedItems[cat]];
-            const savedHidden = JSON.parse(localStorage.getItem('GangArmory_Hidden') || '[]');
+            const savedHidden = JSON.parse(Utils.getItem('GangArmory_Hidden') || '[]');
 
             const grouped = {};
             allItems.forEach(item => {
@@ -545,7 +545,7 @@ const GangArmoryHelper = {
 
         // Render Favorites List Above Tabs
         let activeFavContainer = null;
-        const savedFavs = JSON.parse(localStorage.getItem('GangArmory_Favorites') || '[]');
+        const savedFavs = JSON.parse(Utils.getItem('GangArmory_Favorites') || '[]');
         if (savedFavs.length > 0) {
             const favContainer = document.createElement('div');
             favContainer.style.marginBottom = '20px';
@@ -673,3 +673,4 @@ const GangArmoryHelper = {
         }
     }
 };
+

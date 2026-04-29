@@ -108,10 +108,10 @@ const NorthernFenceHelper = {
         const currentPageNum = urlPage ? parseInt(urlPage) + 1 : 1;
 
         if (foundPlayer) {
-            localStorage.setItem('hof_player_page', currentPageNum);
+            Utils.setItem('hof_player_page', currentPageNum);
         }
 
-        const savedPageNum = localStorage.getItem('hof_player_page');
+        const savedPageNum = Utils.getItem('hof_player_page');
         if (savedPageNum) {
             const strongs = document.querySelectorAll('.content-area strong');
             let pagesContainer = null;
@@ -143,3 +143,4 @@ const NorthernFenceHelper = {
         }
     }
 }
+

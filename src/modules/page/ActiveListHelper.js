@@ -100,8 +100,8 @@ const ActiveListHelper = {
         contentArea.appendChild(frag);
 
         // Retrieve saved filter
-        const savedFilter = localStorage.getItem('ActiveListHelper_CurrentFilter') || 'all';
-        const savedRange = localStorage.getItem('ActiveListHelper_CurrentRangeFilter') === 'true';
+        const savedFilter = Utils.getItem('ActiveListHelper_CurrentFilter') || 'all';
+        const savedRange = Utils.getItem('ActiveListHelper_CurrentRangeFilter') === 'true';
 
         // Create UI Filter Buttons
         const filterContainer = document.createElement('div');
@@ -126,8 +126,8 @@ const ActiveListHelper = {
             const filter = activeBtn ? activeBtn.getAttribute('data-filter') : 'all';
             const rangeOnly = filterContainer.querySelector('#hobo-helper-range-checkbox').checked;
 
-            localStorage.setItem('ActiveListHelper_CurrentFilter', filter);
-            localStorage.setItem('ActiveListHelper_CurrentRangeFilter', rangeOnly);
+            Utils.setItem('ActiveListHelper_CurrentFilter', filter);
+            Utils.setItem('ActiveListHelper_CurrentRangeFilter', rangeOnly);
 
             const allRows = contentArea.querySelectorAll('.hobo-helper-player-row');
 
@@ -176,3 +176,4 @@ const ActiveListHelper = {
         applyFilters();
     }
 };
+

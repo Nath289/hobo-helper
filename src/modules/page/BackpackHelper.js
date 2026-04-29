@@ -94,8 +94,8 @@ const BackpackHelper = {
     },
 
     initDrinkStats: function() {
-        if (!localStorage.getItem('bh_drink_stats')) {
-            localStorage.setItem('bh_drink_stats', JSON.stringify({}));
+        if (!Utils.getItem('bh_drink_stats')) {
+            Utils.setItem('bh_drink_stats', JSON.stringify({}));
         }
 
         document.removeEventListener('click', this.handleDrinkClick);
@@ -110,7 +110,7 @@ const BackpackHelper = {
                 const name = img ? (img.getAttribute('alt') || img.title).trim() : a.textContent.trim();
                 const src = img ? img.getAttribute('src') : '';
                 if (name) {
-                    let stats = JSON.parse(localStorage.getItem('bh_drink_stats') || '{}');
+                    let stats = JSON.parse(Utils.getItem('bh_drink_stats') || '{}');
                     let current = stats[name];
                     if (typeof current === 'number') {
                         current = { count: current, src: src };
@@ -121,7 +121,7 @@ const BackpackHelper = {
                     }
                     current.count++;
                     stats[name] = current;
-                    localStorage.setItem('bh_drink_stats', JSON.stringify(stats));
+                    Utils.setItem('bh_drink_stats', JSON.stringify(stats));
                 }
             }
         };
@@ -179,7 +179,7 @@ const BackpackHelper = {
         
         bpTable.setAttribute('data-bh-favorites-added', 'true');
 
-        let stats = JSON.parse(localStorage.getItem('bh_drink_stats') || '{}');
+        let stats = JSON.parse(Utils.getItem('bh_drink_stats') || '{}');
         const getCount = (val) => typeof val === 'number' ? val : (val ? val.count : 0);
         const sortedDrinks = Object.keys(stats).sort((a,b) => getCount(stats[b]) - getCount(stats[a])).slice(0, 5);
 
@@ -266,7 +266,7 @@ const BackpackHelper = {
             modal.remove();
         }
 
-        let stats = JSON.parse(localStorage.getItem('bh_drink_stats') || '{}');
+        let stats = JSON.parse(Utils.getItem('bh_drink_stats') || '{}');
         const getCount = (val) => typeof val === 'number' ? val : (val ? val.count : 0);
         const getSrc = (name, val) => {
             if (val && val.src && !val.src.startsWith('data:')) return val.src;
@@ -304,7 +304,7 @@ const BackpackHelper = {
         if (resetBtn) {
             resetBtn.addEventListener('click', () => {
                 if (confirm('Are you sure you want to reset all your drink stats?')) {
-                    localStorage.setItem('bh_drink_stats', JSON.stringify({}));
+                    Utils.setItem('bh_drink_stats', JSON.stringify({}));
                     this.showStatsModal();
                 }
             });
@@ -314,9 +314,9 @@ const BackpackHelper = {
             btn.addEventListener('click', (e) => {
                 let drink = e.target.getAttribute('data-drink');
                 if (confirm(`Are you sure you want to remove stats for: ${drink}?`)) {
-                    let currentStats = JSON.parse(localStorage.getItem('bh_drink_stats') || '{}');
+                    let currentStats = JSON.parse(Utils.getItem('bh_drink_stats') || '{}');
                     delete currentStats[drink];
-                    localStorage.setItem('bh_drink_stats', JSON.stringify(currentStats));
+                    Utils.setItem('bh_drink_stats', JSON.stringify(currentStats));
                     this.showStatsModal();
                 }
             });
@@ -398,3 +398,4 @@ const BackpackHelper = {
         });
     }
 };
+

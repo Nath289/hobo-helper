@@ -260,3 +260,4 @@ const SkillsHelper = {
         qtyInput.parentNode.insertBefore(maxButton, qtyInput.nextSibling);
     }
 };
+

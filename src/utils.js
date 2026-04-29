@@ -140,7 +140,7 @@ const Utils = {
             return window.location.search.includes(query);
         },
         getSettings: function() {
-            return JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
+            return JSON.parse(this.getItem('hw_helper_settings') || '{}');
         },
         getFightersLunchCost: function(level) {
             return ((10 * (level + 3)) / 2) * 2;
@@ -234,6 +234,76 @@ const Utils = {
             }
 
             document.body.appendChild(modal);
+        },
+        /**
+     * Set a configuration value securely
+     */
+    setConfig: function(key, value) {
+        if (!key) return; // Prevent setting blank keys
+
+        let config = this.getSettings();
+        config[key] = value;
+        // Don't use Utils.setItem here to prevent sync looping, this uses the main settings key
+        localStorage.setItem('hw_helper_settings', JSON.stringify(config));
+
+        if (typeof SyncHelper !== 'undefined') {
+            SyncHelper.recordLocalUpdate('hw_helper_settings');
+            SyncHelper.triggerSync();
         }
-    };
-    window.Utils = Utils;
+    },
+
+    /**
+     * Centralized localStorage getItem
+     * @param {string} key
+     * @returns {string|null}
+     */
+    getItem: function(key) {
+        return localStorage.getItem(key);
+    },
+
+    /**
+     * Centralized localStorage setItem
+     * @param {string} key
+     * @param {string} value
+     */
+    setItem: function(key, value) {
+        localStorage.setItem(key, value);
+        if (typeof SyncHelper !== 'undefined') {
+            SyncHelper.recordLocalUpdate(key);
+            SyncHelper.triggerSync();
+        }
+    },
+
+    /**
+     * Centralized localStorage removeItem
+     * @param {string} key
+     */
+    removeItem: function(key) {
+        localStorage.removeItem(key);
+        if (typeof SyncHelper !== 'undefined') {
+            SyncHelper.recordLocalUpdate(key);
+            SyncHelper.triggerSync();
+        }
+    },
+
+    /**
+     * Force sync to remote
+     */
+    syncAllNow: function() {
+        if (typeof SyncHelper !== 'undefined') {
+            SyncHelper.syncAllNow();
+        }
+    },
+
+    /**
+     * Log messages if in dev mode
+     */
+    log: function(...args) {
+        const versionStr = (typeof window !== 'undefined' && window.HoboHelperVersion) ? window.HoboHelperVersion : (typeof GM_info !== 'undefined' && GM_info.script ? GM_info.script.version : 'Unknown');
+        const isDev = versionStr !== 'Unknown' && versionStr.split('.').length > 2;
+        if (isDev) {
+            console.log(...args);
+        }
+    }
+};
+//# sourceMappingURL=utils.js.map

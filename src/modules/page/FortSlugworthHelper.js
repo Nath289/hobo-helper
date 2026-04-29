@@ -83,6 +83,8 @@ const FortSlugworthHelper = {
             tilesContainer.appendChild(tile);
         });
 
-        console.log('FortSlugworthHelper: Room 4 (The Ripaparter) loaded tiles.');
+        Utils.log('FortSlugworthHelper: Room 4 (The Ripaparter) loaded tiles.');
     }
 };
+
+
