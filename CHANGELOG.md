@@ -2,9 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.97] - 2026-04-29
+- **Added:** Added a note to the bottom of the automatic update popup indicating that it can be disabled in the preferences via the Display Helper settings.
+- **Changed:** Centered the changelog modal vertically and horizontally on the screen for better readability.
+
 ## [8.96] - 2026-04-29
 - **Added:** Introduced granular configuration settings to the `Explore Helper` allowing users to specifically toggle exactly which events (`Shiny Objects`, `Arena Passes`) populate their custom exploration log.
 - **Added:** The `Explore Helper` now detects and records "Arena Pass" discovery events highlighting them in bold purple within the log interface.
+- **Added:** Implemented an automatic Update Checker that proactively displays a filtered changelog of all new features since your last installed version, directly in the game UI.
+- **Added:** `Show Update Features on New Version` setting added to the Display Helper to allow toggling of the automatic update notification popups.
+- **Changed:** Expanded the changelog modal data buffer to include the 10 most recent versions instead of 5, providing a deeper history for returning players.
 
 ## [8.95] - 2026-04-28
 - **Added:** Implemented the `ExploreHelper` to track and log in-game explore events across the main Lobby and Movement screens (`cmd=explore`). Events are stored persistently across sessions.

@@ -11,11 +11,13 @@ const DisplayHelper = {
         { key: 'DisplayHelper_InterestingLevel', label: 'Show Next Interesting Level', defaultValue: true },
         { key: 'DisplayHelper_LiveAliveTime', label: 'Show Live Alive Time in Top Menu', defaultValue: true },
         { key: 'DisplayHelper_ShowCans', label: 'Show Cans in Top Menu', defaultValue: true },
-        { key: 'DisplayHelper_LastActiveTime', label: 'Display Last Active Time in Panel', defaultValue: true }
+        { key: 'DisplayHelper_LastActiveTime', label: 'Display Last Active Time in Panel', defaultValue: true },
+        { key: 'DisplayHelper_ShowUpdateChangelog', label: 'Show Update Features on New Version', defaultValue: true }
     ],
     addedStyles: '',
     init: function() {
         this.addedStyles = '';
+        this.initUpdateChecker();
         this.initLastActiveTimeTracking();
 
         const settings = Utils.getSettings();
@@ -55,6 +57,22 @@ const DisplayHelper = {
             const style = document.createElement('style');
             style.innerHTML = this.addedStyles;
             document.head.appendChild(style);
+        }
+    },
+    initUpdateChecker: function() {
+        const settings = Utils.getSettings();
+        const savedVersion = localStorage.getItem('hw_helper_version');
+        const currentVersion = (typeof Modules !== 'undefined' && Modules.ChangelogData && Modules.ChangelogData.changes && Modules.ChangelogData.changes.length > 0) ? Modules.ChangelogData.changes[0].version : null;
+
+        if (currentVersion) {
+            if (savedVersion && savedVersion !== currentVersion) {
+                const svFloat = parseFloat(savedVersion);
+                const cvFloat = parseFloat(currentVersion);
+                if (cvFloat > svFloat && settings['DisplayHelper_ShowUpdateChangelog'] !== false) {
+                    Utils.showChangelogModal(null, savedVersion);
+                }
+            }
+            localStorage.setItem('hw_helper_version', currentVersion);
         }
     },
     initLastActiveTimeTracking: function() {

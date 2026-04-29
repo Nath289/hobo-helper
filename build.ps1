@@ -12,7 +12,7 @@ $currentRelease = $null
 
 foreach ($line in $lines) {
     if ($line -match '^## \[([\d\.]+)\] - (\d{4}-\d{2}-\d{2})') {
-        if ($changes.Count -ge 5) { break }
+        if ($changes.Count -ge 10) { break }
         if ($currentRelease -ne $null) { $changes += $currentRelease }
         $currentRelease = @{
             version = $matches[1]
@@ -31,7 +31,7 @@ foreach ($line in $lines) {
         }
     }
 }
-if ($currentRelease -ne $null -and $changes.Count -lt 5) { $changes += $currentRelease }
+if ($currentRelease -ne $null -and $changes.Count -lt 10) { $changes += $currentRelease }
 
 $jsChanges = @()
 foreach ($c in $changes) {

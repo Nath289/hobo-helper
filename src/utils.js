@@ -160,6 +160,80 @@ const Utils = {
         isDonator: function() {
             const donDiv = document.querySelector('.becomedon');
             return donDiv !== null && donDiv.textContent.includes('Donator Information');
+        },
+        showChangelogModal: function(e, minVersion = null) {
+            if (e) e.preventDefault();
+
+            let existing = document.getElementById('hw-helper-changelog-modal');
+            if (existing) { existing.style.display = 'block'; return; }
+
+            if (typeof Modules === 'undefined' || typeof Modules.ChangelogData === 'undefined' || !Modules.ChangelogData.changes) {
+                alert("ChangelogData missing."); return;
+            }
+
+            let changesToDisplay = Modules.ChangelogData.changes;
+            if (minVersion) {
+                const minVerFloat = parseFloat(minVersion);
+                changesToDisplay = Modules.ChangelogData.changes.filter(release => parseFloat(release.version) > minVerFloat);
+                if (changesToDisplay.length === 0) return;
+            }
+
+            const modal = document.createElement("div");
+            modal.id = 'hw-helper-changelog-modal';
+            modal.style.cssText = "position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:9999; max-width:600px; width:90%; background-color:#f9f9f9; border:1px dashed #777; border-radius:8px; text-align:left; font-family:Tahoma, Arial, sans-serif; color:#333; box-shadow:0px 4px 6px rgba(0,0,0,0.5); padding:15px; max-height:80vh; overflow-y:auto;";
+
+            const closeBtn = document.createElement('span');
+            closeBtn.innerHTML = '&#10006;';
+            closeBtn.style.cssText = "float:right; cursor:pointer; font-size:18px; font-weight:bold; color:#d9534f; user-select: none; -webkit-user-select: none;";
+            closeBtn.onclick = () => { modal.style.display = 'none'; };
+            modal.appendChild(closeBtn);
+
+            const title = document.createElement("h2");
+            title.textContent = minVersion ? "Hobo Helper - Update Installed!" : "Hobo Helper - Recent Updates";
+            title.style.margin = "0 0 10px 0";
+            title.style.borderBottom = "1px solid #ccc";
+            title.style.paddingBottom = "5px";
+            title.style.fontSize = "16px";
+            modal.appendChild(title);
+
+            changesToDisplay.forEach(release => {
+                const releaseBlock = document.createElement("div");
+                releaseBlock.style.marginTop = "10px";
+
+                const versionHeader = document.createElement("div");
+                versionHeader.innerHTML = `<strong>v${release.version}</strong> <span style="font-size: 11px; color: #666;">(${release.date})</span>`;
+                versionHeader.style.fontSize = "14px";
+                releaseBlock.appendChild(versionHeader);
+
+                const changesList = document.createElement("ul");
+                changesList.style.margin = "5px 0 10px 20px";
+                changesList.style.padding = "0";
+                changesList.style.fontSize = "12px";
+                changesList.style.lineHeight = "1.4";
+
+                if (release.notes && Array.isArray(release.notes)) {
+                    release.notes.forEach(noteText => {
+                        const li = document.createElement("li");
+                        li.style.marginBottom = "3px";
+                        let formattedChange = noteText.replace(/`([^`]+)`/g, '<code style="background-color: #eaeaea; padding: 1px 4px; border-radius: 3px; font-family: monospace;">$1</code>');
+                        formattedChange = `<strong>${release.type}:</strong> ` + formattedChange;
+                        li.innerHTML = formattedChange;
+                        changesList.appendChild(li);
+                    });
+                }
+
+                releaseBlock.appendChild(changesList);
+                modal.appendChild(releaseBlock);
+            });
+
+            if (minVersion) {
+                const note = document.createElement("div");
+                note.style.cssText = "font-size: 11px; color: #777; margin-top: 10px; border-top: 1px solid #ddd; padding-top: 5px; text-align: center;";
+                note.textContent = "Note: This automatic update popup can be disabled in Settings.";
+                modal.appendChild(note);
+            }
+
+            document.body.appendChild(modal);
         }
     };
     window.Utils = Utils;

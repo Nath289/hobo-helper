@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (All)
 // @namespace    http://tampermonkey.net/
-// @version      8.96
+// @version      8.97
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -175,6 +175,80 @@ const Utils = {
         isDonator: function() {
             const donDiv = document.querySelector('.becomedon');
             return donDiv !== null && donDiv.textContent.includes('Donator Information');
+        },
+        showChangelogModal: function(e, minVersion = null) {
+            if (e) e.preventDefault();
+
+            let existing = document.getElementById('hw-helper-changelog-modal');
+            if (existing) { existing.style.display = 'block'; return; }
+
+            if (typeof Modules === 'undefined' || typeof Modules.ChangelogData === 'undefined' || !Modules.ChangelogData.changes) {
+                alert("ChangelogData missing."); return;
+            }
+
+            let changesToDisplay = Modules.ChangelogData.changes;
+            if (minVersion) {
+                const minVerFloat = parseFloat(minVersion);
+                changesToDisplay = Modules.ChangelogData.changes.filter(release => parseFloat(release.version) > minVerFloat);
+                if (changesToDisplay.length === 0) return;
+            }
+
+            const modal = document.createElement("div");
+            modal.id = 'hw-helper-changelog-modal';
+            modal.style.cssText = "position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:9999; max-width:600px; width:90%; background-color:#f9f9f9; border:1px dashed #777; border-radius:8px; text-align:left; font-family:Tahoma, Arial, sans-serif; color:#333; box-shadow:0px 4px 6px rgba(0,0,0,0.5); padding:15px; max-height:80vh; overflow-y:auto;";
+
+            const closeBtn = document.createElement('span');
+            closeBtn.innerHTML = '&#10006;';
+            closeBtn.style.cssText = "float:right; cursor:pointer; font-size:18px; font-weight:bold; color:#d9534f; user-select: none; -webkit-user-select: none;";
+            closeBtn.onclick = () => { modal.style.display = 'none'; };
+            modal.appendChild(closeBtn);
+
+            const title = document.createElement("h2");
+            title.textContent = minVersion ? "Hobo Helper - Update Installed!" : "Hobo Helper - Recent Updates";
+            title.style.margin = "0 0 10px 0";
+            title.style.borderBottom = "1px solid #ccc";
+            title.style.paddingBottom = "5px";
+            title.style.fontSize = "16px";
+            modal.appendChild(title);
+
+            changesToDisplay.forEach(release => {
+                const releaseBlock = document.createElement("div");
+                releaseBlock.style.marginTop = "10px";
+
+                const versionHeader = document.createElement("div");
+                versionHeader.innerHTML = `<strong>v${release.version}</strong> <span style="font-size: 11px; color: #666;">(${release.date})</span>`;
+                versionHeader.style.fontSize = "14px";
+                releaseBlock.appendChild(versionHeader);
+
+                const changesList = document.createElement("ul");
+                changesList.style.margin = "5px 0 10px 20px";
+                changesList.style.padding = "0";
+                changesList.style.fontSize = "12px";
+                changesList.style.lineHeight = "1.4";
+
+                if (release.notes && Array.isArray(release.notes)) {
+                    release.notes.forEach(noteText => {
+                        const li = document.createElement("li");
+                        li.style.marginBottom = "3px";
+                        let formattedChange = noteText.replace(/`([^`]+)`/g, '<code style="background-color: #eaeaea; padding: 1px 4px; border-radius: 3px; font-family: monospace;">$1</code>');
+                        formattedChange = `<strong>${release.type}:</strong> ` + formattedChange;
+                        li.innerHTML = formattedChange;
+                        changesList.appendChild(li);
+                    });
+                }
+
+                releaseBlock.appendChild(changesList);
+                modal.appendChild(releaseBlock);
+            });
+
+            if (minVersion) {
+                const note = document.createElement("div");
+                note.style.cssText = "font-size: 11px; color: #777; margin-top: 10px; border-top: 1px solid #ddd; padding-top: 5px; text-align: center;";
+                note.textContent = "Note: This automatic update popup can be disabled in Settings.";
+                modal.appendChild(note);
+            }
+
+            document.body.appendChild(modal);
         }
     };
     window.Utils = Utils;
@@ -467,12 +541,24 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.97",
+            date: "2026-04-29",
+            type: "Changed",
+            notes: [
+                "**Added:** Added a note to the bottom of the automatic update popup indicating that it can be disabled in the preferences via the Display Helper settings.",
+                "**Changed:** Centered the changelog modal vertically and horizontally on the screen for better readability."
+            ]
+        },
+        {
             version: "8.96",
             date: "2026-04-29",
             type: "Changed",
             notes: [
                 "**Added:** Introduced granular configuration settings to the `Explore Helper` allowing users to specifically toggle exactly which events (`Shiny Objects`, `Arena Passes`) populate their custom exploration log.",
-                "**Added:** The `Explore Helper` now detects and records \"Arena Pass\" discovery events highlighting them in bold purple within the log interface."
+                "**Added:** The `Explore Helper` now detects and records \"Arena Pass\" discovery events highlighting them in bold purple within the log interface.",
+                "**Added:** Implemented an automatic Update Checker that proactively displays a filtered changelog of all new features since your last installed version, directly in the game UI.",
+                "**Added:** `Show Update Features on New Version` setting added to the Display Helper to allow toggling of the automatic update notification popups.",
+                "**Changed:** Expanded the changelog modal data buffer to include the 10 most recent versions instead of 5, providing a deeper history for returning players."
             ]
         },
         {
@@ -509,6 +595,38 @@ const ChangelogData = {
             notes: [
                 "**Changed:** Refactored the Display Helper Custom Player Titles feature to utilize a single unified array mapped DOM scanner, resulting in dramatically improved script performance on pages with high member concentrations compared to iterating multiple separate DOM scans."
             ]
+        },
+        {
+            version: "8.91",
+            date: "2026-04-25",
+            type: "Changed",
+            notes: [
+                "**Changed:** Restructured the `HitlistHelper` multi-column sorting configuration UI to start collapsed above the table, drastically reducing vertical clutter while remaining easily accessible for editing."
+            ]
+        },
+        {
+            version: "8.90",
+            date: "2026-04-25",
+            type: "Changed",
+            notes: [
+                "**Changed:** Moved the Configure button in the Recycling Bin Helper to the far right of the submit controls for better layout flow."
+            ]
+        },
+        {
+            version: "8.89",
+            date: "2026-04-24",
+            type: "Changed",
+            notes: [
+                "**Changed:** Swapped the Battle Graph chart types: Health Remaining is now a descending Line chart for continuous tracking, and Damage Dealt is now a stacked Bar chart to better illustrate each fighter's individual hits per round without jarring line drops."
+            ]
+        },
+        {
+            version: "8.88",
+            date: "2026-04-24",
+            type: "Changed",
+            notes: [
+                "**Enhanced:** The Battle Graph panel is now resizable via CSS `resize: both`. The internal jqplot charts automatically resize to fit using a ResizeObserver to maintain aspect ratios correctly alongside the frame."
+            ]
         }
     ]
 };
@@ -526,11 +644,13 @@ const DisplayHelper = {
         { key: 'DisplayHelper_InterestingLevel', label: 'Show Next Interesting Level', defaultValue: true },
         { key: 'DisplayHelper_LiveAliveTime', label: 'Show Live Alive Time in Top Menu', defaultValue: true },
         { key: 'DisplayHelper_ShowCans', label: 'Show Cans in Top Menu', defaultValue: true },
-        { key: 'DisplayHelper_LastActiveTime', label: 'Display Last Active Time in Panel', defaultValue: true }
+        { key: 'DisplayHelper_LastActiveTime', label: 'Display Last Active Time in Panel', defaultValue: true },
+        { key: 'DisplayHelper_ShowUpdateChangelog', label: 'Show Update Features on New Version', defaultValue: true }
     ],
     addedStyles: '',
     init: function() {
         this.addedStyles = '';
+        this.initUpdateChecker();
         this.initLastActiveTimeTracking();
 
         const settings = Utils.getSettings();
@@ -570,6 +690,22 @@ const DisplayHelper = {
             const style = document.createElement('style');
             style.innerHTML = this.addedStyles;
             document.head.appendChild(style);
+        }
+    },
+    initUpdateChecker: function() {
+        const settings = Utils.getSettings();
+        const savedVersion = localStorage.getItem('hw_helper_version');
+        const currentVersion = (typeof Modules !== 'undefined' && Modules.ChangelogData && Modules.ChangelogData.changes && Modules.ChangelogData.changes.length > 0) ? Modules.ChangelogData.changes[0].version : null;
+
+        if (currentVersion) {
+            if (savedVersion && savedVersion !== currentVersion) {
+                const svFloat = parseFloat(savedVersion);
+                const cvFloat = parseFloat(currentVersion);
+                if (cvFloat > svFloat && settings['DisplayHelper_ShowUpdateChangelog'] !== false) {
+                    Utils.showChangelogModal(null, savedVersion);
+                }
+            }
+            localStorage.setItem('hw_helper_version', currentVersion);
         }
     },
     initLastActiveTimeTracking: function() {
@@ -4747,69 +4883,8 @@ const LivingAreaHelper = {
 
         const link = document.getElementById('hh_show_changelog');
         if (link) {
-            link.addEventListener('click', (e) => this.showChangelogModal(e));
+            link.addEventListener('click', (e) => Utils.showChangelogModal(e));
         }
-    },
-
-    showChangelogModal: function(e) {
-        if (e) e.preventDefault();
-
-        let existing = document.getElementById('hw-helper-changelog-modal');
-        if (existing) { existing.style.display = 'block'; return; }
-
-        if (typeof Modules === 'undefined' || typeof Modules.ChangelogData === 'undefined' || !Modules.ChangelogData.changes) {
-            alert("ChangelogData missing."); return;
-        }
-
-        const modal = document.createElement("div");
-        modal.id = 'hw-helper-changelog-modal';
-        modal.style.cssText = "position:fixed; top:10%; left:50%; transform:translateX(-50%); z-index:9999; max-width:600px; width:90%; background-color:#f9f9f9; border:1px dashed #777; border-radius:8px; text-align:left; font-family:Tahoma, Arial, sans-serif; color:#333; box-shadow:0px 4px 6px rgba(0,0,0,0.5); padding:15px; max-height:80vh; overflow-y:auto;";
-
-        const closeBtn = document.createElement('span');
-        closeBtn.innerHTML = '&#10006;';
-        closeBtn.style.cssText = "float:right; cursor:pointer; font-size:18px; font-weight:bold; color:#d9534f; user-select: none; -webkit-user-select: none;";
-        closeBtn.onclick = () => { modal.style.display = 'none'; };
-        modal.appendChild(closeBtn);
-
-        const title = document.createElement("h2");
-        title.textContent = "Hobo Helper - Recent Updates";
-        title.style.margin = "0 0 10px 0";
-        title.style.borderBottom = "1px solid #ccc";
-        title.style.paddingBottom = "5px";
-        title.style.fontSize = "16px";
-        modal.appendChild(title);
-
-        Modules.ChangelogData.changes.forEach(release => {
-            const releaseBlock = document.createElement("div");
-            releaseBlock.style.marginTop = "10px";
-
-            const versionHeader = document.createElement("div");
-            versionHeader.innerHTML = `<strong>v${release.version}</strong> <span style="font-size: 11px; color: #666;">(${release.date})</span>`;
-            versionHeader.style.fontSize = "14px";
-            releaseBlock.appendChild(versionHeader);
-
-            const changesList = document.createElement("ul");
-            changesList.style.margin = "5px 0 10px 20px";
-            changesList.style.padding = "0";
-            changesList.style.fontSize = "12px";
-            changesList.style.lineHeight = "1.4";
-
-            if (release.notes && Array.isArray(release.notes)) {
-                release.notes.forEach(noteText => {
-                    const li = document.createElement("li");
-                    li.style.marginBottom = "3px";
-                    let formattedChange = noteText.replace(/`([^`]+)`/g, '<code style="background-color: #eaeaea; padding: 1px 4px; border-radius: 3px; font-family: monospace;">$1</code>');
-                    formattedChange = `<strong>${release.type}:</strong> ` + formattedChange;
-                    li.innerHTML = formattedChange;
-                    changesList.appendChild(li);
-                });
-            }
-
-            releaseBlock.appendChild(changesList);
-            modal.appendChild(releaseBlock);
-        });
-
-        document.body.appendChild(modal);
     },
 
     initStatRatioTracker: function() {
@@ -11055,7 +11130,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.96';
+        window.HoboHelperVersion = '8.97';
     }
 
     const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
