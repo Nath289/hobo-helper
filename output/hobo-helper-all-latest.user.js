@@ -5436,7 +5436,11 @@ const LivingAreaHelper = {
                 document.getElementById('settings_area').style.display = 'none';
                 config.lastUpdated = Date.now();
                 inMemoryLastUpdated = config.lastUpdated;
-                // updateTracker will handle saving the config to avoid double syncing
+                
+                // Cache the newly updated config locally right now so `updateTracker` doesn't pull the old version from cache and overwrite our updates
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+                
+                // updateTracker will parse the new settings and natively call the CouchDB sync hook once
                 updateTracker(true);
             };
         }
