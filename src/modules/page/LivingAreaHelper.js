@@ -408,7 +408,7 @@ const LivingAreaHelper = {
             lastUpdated: Date.now()
         };
 
-        let config = JSON.parse(localStorage.getItem(STORAGE_KEY)) || DEFAULT_DATA;
+        let config = JSON.parse(Utils.getItem(STORAGE_KEY)) || DEFAULT_DATA;
         let inMemoryLastUpdated = config.lastUpdated;
 
         function updateTracker() {
@@ -417,7 +417,7 @@ const LivingAreaHelper = {
 
             // Fetch latest from storage to prevent background tabs from reverting settings
             try {
-                const savedConfig = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                const savedConfig = JSON.parse(Utils.getItem(STORAGE_KEY));
                 if (savedConfig) {
                     config = Object.assign(config, savedConfig);
                 }
@@ -468,7 +468,7 @@ const LivingAreaHelper = {
                     const totalNeeded = Math.max(0, config.needs.speed) + Math.max(0, config.needs.power) + Math.max(0, config.needs.strength);
                     config.estDays = config.dailyGain > 1 ? (totalNeeded / config.dailyGain).toFixed(1) : "---";
 
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+                    Utils.setItem(STORAGE_KEY, JSON.stringify(config));
                     renderLivingAreaTags(ratioSum);
                     renderPanel(statsBlock, effectiveTarget);
                 }
@@ -525,7 +525,7 @@ const LivingAreaHelper = {
 
             document.getElementById('cog_toggle').onclick = () => {
                 try {
-                    const savedConfig = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                    const savedConfig = JSON.parse(Utils.getItem(STORAGE_KEY));
                     if (savedConfig) {
                         // If memory is stale compared to storage, alert and reload instead of overwriting
                         if (savedConfig.lastUpdated && savedConfig.lastUpdated > inMemoryLastUpdated) {
@@ -536,7 +536,7 @@ const LivingAreaHelper = {
                             document.getElementById('settings_area').style.display = config.showSettings ? 'block' : 'none';
                             config.lastUpdated = Date.now();
                             inMemoryLastUpdated = config.lastUpdated;
-                            localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+                            Utils.setItem(STORAGE_KEY, JSON.stringify(config));
                             updateTracker();
                             return;
                         }
@@ -548,12 +548,12 @@ const LivingAreaHelper = {
                 document.getElementById('settings_area').style.display = config.showSettings ? 'block' : 'none';
                 config.lastUpdated = Date.now();
                 inMemoryLastUpdated = config.lastUpdated;
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+                Utils.setItem(STORAGE_KEY, JSON.stringify(config));
             };
 
             document.getElementById('r_save').onclick = () => {
                 try {
-                    const savedConfig = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                    const savedConfig = JSON.parse(Utils.getItem(STORAGE_KEY));
                     if (savedConfig) {
                         // If memory is stale compared to storage, alert and reload instead of overwriting
                         if (savedConfig.lastUpdated && savedConfig.lastUpdated > inMemoryLastUpdated) {
@@ -579,7 +579,7 @@ const LivingAreaHelper = {
                 document.getElementById('settings_area').style.display = 'none';
                 config.lastUpdated = Date.now();
                 inMemoryLastUpdated = config.lastUpdated;
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+                Utils.setItem(STORAGE_KEY, JSON.stringify(config));
                 updateTracker();
             };
         }

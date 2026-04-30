@@ -11,16 +11,16 @@ const SyncHelper = {
     isSyncing: false,
 
     getLocalTimestamps: function() {
-        return JSON.parse(localStorage.getItem('hw_sync_timestamps') || '{}');
+        return JSON.parse(Utils.getItem('hw_sync_timestamps') || '{}');
     },
 
     saveLocalTimestamps: function(timestamps) {
-        localStorage.setItem('hw_sync_timestamps', JSON.stringify(timestamps));
+        Utils.setItem('hw_sync_timestamps', JSON.stringify(timestamps));
     },
 
     recordLocalUpdate: function(key) {
         // Exclude the timestamp tracker itself
-        if (key === 'hw_sync_timestamps') return;
+        if (key.startsWith('hw_sync_')) return;
 
         let timestamps = this.getLocalTimestamps();
         timestamps[key] = Date.now();
@@ -31,10 +31,16 @@ const SyncHelper = {
         const settings = Utils.getSettings();
         if (!settings['SyncHelper_Enable']) return;
 
-        // Auto sync on load if enabled
         const url = settings['SyncHelper_ServerURL'];
         if (url) {
-            this.syncAllNow();
+            const now = Date.now();
+            const lastActive = parseInt(Utils.getItem('hw_sync_last_active') || '0', 10);
+            
+            if (now - lastActive > 300000 || lastActive === 0) { // 5 minutes
+                this.performSync();
+            }
+            // Update last active locally without triggering sync loop
+            Utils.setItem('hw_sync_last_active', now.toString());
         }
     },
 
@@ -74,7 +80,7 @@ const SyncHelper = {
     },
 
     triggerSync: function() {
-        if (!Utils.getSettings()['SyncHelper_Enable']) return;
+        if (!Utils.getSettings()['SyncHelper_Enable'] || this.isSyncing) return;
 
         if (this.syncTimeout) clearTimeout(this.syncTimeout);
         this.syncTimeout = setTimeout(() => {
@@ -125,9 +131,9 @@ const SyncHelper = {
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
             // Sync all hw_ keys that the helper uses
-            if (key && (key.startsWith('hw_') || key.startsWith('hobowars') || key.startsWith('hof_') || key.startsWith('ActiveListHelper') || key.startsWith('bh_') || key.startsWith('GangArmory'))) {
-                if (key !== 'hw_sync_timestamps') { // Prevent infinite loops
-                    data[key] = localStorage.getItem(key);
+            if (key && (key.startsWith('hw_') || key.startsWith('hobowars') || key.startsWith('hof_') || key.startsWith('ActiveListHelper') || key.startsWith('bh_') || key.startsWith('GangArmory') || key === 'hoboStatRatio')) {
+                if (!key.startsWith('hw_sync_')) { // Prevent infinite loops and syncing meta logic
+                    data[key] = Utils.getItem(key);
                 }
             }
         }
@@ -176,9 +182,9 @@ const SyncHelper = {
 
                     if (remoteTime > localTime) {
                         // Remote is newer, update local storage
-                        const currentLocalVal = localStorage.getItem(key);
+                        const currentLocalVal = Utils.getItem(key);
                         if (currentLocalVal !== remoteVal) {
-                            localStorage.setItem(key, remoteVal);
+                            Utils.setItem(key, remoteVal);
                             localTimestamps[key] = remoteTime;
                             localChanged = true;
                         }
@@ -224,4 +230,3 @@ const SyncHelper = {
         }
     },
 };
-

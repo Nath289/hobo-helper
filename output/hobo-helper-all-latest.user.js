@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (All)
 // @namespace    http://tampermonkey.net/
-// @version      8.98
+// @version      8.99
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -284,7 +284,7 @@ const Utils = {
      */
     setItem: function(key, value) {
         localStorage.setItem(key, value);
-        if (typeof SyncHelper !== 'undefined') {
+        if (typeof SyncHelper !== 'undefined' && !key.startsWith('hw_sync_')) {
             SyncHelper.recordLocalUpdate(key);
             SyncHelper.triggerSync();
         }
@@ -296,7 +296,7 @@ const Utils = {
      */
     removeItem: function(key) {
         localStorage.removeItem(key);
-        if (typeof SyncHelper !== 'undefined') {
+        if (typeof SyncHelper !== 'undefined' && !key.startsWith('hw_sync_')) {
             SyncHelper.recordLocalUpdate(key);
             SyncHelper.triggerSync();
         }
@@ -612,6 +612,16 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "8.99",
+            date: "2026-04-30",
+            type: "Changed",
+            notes: [
+                "**Added:** Cloud Sync auto-pulls settings data from the server automatically if the device has been inactive for more than 5 minutes.",
+                "**Changed:** Refactored Cloud Sync to use the `Utils.getItem` and `Utils.setItem` wrappers instead of direct `localStorage` access.",
+                "**Fixed:** Prevented infinite synchronization loops by correctly ignoring internal `hw_sync_` meta keys from triggering syncs."
+            ]
+        },
+        {
             version: "8.98",
             date: "2026-04-30",
             type: "Changed",
@@ -693,14 +703,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "**Changed:** Moved the Configure button in the Recycling Bin Helper to the far right of the submit controls for better layout flow."
-            ]
-        },
-        {
-            version: "8.89",
-            date: "2026-04-24",
-            type: "Changed",
-            notes: [
-                "**Changed:** Swapped the Battle Graph chart types: Health Remaining is now a descending Line chart for continuous tracking, and Damage Dealt is now a stacked Bar chart to better illustrate each fighter's individual hits per round without jarring line drops."
             ]
         }
     ]
@@ -1235,16 +1237,16 @@ const SyncHelper = {
     isSyncing: false,
 
     getLocalTimestamps: function() {
-        return JSON.parse(localStorage.getItem('hw_sync_timestamps') || '{}');
+        return JSON.parse(Utils.getItem('hw_sync_timestamps') || '{}');
     },
 
     saveLocalTimestamps: function(timestamps) {
-        localStorage.setItem('hw_sync_timestamps', JSON.stringify(timestamps));
+        Utils.setItem('hw_sync_timestamps', JSON.stringify(timestamps));
     },
 
     recordLocalUpdate: function(key) {
         // Exclude the timestamp tracker itself
-        if (key === 'hw_sync_timestamps') return;
+        if (key.startsWith('hw_sync_')) return;
 
         let timestamps = this.getLocalTimestamps();
         timestamps[key] = Date.now();
@@ -1255,10 +1257,16 @@ const SyncHelper = {
         const settings = Utils.getSettings();
         if (!settings['SyncHelper_Enable']) return;
 
-        // Auto sync on load if enabled
         const url = settings['SyncHelper_ServerURL'];
         if (url) {
-            this.syncAllNow();
+            const now = Date.now();
+            const lastActive = parseInt(Utils.getItem('hw_sync_last_active') || '0', 10);
+            
+            if (now - lastActive > 300000 || lastActive === 0) { // 5 minutes
+                this.performSync();
+            }
+            // Update last active locally without triggering sync loop
+            Utils.setItem('hw_sync_last_active', now.toString());
         }
     },
 
@@ -1298,7 +1306,7 @@ const SyncHelper = {
     },
 
     triggerSync: function() {
-        if (!Utils.getSettings()['SyncHelper_Enable']) return;
+        if (!Utils.getSettings()['SyncHelper_Enable'] || this.isSyncing) return;
 
         if (this.syncTimeout) clearTimeout(this.syncTimeout);
         this.syncTimeout = setTimeout(() => {
@@ -1349,9 +1357,9 @@ const SyncHelper = {
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
             // Sync all hw_ keys that the helper uses
-            if (key && (key.startsWith('hw_') || key.startsWith('hobowars') || key.startsWith('hof_') || key.startsWith('ActiveListHelper') || key.startsWith('bh_') || key.startsWith('GangArmory'))) {
-                if (key !== 'hw_sync_timestamps') { // Prevent infinite loops
-                    data[key] = localStorage.getItem(key);
+            if (key && (key.startsWith('hw_') || key.startsWith('hobowars') || key.startsWith('hof_') || key.startsWith('ActiveListHelper') || key.startsWith('bh_') || key.startsWith('GangArmory') || key === 'hoboStatRatio')) {
+                if (!key.startsWith('hw_sync_')) { // Prevent infinite loops and syncing meta logic
+                    data[key] = Utils.getItem(key);
                 }
             }
         }
@@ -1400,9 +1408,9 @@ const SyncHelper = {
 
                     if (remoteTime > localTime) {
                         // Remote is newer, update local storage
-                        const currentLocalVal = localStorage.getItem(key);
+                        const currentLocalVal = Utils.getItem(key);
                         if (currentLocalVal !== remoteVal) {
-                            localStorage.setItem(key, remoteVal);
+                            Utils.setItem(key, remoteVal);
                             localTimestamps[key] = remoteTime;
                             localChanged = true;
                         }
@@ -5226,7 +5234,7 @@ const LivingAreaHelper = {
             lastUpdated: Date.now()
         };
 
-        let config = JSON.parse(localStorage.getItem(STORAGE_KEY)) || DEFAULT_DATA;
+        let config = JSON.parse(Utils.getItem(STORAGE_KEY)) || DEFAULT_DATA;
         let inMemoryLastUpdated = config.lastUpdated;
 
         function updateTracker() {
@@ -5235,7 +5243,7 @@ const LivingAreaHelper = {
 
             // Fetch latest from storage to prevent background tabs from reverting settings
             try {
-                const savedConfig = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                const savedConfig = JSON.parse(Utils.getItem(STORAGE_KEY));
                 if (savedConfig) {
                     config = Object.assign(config, savedConfig);
                 }
@@ -5286,7 +5294,7 @@ const LivingAreaHelper = {
                     const totalNeeded = Math.max(0, config.needs.speed) + Math.max(0, config.needs.power) + Math.max(0, config.needs.strength);
                     config.estDays = config.dailyGain > 1 ? (totalNeeded / config.dailyGain).toFixed(1) : "---";
 
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+                    Utils.setItem(STORAGE_KEY, JSON.stringify(config));
                     renderLivingAreaTags(ratioSum);
                     renderPanel(statsBlock, effectiveTarget);
                 }
@@ -5343,7 +5351,7 @@ const LivingAreaHelper = {
 
             document.getElementById('cog_toggle').onclick = () => {
                 try {
-                    const savedConfig = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                    const savedConfig = JSON.parse(Utils.getItem(STORAGE_KEY));
                     if (savedConfig) {
                         // If memory is stale compared to storage, alert and reload instead of overwriting
                         if (savedConfig.lastUpdated && savedConfig.lastUpdated > inMemoryLastUpdated) {
@@ -5354,7 +5362,7 @@ const LivingAreaHelper = {
                             document.getElementById('settings_area').style.display = config.showSettings ? 'block' : 'none';
                             config.lastUpdated = Date.now();
                             inMemoryLastUpdated = config.lastUpdated;
-                            localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+                            Utils.setItem(STORAGE_KEY, JSON.stringify(config));
                             updateTracker();
                             return;
                         }
@@ -5366,12 +5374,12 @@ const LivingAreaHelper = {
                 document.getElementById('settings_area').style.display = config.showSettings ? 'block' : 'none';
                 config.lastUpdated = Date.now();
                 inMemoryLastUpdated = config.lastUpdated;
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+                Utils.setItem(STORAGE_KEY, JSON.stringify(config));
             };
 
             document.getElementById('r_save').onclick = () => {
                 try {
-                    const savedConfig = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                    const savedConfig = JSON.parse(Utils.getItem(STORAGE_KEY));
                     if (savedConfig) {
                         // If memory is stale compared to storage, alert and reload instead of overwriting
                         if (savedConfig.lastUpdated && savedConfig.lastUpdated > inMemoryLastUpdated) {
@@ -5397,7 +5405,7 @@ const LivingAreaHelper = {
                 document.getElementById('settings_area').style.display = 'none';
                 config.lastUpdated = Date.now();
                 inMemoryLastUpdated = config.lastUpdated;
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+                Utils.setItem(STORAGE_KEY, JSON.stringify(config));
                 updateTracker();
             };
         }
@@ -11525,7 +11533,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.98';
+        window.HoboHelperVersion = '8.99';
     }
 
     const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

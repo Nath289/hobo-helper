@@ -268,7 +268,7 @@ const Utils = {
      */
     setItem: function(key, value) {
         localStorage.setItem(key, value);
-        if (typeof SyncHelper !== 'undefined') {
+        if (typeof SyncHelper !== 'undefined' && !key.startsWith('hw_sync_')) {
             SyncHelper.recordLocalUpdate(key);
             SyncHelper.triggerSync();
         }
@@ -280,7 +280,7 @@ const Utils = {
      */
     removeItem: function(key) {
         localStorage.removeItem(key);
-        if (typeof SyncHelper !== 'undefined') {
+        if (typeof SyncHelper !== 'undefined' && !key.startsWith('hw_sync_')) {
             SyncHelper.recordLocalUpdate(key);
             SyncHelper.triggerSync();
         }

@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.99] - 2026-04-30
+- **Added:** Cloud Sync auto-pulls settings data from the server automatically if the device has been inactive for more than 5 minutes.
+- **Changed:** Refactored Cloud Sync to use the `Utils.getItem` and `Utils.setItem` wrappers instead of direct `localStorage` access.
+- **Fixed:** Prevented infinite synchronization loops by correctly ignoring internal `hw_sync_` meta keys from triggering syncs.
+
 ## [8.98] - 2026-04-30
 - **Added:** Implemented seamless cross-browser Cloud Sync via the new `SyncHelper`! By placing custom CouchDB configuration credentials directly in your Preferences menu, your device will now automatically push and pull local script data using intelligent, bidirectional conflict resolution merging.
 - **Added:** A "Force Sync" quick-toggle button has been added directly to the "Hobo Helper Version" footer block inside your Living Area.
