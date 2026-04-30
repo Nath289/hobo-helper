@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.01] - 2026-04-30
+- **Fixed:** Resolved the "Update Goals" stat ratio settings failing to save or retract due to stale cache overwrites in `LivingAreaHelper.js`.
+
 ## [9.00] - 2026-04-30
 - **Changed:** Refactored Cloud Sync interval checks so local state updates dynamically skip external CouchDB network loops during standard UI reads, only pushing data when explicitly saving configurations.
 - **Changed:** Synchronised Cloud Sync debounce interval queue down to 100ms, creating instantaneous near-real-time active background updates across multiple tabs.

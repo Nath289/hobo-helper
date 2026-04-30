@@ -416,12 +416,14 @@ const LivingAreaHelper = {
             if (!statsBlock) return;
 
             // Fetch latest from storage to prevent background tabs from reverting settings
-            try {
-                const savedConfig = JSON.parse(Utils.getItem(STORAGE_KEY));
-                if (savedConfig) {
-                    config = Object.assign(config, savedConfig);
-                }
-            } catch (e) {}
+            if (!shouldSync) {
+                try {
+                    const savedConfig = JSON.parse(Utils.getItem(STORAGE_KEY));
+                    if (savedConfig) {
+                        config = Object.assign(config, savedConfig);
+                    }
+                } catch (e) {}
+            }
 
             const findValue = (label) => {
                 const lines = Array.from(statsBlock.querySelectorAll('.line'));
@@ -518,18 +520,19 @@ const LivingAreaHelper = {
                 <div style="font-size:11px; color:#666;">Est: ~${config.estDays} days (@ ${Math.round(config.dailyGain)}/day)</div>
                 <div id="settings_area" style="margin-top:8px; padding-top:5px; border-top:1px solid #ddd; display:${config.showSettings ? 'block' : 'none'};">
                     <div style="font-size:11px; font-weight:bold; color:#0066cc;">Target Total (0 for Auto)</div>
-                    <input type="text" id="r_goal" value="${config.targetTotal}" style="width:100%; margin-bottom:8px; box-sizing: border-box;">
+                    <input type="text" id="r_goal" value="${config.targetTotal}" style="width:100%; margin-bottom:8px; box-sizing: border-box;" autocomplete="off">
                     <div style="font-size:11px; font-weight:bold;">Ratio (Spd : Pwr : Str)</div>
                     <div style="display:flex; gap:4px; margin-bottom:10px;">
-                        <input type="number" id="r_spd" value="${config.speed}" style="width:33%; box-sizing: border-box;">
-                        <input type="number" id="r_pwr" value="${config.power}" style="width:33%; box-sizing: border-box;">
-                        <input type="number" id="r_str" value="${config.strength}" style="width:33%; box-sizing: border-box;">
+                        <input type="number" id="r_spd" value="${config.speed}" style="width:33%; box-sizing: border-box;" autocomplete="off">
+                        <input type="number" id="r_pwr" value="${config.power}" style="width:33%; box-sizing: border-box;" autocomplete="off">
+                        <input type="number" id="r_str" value="${config.strength}" style="width:33%; box-sizing: border-box;" autocomplete="off">
                     </div>
-                    <button id="r_save" style="width:100%; cursor:pointer; background:#666; color:#fff; border:none; padding:5px; font-weight:bold;">Update Goals</button>
+                    <button type="button" id="r_save" style="width:100%; cursor:pointer; background:#666; color:#fff; border:none; padding:5px; font-weight:bold;">Update Goals</button>
                 </div>
             `;
 
-            document.getElementById('cog_toggle').onclick = () => {
+            document.getElementById('cog_toggle').onclick = (e) => {
+                if (e) e.preventDefault();
                 try {
                     const savedConfig = JSON.parse(Utils.getItem(STORAGE_KEY));
                     if (savedConfig) {
@@ -557,7 +560,8 @@ const LivingAreaHelper = {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
             };
 
-            document.getElementById('r_save').onclick = () => {
+            document.getElementById('r_save').onclick = (e) => {
+                if (e) e.preventDefault();
                 try {
                     const savedConfig = JSON.parse(Utils.getItem(STORAGE_KEY));
                     if (savedConfig) {
@@ -573,7 +577,7 @@ const LivingAreaHelper = {
                             updateTracker();
                             return; // Block save
                         }
-                        config = Object.assign(config, savedConfig);
+                        // Don't accidentally overwrite the config with stale values right before grabbing inputs
                     }
                 } catch(e) {}
 
@@ -741,4 +745,8 @@ const LivingAreaHelper = {
         }
     }
 }
+
+
+
+
 

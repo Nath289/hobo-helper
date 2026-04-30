@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      9.00
+// @version      9.01
 // @description  Combines original HoboWars helpers into a single modular script (non-staff modules).
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -613,6 +613,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.01",
+            date: "2026-04-30",
+            type: "Changed",
+            notes: [
+                "**Fixed:** Resolved the \"Update Goals\" stat ratio settings failing to save or retract due to stale cache overwrites in `LivingAreaHelper.js`."
+            ]
+        },
+        {
             version: "9.00",
             date: "2026-04-30",
             type: "Changed",
@@ -699,14 +707,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "**Changed:** Refactored the Display Helper Custom Player Titles feature to utilize a single unified array mapped DOM scanner, resulting in dramatically improved script performance on pages with high member concentrations compared to iterating multiple separate DOM scans."
-            ]
-        },
-        {
-            version: "8.91",
-            date: "2026-04-25",
-            type: "Changed",
-            notes: [
-                "**Changed:** Restructured the `HitlistHelper` multi-column sorting configuration UI to start collapsed above the table, drastically reducing vertical clutter while remaining easily accessible for editing."
             ]
         }
     ]
@@ -5267,12 +5267,14 @@ const LivingAreaHelper = {
             if (!statsBlock) return;
 
             // Fetch latest from storage to prevent background tabs from reverting settings
-            try {
-                const savedConfig = JSON.parse(Utils.getItem(STORAGE_KEY));
-                if (savedConfig) {
-                    config = Object.assign(config, savedConfig);
-                }
-            } catch (e) {}
+            if (!shouldSync) {
+                try {
+                    const savedConfig = JSON.parse(Utils.getItem(STORAGE_KEY));
+                    if (savedConfig) {
+                        config = Object.assign(config, savedConfig);
+                    }
+                } catch (e) {}
+            }
 
             const findValue = (label) => {
                 const lines = Array.from(statsBlock.querySelectorAll('.line'));
@@ -5369,18 +5371,19 @@ const LivingAreaHelper = {
                 <div style="font-size:11px; color:#666;">Est: ~${config.estDays} days (@ ${Math.round(config.dailyGain)}/day)</div>
                 <div id="settings_area" style="margin-top:8px; padding-top:5px; border-top:1px solid #ddd; display:${config.showSettings ? 'block' : 'none'};">
                     <div style="font-size:11px; font-weight:bold; color:#0066cc;">Target Total (0 for Auto)</div>
-                    <input type="text" id="r_goal" value="${config.targetTotal}" style="width:100%; margin-bottom:8px; box-sizing: border-box;">
+                    <input type="text" id="r_goal" value="${config.targetTotal}" style="width:100%; margin-bottom:8px; box-sizing: border-box;" autocomplete="off">
                     <div style="font-size:11px; font-weight:bold;">Ratio (Spd : Pwr : Str)</div>
                     <div style="display:flex; gap:4px; margin-bottom:10px;">
-                        <input type="number" id="r_spd" value="${config.speed}" style="width:33%; box-sizing: border-box;">
-                        <input type="number" id="r_pwr" value="${config.power}" style="width:33%; box-sizing: border-box;">
-                        <input type="number" id="r_str" value="${config.strength}" style="width:33%; box-sizing: border-box;">
+                        <input type="number" id="r_spd" value="${config.speed}" style="width:33%; box-sizing: border-box;" autocomplete="off">
+                        <input type="number" id="r_pwr" value="${config.power}" style="width:33%; box-sizing: border-box;" autocomplete="off">
+                        <input type="number" id="r_str" value="${config.strength}" style="width:33%; box-sizing: border-box;" autocomplete="off">
                     </div>
-                    <button id="r_save" style="width:100%; cursor:pointer; background:#666; color:#fff; border:none; padding:5px; font-weight:bold;">Update Goals</button>
+                    <button type="button" id="r_save" style="width:100%; cursor:pointer; background:#666; color:#fff; border:none; padding:5px; font-weight:bold;">Update Goals</button>
                 </div>
             `;
 
-            document.getElementById('cog_toggle').onclick = () => {
+            document.getElementById('cog_toggle').onclick = (e) => {
+                if (e) e.preventDefault();
                 try {
                     const savedConfig = JSON.parse(Utils.getItem(STORAGE_KEY));
                     if (savedConfig) {
@@ -5408,7 +5411,8 @@ const LivingAreaHelper = {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
             };
 
-            document.getElementById('r_save').onclick = () => {
+            document.getElementById('r_save').onclick = (e) => {
+                if (e) e.preventDefault();
                 try {
                     const savedConfig = JSON.parse(Utils.getItem(STORAGE_KEY));
                     if (savedConfig) {
@@ -5424,7 +5428,7 @@ const LivingAreaHelper = {
                             updateTracker();
                             return; // Block save
                         }
-                        config = Object.assign(config, savedConfig);
+                        // Don't accidentally overwrite the config with stale values right before grabbing inputs
                     }
                 } catch(e) {}
 
@@ -9362,7 +9366,7 @@ const WellnessClinicHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.00';
+        window.HoboHelperVersion = '9.01';
     }
 
     const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

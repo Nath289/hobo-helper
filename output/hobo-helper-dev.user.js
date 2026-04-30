@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      8.99.20260430.1347
+// @version      9.00.20260430.1415
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -613,6 +613,17 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.00",
+            date: "2026-04-30",
+            type: "Changed",
+            notes: [
+                "**Changed:** Refactored Cloud Sync interval checks so local state updates dynamically skip external CouchDB network loops during standard UI reads, only pushing data when explicitly saving configurations.",
+                "**Changed:** Synchronised Cloud Sync debounce interval queue down to 100ms, creating instantaneous near-real-time active background updates across multiple tabs.",
+                "**Changed:** Removed obsolete `src` image properties from tracked `bh_drink_stats` storage arrays to drastically reduce the sync payload size. Passive migration logic silently handles legacy data types.",
+                "**Fixed:** Resolved a double-sync race condition inside the `LivingAreaHelper` stat tracker caused by rapid, continuous callback loops."
+            ]
+        },
+        {
             version: "8.99",
             date: "2026-04-30",
             type: "Changed",
@@ -696,14 +707,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "**Changed:** Restructured the `HitlistHelper` multi-column sorting configuration UI to start collapsed above the table, drastically reducing vertical clutter while remaining easily accessible for editing."
-            ]
-        },
-        {
-            version: "8.90",
-            date: "2026-04-25",
-            type: "Changed",
-            notes: [
-                "**Changed:** Moved the Configure button in the Recycling Bin Helper to the far right of the submit controls for better layout flow."
             ]
         }
     ]
@@ -5264,12 +5267,14 @@ const LivingAreaHelper = {
             if (!statsBlock) return;
 
             // Fetch latest from storage to prevent background tabs from reverting settings
-            try {
-                const savedConfig = JSON.parse(Utils.getItem(STORAGE_KEY));
-                if (savedConfig) {
-                    config = Object.assign(config, savedConfig);
-                }
-            } catch (e) {}
+            if (!shouldSync) {
+                try {
+                    const savedConfig = JSON.parse(Utils.getItem(STORAGE_KEY));
+                    if (savedConfig) {
+                        config = Object.assign(config, savedConfig);
+                    }
+                } catch (e) {}
+            }
 
             const findValue = (label) => {
                 const lines = Array.from(statsBlock.querySelectorAll('.line'));
@@ -5366,18 +5371,19 @@ const LivingAreaHelper = {
                 <div style="font-size:11px; color:#666;">Est: ~${config.estDays} days (@ ${Math.round(config.dailyGain)}/day)</div>
                 <div id="settings_area" style="margin-top:8px; padding-top:5px; border-top:1px solid #ddd; display:${config.showSettings ? 'block' : 'none'};">
                     <div style="font-size:11px; font-weight:bold; color:#0066cc;">Target Total (0 for Auto)</div>
-                    <input type="text" id="r_goal" value="${config.targetTotal}" style="width:100%; margin-bottom:8px; box-sizing: border-box;">
+                    <input type="text" id="r_goal" value="${config.targetTotal}" style="width:100%; margin-bottom:8px; box-sizing: border-box;" autocomplete="off">
                     <div style="font-size:11px; font-weight:bold;">Ratio (Spd : Pwr : Str)</div>
                     <div style="display:flex; gap:4px; margin-bottom:10px;">
-                        <input type="number" id="r_spd" value="${config.speed}" style="width:33%; box-sizing: border-box;">
-                        <input type="number" id="r_pwr" value="${config.power}" style="width:33%; box-sizing: border-box;">
-                        <input type="number" id="r_str" value="${config.strength}" style="width:33%; box-sizing: border-box;">
+                        <input type="number" id="r_spd" value="${config.speed}" style="width:33%; box-sizing: border-box;" autocomplete="off">
+                        <input type="number" id="r_pwr" value="${config.power}" style="width:33%; box-sizing: border-box;" autocomplete="off">
+                        <input type="number" id="r_str" value="${config.strength}" style="width:33%; box-sizing: border-box;" autocomplete="off">
                     </div>
-                    <button id="r_save" style="width:100%; cursor:pointer; background:#666; color:#fff; border:none; padding:5px; font-weight:bold;">Update Goals</button>
+                    <button type="button" id="r_save" style="width:100%; cursor:pointer; background:#666; color:#fff; border:none; padding:5px; font-weight:bold;">Update Goals</button>
                 </div>
             `;
 
-            document.getElementById('cog_toggle').onclick = () => {
+            document.getElementById('cog_toggle').onclick = (e) => {
+                if (e) e.preventDefault();
                 try {
                     const savedConfig = JSON.parse(Utils.getItem(STORAGE_KEY));
                     if (savedConfig) {
@@ -5405,7 +5411,8 @@ const LivingAreaHelper = {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
             };
 
-            document.getElementById('r_save').onclick = () => {
+            document.getElementById('r_save').onclick = (e) => {
+                if (e) e.preventDefault();
                 try {
                     const savedConfig = JSON.parse(Utils.getItem(STORAGE_KEY));
                     if (savedConfig) {
@@ -5421,7 +5428,7 @@ const LivingAreaHelper = {
                             updateTracker();
                             return; // Block save
                         }
-                        config = Object.assign(config, savedConfig);
+                        // Don't accidentally overwrite the config with stale values right before grabbing inputs
                     }
                 } catch(e) {}
 
@@ -5433,7 +5440,11 @@ const LivingAreaHelper = {
                 document.getElementById('settings_area').style.display = 'none';
                 config.lastUpdated = Date.now();
                 inMemoryLastUpdated = config.lastUpdated;
-                // updateTracker will handle saving the config to avoid double syncing
+                
+                // Cache the newly updated config locally right now so `updateTracker` doesn't pull the old version from cache and overwrite our updates
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+                
+                // updateTracker will parse the new settings and natively call the CouchDB sync hook once
                 updateTracker(true);
             };
         }
@@ -11561,7 +11572,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.99.20260430.1347';
+        window.HoboHelperVersion = '9.00.20260430.1415';
     }
 
     const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
