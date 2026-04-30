@@ -271,6 +271,7 @@ const Utils = {
         if (typeof SyncHelper !== 'undefined' && !key.startsWith('hw_sync_')) {
             SyncHelper.recordLocalUpdate(key);
             SyncHelper.triggerSync();
+            this.log(`Synced item: ${key} = ${value}`);
         }
     },
 

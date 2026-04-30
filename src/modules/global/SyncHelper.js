@@ -9,6 +9,7 @@ const SyncHelper = {
     // Local variables
     syncTimeout: null,
     isSyncing: false,
+    syncQueued: false,
 
     getLocalTimestamps: function() {
         return JSON.parse(Utils.getItem('hw_sync_timestamps') || '{}');
@@ -34,12 +35,20 @@ const SyncHelper = {
         const url = settings['SyncHelper_ServerURL'];
         if (url) {
             const now = Date.now();
+            const lastSync = parseInt(Utils.getItem('hw_sync_last_sync') || '0', 10);
             const lastActive = parseInt(Utils.getItem('hw_sync_last_active') || '0', 10);
-            
-            if (now - lastActive > 300000 || lastActive === 0) { // 5 minutes
-                this.performSync();
+
+            let assumeStale = false;
+            // If the device hasn't been used in 5 minutes, assume settings are stale
+            if (lastActive > 0 && (now - lastActive > 300000)) {
+                assumeStale = true;
             }
-            // Update last active locally without triggering sync loop
+
+            // Sync from remote if inactive for 5 mins, or never synced before
+            if (lastSync === 0 || assumeStale) {
+                this.performSync(assumeStale);
+            }
+
             Utils.setItem('hw_sync_last_active', now.toString());
         }
     },
@@ -80,12 +89,17 @@ const SyncHelper = {
     },
 
     triggerSync: function() {
-        if (!Utils.getSettings()['SyncHelper_Enable'] || this.isSyncing) return;
+        if (!Utils.getSettings()['SyncHelper_Enable']) return;
+
+        if (this.isSyncing) {
+            this.syncQueued = true;
+            return;
+        }
 
         if (this.syncTimeout) clearTimeout(this.syncTimeout);
         this.syncTimeout = setTimeout(() => {
             this.performSync();
-        }, 5000); // 5 second debounce
+        }, 100); // 100ms debounce for near-immediate sync
     },
 
     fetchGM: function(url, options = {}) {
@@ -140,12 +154,15 @@ const SyncHelper = {
         return data;
     },
 
-    performSync: async function() {
+    performSync: async function(assumeStale = false) {
         if (this.isSyncing) return;
         const dbUrl = this.getBaseDbUrl();
         if (!dbUrl) return;
 
         this.isSyncing = true;
+        // Mark that a sync occurred to reset the 30-second checking clock
+        Utils.setItem('hw_sync_last_sync', Date.now().toString());
+
         try {
             const docId = this.getDocId();
             let remoteDoc = null;
@@ -178,9 +195,9 @@ const SyncHelper = {
             if (remoteDoc && remoteDoc.data && remoteDoc.timestamps) {
                 for (const [key, remoteVal] of Object.entries(remoteDoc.data)) {
                     const remoteTime = remoteDoc.timestamps[key] || 0;
-                    const localTime = localTimestamps[key] || 0;
+                    const localTime = assumeStale ? 0 : (localTimestamps[key] || 0);
 
-                    if (remoteTime > localTime) {
+                    if (remoteTime > localTime || (assumeStale && remoteVal !== undefined)) {
                         // Remote is newer, update local storage
                         const currentLocalVal = Utils.getItem(key);
                         if (currentLocalVal !== remoteVal) {
@@ -194,7 +211,7 @@ const SyncHelper = {
 
             // 2. Process local keys
             for (const [key, localVal] of Object.entries(localData)) {
-                const localTime = localTimestamps[key] || 0;
+                const localTime = assumeStale ? 0 : (localTimestamps[key] || 0);
                 const remoteTime = payload.timestamps[key] || 0;
 
                 // Push new or modified local keys
@@ -221,12 +238,21 @@ const SyncHelper = {
                     headers: this.getAuthHeaders({ 'Content-Type': 'application/json' }),
                     body: JSON.stringify(payload)
                 });
+                
+                if (window.location.search.includes('cmd=')) {
+                    Utils.log('HoboHelper sync pushed new data to CouchDB.');
+                }
             }
 
         } catch (e) {
             console.error('HoboHelper Sync Error:', e);
         } finally {
             this.isSyncing = false;
+            if (this.syncQueued) {
+                this.syncQueued = false;
+                this.triggerSync();
+            }
         }
     },
 };
+

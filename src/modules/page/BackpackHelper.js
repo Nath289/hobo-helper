@@ -108,19 +108,16 @@ const BackpackHelper = {
             if (isDrink) {
                 const img = a.querySelector('img');
                 const name = img ? (img.getAttribute('alt') || img.title).trim() : a.textContent.trim();
-                const src = img ? img.getAttribute('src') : '';
+                
                 if (name) {
                     let stats = JSON.parse(Utils.getItem('bh_drink_stats') || '{}');
-                    let current = stats[name];
-                    if (typeof current === 'number') {
-                        current = { count: current, src: src };
-                    } else if (!current) {
-                        current = { count: 0, src: src };
-                    } else if (src && (!current.src || current.src.startsWith('data:'))) {
-                        current.src = src;
+                    
+                    // Migrate legacy format if needed
+                    if (typeof stats[name] === 'object') {
+                        stats[name] = stats[name].count || 0;
                     }
-                    current.count++;
-                    stats[name] = current;
+
+                    stats[name] = (stats[name] || 0) + 1;
                     Utils.setItem('bh_drink_stats', JSON.stringify(stats));
                 }
             }
@@ -180,7 +177,7 @@ const BackpackHelper = {
         bpTable.setAttribute('data-bh-favorites-added', 'true');
 
         let stats = JSON.parse(Utils.getItem('bh_drink_stats') || '{}');
-        const getCount = (val) => typeof val === 'number' ? val : (val ? val.count : 0);
+        const getCount = (val) => typeof val === 'object' ? (val.count || 0) : (val || 0);
         const sortedDrinks = Object.keys(stats).sort((a,b) => getCount(stats[b]) - getCount(stats[a])).slice(0, 5);
 
         if (sortedDrinks.length === 0) return;
@@ -267,9 +264,8 @@ const BackpackHelper = {
         }
 
         let stats = JSON.parse(Utils.getItem('bh_drink_stats') || '{}');
-        const getCount = (val) => typeof val === 'number' ? val : (val ? val.count : 0);
-        const getSrc = (name, val) => {
-            if (val && val.src && !val.src.startsWith('data:')) return val.src;
+        const getCount = (val) => typeof val === 'object' ? (val.count || 0) : (val || 0);
+        const getSrc = (name) => {
             return `/images/items/gifs/${name.replace(/'/g, '').replace(/ /g, '-')}.gif`;
         };
         const sortedDrinks = Object.keys(stats).sort((a,b) => {
@@ -283,7 +279,7 @@ const BackpackHelper = {
             <table width="100%" style="border-collapse: collapse; text-align: left;">
             ${sortedDrinks.map(d => `
                 <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 5px; width: 30px;"><img src="${getSrc(d, stats[d])}" alt="${d}" width="25" height="25" onerror="this.style.display='none'"></td>
+                    <td style="padding: 5px; width: 30px;"><img src="${getSrc(d)}" alt="${d}" width="25" height="25" onerror="this.style.display='none'"></td>
                     <td style="padding: 5px; font-weight: bold;">${d}</td>
                     <td style="padding: 5px; text-align: right;">${getCount(stats[d])}</td>
                     <td style="padding: 5px; text-align: right; width: 30px;">

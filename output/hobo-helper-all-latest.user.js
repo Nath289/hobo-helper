@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (All)
 // @namespace    http://tampermonkey.net/
-// @version      8.99
+// @version      9.00
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -287,6 +287,7 @@ const Utils = {
         if (typeof SyncHelper !== 'undefined' && !key.startsWith('hw_sync_')) {
             SyncHelper.recordLocalUpdate(key);
             SyncHelper.triggerSync();
+            this.log(`Synced item: ${key} = ${value}`);
         }
     },
 
@@ -612,6 +613,17 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.00",
+            date: "2026-04-30",
+            type: "Changed",
+            notes: [
+                "**Changed:** Refactored Cloud Sync interval checks so local state updates dynamically skip external CouchDB network loops during standard UI reads, only pushing data when explicitly saving configurations.",
+                "**Changed:** Synchronised Cloud Sync debounce interval queue down to 100ms, creating instantaneous near-real-time active background updates across multiple tabs.",
+                "**Changed:** Removed obsolete `src` image properties from tracked `bh_drink_stats` storage arrays to drastically reduce the sync payload size. Passive migration logic silently handles legacy data types.",
+                "**Fixed:** Resolved a double-sync race condition inside the `LivingAreaHelper` stat tracker caused by rapid, continuous callback loops."
+            ]
+        },
+        {
             version: "8.99",
             date: "2026-04-30",
             type: "Changed",
@@ -695,14 +707,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "**Changed:** Restructured the `HitlistHelper` multi-column sorting configuration UI to start collapsed above the table, drastically reducing vertical clutter while remaining easily accessible for editing."
-            ]
-        },
-        {
-            version: "8.90",
-            date: "2026-04-25",
-            type: "Changed",
-            notes: [
-                "**Changed:** Moved the Configure button in the Recycling Bin Helper to the far right of the submit controls for better layout flow."
             ]
         }
     ]
@@ -1235,6 +1239,7 @@ const SyncHelper = {
     // Local variables
     syncTimeout: null,
     isSyncing: false,
+    syncQueued: false,
 
     getLocalTimestamps: function() {
         return JSON.parse(Utils.getItem('hw_sync_timestamps') || '{}');
@@ -1260,12 +1265,20 @@ const SyncHelper = {
         const url = settings['SyncHelper_ServerURL'];
         if (url) {
             const now = Date.now();
+            const lastSync = parseInt(Utils.getItem('hw_sync_last_sync') || '0', 10);
             const lastActive = parseInt(Utils.getItem('hw_sync_last_active') || '0', 10);
-            
-            if (now - lastActive > 300000 || lastActive === 0) { // 5 minutes
-                this.performSync();
+
+            let assumeStale = false;
+            // If the device hasn't been used in 5 minutes, assume settings are stale
+            if (lastActive > 0 && (now - lastActive > 300000)) {
+                assumeStale = true;
             }
-            // Update last active locally without triggering sync loop
+
+            // Sync from remote if inactive for 5 mins, or never synced before
+            if (lastSync === 0 || assumeStale) {
+                this.performSync(assumeStale);
+            }
+
             Utils.setItem('hw_sync_last_active', now.toString());
         }
     },
@@ -1306,12 +1319,17 @@ const SyncHelper = {
     },
 
     triggerSync: function() {
-        if (!Utils.getSettings()['SyncHelper_Enable'] || this.isSyncing) return;
+        if (!Utils.getSettings()['SyncHelper_Enable']) return;
+
+        if (this.isSyncing) {
+            this.syncQueued = true;
+            return;
+        }
 
         if (this.syncTimeout) clearTimeout(this.syncTimeout);
         this.syncTimeout = setTimeout(() => {
             this.performSync();
-        }, 5000); // 5 second debounce
+        }, 100); // 100ms debounce for near-immediate sync
     },
 
     fetchGM: function(url, options = {}) {
@@ -1366,12 +1384,15 @@ const SyncHelper = {
         return data;
     },
 
-    performSync: async function() {
+    performSync: async function(assumeStale = false) {
         if (this.isSyncing) return;
         const dbUrl = this.getBaseDbUrl();
         if (!dbUrl) return;
 
         this.isSyncing = true;
+        // Mark that a sync occurred to reset the 30-second checking clock
+        Utils.setItem('hw_sync_last_sync', Date.now().toString());
+
         try {
             const docId = this.getDocId();
             let remoteDoc = null;
@@ -1404,9 +1425,9 @@ const SyncHelper = {
             if (remoteDoc && remoteDoc.data && remoteDoc.timestamps) {
                 for (const [key, remoteVal] of Object.entries(remoteDoc.data)) {
                     const remoteTime = remoteDoc.timestamps[key] || 0;
-                    const localTime = localTimestamps[key] || 0;
+                    const localTime = assumeStale ? 0 : (localTimestamps[key] || 0);
 
-                    if (remoteTime > localTime) {
+                    if (remoteTime > localTime || (assumeStale && remoteVal !== undefined)) {
                         // Remote is newer, update local storage
                         const currentLocalVal = Utils.getItem(key);
                         if (currentLocalVal !== remoteVal) {
@@ -1420,7 +1441,7 @@ const SyncHelper = {
 
             // 2. Process local keys
             for (const [key, localVal] of Object.entries(localData)) {
-                const localTime = localTimestamps[key] || 0;
+                const localTime = assumeStale ? 0 : (localTimestamps[key] || 0);
                 const remoteTime = payload.timestamps[key] || 0;
 
                 // Push new or modified local keys
@@ -1447,12 +1468,20 @@ const SyncHelper = {
                     headers: this.getAuthHeaders({ 'Content-Type': 'application/json' }),
                     body: JSON.stringify(payload)
                 });
+                
+                if (window.location.search.includes('cmd=')) {
+                    Utils.log('HoboHelper sync pushed new data to CouchDB.');
+                }
             }
 
         } catch (e) {
             console.error('HoboHelper Sync Error:', e);
         } finally {
             this.isSyncing = false;
+            if (this.syncQueued) {
+                this.syncQueued = false;
+                this.triggerSync();
+            }
         }
     },
 };
@@ -1746,19 +1775,16 @@ const BackpackHelper = {
             if (isDrink) {
                 const img = a.querySelector('img');
                 const name = img ? (img.getAttribute('alt') || img.title).trim() : a.textContent.trim();
-                const src = img ? img.getAttribute('src') : '';
+                
                 if (name) {
                     let stats = JSON.parse(Utils.getItem('bh_drink_stats') || '{}');
-                    let current = stats[name];
-                    if (typeof current === 'number') {
-                        current = { count: current, src: src };
-                    } else if (!current) {
-                        current = { count: 0, src: src };
-                    } else if (src && (!current.src || current.src.startsWith('data:'))) {
-                        current.src = src;
+                    
+                    // Migrate legacy format if needed
+                    if (typeof stats[name] === 'object') {
+                        stats[name] = stats[name].count || 0;
                     }
-                    current.count++;
-                    stats[name] = current;
+
+                    stats[name] = (stats[name] || 0) + 1;
                     Utils.setItem('bh_drink_stats', JSON.stringify(stats));
                 }
             }
@@ -1818,7 +1844,7 @@ const BackpackHelper = {
         bpTable.setAttribute('data-bh-favorites-added', 'true');
 
         let stats = JSON.parse(Utils.getItem('bh_drink_stats') || '{}');
-        const getCount = (val) => typeof val === 'number' ? val : (val ? val.count : 0);
+        const getCount = (val) => typeof val === 'object' ? (val.count || 0) : (val || 0);
         const sortedDrinks = Object.keys(stats).sort((a,b) => getCount(stats[b]) - getCount(stats[a])).slice(0, 5);
 
         if (sortedDrinks.length === 0) return;
@@ -1905,9 +1931,8 @@ const BackpackHelper = {
         }
 
         let stats = JSON.parse(Utils.getItem('bh_drink_stats') || '{}');
-        const getCount = (val) => typeof val === 'number' ? val : (val ? val.count : 0);
-        const getSrc = (name, val) => {
-            if (val && val.src && !val.src.startsWith('data:')) return val.src;
+        const getCount = (val) => typeof val === 'object' ? (val.count || 0) : (val || 0);
+        const getSrc = (name) => {
             return `/images/items/gifs/${name.replace(/'/g, '').replace(/ /g, '-')}.gif`;
         };
         const sortedDrinks = Object.keys(stats).sort((a,b) => {
@@ -1921,7 +1946,7 @@ const BackpackHelper = {
             <table width="100%" style="border-collapse: collapse; text-align: left;">
             ${sortedDrinks.map(d => `
                 <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 5px; width: 30px;"><img src="${getSrc(d, stats[d])}" alt="${d}" width="25" height="25" onerror="this.style.display='none'"></td>
+                    <td style="padding: 5px; width: 30px;"><img src="${getSrc(d)}" alt="${d}" width="25" height="25" onerror="this.style.display='none'"></td>
                     <td style="padding: 5px; font-weight: bold;">${d}</td>
                     <td style="padding: 5px; text-align: right;">${getCount(stats[d])}</td>
                     <td style="padding: 5px; text-align: right; width: 30px;">
@@ -5237,7 +5262,7 @@ const LivingAreaHelper = {
         let config = JSON.parse(Utils.getItem(STORAGE_KEY)) || DEFAULT_DATA;
         let inMemoryLastUpdated = config.lastUpdated;
 
-        function updateTracker() {
+        function updateTracker(shouldSync = false) {
             const statsBlock = document.getElementById('combatStats');
             if (!statsBlock) return;
 
@@ -5294,7 +5319,13 @@ const LivingAreaHelper = {
                     const totalNeeded = Math.max(0, config.needs.speed) + Math.max(0, config.needs.power) + Math.max(0, config.needs.strength);
                     config.estDays = config.dailyGain > 1 ? (totalNeeded / config.dailyGain).toFixed(1) : "---";
 
-                    Utils.setItem(STORAGE_KEY, JSON.stringify(config));
+                    if (shouldSync) {
+                        Utils.setItem(STORAGE_KEY, JSON.stringify(config));
+                    } else {
+                        // Update local cache but avoid triggering global network sync loops on routine page loading calculation logic
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+                    }
+
                     renderLivingAreaTags(ratioSum);
                     renderPanel(statsBlock, effectiveTarget);
                 }
@@ -5362,7 +5393,7 @@ const LivingAreaHelper = {
                             document.getElementById('settings_area').style.display = config.showSettings ? 'block' : 'none';
                             config.lastUpdated = Date.now();
                             inMemoryLastUpdated = config.lastUpdated;
-                            Utils.setItem(STORAGE_KEY, JSON.stringify(config));
+                            localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
                             updateTracker();
                             return;
                         }
@@ -5374,7 +5405,7 @@ const LivingAreaHelper = {
                 document.getElementById('settings_area').style.display = config.showSettings ? 'block' : 'none';
                 config.lastUpdated = Date.now();
                 inMemoryLastUpdated = config.lastUpdated;
-                Utils.setItem(STORAGE_KEY, JSON.stringify(config));
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
             };
 
             document.getElementById('r_save').onclick = () => {
@@ -5405,8 +5436,8 @@ const LivingAreaHelper = {
                 document.getElementById('settings_area').style.display = 'none';
                 config.lastUpdated = Date.now();
                 inMemoryLastUpdated = config.lastUpdated;
-                Utils.setItem(STORAGE_KEY, JSON.stringify(config));
-                updateTracker();
+                // updateTracker will handle saving the config to avoid double syncing
+                updateTracker(true);
             };
         }
 
@@ -11533,7 +11564,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '8.99';
+        window.HoboHelperVersion = '9.00';
     }
 
     const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

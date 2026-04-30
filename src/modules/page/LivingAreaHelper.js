@@ -411,7 +411,7 @@ const LivingAreaHelper = {
         let config = JSON.parse(Utils.getItem(STORAGE_KEY)) || DEFAULT_DATA;
         let inMemoryLastUpdated = config.lastUpdated;
 
-        function updateTracker() {
+        function updateTracker(shouldSync = false) {
             const statsBlock = document.getElementById('combatStats');
             if (!statsBlock) return;
 
@@ -468,7 +468,13 @@ const LivingAreaHelper = {
                     const totalNeeded = Math.max(0, config.needs.speed) + Math.max(0, config.needs.power) + Math.max(0, config.needs.strength);
                     config.estDays = config.dailyGain > 1 ? (totalNeeded / config.dailyGain).toFixed(1) : "---";
 
-                    Utils.setItem(STORAGE_KEY, JSON.stringify(config));
+                    if (shouldSync) {
+                        Utils.setItem(STORAGE_KEY, JSON.stringify(config));
+                    } else {
+                        // Update local cache but avoid triggering global network sync loops on routine page loading calculation logic
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+                    }
+
                     renderLivingAreaTags(ratioSum);
                     renderPanel(statsBlock, effectiveTarget);
                 }
@@ -536,7 +542,7 @@ const LivingAreaHelper = {
                             document.getElementById('settings_area').style.display = config.showSettings ? 'block' : 'none';
                             config.lastUpdated = Date.now();
                             inMemoryLastUpdated = config.lastUpdated;
-                            Utils.setItem(STORAGE_KEY, JSON.stringify(config));
+                            localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
                             updateTracker();
                             return;
                         }
@@ -548,7 +554,7 @@ const LivingAreaHelper = {
                 document.getElementById('settings_area').style.display = config.showSettings ? 'block' : 'none';
                 config.lastUpdated = Date.now();
                 inMemoryLastUpdated = config.lastUpdated;
-                Utils.setItem(STORAGE_KEY, JSON.stringify(config));
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
             };
 
             document.getElementById('r_save').onclick = () => {
@@ -579,8 +585,8 @@ const LivingAreaHelper = {
                 document.getElementById('settings_area').style.display = 'none';
                 config.lastUpdated = Date.now();
                 inMemoryLastUpdated = config.lastUpdated;
-                Utils.setItem(STORAGE_KEY, JSON.stringify(config));
-                updateTracker();
+                // updateTracker will handle saving the config to avoid double syncing
+                updateTracker(true);
             };
         }
 

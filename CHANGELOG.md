@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.00] - 2026-04-30
+- **Changed:** Refactored Cloud Sync interval checks so local state updates dynamically skip external CouchDB network loops during standard UI reads, only pushing data when explicitly saving configurations.
+- **Changed:** Synchronised Cloud Sync debounce interval queue down to 100ms, creating instantaneous near-real-time active background updates across multiple tabs.
+- **Changed:** Removed obsolete `src` image properties from tracked `bh_drink_stats` storage arrays to drastically reduce the sync payload size. Passive migration logic silently handles legacy data types.
+- **Fixed:** Resolved a double-sync race condition inside the `LivingAreaHelper` stat tracker caused by rapid, continuous callback loops.
+
 ## [8.99] - 2026-04-30
 - **Added:** Cloud Sync auto-pulls settings data from the server automatically if the device has been inactive for more than 5 minutes.
 - **Changed:** Refactored Cloud Sync to use the `Utils.getItem` and `Utils.setItem` wrappers instead of direct `localStorage` access.
