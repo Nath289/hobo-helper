@@ -74,6 +74,9 @@ const BackpackHelper = {
                 if (drinkInfo.effect && drinkInfo.effect.trim() !== "") {
                     tooltipParts.push(`Effect: ${drinkInfo.effect.trim()}`);
                 }
+                if (drinkInfo.bac && drinkInfo.bac.trim() !== "") {
+                    tooltipParts.push(`BAC: ${drinkInfo.bac.trim()}`);
+                }
 
                 if (tooltipParts.length > 0) {
                     const target = item.closest('td') ? item.closest('td') : item;
@@ -394,4 +397,3 @@ const BackpackHelper = {
         });
     }
 };
-

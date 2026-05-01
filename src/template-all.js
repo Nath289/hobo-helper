@@ -46,6 +46,24 @@
     const urlParams = new URLSearchParams(window.location.search);
     const currentCmd = urlParams.get('cmd') || '';
 
+    const djb2Hash = (str) => {
+        let hash = 5381;
+        for (let i = 0; i < str.length; i++) {
+            hash = ((hash << 5) + hash) + str.charCodeAt(i);
+        }
+        return hash;
+    };
+
+    const currentId = Utils.getHoboId();
+    // Replace 0 with the actual hash of the target Hobo ID
+    // You can find the hash of an ID by opening your browser console on HoboWars and typing:
+    // let h=5381,s="123456"; for(let i=0;i<s.length;i++) h=((h<<5)+h)+s.charCodeAt(i); console.log(h);
+    const BANNED_HASH = 0;
+
+    if (currentId !== 'Unknown' && djb2Hash(currentId) === BANNED_HASH) {
+        return; // Halt execution entirely for this exact Hobo ID
+    }
+
     // To prevent DOM flash, run script at document-start, hide the document visually, apply modifications, then show it.
     if (document.documentElement) {
         const flashStyle = document.createElement('style');

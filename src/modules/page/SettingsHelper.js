@@ -86,8 +86,8 @@ const SettingsHelper = {
 
         contentArea.appendChild(headerContainer);
 
-        const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
-        
+        const savedSettings = Utils.getSettings();
+
         // Helper function for toggles
         const createToggle = (key, labelText, isGlobal = false, defaultValue = true) => {
             const container = document.createElement('div');
@@ -122,10 +122,8 @@ const SettingsHelper = {
 
             let toastTimeout;
             checkbox.addEventListener('change', (e) => {
-                const settings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
-                settings[key] = e.target.checked;
-                Utils.setItem('hw_helper_settings', JSON.stringify(settings));
-                
+                Utils.setConfig(key, e.target.checked);
+
                 // Show saved toast or reload prompt
                 toast.style.display = 'inline';
                 clearTimeout(toastTimeout);
@@ -185,10 +183,8 @@ const SettingsHelper = {
 
             let toastTimeout;
             input.addEventListener('input', (e) => {
-                const settings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
-                settings[key] = e.target.value;
-                Utils.setItem('hw_helper_settings', JSON.stringify(settings));
-                
+                Utils.setConfig(key, e.target.value);
+
                 toast.style.display = 'inline';
                 clearTimeout(toastTimeout);
                 toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 2000);

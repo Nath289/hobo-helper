@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.02] - 2026-05-01
+- **Added:** Implemented local-only storage capabilities to selectively disable Cloud Sync synchronization on specific device-dependent variables.
+- **Changed:** Refactored `DisplayHelper` "Widen Content Area" settings to remain device-specific and ignore cross-device syncs. 
+- **Changed:** Refactored Custom Bank Goal configurations to remain device-specific and ignore cross-device syncs, along with several background awakeness tracker metrics.
+
 ## [9.01] - 2026-04-30
 - **Fixed:** Resolved the "Update Goals" stat ratio settings failing to save or retract due to stale cache overwrites in `LivingAreaHelper.js`.
 
