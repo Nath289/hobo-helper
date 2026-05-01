@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      9.05
+// @version      9.06
 // @description  Combines original HoboWars helpers into a single modular script (non-staff modules).
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -662,6 +662,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.06",
+            date: "2026-05-02",
+            type: "Changed",
+            notes: [
+                "**Added:** Automatically group items within the explore log visually by date."
+            ]
+        },
+        {
             version: "9.05",
             date: "2026-05-02",
             type: "Changed",
@@ -744,18 +752,6 @@ const ChangelogData = {
             notes: [
                 "**Added:** Added a note to the bottom of the automatic update popup indicating that it can be disabled in the preferences via the Display Helper settings.",
                 "**Changed:** Centered the changelog modal vertically and horizontally on the screen for better readability."
-            ]
-        },
-        {
-            version: "8.96",
-            date: "2026-04-29",
-            type: "Changed",
-            notes: [
-                "**Added:** Introduced granular configuration settings to the `Explore Helper` allowing users to specifically toggle exactly which events (`Shiny Objects`, `Arena Passes`) populate their custom exploration log.",
-                "**Added:** The `Explore Helper` now detects and records \"Arena Pass\" discovery events highlighting them in bold purple within the log interface.",
-                "**Added:** Implemented an automatic Update Checker that proactively displays a filtered changelog of all new features since your last installed version, directly in the game UI.",
-                "**Added:** `Show Update Features on New Version` setting added to the Display Helper to allow toggling of the automatic update notification popups.",
-                "**Changed:** Expanded the changelog modal data buffer to include the 10 most recent versions instead of 5, providing a deeper history for returning players."
             ]
         }
     ]
@@ -2742,9 +2738,23 @@ const ExploreHelper = {
             html += '<div style="font-size: 11px; color: #777; text-align: center; padding: 10px 0;">No explore events recorded yet.<br>Go explore the city!</div>';
         } else {
             html += '<div style="max-height: 200px; overflow-y: auto;">';
-            html += '<ul style="margin: 0; padding-left: 20px; font-size: 12px; line-height: 1.6;">';
+
+            let currentDateStr = '';
+
             logs.forEach(log => {
                 const date = new Date(log.time);
+                const dateOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+                const dayStr = date.toLocaleDateString(undefined, dateOptions);
+
+                if (dayStr !== currentDateStr) {
+                    if (currentDateStr !== '') {
+                        html += '</ul>';
+                    }
+                    html += `<div style="font-weight: bold; background: #f5f5f5; padding: 2px 5px; margin: 4px 0 2px 0; border-radius: 3px;">${dayStr}</div>`;
+                    html += '<ul style="margin: 0; padding-left: 20px; font-size: 12px; line-height: 1.6;">';
+                    currentDateStr = dayStr;
+                }
+
                 const timeStr = date.getHours().toString().padStart(2, '0') + ':' +
                                 date.getMinutes().toString().padStart(2, '0') + ':' +
                                 date.getSeconds().toString().padStart(2, '0');
@@ -2760,7 +2770,10 @@ const ExploreHelper = {
                         <strong style="color: #555;">(${log.x}, ${log.y})</strong> - ${log.message}
                     </li>`;
             });
-            html += '</ul></div>';
+            if (currentDateStr !== '') {
+                html += '</ul>';
+            }
+            html += '</div>';
         }
 
         logWrapper.innerHTML = html;
@@ -9433,7 +9446,7 @@ const WellnessClinicHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.05';
+        window.HoboHelperVersion = '9.06';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

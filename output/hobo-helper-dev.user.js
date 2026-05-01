@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      9.04.20260502.0122
+// @version      9.05.20260502.0202
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -662,6 +662,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.05",
+            date: "2026-05-02",
+            type: "Changed",
+            notes: [
+                "**Fixed:** Corrected the URL matching logic and settings label for the Bernard's Basement map feature."
+            ]
+        },
+        {
             version: "9.04",
             date: "2026-05-02",
             type: "Changed",
@@ -748,15 +756,6 @@ const ChangelogData = {
                 "**Added:** Implemented an automatic Update Checker that proactively displays a filtered changelog of all new features since your last installed version, directly in the game UI.",
                 "**Added:** `Show Update Features on New Version` setting added to the Display Helper to allow toggling of the automatic update notification popups.",
                 "**Changed:** Expanded the changelog modal data buffer to include the 10 most recent versions instead of 5, providing a deeper history for returning players."
-            ]
-        },
-        {
-            version: "8.95",
-            date: "2026-04-28",
-            type: "Changed",
-            notes: [
-                "**Added:** Implemented the `ExploreHelper` to track and log in-game explore events across the main Lobby and Movement screens (`cmd=explore`). Events are stored persistently across sessions.",
-                "**Added:** Explore Log now specifically captures vanishing \"Shiny Objects\" with a gold color-coding mapping, tracking the time and exact coordinates."
             ]
         }
     ]
@@ -2743,9 +2742,23 @@ const ExploreHelper = {
             html += '<div style="font-size: 11px; color: #777; text-align: center; padding: 10px 0;">No explore events recorded yet.<br>Go explore the city!</div>';
         } else {
             html += '<div style="max-height: 200px; overflow-y: auto;">';
-            html += '<ul style="margin: 0; padding-left: 20px; font-size: 12px; line-height: 1.6;">';
+
+            let currentDateStr = '';
+
             logs.forEach(log => {
                 const date = new Date(log.time);
+                const dateOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+                const dayStr = date.toLocaleDateString(undefined, dateOptions);
+
+                if (dayStr !== currentDateStr) {
+                    if (currentDateStr !== '') {
+                        html += '</ul>';
+                    }
+                    html += `<div style="font-weight: bold; background: #f5f5f5; padding: 2px 5px; margin: 4px 0 2px 0; border-radius: 3px;">${dayStr}</div>`;
+                    html += '<ul style="margin: 0; padding-left: 20px; font-size: 12px; line-height: 1.6;">';
+                    currentDateStr = dayStr;
+                }
+
                 const timeStr = date.getHours().toString().padStart(2, '0') + ':' +
                                 date.getMinutes().toString().padStart(2, '0') + ':' +
                                 date.getSeconds().toString().padStart(2, '0');
@@ -2761,7 +2774,10 @@ const ExploreHelper = {
                         <strong style="color: #555;">(${log.x}, ${log.y})</strong> - ${log.message}
                     </li>`;
             });
-            html += '</ul></div>';
+            if (currentDateStr !== '') {
+                html += '</ul>';
+            }
+            html += '</div>';
         }
 
         logWrapper.innerHTML = html;
@@ -11643,7 +11659,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.04.20260502.0122';
+        window.HoboHelperVersion = '9.05.20260502.0202';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

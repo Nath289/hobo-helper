@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.06] - 2026-05-02
+- **Added:** Automatically group items within the explore log visually by date.
+
 ## [9.05] - 2026-05-02
 - **Fixed:** Corrected the URL matching logic and settings label for the Bernard's Basement map feature.
 

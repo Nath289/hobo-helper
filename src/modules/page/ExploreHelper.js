@@ -124,9 +124,23 @@ const ExploreHelper = {
             html += '<div style="font-size: 11px; color: #777; text-align: center; padding: 10px 0;">No explore events recorded yet.<br>Go explore the city!</div>';
         } else {
             html += '<div style="max-height: 200px; overflow-y: auto;">';
-            html += '<ul style="margin: 0; padding-left: 20px; font-size: 12px; line-height: 1.6;">';
+
+            let currentDateStr = '';
+
             logs.forEach(log => {
                 const date = new Date(log.time);
+                const dateOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+                const dayStr = date.toLocaleDateString(undefined, dateOptions);
+
+                if (dayStr !== currentDateStr) {
+                    if (currentDateStr !== '') {
+                        html += '</ul>';
+                    }
+                    html += `<div style="font-weight: bold; background: #f5f5f5; padding: 2px 5px; margin: 4px 0 2px 0; border-radius: 3px;">${dayStr}</div>`;
+                    html += '<ul style="margin: 0; padding-left: 20px; font-size: 12px; line-height: 1.6;">';
+                    currentDateStr = dayStr;
+                }
+
                 const timeStr = date.getHours().toString().padStart(2, '0') + ':' +
                                 date.getMinutes().toString().padStart(2, '0') + ':' +
                                 date.getSeconds().toString().padStart(2, '0');
@@ -142,7 +156,10 @@ const ExploreHelper = {
                         <strong style="color: #555;">(${log.x}, ${log.y})</strong> - ${log.message}
                     </li>`;
             });
-            html += '</ul></div>';
+            if (currentDateStr !== '') {
+                html += '</ul>';
+            }
+            html += '</div>';
         }
 
         logWrapper.innerHTML = html;
