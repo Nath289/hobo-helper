@@ -35,7 +35,9 @@
         window.HoboHelperVersion = '{{VERSION}}';
     }
 
-    const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
+    const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
+    const localSettings = JSON.parse(Utils.getItem('hw_helper_local_settings') || '{}');
+    const savedSettings = Object.assign({}, globalSettings, localSettings);
 
     // Cache the settings globally so individual modules do not repeatedly block the main thread on synchronous LocalStorage I/O during initialization
     if (typeof Utils !== 'undefined') {

@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.03] - 2026-05-01
+- **Fixed:** Resolved a configuration loading glitch in the script bootstrap wrapper that caused newly segregated local-only settings (like Widen Content Area) to appear unresponsive when interacting with their UI toggles.
+
 ## [9.02] - 2026-05-01
 - **Added:** Implemented local-only storage capabilities to selectively disable Cloud Sync synchronization on specific device-dependent variables.
 - **Changed:** Refactored `DisplayHelper` "Widen Content Area" settings to remain device-specific and ignore cross-device syncs. 
@@ -803,5 +806,3 @@ m- Included an interactive "View Stats" table modal showing lifetime consumption
 - Added a setting to disable the Mixer Link in the Living Area helper (accessible via the Settings Helper toggle).
 
 ## [7.41] - 2026-04-02
-### Added
-- Living Area Mixer Link feature (added link to Mixer next to Hobo Grail/Kings Kiddie Cup/Golden Trolly).

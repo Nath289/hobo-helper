@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (All)
 // @namespace    http://tampermonkey.net/
-// @version      9.02
+// @version      9.03
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -648,6 +648,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.03",
+            date: "2026-05-01",
+            type: "Changed",
+            notes: [
+                "**Fixed:** Resolved a configuration loading glitch in the script bootstrap wrapper that caused newly segregated local-only settings (like Widen Content Area) to appear unresponsive when interacting with their UI toggles."
+            ]
+        },
+        {
             version: "9.02",
             date: "2026-05-01",
             type: "Changed",
@@ -735,15 +743,6 @@ const ChangelogData = {
             notes: [
                 "**Added:** Display Helper's Live Alive Time string will now dynamically render hour increments for significantly extended sessions.",
                 "**Fixed:** The Living Area Helper offline healing timer array parser correctly hooks into durations exceeding an hour with non-standard formatting gaps syntax (`Alive: 01 hr 12 min 05 sec`)."
-            ]
-        },
-        {
-            version: "8.93",
-            date: "2026-04-28",
-            type: "Changed",
-            notes: [
-                "**Changed:** Heavily optimized DisplayHelper sub-features by batching injected `<style>` elements into a single DOM paint, significantly reducing browser CSS recalculations.",
-                "**Fixed:** Replaced `innerHTML` destructive mutations with `insertAdjacentHTML` when applying Custom Player Titles, eliminating heavy DOM serialization processing in high-density member pages."
             ]
         }
     ]
@@ -11608,10 +11607,12 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.02';
+        window.HoboHelperVersion = '9.03';
     }
 
-    const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
+    const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
+    const localSettings = JSON.parse(Utils.getItem('hw_helper_local_settings') || '{}');
+    const savedSettings = Object.assign({}, globalSettings, localSettings);
 
     // Cache the settings globally so individual modules do not repeatedly block the main thread on synchronous LocalStorage I/O during initialization
     if (typeof Utils !== 'undefined') {
