@@ -146,7 +146,8 @@ const SyncHelper = {
             const key = localStorage.key(i);
             // Sync all hw_ keys that the helper uses
             if (key && (key.startsWith('hw_') || key.startsWith('hobowars') || key.startsWith('hof_') || key.startsWith('ActiveListHelper') || key.startsWith('bh_') || key.startsWith('GangArmory') || key === 'hoboStatRatio')) {
-                if (!key.startsWith('hw_sync_')) { // Prevent infinite loops and syncing meta logic
+                const nonSyncKeys = Utils.getNonSyncKeys ? Utils.getNonSyncKeys() : [];
+                if (!key.startsWith('hw_sync_') && (!nonSyncKeys.includes(key))) { // Prevent infinite loops and syncing meta logic
                     data[key] = Utils.getItem(key);
                 }
             }
@@ -193,7 +194,10 @@ const SyncHelper = {
             // Merge logic
             // 1. Process remote keys first
             if (remoteDoc && remoteDoc.data && remoteDoc.timestamps) {
+                const nonSyncKeys = Utils.getNonSyncKeys ? Utils.getNonSyncKeys() : [];
                 for (const [key, remoteVal] of Object.entries(remoteDoc.data)) {
+                    if (nonSyncKeys.includes(key)) continue;
+
                     const remoteTime = remoteDoc.timestamps[key] || 0;
                     const localTime = assumeStale ? 0 : (localTimestamps[key] || 0);
 
@@ -255,4 +259,3 @@ const SyncHelper = {
         }
     },
 };
-

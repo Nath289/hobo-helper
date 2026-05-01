@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.05] - 2026-05-02
+- **Fixed:** Corrected the URL matching logic and settings label for the Bernard's Basement map feature.
+
+## [9.04] - 2026-05-02
+- **Fixed:** Resolved a regression where the Living Area layout auto-expansion wasn't operating properly due to older module settings retrieval ignoring device-local boundaries.
+- **Changed:** Refactored all remaining legacy modules (Weapons, GangStaff, Can Deposit, Recycling Bin, Bernard's Basement) to rely on the centralized caching layer for configuration loading.
+
 ## [9.03] - 2026-05-01
 - **Fixed:** Resolved a configuration loading glitch in the script bootstrap wrapper that caused newly segregated local-only settings (like Widen Content Area) to appear unresponsive when interacting with their UI toggles.
 

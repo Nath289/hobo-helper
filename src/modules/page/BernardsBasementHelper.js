@@ -2,19 +2,19 @@ const BernardsBasementHelper = {
     cmds: 'bernards',
     staff: false,
     settings: [
-        { key: 'BernardsBasementHelper_BasementMap', label: 'Basement Map' }
+        { key: 'BernardsBasementHelper_EnableMap', label: 'Enable Basement Map' }
     ],
+
     init: function() {
-        const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
-        
-        if (savedSettings['BernardsBasementHelper_BasementMap'] !== false) {
+        const savedSettings = Utils.getSettings();
+        if (savedSettings?.BernardsBasementHelper_EnableMap === false) return;
+
+        if (window.location.search.includes('room=basement')) {
             this.initBasementMap();
         }
     },
 
     initBasementMap: function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('room') !== 'basement') return;
 
         const navForm = document.getElementById('nav_form');
         if (!navForm) return;
@@ -80,4 +80,3 @@ const BernardsBasementHelper = {
         wrapper.appendChild(mapContainer);
     }
 };
-

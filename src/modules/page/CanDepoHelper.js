@@ -2,9 +2,10 @@ const CanDepoHelper = {
     cmds: 'depo',
     staff: false,
     init: function() {
-        const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
+        const savedSettings = Utils.getSettings();
+        if (savedSettings?.CanDepoHelper_EnableFeature === false) return;
 
-        if (savedSettings['CanDepoHelper_TotalValue'] !== false) {
+        if (window.location.search.includes('cmd=depo')) {
             this.initTotalValue();
         }
     },
@@ -43,4 +44,3 @@ const CanDepoHelper = {
         }
     }
 };
-

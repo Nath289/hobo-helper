@@ -13,8 +13,8 @@ const LivingAreaHelper = {
         { key: 'LivingAreaHelper_NextRespectNeeded', label: 'Show Next Respect Needed' }
     ],
     init: function() {
-        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
-        
+        const savedSettings = Utils.getSettings();
+
         const hoboAgeDays = Utils.getHoboAgeInDays();
         if (hoboAgeDays !== null) {
             localStorage.setItem('hw_helper_hobo_age_days', hoboAgeDays);

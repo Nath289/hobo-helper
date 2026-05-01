@@ -5,33 +5,36 @@ const GangStaffHelper = {
         { key: 'GangStaffHelper_FormatMassMails', label: 'Format Mass Mails' },
         { key: 'GangStaffHelper_MassMailTemplates', label: 'Mass Mail Templates' }
     ],
-    init: function () {
-        const queryParams = new URLSearchParams(window.location.search);
-        const doParam = queryParams.get('do');
-        const wParam = queryParams.get('w');
+    init: function() {
+        const savedSettings = Utils.getSettings();
+        if (savedSettings?.GangStaffHelper_HideStaffFeature !== true) return;
 
-        if (doParam === 'enter') {
-            this.handleGangEnter();
-            this.handleCurrentHappenings();
-        }
+        if (window.location.search.includes('cmd=gang') && window.location.search.includes('x=hq')) {
+            const queryParams = new URLSearchParams(window.location.search);
+            const doParam = queryParams.get('do');
+            const wParam = queryParams.get('w');
 
-        const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
+            if (doParam === 'enter') {
+                this.handleGangEnter();
+                this.handleCurrentHappenings();
+            }
 
-        if (savedSettings['GangStaffHelper_EnableFeature'] !== false) {
-            if (doParam === 'list_mem') {
-                this.initGangMemberList();
-            } else if (doParam === 'enter') {
-                // Check if we are viewing the last gang happenings
-                if (wParam === 'lastsh') {
-                    this.initGangHappenings();
-                }
-            } else if (doParam === 'read_mail') {
-                if (savedSettings['GangStaffHelper_FormatMassMails'] !== false) {
-                    this.formatMassMail();
-                }
-            } else if (doParam === 'mail') {
-                if (savedSettings['GangStaffHelper_MassMailTemplates'] !== false) {
-                    this.initGangMassMail();
+            if (savedSettings['GangStaffHelper_EnableFeature'] !== false) {
+                if (doParam === 'list_mem') {
+                    this.initGangMemberList();
+                } else if (doParam === 'enter') {
+                    // Check if we are viewing the last gang happenings
+                    if (wParam === 'lastsh') {
+                        this.initGangHappenings();
+                    }
+                } else if (doParam === 'read_mail') {
+                    if (savedSettings['GangStaffHelper_FormatMassMails'] !== false) {
+                        this.formatMassMail();
+                    }
+                } else if (doParam === 'mail') {
+                    if (savedSettings['GangStaffHelper_MassMailTemplates'] !== false) {
+                        this.initGangMassMail();
+                    }
                 }
             }
         }
@@ -990,5 +993,8 @@ const GangStaffHelper = {
         this.renderTierSettingsPanel(scoresTable, true);
     }
 };
+
+
+
 
 

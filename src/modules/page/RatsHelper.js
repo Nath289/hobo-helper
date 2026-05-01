@@ -10,7 +10,7 @@ const RatsHelper = {
         { key: 'RatsHelper_UpgradeUI', label: 'Custom Upgrade Buttons UI' }
     ],
     init: function() {
-        const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
+        const savedSettings = Utils.getSettings();
         const enableNewsFilter = savedSettings['RatsHelper_NewsFilter'] !== false;
         const enableExpBar = savedSettings['RatsHelper_ExpBar'] !== false;
         const enableLifeBar = savedSettings['RatsHelper_LifeBar'] !== false;

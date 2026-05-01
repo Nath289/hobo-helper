@@ -1,5 +1,17 @@
 const DisplayHelper = {
     staff: false,
+    localKeys: [
+        'hw_last_active_time',
+        'hw_rejoin_time',
+        'hw_last_active_awakeness',
+        'hw_session_lost_awake_checked',
+        'hw_session_lost_awake',
+        'hw_awake_last_active',
+        'hw_awake_current',
+        'hw_awake_max',
+        'hw_awake_is_donator',
+        'hw_awake_notified'
+    ],
     settings: [
         { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' },
         { key: 'DisplayHelper_CustomTitles', label: 'Enable Custom Player Titles', defaultValue: true },

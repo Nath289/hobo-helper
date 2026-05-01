@@ -1,5 +1,17 @@
 const Utils = {
-    NON_SYNC_KEYS: ['hw_bank_goals', 'hw_helper_local_settings', 'hw_helper_version', 'hw_last_active_time', 'hw_rejoin_time', 'hw_last_active_awakeness', 'hw_session_lost_awake_checked', 'hw_session_lost_awake', 'hw_awake_last_active', 'hw_awake_current', 'hw_awake_max', 'hw_awake_is_donator', 'hw_awake_notified'],
+    NON_SYNC_KEYS: ['hw_helper_local_settings', 'hw_helper_version'],
+    getNonSyncKeys: function() {
+        let keys = [...this.NON_SYNC_KEYS];
+        if (typeof Modules !== 'undefined') {
+            for (const modName in Modules) {
+                const mod = Modules[modName];
+                if (mod && Array.isArray(mod.localKeys)) {
+                    keys = keys.concat(mod.localKeys);
+                }
+            }
+        }
+        return keys;
+    },
     abbreviateNumber: function(num) {
         if (typeof num === 'string') num = parseInt(num.replace(/,/g, ''), 10);
         if (isNaN(num)) return 0;
@@ -303,7 +315,8 @@ const Utils = {
      */
     setItem: function(key, value) {
         localStorage.setItem(key, value);
-        if (typeof SyncHelper !== 'undefined' && !key.startsWith('hw_sync_') && (!this.NON_SYNC_KEYS || !this.NON_SYNC_KEYS.includes(key))) {
+        const nonSyncKeys = this.getNonSyncKeys();
+        if (typeof SyncHelper !== 'undefined' && !key.startsWith('hw_sync_') && (!nonSyncKeys.includes(key))) {
             SyncHelper.recordLocalUpdate(key);
             SyncHelper.triggerSync();
             this.log(`Synced item: ${key} = ${value}`);
@@ -316,7 +329,8 @@ const Utils = {
      */
     removeItem: function(key) {
         localStorage.removeItem(key);
-        if (typeof SyncHelper !== 'undefined' && !key.startsWith('hw_sync_') && (!this.NON_SYNC_KEYS || !this.NON_SYNC_KEYS.includes(key))) {
+        const nonSyncKeys = this.getNonSyncKeys();
+        if (typeof SyncHelper !== 'undefined' && !key.startsWith('hw_sync_') && (!nonSyncKeys.includes(key))) {
             SyncHelper.recordLocalUpdate(key);
             SyncHelper.triggerSync();
         }

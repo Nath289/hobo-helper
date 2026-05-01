@@ -2,23 +2,26 @@ const WeaponsHelper = {
     cmds: 'wep',
     staff: false,
     settings: [
-        { key: 'WeaponsHelper_EnableFeature', label: 'Enable Weapons Helper' }
+        { key: 'WeaponsHelper_HighlightEquipped', label: 'Highlight Equipped Items' },
+        { key: 'WeaponsHelper_ClickableImages', label: 'Clickable Item Images' }
     ],
     init: function() {
+        const savedSettings = Utils.getSettings();
+
         if (!window.location.search.includes('cmd=wep')) return;
 
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
 
-        const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
-        const enableFeature = savedSettings['WeaponsHelper_EnableFeature'] !== false;
+        const highlightEquipped = savedSettings['WeaponsHelper_HighlightEquipped'] !== false;
+        const clickableImages = savedSettings['WeaponsHelper_ClickableImages'] !== false;
 
-        if (enableFeature) {
-            this.initFeature(contentArea);
+        if (highlightEquipped || clickableImages) {
+            this.initFeature(contentArea, highlightEquipped, clickableImages);
         }
     },
 
-    initFeature: function(contentArea) {
+    initFeature: function(contentArea, highlightEquipped, clickableImages) {
         const itemCells = contentArea.querySelectorAll('td[width="33%"]');
 
         itemCells.forEach(cell => {
@@ -29,7 +32,7 @@ const WeaponsHelper = {
                 const isEquipped = actionLink.textContent.trim() === 'Unequip';
 
                 // Highlight if equipped
-                if (isEquipped) {
+                if (isEquipped && highlightEquipped) {
                     const wrapper = document.createElement('div');
                     wrapper.style.backgroundColor = 'rgba(128, 128, 128, 0.15)';
                     wrapper.style.border = '1px solid #999';
@@ -47,7 +50,7 @@ const WeaponsHelper = {
 
                 // Make image a hyperlink
                 const img = cell.querySelector('img');
-                if (img && !img.closest('a')) {
+                if (img && !img.closest('a') && clickableImages) {
                     const aWrapper = document.createElement('a');
                     aWrapper.href = actionLink.href;
                     aWrapper.style.display = 'inline-block';
@@ -59,5 +62,3 @@ const WeaponsHelper = {
         });
     }
 };
-
-

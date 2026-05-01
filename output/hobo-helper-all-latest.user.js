@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (All)
 // @namespace    http://tampermonkey.net/
-// @version      9.03
+// @version      9.05
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -15,7 +15,19 @@
 (function() {
     'use strict';
 const Utils = {
-    NON_SYNC_KEYS: ['hw_bank_goals', 'hw_helper_local_settings', 'hw_helper_version', 'hw_last_active_time', 'hw_rejoin_time', 'hw_last_active_awakeness', 'hw_session_lost_awake_checked', 'hw_session_lost_awake', 'hw_awake_last_active', 'hw_awake_current', 'hw_awake_max', 'hw_awake_is_donator', 'hw_awake_notified'],
+    NON_SYNC_KEYS: ['hw_helper_local_settings', 'hw_helper_version'],
+    getNonSyncKeys: function() {
+        let keys = [...this.NON_SYNC_KEYS];
+        if (typeof Modules !== 'undefined') {
+            for (const modName in Modules) {
+                const mod = Modules[modName];
+                if (mod && Array.isArray(mod.localKeys)) {
+                    keys = keys.concat(mod.localKeys);
+                }
+            }
+        }
+        return keys;
+    },
     abbreviateNumber: function(num) {
         if (typeof num === 'string') num = parseInt(num.replace(/,/g, ''), 10);
         if (isNaN(num)) return 0;
@@ -319,7 +331,8 @@ const Utils = {
      */
     setItem: function(key, value) {
         localStorage.setItem(key, value);
-        if (typeof SyncHelper !== 'undefined' && !key.startsWith('hw_sync_') && (!this.NON_SYNC_KEYS || !this.NON_SYNC_KEYS.includes(key))) {
+        const nonSyncKeys = this.getNonSyncKeys();
+        if (typeof SyncHelper !== 'undefined' && !key.startsWith('hw_sync_') && (!nonSyncKeys.includes(key))) {
             SyncHelper.recordLocalUpdate(key);
             SyncHelper.triggerSync();
             this.log(`Synced item: ${key} = ${value}`);
@@ -332,7 +345,8 @@ const Utils = {
      */
     removeItem: function(key) {
         localStorage.removeItem(key);
-        if (typeof SyncHelper !== 'undefined' && !key.startsWith('hw_sync_') && (!this.NON_SYNC_KEYS || !this.NON_SYNC_KEYS.includes(key))) {
+        const nonSyncKeys = this.getNonSyncKeys();
+        if (typeof SyncHelper !== 'undefined' && !key.startsWith('hw_sync_') && (!nonSyncKeys.includes(key))) {
             SyncHelper.recordLocalUpdate(key);
             SyncHelper.triggerSync();
         }
@@ -648,6 +662,23 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.05",
+            date: "2026-05-02",
+            type: "Changed",
+            notes: [
+                "**Fixed:** Corrected the URL matching logic and settings label for the Bernard's Basement map feature."
+            ]
+        },
+        {
+            version: "9.04",
+            date: "2026-05-02",
+            type: "Changed",
+            notes: [
+                "**Fixed:** Resolved a regression where the Living Area layout auto-expansion wasn't operating properly due to older module settings retrieval ignoring device-local boundaries.",
+                "**Changed:** Refactored all remaining legacy modules (Weapons, GangStaff, Can Deposit, Recycling Bin, Bernard's Basement) to rely on the centralized caching layer for configuration loading."
+            ]
+        },
+        {
             version: "9.03",
             date: "2026-05-01",
             type: "Changed",
@@ -726,30 +757,24 @@ const ChangelogData = {
                 "**Added:** `Show Update Features on New Version` setting added to the Display Helper to allow toggling of the automatic update notification popups.",
                 "**Changed:** Expanded the changelog modal data buffer to include the 10 most recent versions instead of 5, providing a deeper history for returning players."
             ]
-        },
-        {
-            version: "8.95",
-            date: "2026-04-28",
-            type: "Changed",
-            notes: [
-                "**Added:** Implemented the `ExploreHelper` to track and log in-game explore events across the main Lobby and Movement screens (`cmd=explore`). Events are stored persistently across sessions.",
-                "**Added:** Explore Log now specifically captures vanishing \"Shiny Objects\" with a gold color-coding mapping, tracking the time and exact coordinates."
-            ]
-        },
-        {
-            version: "8.94",
-            date: "2026-04-28",
-            type: "Changed",
-            notes: [
-                "**Added:** Display Helper's Live Alive Time string will now dynamically render hour increments for significantly extended sessions.",
-                "**Fixed:** The Living Area Helper offline healing timer array parser correctly hooks into durations exceeding an hour with non-standard formatting gaps syntax (`Alive: 01 hr 12 min 05 sec`)."
-            ]
         }
     ]
 };
 
 const DisplayHelper = {
     staff: false,
+    localKeys: [
+        'hw_last_active_time',
+        'hw_rejoin_time',
+        'hw_last_active_awakeness',
+        'hw_session_lost_awake_checked',
+        'hw_session_lost_awake',
+        'hw_awake_last_active',
+        'hw_awake_current',
+        'hw_awake_max',
+        'hw_awake_is_donator',
+        'hw_awake_notified'
+    ],
     settings: [
         { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' },
         { key: 'DisplayHelper_CustomTitles', label: 'Enable Custom Player Titles', defaultValue: true },
@@ -1412,7 +1437,8 @@ const SyncHelper = {
             const key = localStorage.key(i);
             // Sync all hw_ keys that the helper uses
             if (key && (key.startsWith('hw_') || key.startsWith('hobowars') || key.startsWith('hof_') || key.startsWith('ActiveListHelper') || key.startsWith('bh_') || key.startsWith('GangArmory') || key === 'hoboStatRatio')) {
-                if (!key.startsWith('hw_sync_')) { // Prevent infinite loops and syncing meta logic
+                const nonSyncKeys = Utils.getNonSyncKeys ? Utils.getNonSyncKeys() : [];
+                if (!key.startsWith('hw_sync_') && (!nonSyncKeys.includes(key))) { // Prevent infinite loops and syncing meta logic
                     data[key] = Utils.getItem(key);
                 }
             }
@@ -1459,7 +1485,10 @@ const SyncHelper = {
             // Merge logic
             // 1. Process remote keys first
             if (remoteDoc && remoteDoc.data && remoteDoc.timestamps) {
+                const nonSyncKeys = Utils.getNonSyncKeys ? Utils.getNonSyncKeys() : [];
                 for (const [key, remoteVal] of Object.entries(remoteDoc.data)) {
+                    if (nonSyncKeys.includes(key)) continue;
+
                     const remoteTime = remoteDoc.timestamps[key] || 0;
                     const localTime = assumeStale ? 0 : (localTimestamps[key] || 0);
 
@@ -2104,6 +2133,7 @@ const BackpackHelper = {
 const BankHelper = {
     cmds: 'bank',
     staff: false,
+    localKeys: ['hw_bank_goals'],
     settings: [
         { key: 'BankHelper_5FightersLunches', label: "5 Fighter's Lunches Goal" },
         { key: 'BankHelper_FixedGoals', label: "Fixed Bank Goals (+5k, +10k, +50k)" }
@@ -2460,19 +2490,19 @@ const BernardsBasementHelper = {
     cmds: 'bernards',
     staff: false,
     settings: [
-        { key: 'BernardsBasementHelper_BasementMap', label: 'Basement Map' }
+        { key: 'BernardsBasementHelper_EnableMap', label: 'Enable Basement Map' }
     ],
+
     init: function() {
-        const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
-        
-        if (savedSettings['BernardsBasementHelper_BasementMap'] !== false) {
+        const savedSettings = Utils.getSettings();
+        if (savedSettings?.BernardsBasementHelper_EnableMap === false) return;
+
+        if (window.location.search.includes('room=basement')) {
             this.initBasementMap();
         }
     },
 
     initBasementMap: function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('room') !== 'basement') return;
 
         const navForm = document.getElementById('nav_form');
         if (!navForm) return;
@@ -2543,9 +2573,10 @@ const CanDepoHelper = {
     cmds: 'depo',
     staff: false,
     init: function() {
-        const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
+        const savedSettings = Utils.getSettings();
+        if (savedSettings?.CanDepoHelper_EnableFeature === false) return;
 
-        if (savedSettings['CanDepoHelper_TotalValue'] !== false) {
+        if (window.location.search.includes('cmd=depo')) {
             this.initTotalValue();
         }
     },
@@ -4903,8 +4934,8 @@ const LivingAreaHelper = {
         { key: 'LivingAreaHelper_NextRespectNeeded', label: 'Show Next Respect Needed' }
     ],
     init: function() {
-        const savedSettings = JSON.parse(localStorage.getItem('hw_helper_settings') || '{}');
-        
+        const savedSettings = Utils.getSettings();
+
         const hoboAgeDays = Utils.getHoboAgeInDays();
         if (hoboAgeDays !== null) {
             localStorage.setItem('hw_helper_hobo_age_days', hoboAgeDays);
@@ -7048,7 +7079,7 @@ const RatsHelper = {
         { key: 'RatsHelper_UpgradeUI', label: 'Custom Upgrade Buttons UI' }
     ],
     init: function() {
-        const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
+        const savedSettings = Utils.getSettings();
         const enableNewsFilter = savedSettings['RatsHelper_NewsFilter'] !== false;
         const enableExpBar = savedSettings['RatsHelper_ExpBar'] !== false;
         const enableLifeBar = savedSettings['RatsHelper_LifeBar'] !== false;
@@ -8073,9 +8104,7 @@ const RecyclingBinHelper = {
                 document.getElementById('hh_recycling_save').addEventListener('click', () => {
                     updateCurrentFromDOM();
                     const val = currentEditAmounts.join(', ');
-                    const currentSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
-                    currentSettings['RecyclingBinHelper_Amounts'] = val;
-                    Utils.setItem('hw_helper_settings', JSON.stringify(currentSettings));
+                    Utils.setConfig('RecyclingBinHelper_Amounts', val);
                     window.location.reload();
                 });
 
@@ -9154,23 +9183,26 @@ const WeaponsHelper = {
     cmds: 'wep',
     staff: false,
     settings: [
-        { key: 'WeaponsHelper_EnableFeature', label: 'Enable Weapons Helper' }
+        { key: 'WeaponsHelper_HighlightEquipped', label: 'Highlight Equipped Items' },
+        { key: 'WeaponsHelper_ClickableImages', label: 'Clickable Item Images' }
     ],
     init: function() {
+        const savedSettings = Utils.getSettings();
+
         if (!window.location.search.includes('cmd=wep')) return;
 
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
 
-        const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
-        const enableFeature = savedSettings['WeaponsHelper_EnableFeature'] !== false;
+        const highlightEquipped = savedSettings['WeaponsHelper_HighlightEquipped'] !== false;
+        const clickableImages = savedSettings['WeaponsHelper_ClickableImages'] !== false;
 
-        if (enableFeature) {
-            this.initFeature(contentArea);
+        if (highlightEquipped || clickableImages) {
+            this.initFeature(contentArea, highlightEquipped, clickableImages);
         }
     },
 
-    initFeature: function(contentArea) {
+    initFeature: function(contentArea, highlightEquipped, clickableImages) {
         const itemCells = contentArea.querySelectorAll('td[width="33%"]');
 
         itemCells.forEach(cell => {
@@ -9181,7 +9213,7 @@ const WeaponsHelper = {
                 const isEquipped = actionLink.textContent.trim() === 'Unequip';
 
                 // Highlight if equipped
-                if (isEquipped) {
+                if (isEquipped && highlightEquipped) {
                     const wrapper = document.createElement('div');
                     wrapper.style.backgroundColor = 'rgba(128, 128, 128, 0.15)';
                     wrapper.style.border = '1px solid #999';
@@ -9199,7 +9231,7 @@ const WeaponsHelper = {
 
                 // Make image a hyperlink
                 const img = cell.querySelector('img');
-                if (img && !img.closest('a')) {
+                if (img && !img.closest('a') && clickableImages) {
                     const aWrapper = document.createElement('a');
                     aWrapper.href = actionLink.href;
                     aWrapper.style.display = 'inline-block';
@@ -10565,33 +10597,36 @@ const GangStaffHelper = {
         { key: 'GangStaffHelper_FormatMassMails', label: 'Format Mass Mails' },
         { key: 'GangStaffHelper_MassMailTemplates', label: 'Mass Mail Templates' }
     ],
-    init: function () {
-        const queryParams = new URLSearchParams(window.location.search);
-        const doParam = queryParams.get('do');
-        const wParam = queryParams.get('w');
+    init: function() {
+        const savedSettings = Utils.getSettings();
+        if (savedSettings?.GangStaffHelper_HideStaffFeature !== true) return;
 
-        if (doParam === 'enter') {
-            this.handleGangEnter();
-            this.handleCurrentHappenings();
-        }
+        if (window.location.search.includes('cmd=gang') && window.location.search.includes('x=hq')) {
+            const queryParams = new URLSearchParams(window.location.search);
+            const doParam = queryParams.get('do');
+            const wParam = queryParams.get('w');
 
-        const savedSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
+            if (doParam === 'enter') {
+                this.handleGangEnter();
+                this.handleCurrentHappenings();
+            }
 
-        if (savedSettings['GangStaffHelper_EnableFeature'] !== false) {
-            if (doParam === 'list_mem') {
-                this.initGangMemberList();
-            } else if (doParam === 'enter') {
-                // Check if we are viewing the last gang happenings
-                if (wParam === 'lastsh') {
-                    this.initGangHappenings();
-                }
-            } else if (doParam === 'read_mail') {
-                if (savedSettings['GangStaffHelper_FormatMassMails'] !== false) {
-                    this.formatMassMail();
-                }
-            } else if (doParam === 'mail') {
-                if (savedSettings['GangStaffHelper_MassMailTemplates'] !== false) {
-                    this.initGangMassMail();
+            if (savedSettings['GangStaffHelper_EnableFeature'] !== false) {
+                if (doParam === 'list_mem') {
+                    this.initGangMemberList();
+                } else if (doParam === 'enter') {
+                    // Check if we are viewing the last gang happenings
+                    if (wParam === 'lastsh') {
+                        this.initGangHappenings();
+                    }
+                } else if (doParam === 'read_mail') {
+                    if (savedSettings['GangStaffHelper_FormatMassMails'] !== false) {
+                        this.formatMassMail();
+                    }
+                } else if (doParam === 'mail') {
+                    if (savedSettings['GangStaffHelper_MassMailTemplates'] !== false) {
+                        this.initGangMassMail();
+                    }
                 }
             }
         }
@@ -11607,7 +11642,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.03';
+        window.HoboHelperVersion = '9.05';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
