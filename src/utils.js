@@ -252,11 +252,12 @@ const Utils = {
     },
     isLocalOnlySetting: function(key) {
         if (typeof Modules === 'undefined') return false;
+        
+        // Settings are local if their key is explicitly listed in ANY module's localKeys array
         for (const modName in Modules) {
             const mod = Modules[modName];
-            if (mod && mod.settings && Array.isArray(mod.settings)) {
-                const setting = mod.settings.find(s => s.key === key);
-                if (setting && setting.doNotSync === true) {
+            if (mod && Array.isArray(mod.localKeys)) {
+                if (mod.localKeys.includes(key)) {
                     return true;
                 }
             }

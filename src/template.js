@@ -36,7 +36,33 @@
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
-    const localSettings = JSON.parse(Utils.getItem('hw_helper_local_settings') || '{}');
+    let localSettings = JSON.parse(Utils.getItem('hw_helper_local_settings') || '{}');
+    let migrationNeeded = false;
+
+    // Migrate any localKeys that are stuck in globalSettings to localSettings
+    for (const modName in Modules) {
+        const mod = Modules[modName];
+        if (mod && Array.isArray(mod.localKeys)) {
+            mod.localKeys.forEach(key => {
+                if (key in globalSettings) {
+                    localSettings[key] = globalSettings[key];
+                    delete globalSettings[key];
+                    migrationNeeded = true;
+                }
+            });
+        }
+    }
+
+    if (migrationNeeded) {
+        localStorage.setItem('hw_helper_settings', JSON.stringify(globalSettings));
+        localStorage.setItem('hw_helper_local_settings', JSON.stringify(localSettings));
+        
+        // Also trick the timestamp so that SyncHelper knows this stripped string needs to be pushed up
+        let timestamps = JSON.parse(localStorage.getItem('hw_sync_timestamps') || '{}');
+        timestamps['hw_helper_settings'] = Date.now();
+        localStorage.setItem('hw_sync_timestamps', JSON.stringify(timestamps));
+    }
+
     const savedSettings = Object.assign({}, globalSettings, localSettings);
 
     // Cache the settings globally so individual modules do not repeatedly block the main thread on synchronous LocalStorage I/O during initialization
@@ -130,4 +156,3 @@
         initModules();
     }
 })();
-

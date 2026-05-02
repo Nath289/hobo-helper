@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      9.05.20260502.0202
+// @version      9.05.20260502.1902
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -268,11 +268,12 @@ const Utils = {
     },
     isLocalOnlySetting: function(key) {
         if (typeof Modules === 'undefined') return false;
+        
+        // Settings are local if their key is explicitly listed in ANY module's localKeys array
         for (const modName in Modules) {
             const mod = Modules[modName];
-            if (mod && mod.settings && Array.isArray(mod.settings)) {
-                const setting = mod.settings.find(s => s.key === key);
-                if (setting && setting.doNotSync === true) {
+            if (mod && Array.isArray(mod.localKeys)) {
+                if (mod.localKeys.includes(key)) {
                     return true;
                 }
             }
@@ -773,14 +774,16 @@ const DisplayHelper = {
         'hw_awake_current',
         'hw_awake_max',
         'hw_awake_is_donator',
-        'hw_awake_notified'
+        'hw_awake_notified',
+        'DisplayHelper_WidenPage',
+        'DisplayHelper_PageWidth'
     ],
     settings: [
         { key: 'DisplayHelper_ImprovedAvatars', label: 'Enable Improved Avatars' },
         { key: 'DisplayHelper_CustomTitles', label: 'Enable Custom Player Titles', defaultValue: true },
         { key: 'DisplayHelper_ScrollableTopbar', label: 'Swipeable Topbar Menu (Mobile)', defaultValue: true },
-        { key: 'DisplayHelper_WidenPage', label: 'Widen Content Area', doNotSync: true },
-        { key: 'DisplayHelper_PageWidth', label: 'Page Width (px)', type: 'number', defaultValue: 660, parent: 'DisplayHelper_WidenPage', doNotSync: true },
+        { key: 'DisplayHelper_WidenPage', label: 'Widen Content Area' },
+        { key: 'DisplayHelper_PageWidth', label: 'Page Width (px)', type: 'number', defaultValue: 660, parent: 'DisplayHelper_WidenPage' },
         { key: 'DisplayHelper_AwakeNotify', label: 'Awake Full Notification (Desktop)', defaultValue: false },
         { key: 'DisplayHelper_AwakeNotifyInactive', label: 'Notify Only if Inactive (mins)', type: 'number', defaultValue: 30, parent: 'DisplayHelper_AwakeNotify' },
         { key: 'DisplayHelper_InterestingLevel', label: 'Show Next Interesting Level', defaultValue: true },
@@ -1290,6 +1293,13 @@ const DisplayHelper = {
 };
 
 const SyncHelper = {
+    staff: false,
+    localKeys: [
+        'SyncHelper_Enable',
+        'SyncHelper_ServerURL',
+        'SyncHelper_Username',
+        'SyncHelper_Password'
+    ],
     settings: [
         { key: 'SyncHelper_Enable', label: 'Enable Cloud Sync (CouchDB)', defaultValue: false },
         { key: 'SyncHelper_ServerURL', label: 'Sync Server URL', type: 'text' },
@@ -11659,11 +11669,37 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.05.20260502.0202';
+        window.HoboHelperVersion = '9.05.20260502.1902';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
-    const localSettings = JSON.parse(Utils.getItem('hw_helper_local_settings') || '{}');
+    let localSettings = JSON.parse(Utils.getItem('hw_helper_local_settings') || '{}');
+    let migrationNeeded = false;
+
+    // Migrate any localKeys that are stuck in globalSettings to localSettings
+    for (const modName in Modules) {
+        const mod = Modules[modName];
+        if (mod && Array.isArray(mod.localKeys)) {
+            mod.localKeys.forEach(key => {
+                if (key in globalSettings) {
+                    localSettings[key] = globalSettings[key];
+                    delete globalSettings[key];
+                    migrationNeeded = true;
+                }
+            });
+        }
+    }
+
+    if (migrationNeeded) {
+        localStorage.setItem('hw_helper_settings', JSON.stringify(globalSettings));
+        localStorage.setItem('hw_helper_local_settings', JSON.stringify(localSettings));
+
+        // Also trick the timestamp so that SyncHelper knows this stripped string needs to be pushed up
+        let timestamps = JSON.parse(localStorage.getItem('hw_sync_timestamps') || '{}');
+        timestamps['hw_helper_settings'] = Date.now();
+        localStorage.setItem('hw_sync_timestamps', JSON.stringify(timestamps));
+    }
+
     const savedSettings = Object.assign({}, globalSettings, localSettings);
 
     // Cache the settings globally so individual modules do not repeatedly block the main thread on synchronous LocalStorage I/O during initialization
@@ -11757,5 +11793,4 @@ const GangStaffHelper = {
         initModules();
     }
 })();
-
 

@@ -1,4 +1,11 @@
 const SyncHelper = {
+    staff: false,
+    localKeys: [
+        'SyncHelper_Enable',
+        'SyncHelper_ServerURL',
+        'SyncHelper_Username',
+        'SyncHelper_Password'
+    ],
     settings: [
         { key: 'SyncHelper_Enable', label: 'Enable Cloud Sync (CouchDB)', defaultValue: false },
         { key: 'SyncHelper_ServerURL', label: 'Sync Server URL', type: 'text' },
