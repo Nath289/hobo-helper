@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      9.08
+// @version      9.09
 // @description  Combines original HoboWars helpers into a single modular script (non-staff modules).
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -663,6 +663,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.09",
+            date: "2026-05-03",
+            type: "Changed",
+            notes: [
+                "**Fixed:** Disabled browser autofill specifically on SyncHelper credential inputs within the Settings UI to prevent accidental overwriting of database configurations with standard game passwords."
+            ]
+        },
+        {
             version: "9.08",
             date: "2026-05-03",
             type: "Changed",
@@ -742,16 +750,6 @@ const ChangelogData = {
                 "**Changed:** Synchronised Cloud Sync debounce interval queue down to 100ms, creating instantaneous near-real-time active background updates across multiple tabs.",
                 "**Changed:** Removed obsolete `src` image properties from tracked `bh_drink_stats` storage arrays to drastically reduce the sync payload size. Passive migration logic silently handles legacy data types.",
                 "**Fixed:** Resolved a double-sync race condition inside the `LivingAreaHelper` stat tracker caused by rapid, continuous callback loops."
-            ]
-        },
-        {
-            version: "8.99",
-            date: "2026-04-30",
-            type: "Changed",
-            notes: [
-                "**Added:** Cloud Sync auto-pulls settings data from the server automatically if the device has been inactive for more than 5 minutes.",
-                "**Changed:** Refactored Cloud Sync to use the `Utils.getItem` and `Utils.setItem` wrappers instead of direct `localStorage` access.",
-                "**Fixed:** Prevented infinite synchronization loops by correctly ignoring internal `hw_sync_` meta keys from triggering syncs."
             ]
         }
     ]
@@ -8513,6 +8511,10 @@ const SettingsHelper = {
             const input = document.createElement('input');
             input.type = inputType;
             input.id = `hw_helper_${key}`;
+            if (key.startsWith('SyncHelper_')) {
+                input.setAttribute('autocomplete', 'new-password');
+                input.setAttribute('data-lpignore', 'true');
+            }
             input.style.width = width || (inputType === 'number' ? '60px' : '150px');
             if (width === '100%') {
                 input.style.boxSizing = 'border-box';
@@ -9658,7 +9660,7 @@ const WellnessClinicHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.08';
+        window.HoboHelperVersion = '9.09';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

@@ -171,6 +171,10 @@ const SettingsHelper = {
             const input = document.createElement('input');
             input.type = inputType;
             input.id = `hw_helper_${key}`;
+            if (key.startsWith('SyncHelper_')) {
+                input.setAttribute('autocomplete', 'new-password');
+                input.setAttribute('data-lpignore', 'true');
+            }
             input.style.width = width || (inputType === 'number' ? '60px' : '150px');
             if (width === '100%') {
                 input.style.boxSizing = 'border-box';
