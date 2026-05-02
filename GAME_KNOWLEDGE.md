@@ -109,3 +109,5 @@ When purchasing upgrades for your rat (Vegetarian, Life Boost, Meal Boost), keep
 - The player's current map coordinates can be scraped either from the yellow (\ackground-color: yellow\) \	d\ tile within the \#miniMap\ table, or extracted from the URL query parameters (\x\ and \y\) of the directional movement links in the main view.
 
 - Exploring can yield items like the Arena Pass. The success text is \You found the Arena Pass.\`n
+
+

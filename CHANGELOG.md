@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.10] - 2026-05-03
+- **Fixed:** Resolved an issue where the Gang Staff Helper would fail to display the "Sunday Funday" estimated payouts panel due to missing URL parameters on modern gang overview pages.
+
 ## [9.09] - 2026-05-03
 - **Fixed:** Disabled browser autofill specifically on SyncHelper credential inputs within the Settings UI to prevent accidental overwriting of database configurations with standard game passwords.
 

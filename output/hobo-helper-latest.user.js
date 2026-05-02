@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      9.09
+// @version      9.10
 // @description  Combines original HoboWars helpers into a single modular script (non-staff modules).
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -663,6 +663,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.10",
+            date: "2026-05-03",
+            type: "Changed",
+            notes: [
+                "**Fixed:** Resolved an issue where the Gang Staff Helper would fail to display the \"Sunday Funday\" estimated payouts panel due to missing URL parameters on modern gang overview pages."
+            ]
+        },
+        {
             version: "9.09",
             date: "2026-05-03",
             type: "Changed",
@@ -739,17 +747,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "**Fixed:** Resolved the \"Update Goals\" stat ratio settings failing to save or retract due to stale cache overwrites in `LivingAreaHelper.js`."
-            ]
-        },
-        {
-            version: "9.00",
-            date: "2026-04-30",
-            type: "Changed",
-            notes: [
-                "**Changed:** Refactored Cloud Sync interval checks so local state updates dynamically skip external CouchDB network loops during standard UI reads, only pushing data when explicitly saving configurations.",
-                "**Changed:** Synchronised Cloud Sync debounce interval queue down to 100ms, creating instantaneous near-real-time active background updates across multiple tabs.",
-                "**Changed:** Removed obsolete `src` image properties from tracked `bh_drink_stats` storage arrays to drastically reduce the sync payload size. Passive migration logic silently handles legacy data types.",
-                "**Fixed:** Resolved a double-sync race condition inside the `LivingAreaHelper` stat tracker caused by rapid, continuous callback loops."
             ]
         }
     ]
@@ -9660,7 +9657,7 @@ const WellnessClinicHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.09';
+        window.HoboHelperVersion = '9.10';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

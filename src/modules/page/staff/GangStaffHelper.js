@@ -7,11 +7,9 @@ const GangStaffHelper = {
     ],
     init: function() {
         const savedSettings = Utils.getSettings();
-        if (savedSettings?.GangStaffHelper_HideStaffFeature !== true) return;
-
-        if (window.location.search.includes('cmd=gang') && window.location.search.includes('x=hq')) {
+        if (window.location.search.includes('cmd=gang') || window.location.search.includes('cmd=gang2')) {
             const queryParams = new URLSearchParams(window.location.search);
-            const doParam = queryParams.get('do');
+            const doParam = queryParams.get('do') || 'enter';
             const wParam = queryParams.get('w');
 
             if (doParam === 'enter') {
@@ -971,7 +969,7 @@ const GangStaffHelper = {
         }
 
         const uElements = Array.from(document.querySelectorAll('u'));
-        const statsHeader = uElements.find(u => u.textContent.trim() === 'Current Gang Happening Stats:');
+        const statsHeader = uElements.find(u => u.textContent.includes('Current Gang Happening Stats'));
 
         if (!statsHeader) return;
 
