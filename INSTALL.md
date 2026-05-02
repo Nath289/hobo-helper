@@ -39,7 +39,19 @@ Once installed, you will see the Tampermonkey icon (a dark square with two overl
 
 ---
 
-## Step 3 – Verify the Installation
+## Step 4 (Optional) €“ Beta Testing New Features
+
+If you want to try out the newest unfinalised features on your secondary devices before they are officially released, you can install the **Beta** channel version instead.
+
+1. Navigate to **[`output/hobo-helper-beta.user.js`](output/hobo-helper-beta.user.js)** in the repository, or click this direct [Beta Raw Install Link](https://github.com/Nath289/hobo-helper/raw/refs/heads/main/output/hobo-helper-beta.user.js).
+2. Tampermonkey will install it under the name **HoboWars Helper Toolkit (Beta)**.
+3. Because it runs under a different name, it will not conflict with your local rapid-iteration `(Dev)` install or the stable `latest` build, allowing you to run Beta on your phone while retaining Dev on your PC.
+
+**Note:** Ensure you only have ONE version (Beta, Dev, or Release) toggled on in Tampermonkey at the same time to prevent the script from running twice on the same page.
+
+---
+
+## Verify the Installation
 
 1. Open [HoboWars](https://hobowars.com) and log in to your account.
 2. Click the Tampermonkey icon in your toolbar.

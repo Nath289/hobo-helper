@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         HoboWars Helper Toolkit (Dev)
+// @name         HoboWars Helper Toolkit (All Beta)
 // @namespace    http://tampermonkey.net/
 // @version      9.07.20260502.2135
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.

@@ -1,5 +1,6 @@
 param (
-    [switch]$Release
+    [switch]$Release,
+    [switch]$Promote
 )
 
 if (-not (Test-Path -Path "output")) {
@@ -147,9 +148,9 @@ function Build-Output {
     return $out
 }
 
-if ($Release) {
+if ($Promote) {
     $version = $baseVersion
-    Write-Host "Building RELEASE version: $version"
+    Write-Host "Building LATEST version: $version"
 
     $templateRegular = Get-Content -Path "src/template.js" -Raw
     $templateAll     = Get-Content -Path "src/template-all.js" -Raw
@@ -180,6 +181,37 @@ if ($Release) {
         -PageExports $allPageExports
     Set-Content -Path "output/hobo-helper-all-latest.user.js" -Value $allContent
     Write-Host "Build complete: output/hobo-helper-all-latest.user.js"
+
+} elseif ($Release) {
+    $version = $baseVersion
+    Write-Host "Building BETA version: $version"
+
+    $templateRegular = Get-Content -Path "src/template.js" -Raw
+    $templateAll     = Get-Content -Path "src/template-all.js" -Raw
+
+    $betaRegularContent = Build-Output `
+        -Template $templateRegular `
+        -Name "HoboWars Helper Toolkit (Beta)" `
+        -Version $version `
+        -ModulesContent ($nonStaffGlobalContent + $nonStaffPageContent) `
+        -GlobalExports $nonStaffGlobalExports `
+        -PageExports $nonStaffPageExports
+    Set-Content -Path "output/hobo-helper-beta.user.js" -Value $betaRegularContent
+    Write-Host "Build complete: output/hobo-helper-beta.user.js"
+
+    $allGlobalContent = $nonStaffGlobalContent + $staffGlobalContent
+    $allGlobalExports = $nonStaffGlobalExports + $staffGlobalExports
+    $allPageContent   = $nonStaffPageContent + $staffPageContent
+    $allPageExports   = $nonStaffPageExports + $staffPageExports
+    $betaAllContent = Build-Output `
+        -Template $templateAll `
+        -Name "HoboWars Helper Toolkit (All Beta)" `
+        -Version $version `
+        -ModulesContent ($allGlobalContent + $allPageContent) `
+        -GlobalExports $allGlobalExports `
+        -PageExports $allPageExports
+    Set-Content -Path "output/hobo-helper-all-beta.user.js" -Value $betaAllContent
+    Write-Host "Build complete: output/hobo-helper-all-beta.user.js"
 
 } else {
     $timestamp = (Get-Date).ToString("yyyyMMdd.HHmm")
