@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.08] - 2026-05-03
+- **Added:** Added a "Show Experience" settings toggle to the `HitlistHelper` to easily hide or display the experience column within the native Preferences menu.
+- **Fixed:** Prevented `BattleLogHelper` from caching instances of `0` experience, keeping the experience mapping strictly to positive gains.
+
 ## [9.07] - 2026-05-02
 - **Fixed:** Resolved a critical cross-device settings wiping issue in the Cloud Sync implementation by strictly scrubbing and gracefully repacking `hw_helper_settings` during downstream sync execution.
 - **Added:** Introduced a `get_sync_data` script testing tool for inspecting active CouchDB replication sync payloads server-side.

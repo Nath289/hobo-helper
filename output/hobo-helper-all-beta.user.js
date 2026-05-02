@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (All Beta)
 // @namespace    http://tampermonkey.net/
-// @version      9.07.20260502.2135
+// @version      9.08
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -663,6 +663,15 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.08",
+            date: "2026-05-03",
+            type: "Changed",
+            notes: [
+                "**Added:** Added a \"Show Experience\" settings toggle to the `HitlistHelper` to easily hide or display the experience column within the native Preferences menu.",
+                "**Fixed:** Prevented `BattleLogHelper` from caching instances of `0` experience, keeping the experience mapping strictly to positive gains."
+            ]
+        },
+        {
             version: "9.07",
             date: "2026-05-02",
             type: "Changed",
@@ -743,18 +752,6 @@ const ChangelogData = {
                 "**Added:** Cloud Sync auto-pulls settings data from the server automatically if the device has been inactive for more than 5 minutes.",
                 "**Changed:** Refactored Cloud Sync to use the `Utils.getItem` and `Utils.setItem` wrappers instead of direct `localStorage` access.",
                 "**Fixed:** Prevented infinite synchronization loops by correctly ignoring internal `hw_sync_` meta keys from triggering syncs."
-            ]
-        },
-        {
-            version: "8.98",
-            date: "2026-04-30",
-            type: "Changed",
-            notes: [
-                "**Added:** Implemented seamless cross-browser Cloud Sync via the new `SyncHelper`! By placing custom CouchDB configuration credentials directly in your Preferences menu, your device will now automatically push and pull local script data using intelligent, bidirectional conflict resolution merging.",
-                "**Added:** A \"Force Sync\" quick-toggle button has been added directly to the \"Hobo Helper Version\" footer block inside your Living Area.",
-                "**Added:** Testing backend connection integrity is now possible directly from within the Preferences page with a functional status text readout.",
-                "**Changed:** Rewrote internal helper memory cache handling to natively interface with `Utils.setItem`, `Utils.getItem`, `Utils.removeItem`, unifying and protecting Cloud Sync trigger hooks.",
-                "**Changed:** Restricted internal debugger output directly to local `Dev` builds by wrapping `console.log` instances inside `Utils.log`."
             ]
         }
     ]
@@ -2549,6 +2546,93 @@ const BattleHelper = {
             }
         };
         ensureDependencies();
+    }
+};
+
+const BattleLogHelper = {
+    cmds: 'battlel',
+    staff: false,
+    localKeys: ['BattleLogHelper_FoughtHobos'],
+    settings: [],
+
+    init: function() {
+        // Run only on the battle log page
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('cmd') !== 'battlel') return;
+
+        this.addScanButton();
+    },
+
+    addScanButton: function() {
+        const table = document.getElementById('sortabletable') || document.querySelector('.content-area table');
+        if (!table) return;
+
+        const btn = document.createElement('button');
+        btn.textContent = 'Scan Battle Log for Experience';
+        btn.className = 'btn';
+        btn.style.display = 'block';
+        btn.style.margin = '0 auto 10px auto';
+        btn.style.userSelect = 'none';
+        btn.style.webkitUserSelect = 'none';
+
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.scanTable();
+            const originalText = btn.textContent;
+            btn.textContent = 'Scanned & Saved!';
+            setTimeout(() => { btn.textContent = originalText; }, 2000);
+        });
+
+        table.parentElement.insertBefore(btn, table);
+    },
+
+    scanTable: function() {
+        const table = document.getElementById('sortabletable') || document.querySelector('.content-area table');
+        if (!table) return;
+
+        const tbody = table.querySelector('tbody') || table;
+        const rows = Array.from(tbody.querySelectorAll('tr')).slice(1); // skip header
+
+        let expMap = this.getFoughtHobos();
+        let changed = false;
+
+        for (let i = rows.length - 1; i >= 0; i--) {
+            const row = rows[i];
+            const tds = row.querySelectorAll('td');
+
+            if (tds.length >= 5) {
+                const outcomeImg = tds[3].querySelector('img');
+                if (outcomeImg && outcomeImg.title === 'win') {
+                    const defLink = tds[2].querySelector('a[href*="ID="]');
+                    if (defLink) {
+                        const match = defLink.href.match(/ID=(\d+)/i);
+                        if (match && match[1]) {
+                            const hoboId = match[1];
+                            const expRaw = tds[4].textContent.replace(/,/g, '').trim();
+                            const expVal = parseInt(expRaw, 10);
+
+                            if (!isNaN(expVal) && expVal > 0) {
+                                expMap[hoboId] = expVal;
+                                changed = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (changed) {
+            Utils.setItem('BattleLogHelper_FoughtHobos', JSON.stringify(expMap));
+            Utils.log('[Hobo Helper] Scanned battle log and updated experience dictionary.');
+        }
+    },
+
+    getFoughtHobos: function() {
+        try {
+            return JSON.parse(Utils.getItem('BattleLogHelper_FoughtHobos') || '{}');
+        } catch (e) {
+            return {};
+        }
     }
 };
 
@@ -4488,7 +4572,8 @@ const HitlistHelper = {
     staff: false,
     settings: [
         { key: 'HitlistHelper_HighlightOnline', label: 'Highlight Online Players' },
-        { key: 'HitlistHelper_RememberSort', label: 'Enable Client-side Sorting & Remember' }
+        { key: 'HitlistHelper_RememberSort', label: 'Enable Client-side Sorting & Remember' },
+        { key: 'HitlistHelper_ShowExp', label: 'Show Experience' }
     ],
     init: function() {
         if (!window.location.search.includes('do=phlist')) return;
@@ -4509,6 +4594,9 @@ const HitlistHelper = {
             this.initSorting();
         }
 
+        if (settings?.HitlistHelper_ShowExp !== false) {
+            this.addExperienceColumn();
+        }
         this.highlightOutOfRangePlayers();
         this.addLegend();
     },
@@ -4534,6 +4622,54 @@ const HitlistHelper = {
         `;
 
         table.parentElement.insertBefore(legend, table.nextSibling);
+    },
+
+    addExperienceColumn: function() {
+        const table = document.querySelector('form[action*="do=phlist"] table');
+        if (!table) return;
+
+        const tbody = table.querySelector('tbody') || table;
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        if (rows.length < 2) return;
+
+        // Fetch the locally synced EXP map generated by the BattleLogHelper
+        const expMap = typeof BattleLogHelper !== 'undefined' ? BattleLogHelper.getFoughtHobos() : {};
+
+        // Add the header
+        const headerRow = rows[0];
+        const headers = headerRow.querySelectorAll('td');
+        if (headers.length >= 7) {
+            const expHeader = document.createElement('td');
+            expHeader.innerHTML = '<div align="center"><strong>Experience</strong></div>';
+            headerRow.insertBefore(expHeader, headers[7]); // Insert exactly after Battle Count (index 6, so before index 7)
+
+            // Add the column to all data rows
+            const dataRows = rows.slice(1);
+            dataRows.forEach(row => {
+                const tds = row.querySelectorAll('td');
+                if (tds.length >= 7) {
+                    const hoboLink = tds[1]?.querySelector('a[href*="ID="]');
+                    let experienceValue = '---';
+                    let expRaw = -1;
+
+                    if (hoboLink) {
+                        const match = hoboLink.href.match(/ID=(\d+)/i);
+                        if (match && match[1]) {
+                            const hoboId = match[1];
+                            if (expMap[hoboId] !== undefined) {
+                                expRaw = expMap[hoboId];
+                                experienceValue = expRaw.toLocaleString();
+                            }
+                        }
+                    }
+
+                    const expTd = document.createElement('td');
+                    // We stick the raw numeric value in a data attribute for easier, reliable numeric sorting
+                    expTd.innerHTML = `<div align="center" data-exp="${expRaw}">${experienceValue}</div>`;
+                    row.insertBefore(expTd, tds[7]);
+                }
+            });
+        }
     },
 
     highlightOutOfRangePlayers: function() {
@@ -4615,6 +4751,7 @@ const HitlistHelper = {
             { val: 'respect', label: 'Respect' },
             { val: 'city', label: 'City Side' },
             { val: 'battle', label: 'Battle Count' },
+            { val: 'exp', label: 'Experience' },
             { val: 'none', label: '-- None --' }
         ];
 
@@ -4724,6 +4861,9 @@ const HitlistHelper = {
                     return tds[4]?.textContent.trim().toLowerCase() || '';
                 case 'battle':
                     return parseInt(tds[6]?.textContent.replace(/,/g, '').trim(), 10) || 0;
+                case 'exp':
+                    const expDiv = tds[7]?.querySelector('div[data-exp]');
+                    return expDiv ? parseInt(expDiv.getAttribute('data-exp'), 10) : -1;
                 default:
                     return 0;
             }
@@ -11689,6 +11829,7 @@ const GangStaffHelper = {
         BackpackHelper,
         BankHelper,
         BattleHelper,
+        BattleLogHelper,
         BernardsBasementHelper,
         CanDepoHelper,
         ExploreHelper,
@@ -11726,7 +11867,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.07.20260502.2135';
+        window.HoboHelperVersion = '9.08';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
