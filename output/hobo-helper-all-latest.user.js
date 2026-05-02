@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (All)
 // @namespace    http://tampermonkey.net/
-// @version      9.06
+// @version      9.07
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -663,6 +663,15 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.07",
+            date: "2026-05-02",
+            type: "Changed",
+            notes: [
+                "**Fixed:** Resolved a critical cross-device settings wiping issue in the Cloud Sync implementation by strictly scrubbing and gracefully repacking `hw_helper_settings` during downstream sync execution.",
+                "**Added:** Introduced a `get_sync_data` script testing tool for inspecting active CouchDB replication sync payloads server-side."
+            ]
+        },
+        {
             version: "9.06",
             date: "2026-05-02",
             type: "Changed",
@@ -746,15 +755,6 @@ const ChangelogData = {
                 "**Added:** Testing backend connection integrity is now possible directly from within the Preferences page with a functional status text readout.",
                 "**Changed:** Rewrote internal helper memory cache handling to natively interface with `Utils.setItem`, `Utils.getItem`, `Utils.removeItem`, unifying and protecting Cloud Sync trigger hooks.",
                 "**Changed:** Restricted internal debugger output directly to local `Dev` builds by wrapping `console.log` instances inside `Utils.log`."
-            ]
-        },
-        {
-            version: "8.97",
-            date: "2026-04-29",
-            type: "Changed",
-            notes: [
-                "**Added:** Added a note to the bottom of the automatic update popup indicating that it can be disabled in the preferences via the Display Helper settings.",
-                "**Changed:** Centered the changelog modal vertically and horizontally on the screen for better readability."
             ]
         }
     ]
@@ -1489,11 +1489,38 @@ const SyncHelper = {
 
             let needsPush = false;
             let localChanged = false;
+            const nonSyncKeys = Utils.getNonSyncKeys ? Utils.getNonSyncKeys() : [];
+
+            // Strip any keys from the remote payload that shouldn't be there (e.g. from older legacy versions syncing before they were localKeys)
+            for (const deadKey of nonSyncKeys) {
+                if (payload.data[deadKey] !== undefined) {
+                    delete payload.data[deadKey];
+                    delete payload.timestamps[deadKey];
+                    needsPush = true; // Force push to clean db
+                }
+            }
+
+            // Also clean the remote hw_helper_settings of any localKeys
+            if (payload.data['hw_helper_settings']) {
+                try {
+                    let remoteSettings = JSON.parse(payload.data['hw_helper_settings']);
+                    let settingsChanged = false;
+                    for (const deadKey of nonSyncKeys) {
+                        if (remoteSettings[deadKey] !== undefined) {
+                            delete remoteSettings[deadKey];
+                            settingsChanged = true;
+                        }
+                    }
+                    if (settingsChanged) {
+                        payload.data['hw_helper_settings'] = JSON.stringify(remoteSettings);
+                        needsPush = true;
+                    }
+                } catch (e) {}
+            }
 
             // Merge logic
             // 1. Process remote keys first
             if (remoteDoc && remoteDoc.data && remoteDoc.timestamps) {
-                const nonSyncKeys = Utils.getNonSyncKeys ? Utils.getNonSyncKeys() : [];
                 for (const [key, remoteVal] of Object.entries(remoteDoc.data)) {
                     if (nonSyncKeys.includes(key)) continue;
 
@@ -1504,9 +1531,27 @@ const SyncHelper = {
                         // Remote is newer, update local storage
                         const currentLocalVal = Utils.getItem(key);
                         if (currentLocalVal !== remoteVal) {
-                            Utils.setItem(key, remoteVal);
-                            localTimestamps[key] = remoteTime;
-                            localChanged = true;
+                            let valToSave = remoteVal;
+
+                            // If updating settings from remote, preserve the local non-sync keys
+                            if (key === 'hw_helper_settings') {
+                                try {
+                                    const localSettingsObj = JSON.parse(currentLocalVal || '{}');
+                                    let newSettingsObj = JSON.parse(remoteVal || '{}');
+                                    for (const nonSyncKey of nonSyncKeys) {
+                                        if (localSettingsObj[nonSyncKey] !== undefined) {
+                                            newSettingsObj[nonSyncKey] = localSettingsObj[nonSyncKey];
+                                        }
+                                    }
+                                    valToSave = JSON.stringify(newSettingsObj);
+                                } catch(e) {}
+                            }
+
+                            if (currentLocalVal !== valToSave) {
+                                Utils.setItem(key, valToSave);
+                                localTimestamps[key] = remoteTime;
+                                localChanged = true;
+                            }
                         }
                     }
                 }
@@ -1519,7 +1564,20 @@ const SyncHelper = {
 
                 // Push new or modified local keys
                 if (localTime > remoteTime || (!remoteDoc && localVal)) {
-                    payload.data[key] = localVal;
+                    let valToPush = localVal;
+
+                    // If pushing settings, strip the local non-sync keys
+                    if (key === 'hw_helper_settings') {
+                        try {
+                            const pushingSettingsObj = JSON.parse(localVal || '{}');
+                            for (const nonSyncKey of nonSyncKeys) {
+                                delete pushingSettingsObj[nonSyncKey];
+                            }
+                            valToPush = JSON.stringify(pushingSettingsObj);
+                        } catch(e) {}
+                    }
+
+                    payload.data[key] = valToPush;
                     payload.timestamps[key] = localTime || now; // Make sure it has a timestamp
                     needsPush = true;
                 }
@@ -9272,6 +9330,7 @@ const WeaponsHelper = {
 const WellnessClinicHelper = {
     cmds: 'wellness_clinic',
     staff: false,
+    localKeys: ['hw_wellness_goal'],
     init: function() {
         const url = window.location.href;
 
@@ -11667,7 +11726,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.06';
+        window.HoboHelperVersion = '9.07';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

@@ -1,0 +1,7 @@
+{
+    "url": "https://your-couchdb-server.com",
+    "username": "your_username",
+    "password": "your_password",
+    "hobo_id": "123456"
+}
+

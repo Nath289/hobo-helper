@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.07] - 2026-05-02
+- **Fixed:** Resolved a critical cross-device settings wiping issue in the Cloud Sync implementation by strictly scrubbing and gracefully repacking `hw_helper_settings` during downstream sync execution.
+- **Added:** Introduced a `get_sync_data` script testing tool for inspecting active CouchDB replication sync payloads server-side.
+
 ## [9.06] - 2026-05-02
 - **Added:** Automatically group items within the explore log visually by date.
 - **Added:** Cloud Sync settings (Server URL, Username, Password, and Enable flag) are now explicitly locked to the local device and will not synchronize externally.

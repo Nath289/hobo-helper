@@ -197,11 +197,38 @@ const SyncHelper = {
 
             let needsPush = false;
             let localChanged = false;
+            const nonSyncKeys = Utils.getNonSyncKeys ? Utils.getNonSyncKeys() : [];
+
+            // Strip any keys from the remote payload that shouldn't be there (e.g. from older legacy versions syncing before they were localKeys)
+            for (const deadKey of nonSyncKeys) {
+                if (payload.data[deadKey] !== undefined) {
+                    delete payload.data[deadKey];
+                    delete payload.timestamps[deadKey];
+                    needsPush = true; // Force push to clean db
+                }
+            }
+
+            // Also clean the remote hw_helper_settings of any localKeys
+            if (payload.data['hw_helper_settings']) {
+                try {
+                    let remoteSettings = JSON.parse(payload.data['hw_helper_settings']);
+                    let settingsChanged = false;
+                    for (const deadKey of nonSyncKeys) {
+                        if (remoteSettings[deadKey] !== undefined) {
+                            delete remoteSettings[deadKey];
+                            settingsChanged = true;
+                        }
+                    }
+                    if (settingsChanged) {
+                        payload.data['hw_helper_settings'] = JSON.stringify(remoteSettings);
+                        needsPush = true;
+                    }
+                } catch (e) {}
+            }
 
             // Merge logic
             // 1. Process remote keys first
             if (remoteDoc && remoteDoc.data && remoteDoc.timestamps) {
-                const nonSyncKeys = Utils.getNonSyncKeys ? Utils.getNonSyncKeys() : [];
                 for (const [key, remoteVal] of Object.entries(remoteDoc.data)) {
                     if (nonSyncKeys.includes(key)) continue;
 
@@ -212,9 +239,27 @@ const SyncHelper = {
                         // Remote is newer, update local storage
                         const currentLocalVal = Utils.getItem(key);
                         if (currentLocalVal !== remoteVal) {
-                            Utils.setItem(key, remoteVal);
-                            localTimestamps[key] = remoteTime;
-                            localChanged = true;
+                            let valToSave = remoteVal;
+
+                            // If updating settings from remote, preserve the local non-sync keys
+                            if (key === 'hw_helper_settings') {
+                                try {
+                                    const localSettingsObj = JSON.parse(currentLocalVal || '{}');
+                                    let newSettingsObj = JSON.parse(remoteVal || '{}');
+                                    for (const nonSyncKey of nonSyncKeys) {
+                                        if (localSettingsObj[nonSyncKey] !== undefined) {
+                                            newSettingsObj[nonSyncKey] = localSettingsObj[nonSyncKey];
+                                        }
+                                    }
+                                    valToSave = JSON.stringify(newSettingsObj);
+                                } catch(e) {}
+                            }
+
+                            if (currentLocalVal !== valToSave) {
+                                Utils.setItem(key, valToSave);
+                                localTimestamps[key] = remoteTime;
+                                localChanged = true;
+                            }
                         }
                     }
                 }
@@ -227,7 +272,20 @@ const SyncHelper = {
 
                 // Push new or modified local keys
                 if (localTime > remoteTime || (!remoteDoc && localVal)) {
-                    payload.data[key] = localVal;
+                    let valToPush = localVal;
+
+                    // If pushing settings, strip the local non-sync keys
+                    if (key === 'hw_helper_settings') {
+                        try {
+                            const pushingSettingsObj = JSON.parse(localVal || '{}');
+                            for (const nonSyncKey of nonSyncKeys) {
+                                delete pushingSettingsObj[nonSyncKey];
+                            }
+                            valToPush = JSON.stringify(pushingSettingsObj);
+                        } catch(e) {}
+                    }
+
+                    payload.data[key] = valToPush;
                     payload.timestamps[key] = localTime || now; // Make sure it has a timestamp
                     needsPush = true;
                 }

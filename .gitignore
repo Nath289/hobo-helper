@@ -3,3 +3,5 @@
 /tools/
 
 /output/*-local.user.js
+
+conf/couchdb-local.json
