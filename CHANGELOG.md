@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.11] - 2026-05-03
+- **Fixed:** Corrected execution order inside `HitlistHelper` to ensure the Experience dictionary data is properly loaded into the DOM before the automatic Multi-Sort logic attempts to evaluate rows.
+
 ## [9.10] - 2026-05-03
 - **Fixed:** Resolved an issue where the Gang Staff Helper would fail to display the "Sunday Funday" estimated payouts panel due to missing URL parameters on modern gang overview pages.
 

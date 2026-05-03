@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit
 // @namespace    http://tampermonkey.net/
-// @version      9.10
+// @version      9.11
 // @description  Combines original HoboWars helpers into a single modular script (non-staff modules).
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -663,6 +663,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.11",
+            date: "2026-05-03",
+            type: "Changed",
+            notes: [
+                "**Fixed:** Corrected execution order inside `HitlistHelper` to ensure the Experience dictionary data is properly loaded into the DOM before the automatic Multi-Sort logic attempts to evaluate rows."
+            ]
+        },
+        {
             version: "9.10",
             date: "2026-05-03",
             type: "Changed",
@@ -739,14 +747,6 @@ const ChangelogData = {
                 "**Added:** Implemented local-only storage capabilities to selectively disable Cloud Sync synchronization on specific device-dependent variables.",
                 "**Changed:** Refactored `DisplayHelper` \"Widen Content Area\" settings to remain device-specific and ignore cross-device syncs. ",
                 "**Changed:** Refactored Custom Bank Goal configurations to remain device-specific and ignore cross-device syncs, along with several background awakeness tracker metrics."
-            ]
-        },
-        {
-            version: "9.01",
-            date: "2026-04-30",
-            type: "Changed",
-            notes: [
-                "**Fixed:** Resolved the \"Update Goals\" stat ratio settings failing to save or retract due to stale cache overwrites in `LivingAreaHelper.js`."
             ]
         }
     ]
@@ -4585,13 +4585,14 @@ const HitlistHelper = {
             this.highlightOnlinePlayers();
         }
 
+        if (settings?.HitlistHelper_ShowExp !== false) {
+            this.addExperienceColumn();
+        }
+
         if (settings?.HitlistHelper_RememberSort !== false) {
             this.initSorting();
         }
 
-        if (settings?.HitlistHelper_ShowExp !== false) {
-            this.addExperienceColumn();
-        }
         this.highlightOutOfRangePlayers();
         this.addLegend();
     },
@@ -9657,7 +9658,7 @@ const WellnessClinicHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.10';
+        window.HoboHelperVersion = '9.11';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

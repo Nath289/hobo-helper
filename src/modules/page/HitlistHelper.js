@@ -21,13 +21,14 @@ const HitlistHelper = {
             this.highlightOnlinePlayers();
         }
 
+        if (settings?.HitlistHelper_ShowExp !== false) {
+            this.addExperienceColumn();
+        }
+
         if (settings?.HitlistHelper_RememberSort !== false) {
             this.initSorting();
         }
 
-        if (settings?.HitlistHelper_ShowExp !== false) {
-            this.addExperienceColumn();
-        }
         this.highlightOutOfRangePlayers();
         this.addLegend();
     },
