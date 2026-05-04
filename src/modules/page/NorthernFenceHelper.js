@@ -97,6 +97,12 @@ const NorthernFenceHelper = {
 
         const playerId = Utils.getHoboId();
         const table = document.querySelector('.content-area table');
+
+        if (table) {
+            const trackerData = this.trackHallOfFameData(table);
+            this.renderTrackingTable(table, trackerData);
+        }
+
         let foundPlayer = false;
 
         if (table && playerId !== 'Unknown') {
@@ -374,6 +380,343 @@ const NorthernFenceHelper = {
                 centerNode.innerHTML = '';
                 centerNode.appendChild(backLink);
             }
+        }
+    },
+
+    trackHallOfFameData: function(table) {
+        let trackerData = {};
+        try {
+            const rawData = Utils.getItem('hw_cart_tracker');
+            if (rawData) {
+                trackerData = JSON.parse(rawData);
+            }
+        } catch (e) {
+            trackerData = {};
+        }
+        if (!trackerData || typeof trackerData !== 'object') trackerData = {};
+
+        const now = Date.now();
+        const rows = table.querySelectorAll('tr');
+        
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length === 3) {
+                // Ignore headers
+                if (cells[0].textContent.includes('Hobo') && cells[1].textContent.includes('Skill')) {
+                    return;
+                }
+                
+                const hoboCell = cells[0];
+                const link = hoboCell.querySelector('a');
+                if (link) {
+                    const idMatch = link.href.match(/ID=(\d+)/);
+                    if (idMatch) {
+                        const id = idMatch[1];
+                        const name = link.textContent.trim();
+                        // Skill text may have commas or decimals
+                        const skillValStr = cells[1].textContent.replace(/,/g, '').trim();
+                        const skillVal = parseFloat(skillValStr);
+                        const rallyLevel = cells[2].textContent.trim();
+
+                        if (!isNaN(skillVal)) {
+                            if (!trackerData[id]) {
+                                trackerData[id] = {
+                                    n: name,
+                                    c: rallyLevel,
+                                    ft: now,
+                                    fs: skillVal,
+                                    lt: now,
+                                    ls: skillVal
+                                };
+                            } else {
+                                // Update name and class just in case
+                                trackerData[id].n = name;
+                                trackerData[id].c = rallyLevel;
+                                // Update the last seen values
+                                trackerData[id].lt = now;
+                                trackerData[id].ls = skillVal;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        Utils.setItem('hw_cart_tracker', JSON.stringify(trackerData));
+        return trackerData;
+    },
+
+    renderTrackingTable: function(table, trackerData) {
+        const pTag = document.createElement('p');
+        pTag.innerHTML = `<strong>Super-Cart Racing Skill Tracker</strong><br>
+        <span style="font-size:11px; color:#555;">View pages on the Hall of Fame periodically to update tracked Hobos and calculate their skill gains over time.</span>
+        `;
+        pTag.style.textAlign = 'center';
+        pTag.style.marginTop = '20px';
+
+        const controlsDiv = document.createElement('div');
+        controlsDiv.style.textAlign = 'center';
+        controlsDiv.style.marginBottom = '10px';
+
+        const filterLabel = document.createElement('label');
+        filterLabel.textContent = 'Filter by Class (Rally Level): ';
+        filterLabel.style.fontWeight = 'bold';
+        
+        const filterSelect = document.createElement('select');
+        filterSelect.innerHTML = '<option value="All">All</option>';
+        for (let i = 1; i <= 10; i++) {
+            filterSelect.innerHTML += `<option value="${i}">${i}</option>`;
+        }
+        
+        controlsDiv.appendChild(filterLabel);
+        controlsDiv.appendChild(filterSelect);
+
+        const newTable = document.createElement('table');
+        newTable.align = 'center';
+        newTable.width = '80%';
+        newTable.cellSpacing = '2';
+        newTable.cellPadding = '4';
+        newTable.style.marginBottom = '20px';
+
+        // We prepare data
+        const dataArr = Object.keys(trackerData).map(id => {
+            const d = trackerData[id];
+            const gained = d.ls - d.fs;
+            const timePassedMs = d.lt - d.ft;
+            let timeStr = '0m';
+            if (timePassedMs > 0) {
+                const days = Math.floor(timePassedMs / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timePassedMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const mins = Math.floor((timePassedMs % (1000 * 60 * 60)) / (1000 * 60));
+                if (days > 0) timeStr = `${days}d ${hours}h`;
+                else if (hours > 0) timeStr = `${hours}h ${mins}m`;
+                else timeStr = `${mins}m`;
+            }
+
+            return {
+                id: id,
+                name: d.n,
+                cls: d.c,
+                skill: d.ls,
+                gained: gained,
+                time: timeStr
+            };
+        });
+
+        // Compute racers summary (Active vs Total)
+        const activeCounts = { 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0 };
+        const totalCounts = { 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0 };
+        let totalActive = 0;
+        let globalTotal = 0;
+        dataArr.forEach(d => {
+            // Ensure proper numeric or string mapping
+            let clsNum = String(d.cls).replace(/\D/g, ''); 
+            if (clsNum) {
+                if (totalCounts[clsNum] !== undefined) {
+                    totalCounts[clsNum]++;
+                    globalTotal++;
+                } else {
+                    totalCounts[clsNum] = 1;
+                    globalTotal++;
+                }
+
+                if (d.gained > 0) {
+                    if (activeCounts[clsNum] !== undefined) {
+                        activeCounts[clsNum]++;
+                        totalActive++;
+                    } else {
+                        activeCounts[clsNum] = 1;
+                        totalActive++;
+                    }
+                }
+            }
+        });
+
+        const summaryDiv = document.createElement('div');
+        summaryDiv.style.textAlign = 'center';
+        summaryDiv.style.marginBottom = '15px';
+        summaryDiv.style.fontSize = '12px';
+        
+        const summaryToggleBtn = document.createElement('button');
+        summaryToggleBtn.type = 'button';
+        summaryToggleBtn.className = 'btn';
+        summaryToggleBtn.textContent = 'Show Racers Summary';
+        summaryToggleBtn.style.marginBottom = '10px';
+        
+        const summaryTable = document.createElement('table');
+        summaryTable.align = 'center';
+        summaryTable.width = '60%';
+        summaryTable.cellSpacing = '2';
+        summaryTable.cellPadding = '4';
+        summaryTable.style.display = 'none';
+
+        let rowsHtml = `
+            <tr>
+                <td bgcolor="#dddddd" colspan="3" align="center"><strong>Racers Summary</strong></td>
+            </tr>
+            <tr>
+                <td bgcolor="#eeeeee" align="center"><strong>Racing Class</strong></td>
+                <td bgcolor="#eeeeee" align="center"><strong>Active Racers</strong></td>
+                <td bgcolor="#eeeeee" align="center"><strong>Total Racers</strong></td>
+            </tr>
+        `;
+        for (let i = 1; i <= 10; i++) {
+            rowsHtml += `
+                <tr>
+                    <td bgcolor="#f0f0f0" align="center">${i}</td>
+                    <td bgcolor="#f0f0f0" align="center">${activeCounts[i] || 0}</td>
+                    <td bgcolor="#f0f0f0" align="center">${totalCounts[i] || 0}</td>
+                </tr>
+            `;
+        }
+        rowsHtml += `
+            <tr>
+                <td bgcolor="#ececec" align="center"><strong>Total</strong></td>
+                <td bgcolor="#e0e0e0" align="center"><strong>${totalActive}</strong></td>
+                <td bgcolor="#e0e0e0" align="center"><strong>${globalTotal}</strong></td>
+            </tr>
+        `;
+
+        summaryTable.innerHTML = `
+            <tbody>
+                ${rowsHtml}
+            </tbody>
+        `;
+
+        summaryToggleBtn.onclick = (e) => {
+            e.preventDefault();
+            if (summaryTable.style.display === 'none') {
+                summaryTable.style.display = 'table';
+                summaryToggleBtn.textContent = 'Hide Racers Summary';
+            } else {
+                summaryTable.style.display = 'none';
+                summaryToggleBtn.textContent = 'Show Racers Summary';
+            }
+        };
+
+        summaryDiv.appendChild(summaryToggleBtn);
+        summaryDiv.appendChild(summaryTable);
+
+        // Restore tracker UI state
+        let savedTrackerFilter = sessionStorage.getItem('hw_cart_filter') || 'All';
+        let savedTrackerPage = parseInt(sessionStorage.getItem('hw_cart_page'), 10) || 1;
+        filterSelect.value = savedTrackerFilter;
+        if (!filterSelect.value) filterSelect.value = 'All';
+
+        // By default, let's sort by gained descending
+        const sortData = (data, filterClass) => {
+            return data.filter(d => filterClass === 'All' || d.cls === filterClass)
+                       .sort((a, b) => b.gained - a.gained);
+        };
+
+        let currentPage = savedTrackerPage;
+        const itemsPerPage = 50;
+
+        const paginationDiv = document.createElement('div');
+        paginationDiv.style.textAlign = 'center';
+        paginationDiv.style.marginBottom = '10px';
+
+        const renderRows = (filterClass, page = 1) => {
+            newTable.innerHTML = `
+                <tbody>
+                    <tr>
+                        <td bgcolor="#dddddd" colspan="4"><strong>Skill Gains</strong></td>
+                    </tr>
+                    <tr>
+                        <td bgcolor="#eeeeee"><strong>Hobo</strong></td>
+                        <td bgcolor="#eeeeee" align="center"><strong>Class</strong></td>
+                        <td bgcolor="#eeeeee" align="center"><strong>Skill Gained</strong></td>
+                        <td bgcolor="#eeeeee" align="center"><strong>Time Passed</strong></td>
+                    </tr>
+                </tbody>
+            `;
+            const tbody = newTable.querySelector('tbody');
+            const sorted = sortData(dataArr, filterClass);
+
+            let totalPages = Math.ceil(sorted.length / itemsPerPage);
+            if (totalPages === 0) totalPages = 1;
+            if (page > totalPages) page = totalPages;
+
+            currentPage = page;
+            sessionStorage.setItem('hw_cart_filter', filterClass);
+            sessionStorage.setItem('hw_cart_page', currentPage);
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pagedData = sorted.slice(startIndex, endIndex);
+
+            if (sorted.length === 0) {
+                tbody.innerHTML += `<tr><td colspan="4" bgcolor="#f0f0f0" align="center">No hobos tracked yet.</td></tr>`;
+            }
+
+            pagedData.forEach(row => {
+                const tr = document.createElement('tr');
+                const gainedStr = row.gained > 0 ? '+' + row.gained.toFixed(3) : row.gained.toFixed(3);
+                tr.innerHTML = `
+                    <td bgcolor="#f0f0f0"><a href="game.php?cmd=player&ID=${row.id}">${row.name}</a></td>
+                    <td bgcolor="#f0f0f0" align="center">${row.cls}</td>
+                    <td bgcolor="#f0f0f0" align="center" style="color: ${row.gained > 0 ? 'green' : '#333'}; font-weight: ${row.gained > 0 ? 'bold' : 'normal'};">${gainedStr}</td>
+                    <td bgcolor="#f0f0f0" align="center">${row.time}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Build pagination UI
+            paginationDiv.innerHTML = '';
+            if (totalPages > 1) {
+                const prevBtn = document.createElement('button');
+                prevBtn.type = 'button';
+                prevBtn.textContent = '<< Previous';
+                prevBtn.className = 'btn';
+                prevBtn.disabled = currentPage === 1;
+                prevBtn.onclick = (e) => { e.preventDefault(); renderRows(filterSelect.value, currentPage - 1); };
+
+                const pageLabel = document.createElement('span');
+                pageLabel.textContent = ` Page ${currentPage} of ${totalPages} `;
+                pageLabel.style.margin = '0 10px';
+                pageLabel.style.fontWeight = 'bold';
+
+                const nextBtn = document.createElement('button');
+                nextBtn.type = 'button';
+                nextBtn.textContent = 'Next >>';
+                nextBtn.className = 'btn';
+                nextBtn.disabled = currentPage === totalPages;
+                nextBtn.onclick = (e) => { e.preventDefault(); renderRows(filterSelect.value, currentPage + 1); };
+
+                paginationDiv.appendChild(prevBtn);
+                paginationDiv.appendChild(pageLabel);
+                paginationDiv.appendChild(nextBtn);
+            }
+        };
+
+        filterSelect.addEventListener('change', (e) => {
+            renderRows(e.target.value, 1);
+        });
+
+        renderRows(filterSelect.value, savedTrackerPage);
+
+        // We insert them after the table, but there's pagination below it. Let's see...
+        // `table.nextSibling` might be the pagination which is added dynamically.
+        // It's safe to insert right after the table
+        let targetNode = table;
+        
+        // Let's actually insert at the very end of content area or right after the existing table.
+        // If there's pagination navWrap inserted after table (by initPaginationButtons), we could insert after it.
+        
+        // We'll put it right after the table
+        const contentArea = document.querySelector('.content-area');
+        if (contentArea) {
+            contentArea.appendChild(pTag);
+            contentArea.appendChild(summaryDiv);
+            contentArea.appendChild(controlsDiv);
+            contentArea.appendChild(paginationDiv);
+            contentArea.appendChild(newTable);
+        } else {
+            targetNode.insertAdjacentElement('afterend', newTable);
+            targetNode.insertAdjacentElement('afterend', paginationDiv);
+            targetNode.insertAdjacentElement('afterend', controlsDiv);
+            targetNode.insertAdjacentElement('afterend', summaryDiv);
+            targetNode.insertAdjacentElement('afterend', pTag);
         }
     }
 }

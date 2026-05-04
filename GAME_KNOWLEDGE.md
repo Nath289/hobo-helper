@@ -97,17 +97,17 @@ When purchasing upgrades for your rat (Vegetarian, Life Boost, Meal Boost), keep
 - There are two distinct Backpack links: The top navigation bar image link (`cmd=backpack`) which triggers a full page load, and the in-page tab link in the Living Area (`rel='backpack'`) which loads the backpack content via AJAX.
 - Just like the Backpack, the Food tab within the Living Area is loaded dynamically via AJAX when the in-page tab link (`rel='food'`) is clicked. Wait for DOM mutations or an explicitly attached click event on the tab when interacting with Living Area food inventories.
 
- -   * * B a r t e n d e r   G u i d e : * *   T h i s   ga m e   U I   i s   a c c e s s e d   v i a   ` ? c m d = b a c k p a c k & u s e = 3 ` .   T h e   g u i d e   d i s p l a y s   a   l i s t   o f   p o s s i b l e   d r i n k s   t h a t   c a n   b e   m i x e d   a n d   i s   i n j e c t e d   n a t i v e l y   i n t o   t h e   b a c k p a c k   t a b   o r   a r e a . 
- 
- 
+- **Bartender Guide:** This game UI is accessed via `?cmd=backpack&use=3`. The guide displays a list of possible drinks that can be mixed and is injected natively into the backpack tab or area.
+
 ### Skills Page (cmd=skills)
 - **Layout**: Contains a list of saved Skill Sets and several un-styled links for removing and unequipping skills.
 - **Forms**: The page contains multiple forms side-by-side, such as the Set Order form (input[name=BAT]) and the Save As Skill Set form (input[name=save_set]). Be cautious when manipulating these DOM elements to preserve their nested form boundaries.
 
 ## Explore
-- The Explore City page (\cmd=explore\) has a lobby and an active move page (\cmd=explore&do=move\).
-- The player's current map coordinates can be scraped either from the yellow (\ackground-color: yellow\) \	d\ tile within the \#miniMap\ table, or extracted from the URL query parameters (\x\ and \y\) of the directional movement links in the main view.
+- The Explore City page (`cmd=explore`) has a lobby and an active move page (`cmd=explore&do=move`).
+- The player's current map coordinates can be scraped either from the yellow (`background-color: yellow`) `<td>` tile within the `#miniMap` table, or extracted from the URL query parameters (`x` and `y`) of the directional movement links in the main view.
 
-- Exploring can yield items like the Arena Pass. The success text is \You found the Arena Pass.\`n
+- Exploring can yield items like the Arena Pass. The success text is `You found the Arena Pass.`
 
-
+## HTML & Form Quirk
+- **Implicit Submit Form Wrappers:** HoboWars wraps many main content areas (such as the main tables on the Northern Fence Hall of Fame) inside overarching `<form>` tags naturally. Therefore, any custom injected `<button>` elements run the risk of defaulting to `type="submit"` and triggering unwanted full page refreshes with query manipulation. Always explicitly set `type="button"` on injected `<button>`'s or use `<a href="#">` with `e.preventDefault()`.
