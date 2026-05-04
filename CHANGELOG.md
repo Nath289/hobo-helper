@@ -1,8 +1,10 @@
-﻿# Changelog
+# Changelog
 
 All notable changes to this project will be documented in this file.
 
-## [9.16] - 2026-05-05
+## [9.17] - 2026-05-05
+- **Added:** Added dynamic "#" row numbers to the Super-Cart Racing Skill Tracker table to easily identify ranks across pagination.
+- **Added:** Added "Hide 0 Weekly Gains" and "Hide 0 Total Gains" checkboxes to the Super-Cart Racing Skill Tracker filters, allowing users to cleanly exclude stagnant inactive hobos from their tracked readouts natively.## [9.16] - 2026-05-05
 - **Added:** Expanded the Super-Cart Racing Skill Tracker to include an independent Weekly Gains metric alongside Total Gains. Metrics automatically checkpoint every Monday at midnight server time without resetting the all-time history.
 
 ## [9.15] - 2026-05-05
@@ -236,7 +238,7 @@ All notable changes to this project will be documented in this file.
 
 ## [8.64] - 2026-04-19
 ### Added
-- Added custom 'ÐeaveÐ¿' title display for SeventhHeaven.
+- Added custom 'Нeaveп' title display for SeventhHeaven.
 
 ## [8.63] - 2026-04-19
 ### Changed
@@ -427,7 +429,7 @@ All notable changes to this project will be documented in this file.
 ## [8.26] - 2026-04-14
 ### Added
 - Added multi-column interactive client-side sorting for the Hitlist table (`HitlistHelper`), replacing the slow native server-refresh sorting links. Sorting configurations securely persist via browser local storage.
-- Implemented a combat window highlighter within the `HitlistHelper` that automatically shades rows an alerting light red if an opponent's level drastically falls outside the player's immediate attack limits (Â±200 combat levels).
+- Implemented a combat window highlighter within the `HitlistHelper` that automatically shades rows an alerting light red if an opponent's level drastically falls outside the player's immediate attack limits (±200 combat levels).
 ### Changed
 - Updated `AGENTS.md` instructions specifically to mandate the continued usage and expansion of centralized internal game value retrieval methods located within the `Utils` class instead of continuously duplicating generic operations within separate modules.
 
@@ -446,7 +448,7 @@ All notable changes to this project will be documented in this file.
 
 ## [8.22] - 2026-04-12
 ### Added
-- Added an "Attack Range" checkbox filter to `ActiveListHelper` that instantly restricts the viewable opponent list exclusively to players falling within your immediate combat level range (Â±200 levels of your current Hobo level). Filter persistently saves to local storage.
+- Added an "Attack Range" checkbox filter to `ActiveListHelper` that instantly restricts the viewable opponent list exclusively to players falling within your immediate combat level range (±200 levels of your current Hobo level). Filter persistently saves to local storage.
 
 ## [8.21] - 2026-04-12
 ### Added
@@ -747,7 +749,7 @@ m- Included an interactive "View Stats" table modal showing lifetime consumption
 
 ## [7.63] - 2026-04-04
 ### Changed
-- Updated the success message text on the `FoodHelper` button to say "âœ… Updated Crap!" for better clarity.
+- Updated the success message text on the `FoodHelper` button to say "✅ Updated Crap!" for better clarity.
 
 ## [7.62] - 2026-04-04
 ### Fixed
@@ -777,7 +779,7 @@ m- Included an interactive "View Stats" table modal showing lifetime consumption
 ## [7.57] - 2026-04-03
 ### Added
 - Added custom settings configurations for Message Board features (`MessageBoardHelper_CtrlEnter`).
-- Added a `ðŸ’¾ Save Repliers List` button to `MessageBoardHelper` explicitly for Gang Board posts (`cmd=gathering&do=vpost`), securely extracting and exporting a unique timestamped list of user names and IDs replying to the active topic locally.
+- Added a `💾 Save Repliers List` button to `MessageBoardHelper` explicitly for Gang Board posts (`cmd=gathering&do=vpost`), securely extracting and exporting a unique timestamped list of user names and IDs replying to the active topic locally.
 - Established foundations for `LockoutHelper`, injecting recent changelog activity directly into the intermittent 12-hour game reset lockout screen.
 - Extensively documented and injected `Supported Layouts` layout warnings noting only `The Future` layout format has been officially tested throughout README, INTRO, FEATURES, and internal AGENT reference files.
 - Appended concrete rule compliance references directly into `AGENTS.md` explicitly banning automated Macros/Refreshers implementation.
@@ -812,4 +814,5 @@ m- Included an interactive "View Stats" table modal showing lifetime consumption
 - Extracted and generalized HTML templates.
 ### Fixed
 - Fixed an issue in `BernardsMansionHelper` where inserting the basement map would horizontally shift the directional navigation links upon page load.
+
 

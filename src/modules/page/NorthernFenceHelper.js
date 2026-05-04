@@ -482,8 +482,22 @@ const NorthernFenceHelper = {
             filterSelect.innerHTML += `<option value="${i}">${i}</option>`;
         }
         
+        const hideZeroWeeklyLabel = document.createElement('label');
+        hideZeroWeeklyLabel.innerHTML = `<input type="checkbox"> Hide 0 Weekly Gains`;
+        hideZeroWeeklyLabel.style.marginLeft = '15px';
+        hideZeroWeeklyLabel.style.fontSize = '12px';
+        hideZeroWeeklyLabel.style.cursor = 'pointer';
+
+        const hideZeroTotalLabel = document.createElement('label');
+        hideZeroTotalLabel.innerHTML = `<input type="checkbox"> Hide 0 Total Gains`;
+        hideZeroTotalLabel.style.marginLeft = '15px';
+        hideZeroTotalLabel.style.fontSize = '12px';
+        hideZeroTotalLabel.style.cursor = 'pointer';
+
         controlsDiv.appendChild(filterLabel);
         controlsDiv.appendChild(filterSelect);
+        controlsDiv.appendChild(hideZeroWeeklyLabel);
+        controlsDiv.appendChild(hideZeroTotalLabel);
 
         const newTable = document.createElement('table');
         newTable.align = 'center';
@@ -615,14 +629,37 @@ const NorthernFenceHelper = {
 
         // Restore tracker UI state
         let savedTrackerFilter = sessionStorage.getItem('hw_cart_filter') || 'All';
+        let savedTrackerSort = sessionStorage.getItem('hw_cart_sort') || 'TotalGains';
+        let savedTrackerSortDir = sessionStorage.getItem('hw_cart_sort_dir') || 'desc';
         let savedTrackerPage = parseInt(sessionStorage.getItem('hw_cart_page'), 10) || 1;
+        let hideZW = sessionStorage.getItem('hw_cart_hide_zw') === 'true';
+        let hideZT = sessionStorage.getItem('hw_cart_hide_zt') === 'true';
+
         filterSelect.value = savedTrackerFilter;
         if (!filterSelect.value) filterSelect.value = 'All';
 
-        // By default, let's sort by gained descending
-        const sortData = (data, filterClass) => {
-            return data.filter(d => filterClass === 'All' || d.cls === filterClass)
-                       .sort((a, b) => b.gained - a.gained);
+        const cbZW = hideZeroWeeklyLabel.querySelector('input');
+        cbZW.checked = hideZW;
+        const cbZT = hideZeroTotalLabel.querySelector('input');
+        cbZT.checked = hideZT;
+
+        let currentSortBy = savedTrackerSort;
+        let currentSortDir = savedTrackerSortDir;
+
+        const sortData = (data, filterClass, sortBy, sortDir, hZW, hZT) => {
+            return data.filter(d => {
+                           if (filterClass !== 'All' && d.cls !== filterClass) return false;
+                           if (hZW && d.wgained <= 0) return false;
+                           if (hZT && d.gained <= 0) return false;
+                           return true;
+                       })
+                       .sort((a, b) => {
+                           let diff = 0;
+                           if (sortBy === 'WeeklyGains') diff = b.wgained - a.wgained;
+                           else if (sortBy === 'CurrentSkill') diff = b.skill - a.skill;
+                           else diff = b.gained - a.gained; // Default TotalGains
+                           return sortDir === 'asc' ? -diff : diff;
+                       });
         };
 
         let currentPage = savedTrackerPage;
@@ -632,23 +669,28 @@ const NorthernFenceHelper = {
         paginationDiv.style.textAlign = 'center';
         paginationDiv.style.marginBottom = '10px';
 
-        const renderRows = (filterClass, page = 1) => {
+        const renderRows = (filterClass, sortBy, sortDir, page = 1) => {
             newTable.innerHTML = `
                 <tbody>
                     <tr>
-                        <td bgcolor="#dddddd" colspan="5" align="center"><strong>Skill Gains</strong></td>
+                        <td bgcolor="#dddddd" colspan="7" align="center"><strong>Skill Gains</strong></td>
                     </tr>
                     <tr>
+                        <td bgcolor="#eeeeee" align="center" width="20"><strong>#</strong></td>
                         <td bgcolor="#eeeeee"><strong>Hobo</strong></td>
                         <td bgcolor="#eeeeee" align="center"><strong>Class</strong></td>
-                        <td bgcolor="#eeeeee" align="center"><strong>Weekly Gains</strong></td>
-                        <td bgcolor="#eeeeee" align="center"><strong>Total Gains</strong></td>
+                        <td bgcolor="#eeeeee" align="center" style="cursor:pointer; user-select:none;" class="sort-header" data-sort="CurrentSkill" title="Click to sort by Current Skill"><strong>Current Skill ${sortBy === 'CurrentSkill' ? (sortDir === 'asc' ? '▲' : '▼') : '<span style="color:#aaa;">▬</span>'}</strong></td>
+                        <td bgcolor="#eeeeee" align="center" style="cursor:pointer; user-select:none;" class="sort-header" data-sort="WeeklyGains" title="Click to sort by Weekly Gains"><strong>Weekly Gains ${sortBy === 'WeeklyGains' ? (sortDir === 'asc' ? '▲' : '▼') : '<span style="color:#aaa;">▬</span>'}</strong></td>
+                        <td bgcolor="#eeeeee" align="center" style="cursor:pointer; user-select:none;" class="sort-header" data-sort="TotalGains" title="Click to sort by Total Gains"><strong>Total Gains ${sortBy === 'TotalGains' ? (sortDir === 'asc' ? '▲' : '▼') : '<span style="color:#aaa;">▬</span>'}</strong></td>
                         <td bgcolor="#eeeeee" align="center"><strong>Time Passed</strong></td>
                     </tr>
                 </tbody>
             `;
             const tbody = newTable.querySelector('tbody');
-            const sorted = sortData(dataArr, filterClass);
+            
+            const hZW = cbZW.checked;
+            const hZT = cbZT.checked;
+            const sorted = sortData(dataArr, filterClass, sortBy, sortDir, hZW, hZT);
 
             let totalPages = Math.ceil(sorted.length / itemsPerPage);
             if (totalPages === 0) totalPages = 1;
@@ -656,6 +698,10 @@ const NorthernFenceHelper = {
 
             currentPage = page;
             sessionStorage.setItem('hw_cart_filter', filterClass);
+            sessionStorage.setItem('hw_cart_sort', sortBy);
+            sessionStorage.setItem('hw_cart_sort_dir', sortDir);
+            sessionStorage.setItem('hw_cart_hide_zw', hZW);
+            sessionStorage.setItem('hw_cart_hide_zt', hZT);
             sessionStorage.setItem('hw_cart_page', currentPage);
 
             const startIndex = (currentPage - 1) * itemsPerPage;
@@ -663,16 +709,19 @@ const NorthernFenceHelper = {
             const pagedData = sorted.slice(startIndex, endIndex);
 
             if (sorted.length === 0) {
-                tbody.innerHTML += `<tr><td colspan="5" bgcolor="#f0f0f0" align="center">No hobos tracked yet.</td></tr>`;
+                tbody.innerHTML += `<tr><td colspan="7" bgcolor="#f0f0f0" align="center">No hobos tracked yet.</td></tr>`;
             }
 
-            pagedData.forEach(row => {
+            pagedData.forEach((row, index) => {
                 const tr = document.createElement('tr');
+                const rowNum = startIndex + index + 1;
                 const gainedStr = row.gained > 0 ? '+' + row.gained.toFixed(3) : row.gained.toFixed(3);
                 const wGainedStr = row.wgained > 0 ? '+' + row.wgained.toFixed(3) : row.wgained.toFixed(3);
                 tr.innerHTML = `
+                    <td bgcolor="#f0f0f0" align="center">${rowNum}</td>
                     <td bgcolor="#f0f0f0"><a href="game.php?cmd=player&ID=${row.id}">${row.name}</a></td>
                     <td bgcolor="#f0f0f0" align="center">${row.cls}</td>
+                    <td bgcolor="#f0f0f0" align="center">${parseFloat(row.skill).toFixed(3)}</td>
                     <td bgcolor="#f0f0f0" align="center" style="color: ${row.wgained > 0 ? 'green' : '#333'}; font-weight: ${row.wgained > 0 ? 'bold' : 'normal'};">${wGainedStr}</td>
                     <td bgcolor="#f0f0f0" align="center" style="color: ${row.gained > 0 ? 'green' : '#333'}; font-weight: ${row.gained > 0 ? 'bold' : 'normal'};">${gainedStr}</td>
                     <td bgcolor="#f0f0f0" align="center">${row.time}</td>
@@ -688,7 +737,7 @@ const NorthernFenceHelper = {
                 prevBtn.textContent = '<< Previous';
                 prevBtn.className = 'btn';
                 prevBtn.disabled = currentPage === 1;
-                prevBtn.onclick = (e) => { e.preventDefault(); renderRows(filterSelect.value, currentPage - 1); };
+                prevBtn.onclick = (e) => { e.preventDefault(); renderRows(filterSelect.value, currentSortBy, currentSortDir, currentPage - 1); };
 
                 const pageLabel = document.createElement('span');
                 pageLabel.textContent = ` Page ${currentPage} of ${totalPages} `;
@@ -700,7 +749,7 @@ const NorthernFenceHelper = {
                 nextBtn.textContent = 'Next >>';
                 nextBtn.className = 'btn';
                 nextBtn.disabled = currentPage === totalPages;
-                nextBtn.onclick = (e) => { e.preventDefault(); renderRows(filterSelect.value, currentPage + 1); };
+                nextBtn.onclick = (e) => { e.preventDefault(); renderRows(filterSelect.value, currentSortBy, currentSortDir, currentPage + 1); };
 
                 paginationDiv.appendChild(prevBtn);
                 paginationDiv.appendChild(pageLabel);
@@ -708,11 +757,33 @@ const NorthernFenceHelper = {
             }
         };
 
-        filterSelect.addEventListener('change', (e) => {
-            renderRows(e.target.value, 1);
+        newTable.addEventListener('click', (e) => {
+            const th = e.target.closest('.sort-header');
+            if (th) {
+                const clickedSortBy = th.getAttribute('data-sort');
+                if (currentSortBy === clickedSortBy) {
+                    currentSortDir = currentSortDir === 'desc' ? 'asc' : 'desc';
+                } else {
+                    currentSortBy = clickedSortBy;
+                    currentSortDir = 'desc'; // Default to desc on new column click
+                }
+                renderRows(filterSelect.value, currentSortBy, currentSortDir, 1);
+            }
         });
 
-        renderRows(filterSelect.value, savedTrackerPage);
+        filterSelect.addEventListener('change', (e) => {
+            renderRows(e.target.value, currentSortBy, currentSortDir, 1);
+        });
+
+        cbZW.addEventListener('change', () => {
+            renderRows(filterSelect.value, currentSortBy, currentSortDir, 1);
+        });
+
+        cbZT.addEventListener('change', () => {
+            renderRows(filterSelect.value, currentSortBy, currentSortDir, 1);
+        });
+
+        renderRows(filterSelect.value, currentSortBy, currentSortDir, savedTrackerPage);
 
         // We insert them after the table, but there's pagination below it. Let's see...
         // `table.nextSibling` might be the pagination which is added dynamically.
