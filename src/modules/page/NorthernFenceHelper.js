@@ -396,6 +396,11 @@ const NorthernFenceHelper = {
         if (!trackerData || typeof trackerData !== 'object') trackerData = {};
 
         const now = Date.now();
+        const dDate = new Date(now);
+        const dayOfWeek = dDate.getDay();
+        const diffToMonday = dDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+        const currentWeekStart = new Date(dDate.setDate(diffToMonday)).setHours(0, 0, 0, 0);
+
         const rows = table.querySelectorAll('tr');
         
         rows.forEach(row => {
@@ -426,9 +431,18 @@ const NorthernFenceHelper = {
                                     ft: now,
                                     fs: skillVal,
                                     lt: now,
-                                    ls: skillVal
+                                    ls: skillVal,
+                                    wt: currentWeekStart,
+                                    ws: skillVal
                                 };
                             } else {
+                                // Check for weekly reset
+                                if (!trackerData[id].wt || trackerData[id].wt < currentWeekStart) {
+                                    trackerData[id].wt = currentWeekStart;
+                                    // Set weekly start skill to the most recently known past value, or current if it didn't exist
+                                    trackerData[id].ws = trackerData[id].ls || skillVal;
+                                }
+
                                 // Update name and class just in case
                                 trackerData[id].n = name;
                                 trackerData[id].c = rallyLevel;
@@ -482,6 +496,7 @@ const NorthernFenceHelper = {
         const dataArr = Object.keys(trackerData).map(id => {
             const d = trackerData[id];
             const gained = d.ls - d.fs;
+            const weekGained = (typeof d.ws !== 'undefined') ? (d.ls - d.ws) : 0;
             const timePassedMs = d.lt - d.ft;
             let timeStr = '0m';
             if (timePassedMs > 0) {
@@ -499,6 +514,7 @@ const NorthernFenceHelper = {
                 cls: d.c,
                 skill: d.ls,
                 gained: gained,
+                wgained: weekGained,
                 time: timeStr
             };
         });
@@ -620,12 +636,13 @@ const NorthernFenceHelper = {
             newTable.innerHTML = `
                 <tbody>
                     <tr>
-                        <td bgcolor="#dddddd" colspan="4"><strong>Skill Gains</strong></td>
+                        <td bgcolor="#dddddd" colspan="5" align="center"><strong>Skill Gains</strong></td>
                     </tr>
                     <tr>
                         <td bgcolor="#eeeeee"><strong>Hobo</strong></td>
                         <td bgcolor="#eeeeee" align="center"><strong>Class</strong></td>
-                        <td bgcolor="#eeeeee" align="center"><strong>Skill Gained</strong></td>
+                        <td bgcolor="#eeeeee" align="center"><strong>Weekly Gains</strong></td>
+                        <td bgcolor="#eeeeee" align="center"><strong>Total Gains</strong></td>
                         <td bgcolor="#eeeeee" align="center"><strong>Time Passed</strong></td>
                     </tr>
                 </tbody>
@@ -646,15 +663,17 @@ const NorthernFenceHelper = {
             const pagedData = sorted.slice(startIndex, endIndex);
 
             if (sorted.length === 0) {
-                tbody.innerHTML += `<tr><td colspan="4" bgcolor="#f0f0f0" align="center">No hobos tracked yet.</td></tr>`;
+                tbody.innerHTML += `<tr><td colspan="5" bgcolor="#f0f0f0" align="center">No hobos tracked yet.</td></tr>`;
             }
 
             pagedData.forEach(row => {
                 const tr = document.createElement('tr');
                 const gainedStr = row.gained > 0 ? '+' + row.gained.toFixed(3) : row.gained.toFixed(3);
+                const wGainedStr = row.wgained > 0 ? '+' + row.wgained.toFixed(3) : row.wgained.toFixed(3);
                 tr.innerHTML = `
                     <td bgcolor="#f0f0f0"><a href="game.php?cmd=player&ID=${row.id}">${row.name}</a></td>
                     <td bgcolor="#f0f0f0" align="center">${row.cls}</td>
+                    <td bgcolor="#f0f0f0" align="center" style="color: ${row.wgained > 0 ? 'green' : '#333'}; font-weight: ${row.wgained > 0 ? 'bold' : 'normal'};">${wGainedStr}</td>
                     <td bgcolor="#f0f0f0" align="center" style="color: ${row.gained > 0 ? 'green' : '#333'}; font-weight: ${row.gained > 0 ? 'bold' : 'normal'};">${gainedStr}</td>
                     <td bgcolor="#f0f0f0" align="center">${row.time}</td>
                 `;

@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.16] - 2026-05-05
+- **Added:** Expanded the Super-Cart Racing Skill Tracker to include an independent Weekly Gains metric alongside Total Gains. Metrics automatically checkpoint every Monday at midnight server time without resetting the all-time history.
+
 ## [9.15] - 2026-05-05
 - **Added:** Added a "Super-Cart Racing Skill Tracker" element inside `NorthernFenceHelper` for the Hall of Fame interface. It actively records and maps rank changes across Hall of Fame pages and builds a dynamic, sortable, locally paginated table of Top Hobos exhibiting stat progression, while saving layout persistence locally.
 - **Added:** Appended a collapsible active/total racers summary chart mapping activity breakdown per racing tier inside the Super-Cart Racing Skill Tracker.
