@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.13] - 2026-05-04
+- **Added:** Added `MinesHelper` functionality. Overhauls the visual display of the active hobo list inside the mines into a neat sortable HTML table.
+- **Added:** A light green overlay is now drawn directly onto the Mines map to visualize and highlight standard safe-zone tiles where items drop and combat pauses.
+- **Added:** The text-based Mining Stats readout has been completely overhauled into a formatted block data table.
+
+## [9.12] - 2026-05-03
+- **Added:** Added a "Full Width Log Graphs" setting (enabled by default) to force the native Living Area stat log charts to utilize 100% of the page width.
+
 ## [9.11] - 2026-05-03
 - **Fixed:** Corrected execution order inside `HitlistHelper` to ensure the Experience dictionary data is properly loaded into the DOM before the automatic Multi-Sort logic attempts to evaluate rows.
 

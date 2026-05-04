@@ -10,7 +10,8 @@ const LivingAreaHelper = {
         { key: 'LivingAreaHelper_WinPercentageCalc', label: 'Win Percentage Calc' },
         { key: 'LivingAreaHelper_WideShowAll', label: 'Always Show More Info<br><span style="font-size: 11px; color: #555;">(Requires Display Helper Page Width >= 850px)</span>' },
         { key: 'LivingAreaHelper_ReturnBranded', label: 'Quick Return Branded Button' },
-        { key: 'LivingAreaHelper_NextRespectNeeded', label: 'Show Next Respect Needed' }
+        { key: 'LivingAreaHelper_NextRespectNeeded', label: 'Show Next Respect Needed' },
+        { key: 'LivingAreaHelper_FullWidthGraph', label: 'Full Width Log Graphs' }
     ],
     init: function() {
         const savedSettings = Utils.getSettings();
@@ -47,10 +48,25 @@ const LivingAreaHelper = {
         if (savedSettings['LivingAreaHelper_NextRespectNeeded'] !== false) {
             this.initNextRespectNeeded();
         }
+        if (savedSettings['LivingAreaHelper_FullWidthGraph'] !== false) {
+            this.initFullWidthGraph();
+        }
 
         this.initInactiveSpecialItemBg();
         this.saveTattoo();
         this.syncHealingTracker();
+    },
+
+    initFullWidthGraph: function() {
+        const style = document.createElement('style');
+        style.innerHTML = `
+            #graph_area, #chartdiv {
+                width: 100% !important;
+                margin: 0 auto !important;
+                text-align: center !important;
+            }
+        `;
+        document.head.appendChild(style);
     },
 
     saveTattoo: function() {
@@ -344,7 +360,24 @@ const LivingAreaHelper = {
 
         let syncHtml = '';
         if (Utils.getSettings()['SyncHelper_Enable'] === true) {
-            syncHtml = `<br><a href="#" id="hh_force_sync" style="color: #009933; text-decoration: none;">Force Sync</a> <span id="hh_force_sync_status" style="color: #4CAF50; display: none;">(&#10003;)</span>`;
+            let syncTimeStr = "Never";
+            const lastSync = parseInt(Utils.getItem('hw_sync_last_sync') || '0', 10);
+            if (lastSync > 0) {
+                const diffMs = Date.now() - lastSync;
+                const diffMins = Math.floor(diffMs / 60000);
+                if (diffMins < 1) {
+                    syncTimeStr = "Just now";
+                } else if (diffMins < 60) {
+                    syncTimeStr = `${diffMins}m ago`;
+                } else if (diffMins < 1440) {
+                    const diffHrs = Math.floor(diffMins / 60);
+                    syncTimeStr = `${diffHrs}h ago`;
+                } else {
+                    const diffDays = Math.floor(diffMins / 1440);
+                    syncTimeStr = `${diffDays}d ago`;
+                }
+            }
+            syncHtml = `<br><span style="font-size: 10px; color: #999;">Last Sync: ${syncTimeStr}</span><br><a href="#" id="hh_force_sync" style="color: #009933; text-decoration: none;">Force Sync</a> <span id="hh_force_sync_status" style="color: #4CAF50; display: none;">(&#10003;)</span>`;
         }
 
         const versionHtml = `
@@ -745,6 +778,8 @@ const LivingAreaHelper = {
         }
     }
 }
+
+
 
 
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (All)
 // @namespace    http://tampermonkey.net/
-// @version      9.11
+// @version      9.13
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -663,6 +663,24 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.13",
+            date: "2026-05-04",
+            type: "Changed",
+            notes: [
+                "**Added:** Added `MinesHelper` functionality. Overhauls the visual display of the active hobo list inside the mines into a neat sortable HTML table.",
+                "**Added:** A light green overlay is now drawn directly onto the Mines map to visualize and highlight standard safe-zone tiles where items drop and combat pauses.",
+                "**Added:** The text-based Mining Stats readout has been completely overhauled into a formatted block data table."
+            ]
+        },
+        {
+            version: "9.12",
+            date: "2026-05-03",
+            type: "Changed",
+            notes: [
+                "**Added:** Added a \"Full Width Log Graphs\" setting (enabled by default) to force the native Living Area stat log charts to utilize 100% of the page width."
+            ]
+        },
+        {
             version: "9.11",
             date: "2026-05-03",
             type: "Changed",
@@ -729,24 +747,6 @@ const ChangelogData = {
             notes: [
                 "**Fixed:** Resolved a regression where the Living Area layout auto-expansion wasn't operating properly due to older module settings retrieval ignoring device-local boundaries.",
                 "**Changed:** Refactored all remaining legacy modules (Weapons, GangStaff, Can Deposit, Recycling Bin, Bernard's Basement) to rely on the centralized caching layer for configuration loading."
-            ]
-        },
-        {
-            version: "9.03",
-            date: "2026-05-01",
-            type: "Changed",
-            notes: [
-                "**Fixed:** Resolved a configuration loading glitch in the script bootstrap wrapper that caused newly segregated local-only settings (like Widen Content Area) to appear unresponsive when interacting with their UI toggles."
-            ]
-        },
-        {
-            version: "9.02",
-            date: "2026-05-01",
-            type: "Changed",
-            notes: [
-                "**Added:** Implemented local-only storage capabilities to selectively disable Cloud Sync synchronization on specific device-dependent variables.",
-                "**Changed:** Refactored `DisplayHelper` \"Widen Content Area\" settings to remain device-specific and ignore cross-device syncs. ",
-                "**Changed:** Refactored Custom Bank Goal configurations to remain device-specific and ignore cross-device syncs, along with several background awakeness tracker metrics."
             ]
         }
     ]
@@ -5150,7 +5150,8 @@ const LivingAreaHelper = {
         { key: 'LivingAreaHelper_WinPercentageCalc', label: 'Win Percentage Calc' },
         { key: 'LivingAreaHelper_WideShowAll', label: 'Always Show More Info<br><span style="font-size: 11px; color: #555;">(Requires Display Helper Page Width >= 850px)</span>' },
         { key: 'LivingAreaHelper_ReturnBranded', label: 'Quick Return Branded Button' },
-        { key: 'LivingAreaHelper_NextRespectNeeded', label: 'Show Next Respect Needed' }
+        { key: 'LivingAreaHelper_NextRespectNeeded', label: 'Show Next Respect Needed' },
+        { key: 'LivingAreaHelper_FullWidthGraph', label: 'Full Width Log Graphs' }
     ],
     init: function() {
         const savedSettings = Utils.getSettings();
@@ -5187,10 +5188,25 @@ const LivingAreaHelper = {
         if (savedSettings['LivingAreaHelper_NextRespectNeeded'] !== false) {
             this.initNextRespectNeeded();
         }
+        if (savedSettings['LivingAreaHelper_FullWidthGraph'] !== false) {
+            this.initFullWidthGraph();
+        }
 
         this.initInactiveSpecialItemBg();
         this.saveTattoo();
         this.syncHealingTracker();
+    },
+
+    initFullWidthGraph: function() {
+        const style = document.createElement('style');
+        style.innerHTML = `
+            #graph_area, #chartdiv {
+                width: 100% !important;
+                margin: 0 auto !important;
+                text-align: center !important;
+            }
+        `;
+        document.head.appendChild(style);
     },
 
     saveTattoo: function() {
@@ -5484,7 +5500,24 @@ const LivingAreaHelper = {
 
         let syncHtml = '';
         if (Utils.getSettings()['SyncHelper_Enable'] === true) {
-            syncHtml = `<br><a href="#" id="hh_force_sync" style="color: #009933; text-decoration: none;">Force Sync</a> <span id="hh_force_sync_status" style="color: #4CAF50; display: none;">(&#10003;)</span>`;
+            let syncTimeStr = "Never";
+            const lastSync = parseInt(Utils.getItem('hw_sync_last_sync') || '0', 10);
+            if (lastSync > 0) {
+                const diffMs = Date.now() - lastSync;
+                const diffMins = Math.floor(diffMs / 60000);
+                if (diffMins < 1) {
+                    syncTimeStr = "Just now";
+                } else if (diffMins < 60) {
+                    syncTimeStr = `${diffMins}m ago`;
+                } else if (diffMins < 1440) {
+                    const diffHrs = Math.floor(diffMins / 60);
+                    syncTimeStr = `${diffHrs}h ago`;
+                } else {
+                    const diffDays = Math.floor(diffMins / 1440);
+                    syncTimeStr = `${diffDays}d ago`;
+                }
+            }
+            syncHtml = `<br><span style="font-size: 10px; color: #999;">Last Sync: ${syncTimeStr}</span><br><a href="#" id="hh_force_sync" style="color: #009933; text-decoration: none;">Force Sync</a> <span id="hh_force_sync_status" style="color: #4CAF50; display: none;">(&#10003;)</span>`;
         }
 
         const versionHtml = `
@@ -6661,6 +6694,294 @@ const MessageBoardHelper = {
     }
 };
 
+const MinesHelper = {
+    cmds: 'mines',
+
+    settings: [
+        { key: 'MinesHelper_Widen', label: 'Widen Mines Content Area', type: 'checkbox', default: true },
+        { key: 'MinesHelper_StyleButtons', label: 'Style Buttons & Links', type: 'checkbox', default: true },
+        { key: 'MinesHelper_SafeZones', label: 'Highlight Safe Zones', type: 'checkbox', default: true },
+        { key: 'MinesHelper_ActiveTable', label: 'Format Active List into Table', type: 'checkbox', default: true },
+        { key: 'MinesHelper_FormatStats', label: 'Format Mining Stats', type: 'checkbox', default: true }
+    ],
+
+    init: function() {
+        Utils.log('MinesHelper initialized');
+        const settings = Utils.getSettings();
+
+        // Widen the view
+        if (settings['MinesHelper_Widen'] !== false) {
+            const contentArea = document.querySelector('.content-area');
+            if (contentArea) {
+                contentArea.style.maxWidth = '1000px';
+                contentArea.style.minWidth = '1000px';
+            }
+        }
+
+        if (settings['MinesHelper_StyleButtons'] !== false) {
+            this.styleLobbyLinks();
+            this.styleInsideLinks();
+        }
+
+        if (settings['MinesHelper_SafeZones'] !== false) {
+            try { this.markSafeZones(); } catch (e) { Utils.log(e); }
+        }
+
+        if (settings['MinesHelper_ActiveTable'] !== false) {
+            try { this.formatActiveList(); } catch (e) { Utils.log(e); }
+        }
+
+        if (settings['MinesHelper_FormatStats'] !== false) {
+            try { this.formatStats(); } catch (e) { Utils.log(e); }
+        }
+    },
+
+    formatStats: function() {
+        const centerTags = document.querySelectorAll('center');
+        const statsCenter = Array.from(centerTags).find(c => c.textContent.includes('Mine Section') && c.textContent.includes('Mining:'));
+        if (!statsCenter) return;
+
+        const text = statsCenter.innerHTML;
+        const sectionMatch = text.match(/Mine Section\s+(\d+)/i);
+        const miningMatch = text.match(/Mining:\s*([\d.,]+)/i);
+        const oreFoundMatch = text.match(/Ore found:\s*([\d,]+)/i);
+        const oreTradedMatch = text.match(/Ore traded:\s*([\d,]+)/i);
+        const tUsedMatch = text.match(/T used:\s*([\d,]+)/i);
+
+        if (!sectionMatch) return;
+
+        const section = sectionMatch[1];
+        const mining = miningMatch ? miningMatch[1] : '0';
+        const oreFound = oreFoundMatch ? oreFoundMatch[1] : '0';
+        const oreTraded = oreTradedMatch ? oreTradedMatch[1] : '0';
+        const tUsed = tUsedMatch ? tUsedMatch[1] : '0';
+
+        let tableHtml = '<table class="bmenu" style="width: 160px; border-collapse: collapse; margin: 10px auto; font-size: 13px;">';
+        tableHtml += '<tr style="background: #ccc; border-bottom: 2px solid #aaa; color: #333;"><th colspan="2" style="padding: 5px; text-align: center; font-weight: normal;">Mine Section ' + section + '</th></tr>';
+        tableHtml += '<tr style="background: rgba(0,0,0,0.05); border-bottom: 1px solid #ddd;"><td colspan="2" style="padding: 5px; text-align: center;">Mining: ' + mining + '</td></tr>';
+        tableHtml += '<tr style="background: transparent; border-bottom: 1px solid #ddd;"><td style="padding: 5px; text-align: left;">Ore found:</td><td style="padding: 5px; text-align: right;">' + oreFound + '</td></tr>';
+        tableHtml += '<tr style="background: rgba(0,0,0,0.05); border-bottom: 1px solid #ddd;"><td style="padding: 5px; text-align: left;">Ore traded:</td><td style="padding: 5px; text-align: right;">' + oreTraded + '</td></tr>';
+        tableHtml += '<tr style="background: transparent; border-bottom: 1px solid #ddd;"><td style="padding: 5px; text-align: left;">T used:</td><td style="padding: 5px; text-align: right;">' + tUsed + '</td></tr>';
+        tableHtml += '</table>';
+
+        statsCenter.outerHTML = tableHtml;
+    },
+
+    formatActiveList: function() {
+        // More robust header text finding across all tags natively
+        let activeHeader = null;
+        let walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+        while (walker.nextNode()) {
+            if (walker.currentNode.textContent.includes('Currently active hobos in the mines')) {
+                 activeHeader = walker.currentNode.parentElement;
+                 break;
+            }
+        }
+
+        if (!activeHeader) {
+            Utils.log('MinesHelper: Could not find active hobos header.');
+            return;
+        }
+
+        // Just find the container holding the list. Usually it's a UL next to the P
+        let pTag = activeHeader.closest('p') || activeHeader;
+        let ulTag = null;
+        let nextNode = pTag.nextElementSibling;
+
+        while (nextNode) {
+            if (nextNode.tagName === 'UL') {
+                ulTag = nextNode;
+                break;
+            }
+            if (nextNode.tagName === 'P' || nextNode.tagName === 'TABLE' || nextNode.tagName === 'DIV') {
+                break; // stop searching if we hit another major block
+            }
+            nextNode = nextNode.nextElementSibling;
+        }
+
+        let rawLinksMode = false;
+
+        // If we can't find a UL, we fallback to searching all raw player links after the header
+        if (!ulTag) {
+            rawLinksMode = true;
+        }
+
+        if (!rawLinksMode) {
+            // Process the standard UL format
+            const listItems = ulTag.querySelectorAll('li');
+            if (listItems.length === 0) return;
+
+            let tableHtml = '<table class="bmenu" style="width: 400px; border-collapse: collapse; margin: 10px 0;">';
+            tableHtml += '<tr style="background: #ccc; border-bottom: 2px solid #aaa; color: #333;"><th style="padding: 5px; text-align: left;">Hobo</th><th style="padding: 5px;">ID</th><th style="padding: 5px;">X,Y</th></tr>';
+
+            listItems.forEach((li, index) => {
+                const aTag = li.querySelector('a');
+                let nameHtml = aTag ? aTag.outerHTML : li.innerHTML.split('(')[0].trim();
+
+                const preSpan = li.querySelector('span[style*="text-shadow"]');
+                if (preSpan && aTag && !aTag.contains(preSpan)) {
+                    nameHtml = preSpan.outerHTML + ' ' + nameHtml;
+                }
+
+                const textContent = li.textContent;
+                const match = textContent.match(/\(#(\d+)\)\s*at\s*(\d+)\s*,\s*(\d+)/i);
+
+                let id = '-', x = '-', y = '-';
+                if (match) {
+                    id = match[1];
+                    x = match[2];
+                    y = match[3];
+                }
+
+                const bg = index % 2 === 0 ? 'rgba(0,0,0,0.05)' : 'transparent';
+                tableHtml += `<tr style="background: ${bg}; border-bottom: 1px solid #ddd;">`;
+                tableHtml += `<td style="padding: 5px; text-align: left;">${nameHtml}</td>`;
+                tableHtml += `<td style="padding: 5px; text-align: center;">${id}</td>`;
+                tableHtml += `<td style="padding: 5px; font-weight: bold; text-align: center;">${x}, ${y}</td>`;
+                tableHtml += `</tr>`;
+            });
+
+            tableHtml += '</table>';
+            ulTag.outerHTML = tableHtml;
+        } else {
+            // Process raw standalone links if UL is wiped by layout
+            let htmlChunks = [];
+            let linkWalker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT, null, false);
+            linkWalker.currentNode = activeHeader;
+
+            while (linkWalker.nextNode()) {
+                const node = linkWalker.currentNode;
+                if (node.textContent.includes('Return to exploring')) break;
+
+                if (node.tagName === 'A' && node.href.includes('cmd=player')) {
+                    let textAfter = '';
+                    let n = node.nextSibling;
+                    while (n && n.tagName !== 'A' && n.tagName !== 'BR') {
+                        textAfter += n.textContent;
+                        n = n.nextSibling;
+                    }
+
+                    let preSpanHtml = '';
+                    let p = node.previousSibling;
+                    while (p && p.tagName !== 'BR' && p.tagName !== 'A') {
+                        if (p.nodeType === 1 && p.tagName === 'SPAN') preSpanHtml = p.outerHTML + preSpanHtml;
+                        p = p.previousSibling;
+                    }
+
+                    htmlChunks.push({ aTag: node, preHtml: preSpanHtml, text: textAfter });
+                }
+            }
+
+            if (htmlChunks.length > 0) {
+                 let tableHtml = '<table class="bmenu" style="width: 400px; border-collapse: collapse; margin: 10px 0;">';
+                 tableHtml += '<tr style="background: #ccc; border-bottom: 2px solid #aaa; color: #333;"><th style="padding: 5px; text-align: left;">Hobo</th><th style="padding: 5px;">ID</th><th style="padding: 5px;">X,Y</th></tr>';
+
+                 htmlChunks.forEach((chunk, index) => {
+                     let nameHtml = chunk.preHtml + chunk.aTag.outerHTML;
+                     const match = chunk.text.match(/\s*\(#(\d+)\)\s*at\s*(\d+)\s*,\s*(\d+)/i);
+                     let id = '-', x = '-', y = '-';
+                     if (match) {
+                         id = match[1]; x = match[2]; y = match[3];
+                     }
+
+                     const bg = index % 2 === 0 ? 'rgba(0,0,0,0.05)' : 'transparent';
+                     tableHtml += `<tr style="background: ${bg}; border-bottom: 1px solid #ddd;">`;
+                     tableHtml += `<td style="padding: 5px; text-align: left;">${nameHtml}</td>`;
+                     tableHtml += `<td style="padding: 5px; text-align: center;">${id}</td>`;
+                     tableHtml += `<td style="padding: 5px; font-weight: bold; text-align: center;">${x}, ${y}</td>`;
+                     tableHtml += `</tr>`;
+
+                     chunk.aTag.style.display = 'none';
+                     let n = chunk.aTag.nextSibling;
+                     while (n && n.tagName !== 'BR' && n.tagName !== 'A') {
+                          if (n.nodeType === 3) n.textContent = '';
+                          else if (n.nodeType === 1) n.style.display = 'none';
+                          n = n.nextSibling;
+                     }
+                     let p = chunk.aTag.previousSibling;
+                     while (p && p.tagName !== 'BR' && p.tagName !== 'A') {
+                          if (p.nodeType === 1) p.style.display = 'none';
+                          p = p.previousSibling;
+                     }
+                 });
+
+                 tableHtml += '</table>';
+                 activeHeader.insertAdjacentHTML('afterend', tableHtml);
+            }
+        }
+    },
+
+    markSafeZones: function() {
+        let mapTable = null;
+        for (let y = 1; y <= 30; y++) {
+            for (let x = 1; x <= 20; x++) {
+                if (this.isSafeZone(x, y)) {
+                    // Grid IDs are sequential starting at 1001 for (1,1)
+                    let id = 1000 + ((y - 1) * 20) + x;
+                    let cell = document.getElementById(id.toString());
+                    if (cell) {
+                        if (!mapTable) mapTable = cell.closest('table');
+                        let bg = cell.getAttribute('bgcolor');
+                        // Only change empty/wall cells, leaving players/items alone
+                        if (bg === '#FFFFFF' || bg === '#000000') {
+                            cell.setAttribute('bgcolor', '#e0f8e0'); // Pale Green
+                        }
+                    }
+                }
+            }
+        }
+
+        if (mapTable && !document.getElementById('mines-legend')) {
+            const legend = document.createElement('div');
+            legend.id = 'mines-legend';
+            legend.style.cssText = 'text-align: center; margin-top: 5px; font-size: 12px; font-weight: bold;';
+            legend.innerHTML = '<span style="display: inline-block; width: 12px; height: 12px; background-color: #e0f8e0; border: 1px solid #999; vertical-align: middle; margin-right: 5px;"></span> = Safe Zone';
+            mapTable.insertAdjacentElement('afterend', legend);
+        }
+    },
+
+    isSafeZone: function(x, y) {
+        if (x < 7 || x > 14) return false;
+
+        // Horizontal bars
+        if ([13, 17, 21, 25, 29].includes(y)) return true;
+
+        // Vertical edges matching the U-shapes
+        if ((x === 7 || x === 14) && [16, 19, 20, 24, 28].includes(y)) return true; // Spikes matching image
+
+        return false;
+    },
+
+    styleLobbyLinks: function() {
+        // Find 'Head inside the mines' link
+        const links = document.querySelectorAll('.content-area a');
+        links.forEach(link => {
+            if (link.textContent.includes('Head inside the mines') || 
+                link.textContent.includes('Purchase some Mining Gear') || 
+                link.textContent.includes('Trade some Ore') || 
+                link.textContent.includes('Read the Mining Primer') || 
+                link.textContent.includes('Read the Plaque')) {
+                link.classList.add('btn');
+                link.style.cssText += 'padding: 10px 20px; font-size: 14px; display: inline-block; margin: 5px; text-decoration: none;';
+            }
+        });
+    },
+
+    styleInsideLinks: function() {
+        // Find 'Go back to Mine Entrance (1T)' link
+        const links = document.querySelectorAll('.content-area a');
+        links.forEach(link => {
+            if (link.textContent.includes('Go back to Mine Entrance') || 
+                link.textContent.includes('Leave the Mines') || 
+                link.textContent.includes('Return to exploring the mines') ||
+                link.textContent.includes('View Active')) {
+                link.classList.add('btn');
+                link.style.cssText += 'padding: 5px 16px; display: inline-block; text-decoration: none; margin: 5px;';
+            }
+        });
+    }
+};
+
 const MixerHelper = {
     cmds: 'mixer',
     staff: false,
@@ -7052,6 +7373,9 @@ const MixerHelper = {
 const NorthernFenceHelper = {
     cmds: 'hill3',
     staff: false,
+    settings: [
+        { key: 'NorthernFenceHelper_PaginationButtons', label: 'Previous/Next Page Buttons (Hall of Fame)' }
+    ],
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('cmd') === 'hill3') {
@@ -7136,6 +7460,13 @@ const NorthernFenceHelper = {
     },
 
     initHallOfFameHelper: function() {
+        const savedSettings = Utils.getSettings();
+        if (savedSettings['NorthernFenceHelper_PaginationButtons'] !== false) {
+            this.initPaginationButtons();
+        }
+
+        this.initBottomPagination();
+
         const playerId = Utils.getHoboId();
         const table = document.querySelector('.content-area table');
         let foundPlayer = false;
@@ -7180,6 +7511,7 @@ const NorthernFenceHelper = {
                         link.style.fontWeight = 'bold';
                         link.style.color = '#008000';
                         link.style.textDecoration = 'underline';
+                        link.classList.add('hof-saved-page');
                     }
                 });
 
@@ -7188,8 +7520,231 @@ const NorthernFenceHelper = {
                     if (s.textContent.trim() === savedPageNum.toString()) {
                         s.style.color = '#008000';
                         s.style.textDecoration = 'underline';
+                        s.classList.add('hof-saved-page');
                     }
                 });
+            }
+        }
+    },
+
+    initPaginationButtons: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlPage = urlParams.get('page');
+        const currentPageIndex = urlPage ? parseInt(urlPage, 10) : 0;
+        const currentPageNum = currentPageIndex + 1;
+
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        const table = contentArea.querySelector('table');
+        if (!table) return;
+
+        const strongs = contentArea.querySelectorAll('strong');
+        let pagesContainer = null;
+        for (const s of strongs) {
+            if (s.textContent.trim() === 'Pages:') {
+                pagesContainer = s.parentNode;
+                break;
+            }
+        }
+
+        if (!pagesContainer) return;
+
+        let maxPageNum = 1;
+        const allLinks = pagesContainer.querySelectorAll('a[href*="do=hof"]');
+        allLinks.forEach(a => {
+            const pageText = a.textContent.trim();
+            const pNum = parseInt(pageText, 10);
+            if (!isNaN(pNum) && pNum > maxPageNum) {
+                maxPageNum = pNum;
+            }
+        });
+
+        // Also check if current page is the max natively via bold <strong> tag
+        const allStrongs = pagesContainer.querySelectorAll('strong');
+        allStrongs.forEach(s => {
+            const pNum = parseInt(s.textContent.trim(), 10);
+            if (!isNaN(pNum) && pNum > maxPageNum) {
+                maxPageNum = pNum;
+            }
+        });
+
+        const navWrap = document.createElement('div');
+        navWrap.style.display = 'flex';
+        navWrap.style.justifyContent = 'space-between';
+        navWrap.style.alignItems = 'center';
+        navWrap.style.padding = '0 5px 8px 5px';
+        navWrap.style.marginBottom = '5px';
+
+        const baseHref = `game.php?sr=${Utils.getSr() || ''}&cmd=hill3&do=hof`;
+
+        const prevDisabled = currentPageIndex <= 0;
+        let prevHref = `${baseHref}&page=${currentPageIndex - 1}`;
+        if (prevDisabled) prevHref = '#';
+
+        const nextDisabled = currentPageNum >= maxPageNum;
+        let nextHref = `${baseHref}&page=${currentPageIndex + 1}`;
+        if (nextDisabled) nextHref = '#';
+
+        const prevBtn = document.createElement('a');
+        prevBtn.href = prevHref;
+        prevBtn.textContent = '<< Previous Page';
+        prevBtn.className = 'btn';
+        prevBtn.style.padding = '5px 12px';
+        prevBtn.style.textDecoration = 'none';
+        if (prevDisabled) {
+            prevBtn.style.background = '#eee';
+            prevBtn.style.color = '#aaa';
+            prevBtn.style.cursor = 'not-allowed';
+            prevBtn.onclick = (e) => e.preventDefault();
+        } else {
+            prevBtn.addEventListener('mouseover', () => prevBtn.style.background = '#ccc');
+            prevBtn.addEventListener('mouseout', () => prevBtn.style.background = '#ddd');
+        }
+
+        const nextBtn = document.createElement('a');
+        nextBtn.href = nextHref;
+        nextBtn.textContent = 'Next Page >>';
+        nextBtn.className = 'btn';
+        nextBtn.style.padding = '5px 12px';
+        nextBtn.style.textDecoration = 'none';
+        if (nextDisabled) {
+            nextBtn.style.background = '#eee';
+            nextBtn.style.color = '#aaa';
+            nextBtn.style.cursor = 'not-allowed';
+            nextBtn.onclick = (e) => e.preventDefault();
+        } else {
+            nextBtn.addEventListener('mouseover', () => nextBtn.style.background = '#ccc');
+            nextBtn.addEventListener('mouseout', () => nextBtn.style.background = '#ddd');
+        }
+
+        const centerWrap = document.createElement('div');
+        centerWrap.style.display = 'flex';
+        centerWrap.style.flexDirection = 'column';
+        centerWrap.style.alignItems = 'center';
+        centerWrap.style.fontSize = '12px';
+        centerWrap.style.fontWeight = 'bold';
+        centerWrap.style.color = '#555';
+
+        const pageTextDiv = document.createElement('div');
+        pageTextDiv.innerHTML = `Page <span style="color:#000;">${currentPageNum}</span> of ${maxPageNum}`;
+        centerWrap.appendChild(pageTextDiv);
+
+        const savedPageStr = Utils.getItem('hof_player_page');
+        if (savedPageStr) {
+            const savedPageNum = parseInt(savedPageStr, 10);
+            if (!isNaN(savedPageNum) && savedPageNum !== currentPageNum) {
+                const savedHref = `${baseHref}&page=${savedPageNum - 1}`;
+                const savedLink = document.createElement('a');
+                savedLink.href = savedHref;
+                savedLink.textContent = 'Jump to your Rank';
+                savedLink.className = 'btn';
+                savedLink.style.display = 'inline-block';
+                savedLink.style.marginTop = '6px';
+                savedLink.style.padding = '3px 10px';
+                savedLink.style.textDecoration = 'none';
+                savedLink.style.fontWeight = 'normal';
+
+                savedLink.addEventListener('mouseover', () => savedLink.style.background = '#ccc');
+                savedLink.addEventListener('mouseout', () => savedLink.style.background = '#ddd');
+
+                centerWrap.appendChild(savedLink);
+            } else if (savedPageNum === currentPageNum) {
+                const foundText = document.createElement('div');
+                foundText.textContent = `(You are on this page)`;
+                foundText.style.fontSize = '10px';
+                foundText.style.color = '#008000';
+                foundText.style.fontWeight = 'normal';
+                foundText.style.marginTop = '6px';
+                centerWrap.appendChild(foundText);
+            }
+        }
+
+        navWrap.appendChild(prevBtn);
+        navWrap.appendChild(centerWrap);
+        navWrap.appendChild(nextBtn);
+
+        table.parentNode.insertBefore(navWrap, table.nextSibling);
+    },
+
+    initBottomPagination: function() {
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        const strongs = contentArea.querySelectorAll('strong');
+        let pagesLabel = null;
+        for (const s of strongs) {
+            if (s.textContent.trim() === 'Pages:') {
+                pagesLabel = s;
+                break;
+            }
+        }
+
+        if (pagesLabel) {
+            const container = document.createElement('div');
+            container.style.display = 'flex';
+            container.style.flexWrap = 'wrap';
+            container.style.gap = '4px';
+            container.style.alignItems = 'center';
+            container.style.justifyContent = 'center';
+            container.style.marginTop = '10px';
+            container.style.marginBottom = '15px';
+
+            pagesLabel.parentNode.insertBefore(container, pagesLabel);
+            pagesLabel.style.marginRight = '5px';
+            container.appendChild(pagesLabel);
+
+            let curr = pagesLabel.nextSibling;
+            while (curr) {
+                let next = curr.nextSibling;
+                if (curr.nodeName === 'BR' || curr.nodeName === 'CENTER') {
+                    if (curr.nodeName === 'BR') {
+                        curr.remove();
+                    } else if (curr.nodeName === 'CENTER') {
+                        break;
+                    }
+                } else {
+                    if (curr.nodeName === '#text') {
+                        if (curr.textContent.trim() === '') {
+                            curr.remove();
+                        } else {
+                            container.appendChild(curr);
+                        }
+                    } else if (curr.nodeName === 'A' || curr.nodeName === 'STRONG') {
+                        const isA = curr.nodeName === 'A';
+                        curr.style.padding = '3px 7px';
+                        curr.style.border = '1px solid #ccc';
+                        curr.style.borderRadius = '3px';
+                        curr.style.textDecoration = 'none';
+                        curr.style.fontSize = '11px';
+                        curr.style.background = isA ? '#fdfdfd' : '#ddd';
+                        curr.style.color = '#333';
+                        curr.style.minWidth = '14px';
+                        curr.style.textAlign = 'center';
+
+                        if (isA) {
+                            curr.addEventListener('mouseover', () => curr.style.background = '#efefef');
+                            curr.addEventListener('mouseout', () => curr.style.background = '#fdfdfd');
+                        }
+                        container.appendChild(curr);
+                    } else {
+                        container.appendChild(curr);
+                    }
+                }
+                curr = next;
+            }
+        }
+
+        const backLink = contentArea.querySelector('center a[href*="cmd=hill3"]');
+        if (backLink && backLink.textContent.includes('Back')) {
+            const centerNode = backLink.closest('center');
+            if (centerNode) {
+                backLink.className = 'btn';
+                backLink.style.display = 'inline-block';
+                backLink.style.padding = '5px 16px';
+                backLink.style.textDecoration = 'none';
+                centerNode.innerHTML = '';
+                centerNode.appendChild(backLink);
             }
         }
     }
@@ -11844,6 +12399,7 @@ const GangStaffHelper = {
         LockoutHelper,
         MarketHelper,
         MessageBoardHelper,
+        MinesHelper,
         MixerHelper,
         NorthernFenceHelper,
         PlayerHelper,
@@ -11865,7 +12421,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.11';
+        window.HoboHelperVersion = '9.13';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
