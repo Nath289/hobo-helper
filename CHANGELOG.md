@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.14] - 2026-05-05
+- **Changed:** Refined the 'Trading Post' visual layout in `MinesHelper`. Restored the net stat gain total header, split individual stats onto multiple lines for better readability, fixed missing image parsing bugs on non-stat purchases, and condensed card heights.
+
 ## [9.13] - 2026-05-04
 - **Added:** Added `MinesHelper` functionality. Overhauls the visual display of the active hobo list inside the mines into a neat sortable HTML table.
 - **Added:** A light green overlay is now drawn directly onto the Mines map to visualize and highlight standard safe-zone tiles where items drop and combat pauses.

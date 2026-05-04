@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (All Beta)
 // @namespace    http://tampermonkey.net/
-// @version      9.13
+// @version      9.14
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -663,6 +663,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.14",
+            date: "2026-05-05",
+            type: "Changed",
+            notes: [
+                "**Changed:** Refined the 'Trading Post' visual layout in `MinesHelper`. Restored the net stat gain total header, split individual stats onto multiple lines for better readability, fixed missing image parsing bugs on non-stat purchases, and condensed card heights."
+            ]
+        },
+        {
             version: "9.13",
             date: "2026-05-04",
             type: "Changed",
@@ -738,15 +746,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "**Fixed:** Corrected the URL matching logic and settings label for the Bernard's Basement map feature."
-            ]
-        },
-        {
-            version: "9.04",
-            date: "2026-05-02",
-            type: "Changed",
-            notes: [
-                "**Fixed:** Resolved a regression where the Living Area layout auto-expansion wasn't operating properly due to older module settings retrieval ignoring device-local boundaries.",
-                "**Changed:** Refactored all remaining legacy modules (Weapons, GangStaff, Can Deposit, Recycling Bin, Bernard's Basement) to rely on the centralized caching layer for configuration loading."
             ]
         }
     ]
@@ -6702,7 +6701,9 @@ const MinesHelper = {
         { key: 'MinesHelper_StyleButtons', label: 'Style Buttons & Links', type: 'checkbox', default: true },
         { key: 'MinesHelper_SafeZones', label: 'Highlight Safe Zones', type: 'checkbox', default: true },
         { key: 'MinesHelper_ActiveTable', label: 'Format Active List into Table', type: 'checkbox', default: true },
-        { key: 'MinesHelper_FormatStats', label: 'Format Mining Stats', type: 'checkbox', default: true }
+        { key: 'MinesHelper_FormatStats', label: 'Format Mining Stats', type: 'checkbox', default: true },
+        { key: 'MinesHelper_FormatOres', label: 'Format Ores & Shards', type: 'checkbox', default: true },
+        { key: 'MinesHelper_FormatTrades', label: 'Format Trading Post', type: 'checkbox', default: true }
     ],
 
     init: function() {
@@ -6734,6 +6735,254 @@ const MinesHelper = {
         if (settings['MinesHelper_FormatStats'] !== false) {
             try { this.formatStats(); } catch (e) { Utils.log(e); }
         }
+
+        if (settings['MinesHelper_FormatOres'] !== false) {
+            try { this.formatOres(); } catch (e) { Utils.log(e); }
+        }
+
+        if (settings['MinesHelper_FormatTrades'] !== false) {
+            try { this.formatTrades(); } catch (e) { Utils.log(e); }
+        }
+    },
+
+    formatTrades: function() {
+        const tradeTable = document.querySelector('table[cellpadding="0"][cellspacing="0"]');
+        if (!tradeTable) return;
+
+        const rows = tradeTable.querySelectorAll('tr');
+        if (rows.length < 2) return;
+
+        // Verify this is the trade table
+        if (!rows[0].textContent.includes('Give me') || !rows[0].textContent.includes("I'll give you")) return;
+
+        const container = document.createElement('div');
+        container.style.cssText = 'display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 15px auto; max-width: 800px; padding: 10px; background: #f8f9fc; border: 1px solid #d3e0f0; border-radius: 6px;';
+
+        // Skip the header row
+        for (let i = 1; i < rows.length; i++) {
+            const cells = rows[i].querySelectorAll('td');
+
+            // Some rows are just text (like the Net stat gain summary at the bottom)
+            if (cells.length === 1 && cells[0].hasAttribute('colspan')) {
+                const summary = document.createElement('div');
+                summary.style.cssText = 'width: 100%; text-align: center; margin-top: 10px; font-size: 12px; color: #333;';
+                summary.innerHTML = cells[0].innerHTML;
+                container.appendChild(summary);
+                continue;
+            }
+
+            if (cells.length < 2) continue;
+
+            const giveHtmlNode = cells[0];
+            const getHtmlNode = cells[1];
+
+            const imgNode = giveHtmlNode.querySelector('img');
+            const linkNode = giveHtmlNode.querySelector('a');
+
+            // Re-construct the requirement text cleanly
+            let reqText = giveHtmlNode.textContent.trim();
+
+            // Extract stats and force them onto unique lines
+            const statHtml = getHtmlNode.innerHTML.replace(/<\/font>\s*,\s*<font/g, '</font><font')
+                                                  .replace(/<font color="?green"?>/g, '<span style="color: green; font-weight: bold; display: block; margin-bottom: 2px;">')
+                                                  .replace(/<font color="?red"?>/g, '<span style="color: #d9534f; font-weight: bold; display: block;">')
+                                                  .replace(/<\/font>/g, '</span>');
+
+            const netGainTitle = getHtmlNode.getAttribute('title') || '';
+
+            const card = document.createElement(linkNode ? 'a' : 'div');
+            card.style.cssText = `
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 5px;
+                width: 140px;
+                min-height: 85px;
+                padding: 10px;
+                background: #fff;
+                border: 1px solid #c0c0c0;
+                border-radius: 6px;
+                text-decoration: none;
+                color: #000;
+                transition: transform 0.1s, box-shadow 0.1s;
+                position: relative;
+            `;
+
+            if (linkNode) {
+                card.href = linkNode.href;
+                card.style.cursor = 'pointer';
+                card.onmouseover = () => {
+                    card.style.borderColor = '#888';
+                    card.style.boxShadow = '0 0 4px rgba(0,0,0,.2)';
+                    card.style.transform = 'scale(1.03)';
+                };
+                card.onmouseout = () => {
+                    card.style.borderColor = '#c0c0c0';
+                    card.style.boxShadow = 'none';
+                    card.style.transform = 'none';
+                };
+            } else {
+                // If it lacks a link, it's not tradable, so visually ghost it
+                card.style.background = '#f9f9f9';
+                card.style.opacity = '0.6';
+            }
+
+            if (imgNode) {
+                imgNode.removeAttribute('align');
+                imgNode.style.marginBottom = '5px';
+            }
+
+            const topSection = document.createElement('div');
+            topSection.style.cssText = 'display: flex; flex-direction: column; align-items: center;';
+            if (imgNode) topSection.appendChild(imgNode);
+
+            const nameSpan = document.createElement('span');
+            nameSpan.style.cssText = 'font-size: 12px; font-weight: bold; text-align: center; margin-bottom: 2px;';
+            nameSpan.textContent = reqText;
+            topSection.appendChild(nameSpan);
+
+            card.appendChild(topSection);
+
+            const statSection = document.createElement('div');
+            statSection.style.cssText = 'font-size: 11px; text-align: center; line-height: 1.4;';
+            statSection.innerHTML = statHtml;
+            card.appendChild(statSection);
+
+            container.appendChild(card);
+        }
+
+        tradeTable.parentNode.replaceChild(container, tradeTable);
+    },
+
+    formatOres: function() {
+        // 1. Process standard <center> tags with ores (Main page & top list on Trade page)
+        const centerTags = document.querySelectorAll('.content-area center');
+        for (const c of centerTags) {
+            const firstImg = c.querySelector('img');
+            if (firstImg && firstImg.title && (firstImg.title.includes('Ore') || firstImg.title.includes('Hobalt'))) {
+                this.formatRawOreContainer(c, false);
+            }
+        }
+
+        // 2. Process the Trading page "Exchange" selected ores container
+        const formTd = document.querySelector('form[action*="do=trade"]');
+        if (formTd) {
+            const formSpans = formTd.querySelectorAll('span[id^="exc_ore_show_"]');
+            if (formSpans.length > 0) {
+                const flexContainer = document.createElement('div');
+                flexContainer.style.cssText = 'display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 10px auto; max-width: 800px;';
+                
+                formSpans[0].parentNode.insertBefore(flexContainer, formSpans[0]);
+                
+                formSpans.forEach(span => {
+                    flexContainer.appendChild(span);
+                    this.formatRawOreContainer(span, true);
+                });
+            }
+        }
+    },
+
+    formatRawOreContainer: function(container, isSingleSpan = false) {
+        const items = [];
+        let currentItem = null;
+
+        Array.from(container.childNodes).forEach(node => {
+            if (node.nodeType === 1 && (node.tagName === 'IMG' || node.tagName === 'A')) {
+                const img = node.tagName === 'IMG' ? node : node.querySelector('img');
+                if (!img) return;
+
+                currentItem = {
+                    node: node,
+                    name: img.getAttribute('title') || img.getAttribute('alt') || 'Unknown',
+                    countNodes: []
+                };
+                items.push(currentItem);
+            } else if (currentItem && (node.nodeType === 3 || (node.nodeType === 1 && node.tagName === 'SPAN'))) {
+                if (node.nodeType === 1 && node.tagName !== 'SPAN') return;
+                currentItem.countNodes.push(node);
+            }
+        });
+
+        if (items.length === 0) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = isSingleSpan 
+            ? 'display: inline-block;' 
+            : 'display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 15px auto; max-width: 800px;';
+
+        items.forEach(item => {
+            const combinedText = item.countNodes.map(n => n.textContent).join('');
+            const countMatch = combinedText.match(/(\d+)/);
+            const countVal = countMatch ? parseInt(countMatch[1], 10) : 0;
+
+            let threshold = 5;
+            if (item.name.includes('Hobalt')) threshold = 1;
+
+            let bg = '#fff';
+            let border = '#c0c0c0';
+            
+            // Only highlight low inventory items (not the exchange preview boxes)
+            if (!isSingleSpan && countVal < threshold) {
+                bg = '#ffe6e6';
+                border = '#ffb3b3';
+            }
+
+            const tile = document.createElement('div');
+            tile.style.cssText = `
+                display: inline-flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                width: 80px;
+                min-height: 65px;
+                padding: 4px 4px 14px 4px;
+                background: ${bg};
+                border: 1px solid ${border};
+                border-radius: 4px;
+                color: #000;
+                position: relative;
+                box-sizing: border-box;
+                font-family: Arial, sans-serif;
+                margin: ${isSingleSpan ? '4px' : '0'};
+            `;
+
+            const img = item.node.tagName === 'IMG' ? item.node : item.node.querySelector('img');
+            img.removeAttribute('align');
+            img.style.marginBottom = '4px';
+            
+            tile.appendChild(item.node);
+
+            const nameSpan = document.createElement('span');
+            nameSpan.style.cssText = 'font-size: 11px; line-height: 1.2; text-align: center; width: 100%; display: block; margin-bottom: 2px;';
+            nameSpan.textContent = item.name;
+            tile.appendChild(nameSpan);
+
+            const countWrapper = document.createElement('div');
+            countWrapper.style.cssText = 'font-size: 12px; font-weight: bold; color: #0055aa; position: absolute; bottom: 4px;';
+            
+            item.countNodes.forEach(n => {
+                if (n.nodeType === 3) {
+                    const trimmed = n.textContent.trim();
+                    if (trimmed) {
+                        n.textContent = trimmed;
+                        countWrapper.appendChild(n);
+                    }
+                } else {
+                    countWrapper.appendChild(n);
+                }
+            });
+
+            tile.appendChild(countWrapper);
+            wrapper.appendChild(tile);
+        });
+
+        if (isSingleSpan) {
+            container.innerHTML = '';
+            container.appendChild(wrapper.firstChild);
+        } else {
+            container.parentNode.replaceChild(wrapper, container);
+        }
     },
 
     formatStats: function() {
@@ -6756,13 +7005,15 @@ const MinesHelper = {
         const oreTraded = oreTradedMatch ? oreTradedMatch[1] : '0';
         const tUsed = tUsedMatch ? tUsedMatch[1] : '0';
 
-        let tableHtml = '<table class="bmenu" style="width: 160px; border-collapse: collapse; margin: 10px auto; font-size: 13px;">';
-        tableHtml += '<tr style="background: #ccc; border-bottom: 2px solid #aaa; color: #333;"><th colspan="2" style="padding: 5px; text-align: center; font-weight: normal;">Mine Section ' + section + '</th></tr>';
-        tableHtml += '<tr style="background: rgba(0,0,0,0.05); border-bottom: 1px solid #ddd;"><td colspan="2" style="padding: 5px; text-align: center;">Mining: ' + mining + '</td></tr>';
-        tableHtml += '<tr style="background: transparent; border-bottom: 1px solid #ddd;"><td style="padding: 5px; text-align: left;">Ore found:</td><td style="padding: 5px; text-align: right;">' + oreFound + '</td></tr>';
-        tableHtml += '<tr style="background: rgba(0,0,0,0.05); border-bottom: 1px solid #ddd;"><td style="padding: 5px; text-align: left;">Ore traded:</td><td style="padding: 5px; text-align: right;">' + oreTraded + '</td></tr>';
-        tableHtml += '<tr style="background: transparent; border-bottom: 1px solid #ddd;"><td style="padding: 5px; text-align: left;">T used:</td><td style="padding: 5px; text-align: right;">' + tUsed + '</td></tr>';
+        let tableHtml = '<div style="width: 130px; margin: 10px auto; padding: 4px; outline: 1px solid #CCCCCC; border: 2px solid #E8E8E8; background: #F9F9F9; font-size: 13px;">';
+        tableHtml += '<table style="width: 100%; border-collapse: collapse;">';
+        tableHtml += '<tr><th colspan="2" style="padding: 2px; text-align: center;">Mine Section ' + section + '</th></tr>';
+        tableHtml += '<tr><td colspan="2" style="padding: 2px 2px 8px 2px; text-align: center;">Mining: ' + mining + '</td></tr>';
+        tableHtml += '<tr><td style="padding: 2px; text-align: left;">Ore found:</td><td style="padding: 2px; text-align: right;">' + oreFound + '</td></tr>';
+        tableHtml += '<tr><td style="padding: 2px; text-align: left;">Ore traded:</td><td style="padding: 2px; text-align: right;">' + oreTraded + '</td></tr>';
+        tableHtml += '<tr><td style="padding: 2px; text-align: left;">T used:</td><td style="padding: 2px; text-align: right;">' + tUsed + '</td></tr>';
         tableHtml += '</table>';
+        tableHtml += '</div>';
 
         statsCenter.outerHTML = tableHtml;
     },
@@ -12421,7 +12672,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.13';
+        window.HoboHelperVersion = '9.14';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
