@@ -164,6 +164,7 @@ Provides quality of life improvements and functionality to the Explore Lobby and
 Helper designed to function on the Canbodian Mines page (`cmd=mines`).
 - **Widen View:** Optional setting to widen the game content area inside the mines for better visibility.
 - **Style Links:** Styles the critical navigation links (e.g. "Head inside the mines", "Leave the Mines") into larger buttons.
+- **Mines Helper:** Widens the core page to make map views more visible natively without breaking the flow. It intelligently parses the text tables inside to stylize them natively into grid-locked floating modules (`div.btn`) that show proper details. Maps the safe-zone boundaries for quick view navigation when dodging player fights inside. Also adds an offline persistence log under the "Leave the Mines" button which stores a 2T breakdown of "Ores Found/T" on successful blasts and total EXP accumulated for that day.
 
 ---
 *Note: We are constantly updating and tweaking these modules. If you encounter any bugs, please report them!*

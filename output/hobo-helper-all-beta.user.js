@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (All Beta)
 // @namespace    http://tampermonkey.net/
-// @version      9.17
+// @version      9.18
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -663,6 +663,15 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.18",
+            date: "2026-05-05",
+            type: "Changed",
+            notes: [
+                "**Fixed:** The Mining Stats side-panel formatter now robustly strips native HTML tags, resolving an issue where colored shards inside the sidebox were stuck at `0` instead of parsing correctly.",
+                "**Fixed:** Mining Log rendering logic now consistently targets `.content-area` instead of fragile table siblings, ensuring the log renders reliably on all standard mining pages, including movement grid pages."
+            ]
+        },
+        {
             version: "9.17",
             date: "2026-05-05",
             type: "Changed",
@@ -739,15 +748,6 @@ const ChangelogData = {
             notes: [
                 "**Added:** Added a \"Show Experience\" settings toggle to the `HitlistHelper` to easily hide or display the experience column within the native Preferences menu.",
                 "**Fixed:** Prevented `BattleLogHelper` from caching instances of `0` experience, keeping the experience mapping strictly to positive gains."
-            ]
-        },
-        {
-            version: "9.07",
-            date: "2026-05-02",
-            type: "Changed",
-            notes: [
-                "**Fixed:** Resolved a critical cross-device settings wiping issue in the Cloud Sync implementation by strictly scrubbing and gracefully repacking `hw_helper_settings` during downstream sync execution.",
-                "**Added:** Introduced a `get_sync_data` script testing tool for inspecting active CouchDB replication sync payloads server-side."
             ]
         }
     ]
@@ -6705,7 +6705,8 @@ const MinesHelper = {
         { key: 'MinesHelper_ActiveTable', label: 'Format Active List into Table', type: 'checkbox', default: true },
         { key: 'MinesHelper_FormatStats', label: 'Format Mining Stats', type: 'checkbox', default: true },
         { key: 'MinesHelper_FormatOres', label: 'Format Ores & Shards', type: 'checkbox', default: true },
-        { key: 'MinesHelper_FormatTrades', label: 'Format Trading Post', type: 'checkbox', default: true }
+        { key: 'MinesHelper_FormatTrades', label: 'Format Trading Post', type: 'checkbox', default: true },
+        { key: 'MinesHelper_Log', label: 'Enable Mining Log', type: 'checkbox', default: true }
     ],
 
     init: function() {
@@ -6745,6 +6746,136 @@ const MinesHelper = {
         if (settings['MinesHelper_FormatTrades'] !== false) {
             try { this.formatTrades(); } catch (e) { Utils.log(e); }
         }
+
+        if (settings['MinesHelper_Log'] !== false) {
+            try { this.processMiningLog(); } catch (e) { Utils.log(e); }
+        }
+    },
+
+    processMiningLog: function() {
+        let newExp = 0;
+        let newOres = [];
+        let tUsedVal = 2; // Default if not found
+
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        let parsedAction = false;
+        const html = contentArea.innerHTML || '';
+
+        if (html.includes('You gain') || html.includes('You get the') || html.includes('Suddenly the wall crumbles') || html.includes('hit a sweet spot') || html.includes('narrowly avoid') || html.includes('ROCKSLIDE')) {
+            const expMatch = html.match(/You gain(?:ed)?\s*(?:<b>)?([\d.]+)(?:<\/b>)?\s*mining/i);
+            if (expMatch) newExp += parseFloat(expMatch[1]);
+
+            // Matches "You get the <b>Orange Ore</b>" or plain text gracefully up to the next HTML tag
+            const oreRegex = /You get the (?:<b>)?([A-Za-z ]+?)(?:<\/b>)?(?=\s*(?:<a|<br>|<\/span>|<img)|$)/gi;
+            let match;
+            while ((match = oreRegex.exec(html)) !== null) {
+                let name = match[1].trim();
+                name = name.replace(/^(.+)\s+\1$/i, '$1');
+                newOres.push(name);
+            }
+            parsedAction = true;
+        }
+
+        if (parsedAction) {
+            // Try to extract T used and Mine stat from the summary center tag if it exists
+            let tFound = false;
+            const centers = contentArea.querySelectorAll('center');
+            for (const c of centers) {
+                if (c.textContent.includes('T used:') && c.textContent.includes('Mine stat:')) {
+                    const tMatch = c.textContent.match(/T used:\s*(\d+)/i);
+                    if (tMatch) {
+                        tUsedVal = parseInt(tMatch[1], 10);
+                        tFound = true;
+                    }
+                    const expMatch2 = c.textContent.match(/Mine stat:\s*([\d.]+)/i);
+                    if (expMatch2) {
+                        newExp = parseFloat(expMatch2[1]);
+                    }
+                    break;
+                }
+            }
+            if (!tFound) {
+                const allTds = contentArea.querySelectorAll('td');
+                for (const t of allTds) {
+                    if (t.textContent.trim() === 'T used:') {
+                        const nextTd = t.nextElementSibling;
+                        if (nextTd) {
+                            tUsedVal = parseInt(nextTd.textContent, 10) || 0;
+                            tFound = true;
+                        }
+                        break;
+                    }
+                }
+            }
+            if (!tFound && window.location.href.includes('&move=')) {
+                tUsedVal = 1;
+            }
+        } else if (window.location.href.includes('&move=') && !document.body.textContent.includes("enough Awake")) {
+            // Moving around the grid arrows costs 1T natively
+            parsedAction = true;
+            tUsedVal = 1;
+            newExp = 0; // Just to be explicit
+        }
+
+        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+        let logData = Utils.getItem('hw_mines_log_data') || {};
+
+        if (!logData[today]) {
+            logData[today] = { exp: 0, tUsed: 0, ores: {} };
+        }
+
+        if (parsedAction) {
+            logData[today].exp += newExp;
+            logData[today].tUsed += tUsedVal;
+
+            for (const ore of newOres) {
+                logData[today].ores[ore] = (logData[today].ores[ore] || 0) + 1;
+            }
+            Utils.setItem('hw_mines_log_data', logData);
+        }
+
+        const logWrapper = document.createElement('div');
+        logWrapper.style.cssText = 'margin: 20px auto; max-width: 800px; padding: 10px; background: #fdfdfd; border: 1px solid #ccc; border-radius: 4px;';
+
+        let logHtml = '<h3 style="margin-top: 0; text-align: center; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Mining Log</h3>';
+
+        const dates = Object.keys(logData).sort((a,b) => new Date(b) - new Date(a));
+
+        if (dates.length === 0) {
+            logHtml += '<div style="text-align: center; padding: 10px; color: #666;">No mining history recorded yet.</div>';
+        }
+
+        for (const date of dates) {
+            const data = logData[date];
+            logHtml += `<div style="margin-bottom: 10px; border: 1px solid #eee; background: #fff; padding: 8px;">`;
+            logHtml += `<div style="font-weight: bold; background: #f0f0f0; padding: 4px; margin: -8px -8px 8px -8px;">${date}</div>`;
+            logHtml += `<div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px;">`;
+            logHtml += `<span><b>Exp Gained:</b> ${data.exp.toFixed(2)}</span>`;
+
+            const totalOres = Object.entries(data.ores).reduce((a, [name, count]) => {
+                return a + (name.toLowerCase().includes('shard') ? count * 3 : count);
+            }, 0);
+            const oresPerT = data.tUsed > 0 ? (totalOres / data.tUsed).toFixed(3) : '0.000';
+
+            logHtml += `<span><b>Ores/T:</b> ${oresPerT} (${totalOres} from ${data.tUsed}T)</span>`;
+            logHtml += `</div>`;
+
+            if (Object.keys(data.ores).length > 0) {
+                logHtml += `<div style="display: flex; flex-wrap: wrap; gap: 5px;">`;
+                for (const [ore, count] of Object.entries(data.ores)) {
+                    logHtml += `<span style="background: #eef; padding: 2px 6px; border-radius: 3px; font-size: 11px;">${ore}: <b>${count}</b></span>`;
+                }
+                logHtml += `</div>`;
+            } else {
+                logHtml += `<div style="font-size: 11px; color: #999;">No ores found on this day.</div>`;
+            }
+            logHtml += `</div>`;
+        }
+
+        logWrapper.innerHTML = logHtml;
+        contentArea.appendChild(logWrapper);
     },
 
     formatTrades: function() {
@@ -6992,11 +7123,11 @@ const MinesHelper = {
         const statsCenter = Array.from(centerTags).find(c => c.textContent.includes('Mine Section') && c.textContent.includes('Mining:'));
         if (!statsCenter) return;
 
-        const text = statsCenter.innerHTML;
+        const text = statsCenter.innerHTML.replace(/<[^>]+>/g, "");
         const sectionMatch = text.match(/Mine Section\s+(\d+)/i);
         const miningMatch = text.match(/Mining:\s*([\d.,]+)/i);
-        const oreFoundMatch = text.match(/Ore found:\s*([\d,]+)/i);
-        const oreTradedMatch = text.match(/Ore traded:\s*([\d,]+)/i);
+        const oreFoundMatch = text.match(/Ore found:\s*([\d,]+(?:\s*\[\s*\d+\s*\])?)/i);
+        const oreTradedMatch = text.match(/Ore traded:\s*([\d,]+(?:\s*\[\s*\d+\s*\])?)/i);
         const tUsedMatch = text.match(/T used:\s*([\d,]+)/i);
 
         if (!sectionMatch) return;
@@ -13107,7 +13238,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.17';
+        window.HoboHelperVersion = '9.18';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.18] - 2026-05-05
+- **Fixed:** The Mining Stats side-panel formatter now robustly strips native HTML tags, resolving an issue where colored shards inside the sidebox were stuck at `0` instead of parsing correctly.
+- **Fixed:** Mining Log rendering logic now consistently targets `.content-area` instead of fragile table siblings, ensuring the log renders reliably on all standard mining pages, including movement grid pages.
+
 ## [9.17] - 2026-05-05
 - **Added:** Added dynamic "#" row numbers to the Super-Cart Racing Skill Tracker table to easily identify ranks across pagination.
 - **Added:** Added "Hide 0 Weekly Gains" and "Hide 0 Total Gains" checkboxes to the Super-Cart Racing Skill Tracker filters, allowing users to cleanly exclude stagnant inactive hobos from their tracked readouts natively.## [9.16] - 2026-05-05
