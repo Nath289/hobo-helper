@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      9.17.20260505.1409
+// @version      9.18.20260505.2322
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -663,6 +663,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.18",
+            date: "2026-05-05",
+            type: "Changed",
+            notes: [
+                "**Mines Helper:**"
+            ]
+        },
+        {
             version: "9.17",
             date: "2026-05-05",
             type: "Changed",
@@ -739,15 +747,6 @@ const ChangelogData = {
             notes: [
                 "**Added:** Added a \"Show Experience\" settings toggle to the `HitlistHelper` to easily hide or display the experience column within the native Preferences menu.",
                 "**Fixed:** Prevented `BattleLogHelper` from caching instances of `0` experience, keeping the experience mapping strictly to positive gains."
-            ]
-        },
-        {
-            version: "9.07",
-            date: "2026-05-02",
-            type: "Changed",
-            notes: [
-                "**Fixed:** Resolved a critical cross-device settings wiping issue in the Cloud Sync implementation by strictly scrubbing and gracefully repacking `hw_helper_settings` during downstream sync execution.",
-                "**Added:** Introduced a `get_sync_data` script testing tool for inspecting active CouchDB replication sync payloads server-side."
             ]
         }
     ]
@@ -6699,7 +6698,6 @@ const MinesHelper = {
     cmds: 'mines',
 
     settings: [
-        { key: 'MinesHelper_Widen', label: 'Widen Mines Content Area', type: 'checkbox', default: true },
         { key: 'MinesHelper_StyleButtons', label: 'Style Buttons & Links', type: 'checkbox', default: true },
         { key: 'MinesHelper_SafeZones', label: 'Highlight Safe Zones', type: 'checkbox', default: true },
         { key: 'MinesHelper_ActiveTable', label: 'Format Active List into Table', type: 'checkbox', default: true },
@@ -6712,15 +6710,6 @@ const MinesHelper = {
     init: function() {
         Utils.log('MinesHelper initialized');
         const settings = Utils.getSettings();
-
-        // Widen the view
-        if (settings['MinesHelper_Widen'] !== false) {
-            const contentArea = document.querySelector('.content-area');
-            if (contentArea) {
-                contentArea.style.maxWidth = '1000px';
-                contentArea.style.minWidth = '1000px';
-            }
-        }
 
         if (settings['MinesHelper_StyleButtons'] !== false) {
             this.styleLobbyLinks();
@@ -6764,76 +6753,144 @@ const MinesHelper = {
         const html = contentArea.innerHTML || '';
 
         if (html.includes('You gain') || html.includes('You get the') || html.includes('Suddenly the wall crumbles') || html.includes('hit a sweet spot') || html.includes('narrowly avoid') || html.includes('ROCKSLIDE')) {
-            const expMatch = html.match(/You gain(?:ed)?\s*(?:<b>)?([\d.]+)(?:<\/b>)?\s*mining/i);
+            const expMatchText = html.replace(/<[^>]+>/g, '');
+            const expMatch = expMatchText.match(/You gain(?:ed)?\s*([\d.]+)\s*mining/i);
             if (expMatch) newExp += parseFloat(expMatch[1]);
 
-            // Matches "You get the <b>Orange Ore</b>" or plain text gracefully up to the next HTML tag
-            const oreRegex = /You get the (?:<b>)?([A-Za-z ]+?)(?:<\/b>)?(?=\s*(?:<a|<br>|<\/span>|<img)|$)/gi;
+            // Matches "You get the <b>Orange Ore</b>" or quantity formats like "You get (2) White Ores" gracefully up to the next HTML tag
+            const oreRegex = /You get (?:the )?(?:\((?:<b>)?(\d+)(?:<\/b>)?\)\s+)?(?:<b>)?([A-Za-z ]+?)(?:<\/b>)?(?=\s*(?:<a|<br>|<\/span>|<img)|$)/gi;
             let match;
             while ((match = oreRegex.exec(html)) !== null) {
-                let name = match[1].trim();
+                let count = parseInt(match[1]) || 1;
+                let name = match[2].trim();
                 name = name.replace(/^(.+)\s+\1$/i, '$1');
-                newOres.push(name);
+                
+                if (count > 1) {
+                    name = name.replace(/ Ores$/i, ' Ore').replace(/ Shards$/i, ' Shard');
+                }
+
+                for (let i = 0; i < count; i++) {
+                    newOres.push(name);
+                }
             }
             parsedAction = true;
         }
 
         if (parsedAction) {
-            // Try to extract T used and Mine stat from the summary center tag if it exists
             let tFound = false;
             const centers = contentArea.querySelectorAll('center');
             for (const c of centers) {
-                if (c.textContent.includes('T used:') && c.textContent.includes('Mine stat:')) {
-                    const tMatch = c.textContent.match(/T used:\s*(\d+)/i);
-                    if (tMatch) {
-                        tUsedVal = parseInt(tMatch[1], 10);
+                if (c.textContent.includes('T used:') && c.textContent.includes('Mining')) {
+                    const text = c.textContent;
+                    const sectionMatch = text.match(/Section\s*(\d+)/i);
+                    const tMatch = text.match(/T used:\s*([\d,]+)/i);
+
+                    if (sectionMatch && tMatch) {
+                        const currentSection = parseInt(sectionMatch[1], 10);
+                        const currentTUsed = parseInt(tMatch[1].replace(/,/g, ''), 10);
+
+                        let lastState = null;
+                        try {
+                            lastState = JSON.parse(Utils.getItem('hw_mines_last_state') || 'null');
+                        } catch(e) {}
+
+                        if (lastState && lastState.section === currentSection) {
+                            if (currentTUsed > lastState.tUsed) {
+                                tUsedVal = currentTUsed - lastState.tUsed;
+                            } else {
+                                tUsedVal = 0;
+                                parsedAction = false; // Prevent resubmitting ores/exp on refresh
+                            }
+                        } else if (lastState && currentSection !== lastState.section) {
+                            tUsedVal = currentTUsed; 
+                        } else {
+                            tUsedVal = 2; // Default starting T
+                        }
+
+                        Utils.setItem('hw_mines_last_state', JSON.stringify({ section: currentSection, tUsed: currentTUsed }));
                         tFound = true;
-                    }
-                    const expMatch2 = c.textContent.match(/Mine stat:\s*([\d.]+)/i);
-                    if (expMatch2) {
-                        newExp = parseFloat(expMatch2[1]);
                     }
                     break;
                 }
             }
+            
             if (!tFound) {
                 const allTds = contentArea.querySelectorAll('td');
                 for (const t of allTds) {
                     if (t.textContent.trim() === 'T used:') {
                         const nextTd = t.nextElementSibling;
                         if (nextTd) {
-                            tUsedVal = parseInt(nextTd.textContent, 10) || 0;
+                            const currentTUsed = parseInt(nextTd.textContent, 10) || 0;
+                            // Similar logic if found in raw TDs instead of center
+                            let lastState = null;
+                            try {
+                                lastState = JSON.parse(Utils.getItem('hw_mines_last_state_td') || 'null');
+                            } catch(e) {}
+                            
+                            if (lastState !== null) {
+                                if (currentTUsed > lastState) {
+                                    tUsedVal = currentTUsed - lastState;
+                                } else {
+                                    tUsedVal = 0;
+                                    parsedAction = false;
+                                }
+                            }
+                            Utils.setItem('hw_mines_last_state_td', JSON.stringify(currentTUsed));
                             tFound = true;
                         }
                         break;
                     }
                 }
             }
-            if (!tFound && window.location.href.includes('&move=')) {
-                tUsedVal = 1;
+            
+            if (!tFound) {
+                if (window.location.href.includes('&move=') && !window.location.href.includes('move=nowhere')) tUsedVal = 1;
+                else if (window.location.href.includes('do=trade') || window.location.href.includes('what=trade') || window.location.href.includes('move=nowhere')) { 
+                    tUsedVal = 0; 
+                    parsedAction = false;
+                }
             }
-        } else if (window.location.href.includes('&move=') && !document.body.textContent.includes("enough Awake")) {
+        } else if (window.location.href.includes('&move=') && !window.location.href.includes('move=nowhere') && !document.body.textContent.includes("enough Awake")) {
             // Moving around the grid arrows costs 1T natively
             parsedAction = true;
             tUsedVal = 1;
             newExp = 0; // Just to be explicit
         }
 
-        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
-        let logData = Utils.getItem('hw_mines_log_data') || {};
+        let today = 'Unknown';
+        try {
+            today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+        } catch (err) {
+            today = new Date().toISOString().split('T')[0];
+        }
 
-        if (!logData[today]) {
+        let logData = {};
+        try {
+            logData = JSON.parse(Utils.getItem('hw_mines_log_data') || '{}');
+        } catch (e) {
+            logData = {};
+        }
+        
+        if (!logData || typeof logData !== 'object' || Array.isArray(logData)) {
+            logData = {};
+        }
+
+        if (!logData[today] || typeof logData[today] !== 'object' || !logData[today].ores) {
             logData[today] = { exp: 0, tUsed: 0, ores: {} };
         }
 
         if (parsedAction) {
-            logData[today].exp += newExp;
-            logData[today].tUsed += tUsedVal;
+            logData[today].exp = (parseFloat(logData[today].exp) || 0) + newExp;
+            logData[today].tUsed = (parseInt(logData[today].tUsed) || 0) + tUsedVal;
+            
+            if (typeof logData[today].ores !== 'object') {
+                logData[today].ores = {};
+            }
 
             for (const ore of newOres) {
                 logData[today].ores[ore] = (logData[today].ores[ore] || 0) + 1;
             }
-            Utils.setItem('hw_mines_log_data', logData);
+            Utils.setItem('hw_mines_log_data', JSON.stringify(logData));
         }
 
         const logWrapper = document.createElement('div');
@@ -6841,7 +6898,11 @@ const MinesHelper = {
 
         let logHtml = '<h3 style="margin-top: 0; text-align: center; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Mining Log</h3>';
 
-        const dates = Object.keys(logData).sort((a,b) => new Date(b) - new Date(a));
+        const dates = Object.keys(logData).sort((a,b) => {
+            const dA = new Date(a);
+            const dB = new Date(b);
+            return (isNaN(dB) ? 0 : dB) - (isNaN(dA) ? 0 : dA);
+        });
 
         if (dates.length === 0) {
             logHtml += '<div style="text-align: center; padding: 10px; color: #666;">No mining history recorded yet.</div>';
@@ -6849,23 +6910,41 @@ const MinesHelper = {
 
         for (const date of dates) {
             const data = logData[date];
+            if (!data || typeof data !== 'object' || !data.ores || typeof data.ores !== 'object') continue;
+            
             logHtml += `<div style="margin-bottom: 10px; border: 1px solid #eee; background: #fff; padding: 8px;">`;
             logHtml += `<div style="font-weight: bold; background: #f0f0f0; padding: 4px; margin: -8px -8px 8px -8px;">${date}</div>`;
             logHtml += `<div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px;">`;
-            logHtml += `<span><b>Exp Gained:</b> ${data.exp.toFixed(2)}</span>`;
+            
+            const expFixed = (parseFloat(data.exp) || 0).toFixed(2);
+            logHtml += `<span><b>Exp Gained:</b> ${expFixed}</span>`;
 
             const totalOres = Object.entries(data.ores).reduce((a, [name, count]) => {
-                return a + (name.toLowerCase().includes('shard') ? count * 3 : count);
+                const c = parseInt(count) || 0;
+                return a + ((name && name.toLowerCase().includes('shard')) ? c * 3 : c);
             }, 0);
-            const oresPerT = data.tUsed > 0 ? (totalOres / data.tUsed).toFixed(3) : '0.000';
+            
+            const tUsedSafe = parseInt(data.tUsed) || 0;
+            const oresPerT = tUsedSafe > 0 ? (totalOres / tUsedSafe).toFixed(3) : '0.000';
 
-            logHtml += `<span><b>Ores/T:</b> ${oresPerT} (${totalOres} from ${data.tUsed}T)</span>`;
+            logHtml += `<span><b>Ores/T:</b> ${oresPerT} (${totalOres} from ${tUsedSafe}T)</span>`;
             logHtml += `</div>`;
 
             if (Object.keys(data.ores).length > 0) {
-                logHtml += `<div style="display: flex; flex-wrap: wrap; gap: 5px;">`;
+                logHtml += `<div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">`;
                 for (const [ore, count] of Object.entries(data.ores)) {
-                    logHtml += `<span style="background: #eef; padding: 2px 6px; border-radius: 3px; font-size: 11px;">${ore}: <b>${count}</b></span>`;
+                    let oreImageSrc = '';
+                    const existingImg = document.querySelector(`img[title="${ore}"], img[alt="${ore}"]`);
+                    if (existingImg) oreImageSrc = existingImg.src;
+
+                    let bgCss = oreImageSrc ? `background-image: url('${oreImageSrc}'); background-repeat: no-repeat; background-position: center top 4px; background-size: 32px; background-color: #fff;` : `background: #fff;`;
+                    let textMargin = oreImageSrc ? 'margin-top: auto;' : '';
+
+                    logHtml += `
+                        <div style="display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 80px; min-height: 75px; padding: 4px 4px 18px 4px; border: 1px solid #c0c0c0; border-radius: 4px; color: #000; position: relative; box-sizing: border-box; font-family: Arial, sans-serif; ${bgCss}">
+                            <span style="font-size: 11px; line-height: 1.2; text-align: center; width: 100%; display: block; margin-bottom: 2px; ${textMargin}">${ore}</span>
+                            <div style="font-size: 12px; font-weight: bold; color: #0055aa; position: absolute; bottom: 4px; text-shadow: 1px 1px 0px #fff, -1px -1px 0px #fff, 1px -1px 0px #fff, -1px 1px 0px #fff;">${count}</div>
+                        </div>`;
                 }
                 logHtml += `</div>`;
             } else {
@@ -7068,8 +7147,8 @@ const MinesHelper = {
                 align-items: center;
                 justify-content: flex-start;
                 width: 80px;
-                min-height: 65px;
-                padding: 4px 4px 14px 4px;
+                min-height: 75px;
+                padding: 4px 4px 18px 4px;
                 background: ${bg};
                 border: 1px solid ${border};
                 border-radius: 4px;
@@ -7123,7 +7202,10 @@ const MinesHelper = {
         const statsCenter = Array.from(centerTags).find(c => c.textContent.includes('Mine Section') && c.textContent.includes('Mining:'));
         if (!statsCenter) return;
 
-        const text = statsCenter.innerHTML.replace(/<[^>]+>/g, "");
+        const viewActiveLink = Array.from(statsCenter.querySelectorAll('a')).find(a => a.textContent.includes('View Active'));
+        const viewActiveHtml = viewActiveLink ? `<div style="margin-bottom: 10px; text-align: center;">${viewActiveLink.outerHTML}</div>` : '';
+
+        const text = statsCenter.innerHTML.replace(/<[^>]+>/g, " ");
         const sectionMatch = text.match(/Mine Section\s+(\d+)/i);
         const miningMatch = text.match(/Mining:\s*([\d.,]+)/i);
         const oreFoundMatch = text.match(/Ore found:\s*([\d,]+(?:\s*\[\s*\d+\s*\])?)/i);
@@ -7138,7 +7220,8 @@ const MinesHelper = {
         const oreTraded = oreTradedMatch ? oreTradedMatch[1] : '0';
         const tUsed = tUsedMatch ? tUsedMatch[1] : '0';
 
-        let tableHtml = '<div style="width: 130px; margin: 10px auto; padding: 4px; outline: 1px solid #CCCCCC; border: 2px solid #E8E8E8; background: #F9F9F9; font-size: 13px;">';
+        let tableHtml = viewActiveHtml;
+        tableHtml += '<div style="width: 155px; margin: 10px auto; padding: 4px; outline: 1px solid #CCCCCC; border: 2px solid #E8E8E8; background: #F9F9F9; font-size: 13px;">';
         tableHtml += '<table style="width: 100%; border-collapse: collapse;">';
         tableHtml += '<tr><th colspan="2" style="padding: 2px; text-align: center;">Mine Section ' + section + '</th></tr>';
         tableHtml += '<tr><td colspan="2" style="padding: 2px 2px 8px 2px; text-align: center;">Mining: ' + mining + '</td></tr>';
@@ -7148,10 +7231,12 @@ const MinesHelper = {
         tableHtml += '</table>';
         tableHtml += '</div>';
 
-        statsCenter.outerHTML = tableHtml;
+        statsCenter.outerHTML = '<center>' + tableHtml + '</center>';
     },
 
     formatActiveList: function() {
+        if (!window.location.search.includes('view=active')) return;
+
         // More robust header text finding across all tags natively
         let activeHeader = null;
         let walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
@@ -13238,7 +13323,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.17.20260505.1409';
+        window.HoboHelperVersion = '9.18.20260505.2322';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

@@ -12,6 +12,12 @@ This document contains a general knowledge base about the mechanics, layout, and
 - When dynamically injecting standard `.img` icons into the topbar `.bmenu`, inline styles must apply `!important` keywords (e.g., `background-image: ... !important; background-size: contain !important;`) to resist override by native HoboWars responsive caching logic.
 - On the message boards, `do=vpost` is the URL parameter for viewing a topic and its replies, while `do=edit` is the URL parameter for editing a specific post. Some staff or helper functionalities must distinguish between these to inject UI elements in the correct location (such as on the textarea when editing, or on the topic replies table when viewing).
 
+## Mines
+- The `cmd=mines` area allows players to explore a grid and mine ores.
+- Navigating the grid (using directional arrows) natively consumes 1T (unless you lack Awake).
+- A page refresh that maintains position (e.g. `cmd=mines&move=nowhere`) does NOT consume grid movement T. 
+- The Mines active display box aggregates total "T used" incrementally rather than logging delta per action, requiring scripts to manual compute action deltas to avoid inflating logs.
+
 ## Rats
 - Rats help the user fight in battles and find items (seafood, treasure, etc.).
 - Rats have stats like Level, Experience, Age, Life, Meals, Speed, Attack, Defense, and Cheese.

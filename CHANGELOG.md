@@ -2,9 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.19] - 2026-05-05
+- **Mines Helper:**
+  - Increased height and bottom padding for the Ore icons inside formatted elements to prevent bottom overflow text overlapping.
+  - Fixed an issue where the Mining Log was inflating "T used" values endlessly by grabbing the total instead of delta. Also added explicit zeroing for URL refreshes containing `move=nowhere`.
+
 ## [9.18] - 2026-05-05
-- **Fixed:** The Mining Stats side-panel formatter now robustly strips native HTML tags, resolving an issue where colored shards inside the sidebox were stuck at `0` instead of parsing correctly.
-- **Fixed:** Mining Log rendering logic now consistently targets `.content-area` instead of fragile table siblings, ensuring the log renders reliably on all standard mining pages, including movement grid pages.
+- **Mines Helper:**
+  - Fixed an issue where the side box mining stats table was parsing formatting HTML tags incorrectly, resulting in "0's". 
+  - Overhauled data cache integrity iteration for the Mining Log rendering system. Fixed a fatal crash preventing the log from appending correctly at the bottom of the `.content-area` view if historical JSON entries were skewed.
 
 ## [9.17] - 2026-05-05
 - **Added:** Added dynamic "#" row numbers to the Super-Cart Racing Skill Tracker table to easily identify ranks across pagination.
@@ -818,5 +824,9 @@ m- Included an interactive "View Stats" table modal showing lifetime consumption
 - Extracted and generalized HTML templates.
 ### Fixed
 - Fixed an issue in `BernardsMansionHelper` where inserting the basement map would horizontally shift the directional navigation links upon page load.
+
+
+
+
 
 
