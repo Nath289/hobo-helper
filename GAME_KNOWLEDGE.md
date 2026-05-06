@@ -123,3 +123,10 @@ When purchasing upgrades for your rat (Vegetarian, Life Boost, Meal Boost), keep
 - Clicking the 'X' changes the view to the blast screen (`cmd=mines&blast=west`). This screen contains an image display of the grid section where you want to mine and allows you to select specific locations on that grid to blast.
 - Various blast statuses exist upon submission, including "Suddenly the wall crumbles to reveal a path forward!" and sweet spots (e.g., "Your Gold Pickaxe hit a sweet spot!"). Ores and shards obtained during these events are explicitly written in the DOM with the prefix "You get the " (e.g. `You get the <b>Orange Ore</b>` or `You get the Hobalt Shard`). The server also returns a "T used:" string summarizing the interaction's cost and stats found (e.g. `T used: 28, Mine stat: 0.38, Ore found: 13 [2]`) which should be parsed directly to record true costs rather than assuming static values. Note: The `[2]` in `Ore found` represents the number of Shards found. Elements containing event text do not always carry `align="center"` attributes, parsing the overarching `.content-area` outerHTML is more resilient.
 - When calculating overall ore gathering efficiency, Shards hold a heavier weight and count as 3 Ores equivalent.
+
+## Mines Helper (Trading Post Formatting)
+- Because `MinesHelper` fully replaces the layout of the `exc_ore_show_` displays, any logic that intends to read stock item availability natively from the DOM (e.g., `formatTrades` scanning `oreStockMap`) must execute `BEFORE` `formatOres` aggressively strips and re-assembles the table chunks.
+
+## Known Issues
+- If you use a macro, you will be heavily punished.
+- Standard macro punishment generally consists of jail time and massive stat deduction.

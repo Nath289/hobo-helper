@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.21] - 2026-05-07
+- **Mines Helper:**
+  - Fixed an issue where the trade limits (badges) and formatted Ore quantities were disappearing from the Trading Post because the display formatting was executing out of order and destroying the DOM layout prematurely.
+
 ## [9.20] - 2026-05-06
 - **Northern Fence Helper:**
   - Added an HTML table restyling the native list of registered racers on the race registration page (`cmd=hill3&do=list`).
@@ -180,7 +184,6 @@ All notable changes to this project will be documented in this file.
 - Improved Skills helper layout:
   - Faded the red background alert for empty quantity skills
   - Repositioned the "Save as Skill Set", "Set Order", and "Unequip All" configuration controls below the Skills List for better logical grouping
-  - Re-styled interaction buttons to be taller and easier to click
   - Constrained layout bounds to prevent "Skill Shop" link overlapping
 
 ## [8.78] - 2026-04-22
