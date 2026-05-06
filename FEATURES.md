@@ -19,7 +19,7 @@ Provides quality-of-life additions to your Living Area. May include highlighting
 - **Mixer Link**: Adds a convenient link to the Mixer directly next to the Hobo Grail, Kings Kiddie Cup, and Golden Trolley icons. Can be disabled in Settings.
 
 ### 4. Northern Fence Helper (`NorthernFenceHelper.js`)
-Assists in navigating the Northern Fence. Enhances the interface by displaying relevant stats and chances to help streamline exploration or related activities.
+Assists in navigating the Northern Fence. Enhances the interface by displaying relevant stats and chances to help streamline exploration or related activities. It also restyles the list of registered racers into a table displaying their historical skill values and highlights your own row so you can quickly gauge your competition.
 
 ### 5. Fort Slugworth Helper (`FortSlugworthHelper.js`)
 Assists in navigating Fort Slugworth (`cmd=fort_slugworth`).

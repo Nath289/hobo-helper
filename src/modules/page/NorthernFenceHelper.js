@@ -11,8 +11,100 @@ const NorthernFenceHelper = {
                 this.initNpcRacingHelper();
             } else if (urlParams.get('do') === 'hof') {
                 this.initHallOfFameHelper();
+            } else if (urlParams.get('do') === 'list') {
+                this.initListHelper();
             }
         }
+    },
+
+    initListHelper: function() {
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        let trackerData = {};
+        try {
+            const rawData = Utils.getItem('hw_cart_tracker');
+            if (rawData) {
+                trackerData = JSON.parse(rawData);
+            }
+        } catch (e) {}
+
+        const playerId = Utils.getHoboId();
+
+        const htmlRaw = contentArea.innerHTML;
+        const lines = htmlRaw.split(/<br\s*\/?>/i);
+        
+        let introText = '';
+        const racers = [];
+        let footerHtml = '';
+
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i].trim();
+            if (!line) continue;
+
+            const match = line.match(/^(\d+)\.\s*(<a.*?href=".*?ID=(\d+)".*?>.*?<\/a>)\s*using the\s*(<strong>.*?<\/strong>)/i);
+            
+            if (match) {
+                racers.push({
+                    pos: match[1],
+                    link: match[2],
+                    id: match[3],
+                    cart: match[4]
+                });
+            } else if (line.includes('These hobos are in the same class')) {
+                introText = line;
+            } else if (line.includes('<center>') || line.includes('[<a href')) {
+                footerHtml += line + '<br>';
+            }
+        }
+
+        if (racers.length === 0) return;
+
+        let tableHtml = `
+            <p style="margin-bottom: 10px;text-align:center;">${introText}</p>
+            <table align="center" width="auto" style="min-width: 50%; margin-bottom:20px;" cellspacing="2" cellpadding="4">
+                <tbody>
+                    <tr>
+                        <td bgcolor="#dddddd" colspan="4" align="center"><strong>Registered Racers</strong></td>
+                    </tr>
+                    <tr>
+                        <td bgcolor="#eeeeee" align="center" width="30"><strong>#</strong></td>
+                        <td bgcolor="#eeeeee"><strong>Hobo</strong></td>
+                        <td bgcolor="#eeeeee"><strong>Cart</strong></td>
+                        <td bgcolor="#eeeeee" align="center" width="100"><strong>Skill</strong></td>
+                    </tr>
+        `;
+
+        racers.forEach(r => {
+            const skill = (trackerData[r.id] && typeof trackerData[r.id].ls !== 'undefined') 
+                ? parseFloat(trackerData[r.id].ls).toFixed(3) 
+                : 'Unknown';
+                
+            let bgColor = '#f0f0f0';
+            let rowStyle = '';
+            
+            if (r.id === playerId) {
+                bgColor = '#fffec8';
+                rowStyle = 'font-weight: bold;';
+            }
+
+            tableHtml += `
+                <tr style="${rowStyle}">
+                    <td bgcolor="${bgColor}" align="center">${r.pos}</td>
+                    <td bgcolor="${bgColor}">${r.link}</td>
+                    <td bgcolor="${bgColor}">${r.cart}</td>
+                    <td bgcolor="${bgColor}" align="center">${skill}</td>
+                </tr>
+            `;
+        });
+
+        tableHtml += `
+                </tbody>
+            </table>
+            <div style="text-align:center; margin-top:20px;">${footerHtml}</div>
+        `;
+
+        contentArea.innerHTML = tableHtml;
     },
 
     initNpcRacingHelper: function() {

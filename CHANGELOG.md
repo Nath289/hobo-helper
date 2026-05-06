@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.20] - 2026-05-06
+- **Northern Fence Helper:**
+  - Added an HTML table restyling the native list of registered racers on the race registration page (`cmd=hill3&do=list`).
+  - Added an exact historical skill readout per racer dynamically pulled from the Super-Cart Racing Skill Tracker object data.
+  - Automatically highlights the current player's row if they are actively signed up for the given race class.
+
 ## [9.19] - 2026-05-05
 - **Mines Helper:**
   - Increased height and bottom padding for the Ore icons inside formatted elements to prevent bottom overflow text overlapping.
@@ -824,9 +830,3 @@ m- Included an interactive "View Stats" table modal showing lifetime consumption
 - Extracted and generalized HTML templates.
 ### Fixed
 - Fixed an issue in `BernardsMansionHelper` where inserting the basement map would horizontally shift the directional navigation links upon page load.
-
-
-
-
-
-
