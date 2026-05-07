@@ -2,29 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.23] - 2026-05-07
+- **Changed:** Grouped repeated saved hobos in the Mining Log by ID and added count indicators next to their names (e.g., PlayerName (x3)).
+- **Fixed:** Reverted fixed base64 strings for Green Ore, Yellow Ore, and Orange Ore that were causing image display issues.
+
 ## [9.22] - 2026-05-07
-- **Mines Helper:**
-  - Added support for recording saved hobos inside the Mining Log. "Hobos Saved" will now render as a bulleted section containing player name links when a trapped player is pulled to safety.
+- **Added:** Added support for recording saved hobos inside the Mining Log. "Hobos Saved" will now render as a bulleted section containing player name links when a trapped player is pulled to safety.
 
 ## [9.21] - 2026-05-07
-- **Mines Helper:**
-  - Fixed an issue where the trade limits (badges) and formatted Ore quantities were disappearing from the Trading Post because the display formatting was executing out of order and destroying the DOM layout prematurely.
+- **Fixed:** Fixed an issue where the trade limits (badges) and formatted Ore quantities were disappearing from the Trading Post because the display formatting was executing out of order and destroying the DOM layout prematurely.
 
 ## [9.20] - 2026-05-06
-- **Northern Fence Helper:**
-  - Added an HTML table restyling the native list of registered racers on the race registration page (`cmd=hill3&do=list`).
-  - Added an exact historical skill readout per racer dynamically pulled from the Super-Cart Racing Skill Tracker object data.
-  - Automatically highlights the current player's row if they are actively signed up for the given race class.
+- **Added:** Added an HTML table restyling the native list of registered racers on the race registration page (`cmd=hill3&do=list`).
+- **Added:** Added an exact historical skill readout per racer dynamically pulled from the Super-Cart Racing Skill Tracker object data.
+- **Added:** Automatically highlights the current player's row if they are actively signed up for the given race class.
 
 ## [9.19] - 2026-05-05
-- **Mines Helper:**
-  - Increased height and bottom padding for the Ore icons inside formatted elements to prevent bottom overflow text overlapping.
-  - Fixed an issue where the Mining Log was inflating "T used" values endlessly by grabbing the total instead of delta. Also added explicit zeroing for URL refreshes containing `move=nowhere`.
+- **Changed:** Increased height and bottom padding for the Ore icons inside formatted elements to prevent bottom overflow text overlapping.
+- **Fixed:** Fixed an issue where the Mining Log was inflating "T used" values endlessly by grabbing the total instead of delta. Also added explicit zeroing for URL refreshes containing `move=nowhere`.
 
 ## [9.18] - 2026-05-05
-- **Mines Helper:**
-  - Fixed an issue where the side box mining stats table was parsing formatting HTML tags incorrectly, resulting in "0's". 
-  - Overhauled data cache integrity iteration for the Mining Log rendering system. Fixed a fatal crash preventing the log from appending correctly at the bottom of the `.content-area` view if historical JSON entries were skewed.
+- **Fixed:** Fixed an issue where the side box mining stats table was parsing formatting HTML tags incorrectly, resulting in "0's". 
+- **Fixed:** Overhauled data cache integrity iteration for the Mining Log rendering system. Fixed a fatal crash preventing the log from appending correctly at the bottom of the `.content-area` view if historical JSON entries were skewed.
 
 ## [9.17] - 2026-05-05
 - **Added:** Added dynamic "#" row numbers to the Super-Cart Racing Skill Tracker table to easily identify ranks across pagination.

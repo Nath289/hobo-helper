@@ -285,6 +285,8 @@ const MinesHelper = {
             logHtml += '<div style="text-align: center; padding: 10px; color: #666;">No mining history recorded yet.</div>';
         }
 
+        // DO NOT CHANGE THESE BASE64 IMAGES. The current strings are correctly mapped and confirmed working.
+        // Modifying them breaks the ore display UI.
         const oreImages = {
             'Hobalt Chunk': 'data:image/webp;base64,UklGRjQDAABXRUJQVlA4TCgDAAAvGAAGELcGOZIkRVJEZR/z6a8Tv04Q7OlaUgJuJEmOnKqZPWrAg2jwG+5BQkCid/e/O7Aj2VatzOy9r6D/kAcRkwcRuXN1ww4FgIDyzrbvPpkmaIAGaYMm0wB9159t23YPAGpQDaohIAIk1F/gC/hXqREgCITUTzUMhFTAH/CvhnbFDnlkwzBS1ArRFLvq69RcKZIhKthajWKltLBri5oaqnQN2KqIlJquiDMkJHY0ggrgGNgFboBfJCgudPVkInbV59GqBcxWRBFoGO6VsaJ+q6PqD/CiDqpBYGhXbfUT9O53Prf/443C1uZ36Gr9wP/P+dODsIQizccm/fJOGOtx/gKxXY+58zXnR6uZs2n4BW7U/PbYJ4DoTb+vrHsbTMp0Ps1i2c2r61urZf1Unzr3yi43tS3cF/Ox+hsfznaZp7O5ZG7cZ1Q6X2ViOKkIWXc2dGzWWKx72w48v14yoNrFKSGmjYYyZRLRkjJwtiMTENAQIhMqbGlSmBIgEKdQX+93+h62I6RG3mfn/dbfV/G6tB2Y9WsejYF20x23b3/W/LVJO/p3Hw92DyWTBvIwmFFKpjAKA0mK3SOcL6Uo3SEarSRGjoA6i0lMGkSgMoEEIJAAhBBJ+Px88nJ/HIds27ZNO9qxbdu2bdu2bdvmzT4Xse2UXfGK80Pme0T/JwB9uLeW2loOUYZPYRPWjZaMX15MkhPVZH4Ug7pCwtLuj09XVwdbMmG8DzEy6cn/gvNjOAWAs98SZnQPuIhJfTs/v4D7zzcUgx+w964Ym5ic/gMAZwDwX3r1Pn4Lz2IyjUakn58f7p0CnMSa3mfu3l/UPYKp5Svb+/sAcBKXdocuwqeXNj5bOlRHGq6cvwCAzyLWd3iMcgja1PX3mUyMqRlHABcLMex3WIzdRilZ61/P11ooRNk/uLwJ1Ud36XUKMCb6svd3UjpJ9V/+JgZaoXsFnLw6MCYa5n5uuja2JcuqhaD72QzEm0kY4/ba1oGSQiFbBvRIVb9qCr530NckCD2WIzygpqmLIMg9Hiqs6PHcNsqCuflVef4a6BntnB2VUiPZnoOLh5eTD71x',
             'Hobalt Shard': 'data:image/webp;base64,UklGRpoDAABXRUJQVlA4TI0DAAAvGAAGEK8Hu7bttNG5ek9SMszwhzVMN1P6NMBMAr82YMm227a5ACTI6b3X/S8mf15Fek8oEQ9ybbuJpCfJbmZc9bZTmPwDwAyYmWdMch3Jtmn1Nd77spl/Ki8P2w4A8AcSoAokQACEQA5EQAAEQAxEQAnEQABEQAaEQAhkQBWoAjEQARUgByKgBDIgBGpACIRABgK8BBpACHSAUugeoysD0k1y/Un2kEtLsoWF9pJ1UxvK2zMmLFF0s8yo1sfmn5wwepSN1QA9CoOrR+WisMyQukxdsuC7qtlf7B0GvuUislZdez4yiVI4WJr/f9Rc+2vQp+lq07b0HbkheV/bw3p0ORA2Yj1iNCUG1Lq2vFlbYv7td6XaX/DXPvFpvjGLVGrVT1O+uXRQwdIR06dmZ/6nxLZ/jPy151N1b6hkpI3s52Xi9GJoJyZS3/h7bEIdrQ2N76HxnVCfvrqwjYavbz8RXDSzjqVFY79/zYfEspFU66nRFa3PlshTuHcoYF7Fb88i5aEklRx0JQWUoIRJCCCEiQiYGgLKBnNRzTKAKOSuJBTOqm/8QGX4VBSiZ2aJR9bSoG//swmJPjSmASH+llfFr7m5vCW+jox8oqZSN1rUFmOEkAvMkP/WU/E9JTOezCHIid+455H5eqLWgbLp8pMqex/GSRCrYGO70WFW8l9E9vxSnD/s5DWiHBShrubu2/DqoglQHI7ftt3t0DHswcPy47bv3bwN5jI516k7uxveRtuGez90fX9qq949X89AYgCAhSTN2bZt27Zt27Zt27Zt27b9NhpQTg1E9F9h27YNMzsugV45EP8E3KN/CUhJSclg/gTVY4XBFxTop2sWuR7Bg/4ITLGz08O5+YXZFRmKR2CLhm2vLl3st+060j6CXt3uV4DDzsHintOjtN99SnY2UDGftqV7xBer91MpveOe+pLSHGjAQv2q8fPD5Zuh7LQfHryYQDjiocH2H98O9vd9/6ZMBETjvxUeouUzeXVz92BIDyrYz7/PN6KsdVSTrm/vXYHwRTZP1mai4y3UfCfG3MFkj4/aW/MyY2w0JfSUGOBB5JY7OhtKC3IyEk2l+NlwAJA5XUoqqitryguz0uMsBchBRxIWIa/hnrqq2rKi3PxYbiRQolCyC5ukjnYX1zc2t8gTQ8DAImTiUjBOGBlo6vJmhB4LXFJSZlZBRTejPx4PBEQ8ampqcuh1AgIA',
@@ -358,7 +360,15 @@ const MinesHelper = {
 
                 if (data.saves && data.saves.length > 0) {
                     logHtml += `<div style="margin-top: 8px; font-size: 12px; padding-top: 5px; border-top: 1px solid #f0f0f0;"><b>Hobos Saved:</b> `;
-                    const saveLinks = data.saves.map((s, index) => `<a href="game.php?cmd=player&ID=${s.id}" class="black_dark_link" style="text-decoration: underline;">${s.name}</a>`);
+                    const saveMap = {};
+                    for (const s of data.saves) {
+                        if (!saveMap[s.id]) saveMap[s.id] = { name: s.name, count: 0 };
+                        saveMap[s.id].count++;
+                    }
+                    const saveLinks = Object.entries(saveMap).map(([id, info]) => {
+                        const countStr = info.count > 1 ? ` (x${info.count})` : '';
+                        return `<a href="game.php?cmd=player&ID=${id}" class="black_dark_link" style="text-decoration: underline;">${info.name}</a>${countStr}`;
+                    });
                     logHtml += saveLinks.join(', ');
                     logHtml += `</div>`;
                 }
