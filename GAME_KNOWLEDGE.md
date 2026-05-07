@@ -16,6 +16,10 @@ This document contains a general knowledge base about the mechanics, layout, and
 - The `cmd=mines` area allows players to explore a grid and mine ores.
 - Navigating the grid (using directional arrows) natively consumes 1T (unless you lack Awake).
 - A page refresh that maintains position (e.g. `cmd=mines&move=nowhere`) does NOT consume grid movement T. 
+- **Sidebox vs. Blasting `T used`:**
+  - While navigating the grid (moving), the UI displays a sidebox (often inside a `<center>` tag containing text like `Mine Section 1`) that dynamically tracks the cumulative "T used:" for the entire session. By referencing this exact number directly from the page, you can get perfect synchronization with the game's actual server tracking without manually compiling deltas.
+  - While inside the Blast/Canvas view (`cmd=mines&blast=...`), the sidebox is removed. In its place, the actual blast result string returns the cumulative stats explicitly across a single line: `T used: 16, Mine stat: 0.24, Ore found: 7 [2]`.
+  - Scripts aggregating daily Mining data must prioritize reading the T value directly from the returned text of a blast result. If a blast hasn't just occurred, the script should fall back to grabbing the T value from the sidebox when moving.
 - The Mines active display box aggregates total "T used" incrementally rather than logging delta per action, requiring scripts to manual compute action deltas to avoid inflating logs.
 
 ## Rats
@@ -131,3 +135,5 @@ When purchasing upgrades for your rat (Vegetarian, Life Boost, Meal Boost), keep
 - If you use a macro, you will be heavily punished.
 - Standard macro punishment generally consists of jail time and massive stat deduction.
 - While Mining, players can occasionally save other players who are "trapped back there". This yields ores and mining experience, and produces HTML text containing an ID'd link to the saved player's profile.
+
+- On the \cmd=mines&blast=...\ screen, click coordinates are recorded in the hidden input \#pass_coords\ string using the format \x,y,tool_id,x2,y2,tool_id2\ where \x\ and \y\ are the respective click coordinates.

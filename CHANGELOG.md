@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.24] - 2026-05-08
+- **Removed:** Abandoned experimental Mine Pattern helper and canvas scaling features.
+
 ## [9.23] - 2026-05-07
 - **Changed:** Grouped repeated saved hobos in the Mining Log by ID and added count indicators next to their names (e.g., PlayerName (x3)).
 - **Fixed:** Reverted fixed base64 strings for Green Ore, Yellow Ore, and Orange Ore that were causing image display issues.

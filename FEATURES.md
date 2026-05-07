@@ -165,8 +165,14 @@ Helper designed to function on the Canbodian Mines page (`cmd=mines`).
 - **Widen View:** Optional setting to widen the game content area inside the mines for better visibility.
 - **Style Links:** Styles the critical navigation links (e.g. "Head inside the mines", "Leave the Mines") into larger buttons.
 - **Trade Badges:** Shows the maximum amount of times you can perform a specific trade based on your current inventory.
-- **Mines Helper:** Widens the core page to make map views more visible natively without breaking the flow. It intelligently parses the text tables inside to stylize them natively into grid-locked floating modules (`div.btn`) that show proper details. Maps the safe-zone boundaries for quick view navigation when dodging player fights inside. Also adds an offline persistence log under the "Leave the Mines" button which stores a 2T breakdown of "Ores Found/T" on successful blasts and total EXP accumulated for that day.
+- **Top Miners Table:** Formats the Top 10 Miners list into a styled table on the Mines Lobby page.
+- **Enlarge Mine Map:** Visually enlarges the mini-map size (increasing individual cell sizes from 6px to 10px) to make navigation easier to read inside the mines.
 - **Mines Helper:** Widens the core page to make map views more visible natively without breaking the flow. It intelligently parses the text tables inside to stylize them natively into grid-locked floating modules (`div.btn`) that show proper details. Maps the safe-zone boundaries for quick view navigation when dodging player fights inside. Also adds an offline persistence log under the "Leave the Mines" button which stores a 2T breakdown of "Ores Found/T" on successful blasts and total EXP accumulated for that day.
 
 ---
 *Note: We are constantly updating and tweaking these modules. If you encounter any bugs, please report them!*
+
+### 33. Mine Pattern Helper (\MinePatternHelper.js\)
+Helper designed to display ghost overlays on the blast screen (\cmd=mines&blast=...\).
+- **Save Pattern:** Saves the sequence of the specific coordinates currently targeted for blasting.
+- **Visual Overlays:** Displays the saved pattern visually as ghost targets superimposed over the blast site layout window to ensure perfect repetitive explosive efficiency.

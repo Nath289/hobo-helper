@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      9.23.20260507.2154
+// @version      9.23.20260508.0147
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -6702,6 +6702,9 @@ const MinesHelper = {
     cmds: 'mines',
 
     settings: [
+        { key: 'MinesHelper_TopMinersTable', label: 'Format Top Miners Table', type: 'checkbox', default: true },
+        { key: 'MinesHelper_ThreeColumnLayout', label: 'Use Three Column Layout', type: 'checkbox', default: true },
+        { key: 'MinesHelper_EnlargeMap', label: 'Enlarge Map Size', type: 'checkbox', default: true },
         { key: 'MinesHelper_StyleButtons', label: 'Style Buttons & Links', type: 'checkbox', default: true },
         { key: 'MinesHelper_SafeZones', label: 'Highlight Safe Zones', type: 'checkbox', default: true },
         { key: 'MinesHelper_ActiveTable', label: 'Format Active List into Table', type: 'checkbox', default: true },
@@ -6728,6 +6731,10 @@ const MinesHelper = {
             try { this.formatActiveList(); } catch (e) { Utils.log(e); }
         }
 
+        if (settings['MinesHelper_EnlargeMap'] !== false) {
+            try { this.enlargeMap(); } catch (e) { Utils.log(e); }
+        }
+
         if (settings['MinesHelper_FormatStats'] !== false) {
             try { this.formatStats(); } catch (e) { Utils.log(e); }
         }
@@ -6741,9 +6748,109 @@ const MinesHelper = {
             try { this.formatOres(); } catch (e) { Utils.log(e); }
         }
 
+        if (settings['MinesHelper_TopMinersTable'] !== false) {
+            try { this.formatTopMinersTable(); } catch (e) { Utils.log(e); }
+        }
+
         if (settings['MinesHelper_Log'] !== false) {
             try { this.processMiningLog(); } catch (e) { Utils.log(e); }
         }
+
+        if (settings['MinesHelper_ThreeColumnLayout'] !== false) {
+            try { this.formatThreeColumnLayout(); } catch (e) { Utils.log(e); }
+        }
+
+        // Setup active view layout overrides
+        if (window.location.search.includes('view=active')) {
+            const contentArea = document.querySelector('.content-area');
+            if (contentArea) {
+                contentArea.style.display = 'flex';
+                contentArea.style.flexDirection = 'column';
+                contentArea.style.alignItems = 'center';
+            }
+        }
+    },
+
+    widenView: function() {
+        // Expand the container specifically for the mines for better visibility
+        const contentArea = document.querySelector('.content-area');
+        if (contentArea) {
+            contentArea.style.width = '100%';
+            contentArea.style.maxWidth = '1000px';
+        }
+    },
+
+    formatThreeColumnLayout: function() {
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        // Widen the view for better visibility of 3 columns
+        contentArea.style.width = '100%';
+        contentArea.style.maxWidth = '1000px';
+
+        // Skip non-standard pages
+        if (window.location.search.includes('view=active') || window.location.search.includes('do=trade') || window.location.search.includes('what=trade')) {
+            return;
+        }
+
+        const mainTables = contentArea.querySelectorAll('table[width="100%"]');
+        let layoutTable = null;
+        for (const t of mainTables) {
+            const cells = t.querySelectorAll('td[width="70%"], td[width="30%"]');
+            if (cells.length >= 2) {
+                layoutTable = t;
+                break;
+            }
+        }
+
+        if (!layoutTable) return;
+
+        const tbody = layoutTable.querySelector('tbody');
+        if (!tbody) return;
+        const tr = tbody.querySelector('tr[valign="top"]') || tbody.querySelector('tr');
+        if (!tr) return;
+
+        const tds = Array.from(tr.querySelectorAll(':scope > td'));
+        if (tds.length < 2) return;
+
+        const navTd = tds[0];
+        const mapTd = tds[1];
+
+        const mapCell = document.getElementById('1001');
+        const mapTable = mapCell ? mapCell.closest('table') : mapTd.querySelector('table');
+
+        if (!mapTable) return;
+
+        let statsElement = null;
+        const divs = mapTd.querySelectorAll('div[align="left"]');
+        for (const d of divs) {
+            if (d.textContent.includes('Mine Section')) {
+                statsElement = d;
+                break;
+            }
+        }
+        if (!statsElement) {
+            const centers = mapTd.querySelectorAll('center');
+            for (const c of centers) {
+                if (c.textContent.includes('Mine Section')) {
+                    statsElement = c;
+                    break;
+                }
+            }
+        }
+
+        if (!statsElement) return;
+
+        navTd.setAttribute('width', '40%');
+        mapTd.setAttribute('width', '30%');
+
+        const leftTd = document.createElement('td');
+        leftTd.setAttribute('width', '30%');
+        leftTd.setAttribute('valign', 'top');
+        leftTd.style.paddingTop = '10px';
+
+        leftTd.appendChild(statsElement);
+        tr.insertBefore(leftTd, navTd);
     },
 
     processMiningLog: function() {
@@ -6859,7 +6966,7 @@ const MinesHelper = {
         if (html.includes('Mine stat:')) {
             const blastTextHtml = contentArea.innerHTML.replace(/<[^>]+>/g, ' ');
             const blastMatch = /T used:\s*([\d,]+)\s*,\s*Mine stat:\s*([\d.]+)\s*,\s*Ore found:\s*([\d,]+)(?:\s*\[\s*([\d,]+)\s*\])?/i.exec(blastTextHtml);
-            
+
             if (blastMatch) {
                 const blastT = Number.parseInt(blastMatch[1].replace(/,/g, ''), 10) || 0;
                 const blastExp = Number.parseFloat(blastMatch[2]) || 0;
@@ -6891,7 +6998,7 @@ const MinesHelper = {
                     shouldLog = true;
                     isRefresh = false;
                 }
-                
+
                 Utils.setItem('hw_mines_blast_state', JSON.stringify({ t: blastT, exp: blastExp }));
             }
         }
@@ -6907,7 +7014,12 @@ const MinesHelper = {
 
         let today = 'Unknown';
         try {
-            today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+            const hoboDate = Utils.getHoboDateTime();
+            if (hoboDate) {
+                today = `${hoboDate.getFullYear()}-${String(hoboDate.getMonth() + 1).padStart(2, '0')}-${String(hoboDate.getDate()).padStart(2, '0')}`;
+            } else {
+                today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+            }
         } catch (err) {
             Utils.log(err);
             today = new Date().toISOString().split('T')[0];
@@ -6920,7 +7032,7 @@ const MinesHelper = {
             Utils.log(e);
             logData = {};
         }
-        
+
         if (!logData || typeof logData !== 'object' || Array.isArray(logData)) {
             logData = {};
         }
@@ -6938,8 +7050,21 @@ const MinesHelper = {
             if (shouldLog) {
                 logData[today].exp = (Number.parseFloat(logData[today].exp) || 0) + newExp;
 
-                if (!initializedNewDay || logData[today].tUsed === 0) {
+                let bestT = null;
+                if (serverTUsed !== null && serverTUsed >= 0) {
+                    bestT = serverTUsed;
+                } else if (currentTUsed !== null && currentTUsed >= 0) {
+                    bestT = currentTUsed;
+                }
+
+                if (bestT !== null) {
+                    logData[today].tUsed = bestT;
+                } else if (!initializedNewDay || logData[today].tUsed === 0) {
                     logData[today].tUsed = (Number.parseInt(logData[today].tUsed) || 0) + tUsedVal;
+                }
+
+                if (serverExp !== null && serverExp >= 0) {
+                    logData[today].exp = serverExp;
                 }
 
                 if (typeof logData[today].ores !== 'object') {
@@ -6959,19 +7084,12 @@ const MinesHelper = {
                 }
             }
 
-            if (serverTUsed !== null && serverTUsed >= 0 && serverExp !== null && serverExp >= 0) {
-                if (logData[today].tUsed !== serverTUsed || logData[today].exp !== serverExp) {
-                    logData[today].tUsed = serverTUsed;
-                    logData[today].exp = serverExp;
-                    shouldLog = true;
-                }
-            }
 
             Utils.setItem('hw_mines_log_data', JSON.stringify(logData));
         }
 
         const logWrapper = document.createElement('div');
-        logWrapper.style.cssText = 'margin: 20px auto; max-width: 800px; padding: 10px; background: #fdfdfd; border: 1px solid #ccc; border-radius: 4px;';
+        logWrapper.style.cssText = 'margin: 20px auto; max-width: 800px; padding: 10px; background: #fdfdfd; border: none; border-radius: 4px;';
 
         let logHtml = '<h3 style="margin-top: 0; text-align: center; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Mining Log</h3>';
 
@@ -7351,12 +7469,18 @@ const MinesHelper = {
             
             item.countNodes.forEach(n => {
                 if (n.nodeType === 3) {
-                    const trimmed = n.textContent.trim();
+                    let trimmed = n.textContent.trim();
                     if (trimmed) {
+                        if (trimmed === '()' || trimmed === '( )') {
+                            trimmed = '(0)';
+                        }
                         n.textContent = trimmed;
                         countWrapper.appendChild(n);
                     }
                 } else {
+                    if (n.tagName === 'B' && n.textContent.trim() === '') {
+                        n.textContent = '0';
+                    }
                     countWrapper.appendChild(n);
                 }
             });
@@ -7370,6 +7494,22 @@ const MinesHelper = {
             container.appendChild(wrapper.firstChild);
         } else {
             container.parentNode.replaceChild(wrapper, container);
+
+            // Clean up trailing breaks and paragraph tags specifically after the main page inventory list
+            let next = wrapper.nextSibling;
+            let removedCount = 0;
+            while (next && removedCount < 4) {
+                const current = next;
+                next = next.nextSibling;
+                if (current.nodeType === 1 && (current.tagName === 'BR' || (current.tagName === 'P' && current.innerHTML.trim() === ''))) {
+                    current.remove();
+                    removedCount++;
+                } else if (current.nodeType === 3 && current.textContent.trim() === '') {
+                    current.remove(); // Remove trailing empty text nodes
+                } else {
+                    break;
+                }
+            }
         }
     },
 
@@ -7633,6 +7773,73 @@ const MinesHelper = {
                 link.style.cssText += 'padding: 5px 16px; display: inline-block; text-decoration: none; margin: 5px;';
             }
         });
+    },
+
+    enlargeMap: function() {
+        const mapStartCell = document.getElementById('1001');
+        if (!mapStartCell) return;
+
+        const mapTable = mapStartCell.closest('table');
+        if (!mapTable) return;
+
+        mapTable.classList.add('mines-map-grid');
+        if (!document.getElementById('mines-map-grid-style')) {
+            const style = document.createElement('style');
+            style.id = 'mines-map-grid-style';
+            style.textContent = `
+                .mines-map-grid { border-collapse: collapse; }
+                .mines-map-grid td[id] { 
+                    border-bottom: 1px solid #ccc; 
+                    border-right: 1px solid #ccc; 
+                    width: 14px !important;
+                    height: 14px !important;
+                }
+                .mines-map-grid td[title="You!"] { 
+                    width: 14px !important; 
+                    height: 14px !important; 
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    },
+
+    formatTopMinersTable: function() {
+        const tds = document.querySelectorAll('td');
+        let headerTd = null;
+        for (const td of tds) {
+            if (td.textContent.trim() === 'Top 10 Miners') {
+                headerTd = td;
+                break;
+            }
+        }
+        if (!headerTd) return;
+
+        const table = headerTd.closest('table');
+        if (!table) return;
+
+        table.classList.add('bmenu');
+        table.style.cssText = 'width: 100%; border-collapse: collapse;';
+
+        const rows = table.querySelectorAll('tr');
+        if (rows.length > 0) {
+            const headerRow = rows[0];
+            headerRow.style.cssText = 'background: #ccc; border-bottom: 2px solid #aaa; color: #333; font-weight: bold; text-align: left;';
+            const headerCells = headerRow.querySelectorAll('td, th');
+            headerCells.forEach(cell => {
+                cell.style.padding = '5px';
+            });
+
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].querySelectorAll('td');
+                cells.forEach(cell => {
+                    cell.style.padding = '4px 5px';
+                    cell.style.borderBottom = '1px solid #ddd';
+                });
+                if (i % 2 === 0) {
+                    rows[i].style.background = '#f9f9f9';
+                }
+            }
+        }
     }
 };
 
@@ -13600,7 +13807,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.23.20260507.2154';
+        window.HoboHelperVersion = '9.23.20260508.0147';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
