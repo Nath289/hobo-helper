@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (All Beta)
 // @namespace    http://tampermonkey.net/
-// @version      9.21
+// @version      9.22
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -663,6 +663,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.22",
+            date: "2026-05-07",
+            type: "Changed",
+            notes: [
+                "**Mines Helper:**"
+            ]
+        },
+        {
             version: "9.21",
             date: "2026-05-07",
             type: "Changed",
@@ -738,14 +746,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "**Added:** Added a \"Full Width Log Graphs\" setting (enabled by default) to force the native Living Area stat log charts to utilize 100% of the page width."
-            ]
-        },
-        {
-            version: "9.11",
-            date: "2026-05-03",
-            type: "Changed",
-            notes: [
-                "**Fixed:** Corrected execution order inside `HitlistHelper` to ensure the Experience dictionary data is properly loaded into the DOM before the automatic Multi-Sort logic attempts to evaluate rows."
             ]
         }
     ]
@@ -6744,7 +6744,11 @@ const MinesHelper = {
     processMiningLog: function() {
         let newExp = 0;
         let newOres = [];
+        let newSaves = [];
         let tUsedVal = 0;
+        let shouldLog = false;
+        let serverTUsed = null;
+        let serverExp = null;
 
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
@@ -6754,7 +6758,7 @@ const MinesHelper = {
 
         // Exclude trade pages from action parsing
         if (!globalThis.location.href.includes('do=trade') && !globalThis.location.href.includes('what=trade')) {
-            if (html.includes('You gain') || html.includes('You get the') || html.includes('Suddenly the wall crumbles') || html.includes('hit a sweet spot') || html.includes('narrowly avoid') || html.includes('ROCKSLIDE')) {
+            if (html.includes('You gain') || html.includes('You get the') || html.includes('Suddenly the wall crumbles') || html.includes('hit a sweet spot') || html.includes('narrowly avoid') || html.includes('ROCKSLIDE') || html.includes('trapped back there')) {
                 const expMatchText = html.replaceAll(/<[^>]+>/g, '');
                 const expMatch = /You gain(?:ed)?\s*([\d.]+)\s*mining/i.exec(expMatchText);
                 if (expMatch) newExp += Number.parseFloat(expMatch[1]);
@@ -6774,6 +6778,13 @@ const MinesHelper = {
                         newOres.push(name);
                     }
                 }
+
+                const saveRegex = /pull\s+<a[^>]+ID=(\d+)[^>]*>([^<]+)<\/a>\s+out to safety/gi;
+                let saveMatch;
+                while ((saveMatch = saveRegex.exec(html)) !== null) {
+                    newSaves.push({ id: saveMatch[1], name: saveMatch[2] });
+                }
+
                 hasActionText = true;
             }
         }
@@ -6847,53 +6858,36 @@ const MinesHelper = {
             if (blastMatch) {
                 const blastT = Number.parseInt(blastMatch[1].replace(/,/g, ''), 10) || 0;
                 const blastExp = Number.parseFloat(blastMatch[2]) || 0;
-                const blastOres = Number.parseInt(blastMatch[3].replace(/,/g, ''), 10) || 0;
-                const blastShards = blastMatch[4] ? (Number.parseInt(blastMatch[4].replace(/,/g, ''), 10) || 0) : 0;
 
-                let lastBlast = { t: 0, exp: 0, ores: 0, shards: 0 };
-                try { lastBlast = JSON.parse(Utils.getItem('hw_mines_blast_state') || '{"t":0,"exp":0,"ores":0,"shards":0}'); } catch(e) {}
-                
-                let dT = 0, dExp = 0, dOres = 0, dShards = 0;
-                
+                serverTUsed = blastT;
+                serverExp = blastExp;
+
+                let lastBlast = { t: 0, exp: 0 };
+                try { lastBlast = JSON.parse(Utils.getItem('hw_mines_blast_state') || '{"t":0,"exp":0}'); } catch(e) {}
+
+                let dT = 0, dExp = 0;
+
                 if (blastT >= lastBlast.t) {
                     dT = blastT - lastBlast.t;
                     dExp = blastExp - lastBlast.exp;
-                    dOres = blastOres - lastBlast.ores;
-                    dShards = blastShards - lastBlast.shards;
                 } else {
                     dT = blastT;
                     dExp = blastExp;
-                    dOres = blastOres;
-                    dShards = blastShards;
                 }
 
                 // Never count negatives
                 if (dT < 0) dT = 0;
                 if (dExp < 0) dExp = 0;
-                if (dOres < 0) dOres = 0;
-                if (dShards < 0) dShards = 0;
 
-                if (dT > 0 || dExp > 0 || dOres > 0 || dShards > 0) {
-                    // Only sub in "Unknown" ores if the standard action parser completely failed to capture them
+                if (dT > 0 || dExp > 0) {
                     if (newExp < dExp) newExp = dExp;
                     if (dT > tUsedVal) tUsedVal = dT;
-                    
-                    const totalParsedCount = newOres.length;
-                    const expectedCount = dOres + dShards;
-                    
-                    if (totalParsedCount < expectedCount) {
-                        const missingOres = dOres - newOres.filter(o => !o.includes('Shard')).length;
-                        const missingShards = dShards - newOres.filter(o => o.includes('Shard')).length;
-                        
-                        for (let i = 0; i < missingOres && i < 100; i++) newOres.push('Unknown Ore');
-                        for (let i = 0; i < missingShards && i < 100; i++) newOres.push('Unknown Shard');
-                    }
 
                     shouldLog = true;
                     isRefresh = false;
                 }
                 
-                Utils.setItem('hw_mines_blast_state', JSON.stringify({ t: blastT, exp: blastExp, ores: blastOres, shards: blastShards }));
+                Utils.setItem('hw_mines_blast_state', JSON.stringify({ t: blastT, exp: blastExp }));
             }
         }
 
@@ -6901,9 +6895,9 @@ const MinesHelper = {
             hasActionText = false;
             newExp = 0;
             newOres = [];
+            newSaves = [];
         }
 
-        let shouldLog = false;
         if (hasActionText || tUsedVal > 0) shouldLog = true;
 
         let today = 'Unknown';
@@ -6928,7 +6922,7 @@ const MinesHelper = {
 
         let initializedNewDay = false;
         if (!logData[today] || typeof logData[today] !== 'object' || !logData[today].ores) {
-            logData[today] = { exp: 0, tUsed: 0, ores: {} };
+            logData[today] = { exp: 0, tUsed: 0, ores: {}, saves: [] };
             if (currentTUsed !== null && currentTUsed > 0 && currentSection !== -1) {
                 logData[today].tUsed = currentTUsed;
             }
@@ -6947,10 +6941,27 @@ const MinesHelper = {
                     logData[today].ores = {};
                 }
 
+                if (!Array.isArray(logData[today].saves)) {
+                    logData[today].saves = [];
+                }
+
                 for (const ore of newOres) {
                     logData[today].ores[ore] = (logData[today].ores[ore] || 0) + 1;
                 }
+
+                if (newSaves.length > 0) {
+                    logData[today].saves.push(...newSaves);
+                }
             }
+
+            if (serverTUsed !== null && serverTUsed >= 0 && serverExp !== null && serverExp >= 0) {
+                if (logData[today].tUsed !== serverTUsed || logData[today].exp !== serverExp) {
+                    logData[today].tUsed = serverTUsed;
+                    logData[today].exp = serverExp;
+                    shouldLog = true;
+                }
+            }
+
             Utils.setItem('hw_mines_log_data', JSON.stringify(logData));
         }
 
@@ -6972,9 +6983,9 @@ const MinesHelper = {
         const oreImages = {
             'Hobalt Chunk': 'data:image/webp;base64,UklGRjQDAABXRUJQVlA4TCgDAAAvGAAGELcGOZIkRVJEZR/z6a8Tv04Q7OlaUgJuJEmOnKqZPWrAg2jwG+5BQkCid/e/O7Aj2VatzOy9r6D/kAcRkwcRuXN1ww4FgIDyzrbvPpkmaIAGaYMm0wB9159t23YPAGpQDaohIAIk1F/gC/hXqREgCITUTzUMhFTAH/CvhnbFDnlkwzBS1ArRFLvq69RcKZIhKthajWKltLBri5oaqnQN2KqIlJquiDMkJHY0ggrgGNgFboBfJCgudPVkInbV59GqBcxWRBFoGO6VsaJ+q6PqD/CiDqpBYGhXbfUT9O53Prf/443C1uZ36Gr9wP/P+dODsIQizccm/fJOGOtx/gKxXY+58zXnR6uZs2n4BW7U/PbYJ4DoTb+vrHsbTMp0Ps1i2c2r61urZf1Unzr3yi43tS3cF/Ox+hsfznaZp7O5ZG7cZ1Q6X2ViOKkIWXc2dGzWWKx72w48v14yoNrFKSGmjYYyZRLRkjJwtiMTENAQIhMqbGlSmBIgEKdQX+93+h62I6RG3mfn/dbfV/G6tB2Y9WsejYF20x23b3/W/LVJO/p3Hw92DyWTBvIwmFFKpjAKA0mK3SOcL6Uo3SEarSRGjoA6i0lMGkSgMoEEIJAAhBBJ+Px88nJ/HIds27ZNO9qxbdu2bdu2bdvmzT4Xse2UXfGK80Pme0T/JwB9uLeW2loOUYZPYRPWjZaMX15MkhPVZH4Ug7pCwtLuj09XVwdbMmG8DzEy6cn/gvNjOAWAs98SZnQPuIhJfTs/v4D7zzcUgx+w964Ym5ic/gMAZwDwX3r1Pn4Lz2IyjUakn58f7p0CnMSa3mfu3l/UPYKp5Svb+/sAcBKXdocuwqeXNj5bOlRHGq6cvwCAzyLWd3iMcgja1PX3mUyMqRlHABcLMex3WIzdRilZ61/P11ooRNk/uLwJ1Ud36XUKMCb6svd3UjpJ9V/+JgZaoXsFnLw6MCYa5n5uuja2JcuqhaD72QzEm0kY4/ba1oGSQiFbBvRIVb9qCr530NckCD2WIzygpqmLIMg9Hiqs6PHcNsqCuflVef4a6BntnB2VUiPZnoOLh5eTD71x',
             'Hobalt Shard': 'data:image/webp;base64,UklGRpoDAABXRUJQVlA4TI0DAAAvGAAGEK8Hu7bttNG5ek9SMszwhzVMN1P6NMBMAr82YMm227a5ACTI6b3X/S8mf15Fek8oEQ9ybbuJpCfJbmZc9bZTmPwDwAyYmWdMch3Jtmn1Nd77spl/Ki8P2w4A8AcSoAokQACEQA5EQAAEQAxEQAnEQABEQAaEQAhkQBWoAjEQARUgByKgBDIgBGpACIRABgK8BBpACHSAUugeoysD0k1y/Un2kEtLsoWF9pJ1UxvK2zMmLFF0s8yo1sfmn5wwepSN1QA9CoOrR+WisMyQukxdsuC7qtlf7B0GvuUislZdez4yiVI4WJr/f9Rc+2vQp+lq07b0HbkheV/bw3p0ORA2Yj1iNCUG1Lq2vFlbYv7td6XaX/DXPvFpvjGLVGrVT1O+uXRQwdIR06dmZ/6nxLZ/jPy151N1b6hkpI3s52Xi9GJoJyZS3/h7bEIdrQ2N76HxnVCfvrqwjYavbz8RXDSzjqVFY79/zYfEspFU66nRFa3PlshTuHcoYF7Fb88i5aEklRx0JQWUoIRJCCCEiQiYGgLKBnNRzTKAKOSuJBTOqm/8QGX4VBSiZ2aJR9bSoG//swmJPjSmASH+llfFr7m5vCW+jox8oqZSN1rUFmOEkAvMkP/WU/E9JTOezCHIid+455H5eqLWgbLp8pMqex/GSRCrYGO70WFW8l9E9vxSnD/s5DWiHBShrubu2/DqoglQHI7ftt3t0DHswcPy47bv3bwN5jI516k7uxveRtuGez90fX9qq949X89AYgCAhSTN2bZt27Zt27Zt27Zt27b9NhpQTg1E9F9h27YNMzsugV45EP8E3KN/CUhJSclg/gTVY4XBFxTop2sWuR7Bg/4ITLGz08O5+YXZFRmKR2CLhm2vLl3st+060j6CXt3uV4DDzsHintOjtN99SnY2UDGftqV7xBer91MpveOe+pLSHGjAQv2q8fPD5Zuh7LQfHryYQDjiocH2H98O9vd9/6ZMBETjvxUeouUzeXVz92BIDyrYz7/PN6KsdVSTrm/vXYHwRTZP1mai4y3UfCfG3MFkj4/aW/MyY2w0JfSUGOBB5JY7OhtKC3IyEk2l+NlwAJA5XUoqqitryguz0uMsBchBRxIWIa/hnrqq2rKi3PxYbiRQolCyC5ukjnYX1zc2t8gTQ8DAImTiUjBOGBlo6vJmhB4LXFJSZlZBRTejPx4PBEQ8ampqcuh1AgIA',
-            'Green Ore': 'data:image/webp;base64,UklGRooCAABXRUJQVlA4TH0CAAAvGAAGEN8Fq7ZtV82e+9DBvxwEREpGvnoPVYTrSLZto2efi/wDVH5l8OY4jiTJUbJmD+G/gwQvXNAsQbZN/al2sh/BIQif0rKYEDGFmKxnwJSWxWQ5Y0pjPctMDqfDstGyXKNQJlqIqAggiRMGLS1wioI0IpAAiCQAQFEAFIAEAREBQQAScEuRxN2gUO4id5s7j63l9pwCCggyRRABRACk/Mo6TmWBU8mMKX5fRLRABAQoEfGH095Oa/lrLIrGTGb/QfZ22tvvpv+fopcrk1OJ/GHW8j9jiZQEyYy/zWKNlBQNM1J6OoGUh9vd4/3hc518vZ6ef39Pj6e333a83goLGWALAFg2amedzdk727Zt27Zt27Zt9Tf/uzPc0ov9q27ZhovRk9BXIDwAgxL/U4djz7RMTw78Q6OPZ0f7uPe1zRx9Oji+J06VSymeOs1emtq9uDtaIZPLHjpPulicujjbHx1aHAingw3CZHG7s2TtqH+hrKCpWR7H3T76r/WPr59flxdU11R011RFabx3THVkgNra6Zrvna8vykhIKy2I1Xx1nNC8Oju6cXxzOtcUHB4THp6VWZHAAAgG3r7eTqG+dma7w9fTxDkiDSVnFhhgCUZu6xqaWquI0GOPlG+wTnZObFp8dTXoxh8ra4sSUpBBHa18/36CEnPTs1MRCCo5g4lRvN1dfd8LWDvoHRSZm5ucmxhfrAQQYyCVSpZ09YWXrHxeVkF5SVpqaFaoNINVEolBZWtnZ2ju7hiVlZqXnw1AjFooDYw+FhZUtobJzcnXzjMgoyLTUoaMAgYBtKhNAvjmPKyS4PJGZvgb6TigAhZDOUWPDtwD4uaCQ/wgEAA==',
+            'Green Ore': 'data:image/webp;base64,UklGRooCAABXRUJQVlA4TH0CAAAvGAAGEN8Fq7ZtV82e+9DBvxwEREpGvnoPVYTrSLZto2efi/wDVH5l8OY4jiTJUbJmD+G/gwQvXNAsQbZN/al2sh/BIQif0rKYEDGFmKxnwJSWxWQ5Y0pjPctMDqfDstGyXKNQJlqIqAggiRMGLS1wioI0IpAAiCQAQFEAFIAEAREBQQAScEuRxN2gUO4id5s7j63l9pwCCggyRRABRACk/Mo6TmWBU8mMKX5fRLRABAQoEfGH095Oa/lrLIrGTGb/QfZ22tvvpv+fopcrk1OJ/GHW8j9jiZQEyYy/zWKNlBQNM1J6OoGUh9vd4/3hc518vZ6ef39Pj6e333a83goLGWALAFg2amedzdk727Zt27Zt27Z9Tf/uzPc0ov9q27ZhovRk9BXIDwAgxL/U4djz7RMTw78Q6OPZ0f7uPe1zRx9Oji+J06VSymeOs1emtq9uDtaIZPLHjpPulicujjbHx1aHAingw3CZHG7s2TtqH+hrKCpWR7H3T76r/WPr59flxdU11R011RFabx3THVkgNra6Zrvna8vykhIKy2I1Xx1nNC8Oju6cXxzOtcUHB4THp6VWZHAAAgG3r7eTqG+dma7w9fTxDkiDSVnFhhgCUZu6xqaWquI0GOPlG+wTnZObFp8dTXoxh8ra4sSUpBBHa18/36CEnPTs1MRCCo5g4lRvN1dfd8LWDvoHRSZm5ucmxhfrAQQYyCVSpZ09YWXrHxeVkF5SVpqaFaoNINVEolBZWtnZ2ju7hiVlZqXnw1AjFooDYw+FhZUtobJzcnXzjMgoyLTUoaMAgYBtKhNAvjmPKyS4PJGZvgb6TigAhZDOUWPDtwD4uaCQ/wgEAA==',
             'White Ore': 'data:image/webp;base64,UklGRkQDAABXRUJQVlA4TDcDAAAvGAAGEI2QSduG2u5cRP/juYmCtA1Y1F0hAWGE6P9CAwQkSf8/h/0PvHtKkKNt27FH9/P+5nHEtqtkzNKd2an1TMty9sAteCquILZtf34VcwOQ20hyJEVkdZ/w38/br7ruhCBJcttmbu8I0Dnb//+joglgHUSSGzZbZh9kkpBJRWZFbts28Uyu7SsAP4D9AkkDAGg4wO1IJO+8jQSLCXZC7z3YeAC9vUj2Qbp3j1dDlPiG+ere/335fP79PyeezHYFkAwzD+cFT8le8M3CRH4fvPRVI3eH1l4N507CkTRJA7JVPluPog7L739Fe5D/BUB6kDxIWQ/u7A9vH38a7sUZZtXpisqS7BasPWH0WPZKxrPYYog7vh4p4a2NF9T0cGR1F8Glc7jbwwEcv7yNR0CSSgrJCaZj/UHeRUpv/n/vIikguCytYwva3OzEelKYR9cJFwqS3UCSOprGl2TmkRyrWnfh3+nP7mrvMDZlLLZ0B2tKFEjEUuaS7JTq3dQJkqxnxMhdmqlYqFPKaubOs+52JQz5/8uXjekxrlid0qYDEkHQxWGJ1o678xu1FiS5aFfZtPDVhLIUfP517y6OVLV0u0wKnoWZgi58gl47sTs2DUWWIhlurtiQFAAAoGrT8CWisFZxB8XnygDTZ6j/EheAQrORd2E36YqcRpt0djSdJ1iwaoCkROoOYsdUzSj+nmFyJ2tBnGnpLCxgQF9DhARPCPxbjOKbTfgMfb36eQ+a+Fb3PFMkNjS21MSdlOZMsMHs2GyRtNAWf0KAgoivFsIUoP+hieXXtUX1rT3YMmGcoE3hYoJpYie2ywyTKPwGOwtLCtBg4K+QyTDNMv1j+M2yrL41AToh78X7JqtmI0MjxlcREd2gC6GQwWcKjITTBEl+wCw25sIBbADg3eyhShnGrBGVFAAMaAIJKMEGEmwlUeno1TgA2ARAF+A6rbkgIBiCARUAzOBH+ISli4HKSMKkAPwBt2k0kbjsGSwwCFRoTJs04Edc0GcaUxYIgNHEARpgCzsoVTtm1ZiBN7jCaJpWuiqeGk3cNp8H0NlEHdMkNkCaBIqwYJDErLdtAFhAAAADsH7ZdwAAAA==',
-            'Yellow Ore': 'data:image/webp;base64,UklGRroCAABXRUJQVlA4TNACAAAvGAAGEH/mKJJtV5k5LwCKUIL/BQrY5fje+xrcRpIkKVU9s3tgEZbgv4AFaPcfxEaSFElRPcfsv3HnBMP/NIEgRP9PYRmxSUJz4B0AuJKgJKEoym4ZSv0rBYRSm4SEPqMUtVGSQRdKoR8az7Md3lEKpRQQMCR/2ogk9i+U2vRJG5GgKG2QkJBEbfpESULRpqFspKFAG2xoEwWKTuODUKApEEqCom2AJoi2YdnGDnqCklAKRYFImpKQRCmUUiiKDknRP9qSUKAk0+RUFIhSTQedYAEGnbRBgwkabH0ekoABNiAUWIKAgAIBAQOErkCBctte4ObztFJfr+vucbT3PX2eJShJue8/MF3X6fK/OP/a6XutkqCAvS4+D6DK8bOPQYIk2aZt2bZt27Zt27Zt27Zt+/rcN6jL+H8Ca0f0fwI4/lmMjCisYVRE4ZT4k5cTpDJFxnMJKYBm2Mfj2f0vJzMESfPE4dmJ583lqavTQw0KI4Jy4/TuytrEfP/T+d3N+Q83A7JMXs/QHFpYP9ibPLq4Od6XpdCQyMLu7d0DaOz5+uX09vJ5Y2dbmwYTV9G3982tbRvsPXl4++zsX1zd0qPBGftbWlk6h2aVV39fvr++NYzPLBnQkXZxsEd2LgmZ2aWDI19dfWi01oQGcKrWzsjJxTso3DctLhIVN7b0R3LSAE7Jwhkh5OZiGxgCoXGJpR1NAhgNcKuZOTi5IEefiKjEyIDY1PwWUxwdICoYOXt4u8dEx4dEJuaUFLfEctEDAp+Wl59/UhpARkl5SVY94mUAGF7ROTg2LzO/oAxKcuoqmAAgSNoklpWXVFeWoMyKCB5mACdqnlFd2NpcnpdVqYNjCqh8ap7JZTVF6cUpIhhzQMXxi+m6RmVVGVI4WKfgeaXUzYQwNgAARuYCjv8TAA==',
+            'Yellow Ore': 'data:image/webp;base64,UklGRroCAABXRUJQVlA4TK0CAAAvGAAGEH/mKJJtV5k5LwCKUIL/BQrY5fje+xrcRpIkKVU9s3tgEZbgv4AFaPcfxEaSFElRPcfsv3HnBMP/NIEgRP9PYRmxSUJz4B0AuJKgJKEoym4ZSv0rBYRSm4SEPqMUtVGSQRdKoR8az7Md3lEKpRQQMCR/2ogk9i+U2vRJG5GgKG2QkJBEbfpESULRpqFspKFAG2xoEwWKTuODUKApEEqCom2AJoi2YdnGDnqCklAKRYFImpKQRCmUUiiKDknRP9qSUKAk0+RUFIhSTQedYAEGnbRBgwkabH0ekoABNiAUWIKAgAIBAQOErkCBctte4ObztFJfr+vucbT3PX2eJShJue8/MF3X6fK/OP/a6XutkqCAvS4+D6DK8bOPQYIk2aZt2bZt27Zt27Zt27Zt+/rcN6jL+H8Ca0f0fwI4/lmMjCisYVRE4ZT4k5cTpDJFxnMJKYBm2Mfj2f0vJzMESfPE4dmJ583lqavTQw0KI4Jy4/TuytrEfP/T+d3N+Q83A7JMXs/QHFpYP9ibPLq4Od6XpdCQyMLu7d0DaOz5+uX09vJ5Y2dbmwYTV9G3982tbRvsPXl4++zsX1zd0qPBGftbWlk6h2aVV39fvr++NYzPLBnQkXZxsEd2LgmZ2aWDI19dfWi01oQGcKrWzsjJxTso3DctLhIVN7b0R3LSAE7Jwhkh5OZiGxgCoXGJpR1NAhgNcKuZOTi5IEefiKjEyIDY1PwWUxwdICoYOXt4u8dEx4dEJuaUFLfEctEDAp+Wl59/UhpARkl5SVY94mUAGF7ROTg2LzO/oAxKcuoqmAAgSNoklpWXVFeWoMyKCB5mACdqnlFd2NpcnpdVqYNjCqh8ap7JZTVF6cUpIhhzQMXxi+m6RmVVGVI4WKfgeaXUzYQwNgAARuYCjv8TAA==',
             'Orange Ore': 'data:image/webp;base64,UklGRtwCAABXRUJQVlA4TNACAAAvGAAGEC8HOZIk10rlvI/w3xz84abhpJ/6RsCOZFu1snptHPL/JiticHc5B3IkSYokj4E90l9Ghh/fdRFk29Sfaid7HQpxhSgCzAQUM8gUgFDCWA6zDEGiKO3duri7+AczyZDcHCdjOQhcjiBKa3d/sdycQJSbY0jGNHPANDfHhClhSoASBinJKEMjBAgCBAhTSiBMCUIIQhBCCSOUyAgETkpRhACJEADCGVxfQWCQEKZcIwmc4ECBhJEIJzpFmYkCZTNdAigzgRJGmCbIKJt21p1lyFgzykJkp6xZxk7S3qzh/2+z/m/WPdbF9LAMGe3DzMi/mVgXBkEOJe0AO9lJStohJeMkKXl6uPf998HBryxr+Hk/PV7x/XLnK0/erpfvj93/7+Hz4c/D5XtrWNdYN8WgaF1AgiTZpm2te59t27Zt27Zt27Zt89u837a19/17JM8YQET/JwCOTjAdjhdxSQr8PQbyh1nG1NWR6Wh0VjktcysjdeqRMI+6nrWdmaGBCP0IiE/T2NbB3Mgg1IPj/2HojPK2LnZ2tpZW3g1tqv8OIkhIx93DycHB2S2wYqCvjpPsRxgUXPw8XZ1sPXwyctuHJ6Yl8D6EQS0xPSHax8bWO668e3J8Z1Z2P6RYWFmclhLtZeKZUd4xNbe+IL4P5ojIzs9JjAkL883uuf7o/ublZWECAITFprS1MivRPyo4oPnB61u0xZlBKgAAUimoqS0pSg6O8g/+8vnTtXtrKyEIALBgbGZ+SUFJRmBkcObHD+/frA5d+oEBgKJdnpZRWFiZExge3zTadOPhnbvb3ykAgKWzy7PSc/NysqJr+rr6r9Ce37z6dQ8g7qSSktz0/NTO5pH5pe0X7549+Y33AOK3r2+sbmkcq+rd2r349tXTl2JkH8DsUrouQRr6FmVzGxdoj29/o8DBGFGoGCMqr9LPX8qibOQQBxOMMSZw7gI=',
             'Red Ore': 'data:image/webp;base64,UklGRqoCAABXRUJQVlA4TJ4CAAAvGAAGEEcGqZEkSZJ59vRrZpc/puUwRPbqE4TjRpIUKbMWD/7n9tl0/jBjj9tIkiQl635E/DcMGQkf3iHItqk/1U72NzgAeAkJhIQh0yFkCnUhhWox8xBmSCBkyDJncbcNXyXLnHW9IJmSurFMQaYPRx0liWR6CJKQAkEKBSFgCEaEEJKUEJJcExKQDTIkIKSQEQoJQRIhQTiY4FqRACGEXAUmuQEZUsftktTBkKCOEpJkZEgSMlnIuJ3qiXCUEKSW+gQRLYqMMLVCatmKxrF68E9t1QDGsBgWtQVDgliMqwCL4OEusnp6Hx+2Gv/1txUqP7cf+8v3+21bvn2f/p7/u8/NzXv38rV9ttXYGrAE2hqQIABgGUnJ2rZte4u1bdu2bdvGrG3zrnzXWg+I6L/atm0YOz2ZyhXgl0mT8D/7lYjhVvz3/CT0BaGEHnf3Djn3Ep8IS3IrPcwOrZ+eHNzxfjwhoFcyOD+4fXh2vjmjQX2gpELG3Ez/SM/Vxtbi1HQKfK+EWuvC+OjkKufomNM7NjUh+a7NiOf29g0Mr+137dyW1Qz2tRiT77xmVVNHZ/fNwcnl9XJrY1tpndRbx+dZWVtd0VDcsLJ0UV9YXtTe7CP4IgwhjSJugaEZOYmFhSEBwcEhsRkV3rwAcKkbWVha2bmGBAQ5BXr5+wcFJKaUpahQgMcVtbZ1tMecPXAb36CQoKDo1KTESgcISGlzBMEwFEMRNCgoKDA6PS8nsThXBACKV17X/MXhLs4R4WFRSTnpGQkZkXxvFi6srGWCunt4BCXHpKRn52QmZse9AWBoQVFZbczLLz4zs6CiPD0yywp+8Bs0KaZiFZSWn5RXkJqZi5Mfn5zgl1M1NdA3MzbUkaHAJ6QpCEkIIUmBP0UA',
             'Purple Ore': 'data:image/webp;base64,UklGRsICAABXRUJQVlA4TLYCAAAvGAAGENcGOZIkRZJHLeqv4IEG98VaEgJSJEmOpPDq1fx/i+Z4HBDdDSGSZFlR5Twu/ypQgwk83Ow+gmyb+lPtZBeQJAMCu6GoQwCwaIYZAFP2skAwiIZFa+m69LyAijXMgLmfdDsyo8sCs7d9nhlEbQwg153v15kBhAG6H83thAiwRjCAGaQgAggAERUzCDTDIIggEAiAIERUYKUwPB1PjCAF2fIiAKg8oC/C5KV70oCAaA1r3AXP6Tnb/2VpEKRYtAaYYQhmWKMC4LKESieVHbbAzCgOhdj/nBxPwoAUYuQQ/v9V/q7L2ZhyaJBKUdvEyZgiPn8ftm2+Pnb/+y/J3952//H7Z18Xh8+709fX7+/X18rh4+btfW3P5mxqEAhj/35Bgm3bph2d2LbzY9u2bdu2bdu2bVtl5N78qtudMhoQ0f8JgP83ecHPtBjRYPITVIwRDQOriJSiAkVVTfjz9wgNi4CkrLqWoZGBoampuamtPeM3BDGrhMaEeTo7OVhbmFlamBjqCT0DEMRBcUvMK86IdHWws7SwMjfU1zXkAyC04o4F5XW5WTHx0Q7mFg4OlpZWjtn8VKDRSUrLqinJSg0P8XYxsXeJDAnLb2qU+AI0QUURmdk5eXHeAd7uxu5xeYX1Pe2tclTAoiUJ6blZuTEeoV4eKaV5pX3D/UPDMi8A3EnZSZmF6YGeHs6+7Ru796/HJ5b7OQkA0qjMT05P8/fxi+h42tw/3pucnddGAIB5g+sKc6MiYgsbXr15fFhfHVvpZicAAIjLpqy2oLOqpa2i+vzkbmZ0QAzBdzGzvH1LV/PgSP/20dveiTUKgh8SjARDuiam5udOz7bmP9LAT2N6i4XFpaub6+FDZfxzQGg0p28vLi+OPzCRXwCCpN8d7Fy+ZyPw65iOR+kTG4HfSvBXAv8w',
@@ -7039,6 +7050,14 @@ const MinesHelper = {
                 } else {
                     logHtml += `<div style="font-size: 11px; color: #999;">No ores found on this day.</div>`;
                 }
+
+                if (data.saves && data.saves.length > 0) {
+                    logHtml += `<div style="margin-top: 8px; font-size: 12px; padding-top: 5px; border-top: 1px solid #f0f0f0;"><b>Hobos Saved:</b> `;
+                    const saveLinks = data.saves.map((s, index) => `<a href="game.php?cmd=player&ID=${s.id}" class="black_dark_link" style="text-decoration: underline;">${s.name}</a>`);
+                    logHtml += saveLinks.join(', ');
+                    logHtml += `</div>`;
+                }
+
                 logHtml += `</div>`;
             }
         }
@@ -7274,8 +7293,10 @@ const MinesHelper = {
             let bg = '#fff';
             let border = '#c0c0c0';
             
-            // Only highlight low inventory items (not the exchange preview boxes)
-            if (!isSingleSpan && countVal < threshold) {
+            const isTradePage = globalThis.location.search.includes('do=trade') || globalThis.location.search.includes('what=trade');
+
+            // Only highlight low inventory items on the trade page (and not the exchange preview boxes)
+            if (isTradePage && !isSingleSpan && countVal < threshold) {
                 bg = '#ffe6e6';
                 border = '#ffb3b3';
             }
@@ -7354,10 +7375,19 @@ const MinesHelper = {
 
         if (!sectionMatch) return;
 
+        const formatOreValue = (val) => {
+            const shardMatch = /\[\s*(\d+)\s*\]/.exec(val);
+            if (shardMatch) {
+                const ores = val.split('[')[0].trim();
+                return `${ores} [<span style="cursor: help;" title="shards found today"><span style="color: blue;">${shardMatch[1]}</span></span>]`;
+            }
+            return val;
+        };
+
         const section = sectionMatch[1];
         const mining = miningMatch ? miningMatch[1] : '0';
-        const oreFound = oreFoundMatch ? oreFoundMatch[1] : '0';
-        const oreTraded = oreTradedMatch ? oreTradedMatch[1] : '0';
+        const oreFoundStr = oreFoundMatch ? formatOreValue(oreFoundMatch[1]) : '0';
+        const oreTradedStr = oreTradedMatch ? formatOreValue(oreTradedMatch[1]) : '0';
         const tUsed = tUsedMatch ? tUsedMatch[1] : '0';
 
         let tableHtml = viewActiveHtml;
@@ -7365,9 +7395,9 @@ const MinesHelper = {
         tableHtml += '<table style="width: 100%; border-collapse: collapse;">';
         tableHtml += '<tr><th colspan="2" style="padding: 2px; text-align: center;">Mine Section ' + section + '</th></tr>';
         tableHtml += '<tr><td colspan="2" style="padding: 2px 2px 8px 2px; text-align: center;">Mining: ' + mining + '</td></tr>';
-        tableHtml += '<tr><td style="padding: 2px; text-align: left;">Ore found:</td><td style="padding: 2px; text-align: right;">' + oreFound + '</td></tr>';
-        tableHtml += '<tr><td style="padding: 2px; text-align: left;">Ore traded:</td><td style="padding: 2px; text-align: right;">' + oreTraded + '</td></tr>';
-        tableHtml += '<tr><td style="padding: 2px; text-align: left;">T used:</td><td style="padding: 2px; text-align: right;">' + tUsed + '</td></tr>';
+        tableHtml += '<tr><td style="padding: 2px; text-align: left;">Ore found:</td><td style="padding: 2px; text-align: right; font-weight: bold;">' + oreFoundStr + '</td></tr>';
+        tableHtml += '<tr><td style="padding: 2px; text-align: left;">Ore traded:</td><td style="padding: 2px; text-align: right; font-weight: bold;">' + oreTradedStr + '</td></tr>';
+        tableHtml += '<tr><td style="padding: 2px; text-align: left;">T used:</td><td style="padding: 2px; text-align: right; font-weight: bold;">' + tUsed + '</td></tr>';
         tableHtml += '</table>';
         tableHtml += '</div>';
 
@@ -13555,7 +13585,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.21';
+        window.HoboHelperVersion = '9.22';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

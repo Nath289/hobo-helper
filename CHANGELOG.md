@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.22] - 2026-05-07
+- **Mines Helper:**
+  - Added support for recording saved hobos inside the Mining Log. "Hobos Saved" will now render as a bulleted section containing player name links when a trapped player is pulled to safety.
+
 ## [9.21] - 2026-05-07
 - **Mines Helper:**
   - Fixed an issue where the trade limits (badges) and formatted Ore quantities were disappearing from the Trading Post because the display formatting was executing out of order and destroying the DOM layout prematurely.

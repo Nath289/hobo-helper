@@ -130,3 +130,4 @@ When purchasing upgrades for your rat (Vegetarian, Life Boost, Meal Boost), keep
 ## Known Issues
 - If you use a macro, you will be heavily punished.
 - Standard macro punishment generally consists of jail time and massive stat deduction.
+- While Mining, players can occasionally save other players who are "trapped back there". This yields ores and mining experience, and produces HTML text containing an ID'd link to the saved player's profile.
