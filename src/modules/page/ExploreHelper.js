@@ -1,6 +1,7 @@
 const ExploreHelper = {
     cmds: 'explore',
     staff: false,
+    group: 'City',
     settings: [
         { key: 'ExploreHelper_Enable', label: 'Enable Explore Helper', defaultValue: true },
         { key: 'ExploreHelper_Log', label: 'Display Explore Log', defaultValue: true },
@@ -177,4 +178,3 @@ const ExploreHelper = {
         }
     }
 };
-

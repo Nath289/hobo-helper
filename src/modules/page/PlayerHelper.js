@@ -1,6 +1,7 @@
 const PlayerHelper = {
     cmds: 'player',
     staff: false,
+    group: 'Global',
     settings: [
         { key: 'PlayerHelper_CopyHoboName', label: 'Show Copy [hoboname] Link' }
     ],
@@ -88,4 +89,3 @@ const PlayerHelper = {
         }
     }
 };
-

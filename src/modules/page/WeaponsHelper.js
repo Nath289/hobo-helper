@@ -1,6 +1,7 @@
 const WeaponsHelper = {
     cmds: 'wep',
     staff: false,
+    group: 'Fighting',
     settings: [
         { key: 'WeaponsHelper_HighlightEquipped', label: 'Highlight Equipped Items' },
         { key: 'WeaponsHelper_ClickableImages', label: 'Clickable Item Images' }

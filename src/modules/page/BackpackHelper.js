@@ -1,6 +1,7 @@
 const BackpackHelper = {
     cmds: ['backpack', ''],
     staff: false,
+    group: 'General',
     settings: [
         { key: 'BackpackHelper_Tooltips', label: 'Item Tooltips (Stats/Effects)' },
         { key: 'BackpackHelper_Favourites', label: 'Favourite Drinks UI' },

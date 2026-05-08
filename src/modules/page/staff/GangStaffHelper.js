@@ -1,6 +1,7 @@
 const GangStaffHelper = {
     cmds: ['gang', 'gang2'],
     staff: true,
+    group: 'Gang',
     settings: [
         { key: 'GangStaffHelper_FormatMassMails', label: 'Format Mass Mails' },
         { key: 'GangStaffHelper_MassMailTemplates', label: 'Mass Mail Templates' }

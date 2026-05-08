@@ -1,5 +1,6 @@
 const DisplayHelper = {
     staff: false,
+    group: 'Global',
     localKeys: [
         'hw_last_active_time',
         'hw_rejoin_time',

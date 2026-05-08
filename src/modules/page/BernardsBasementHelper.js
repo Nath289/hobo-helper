@@ -1,6 +1,7 @@
 const BernardsBasementHelper = {
     cmds: 'bernards',
     staff: false,
+    group: 'City',
     settings: [
         { key: 'BernardsBasementHelper_EnableMap', label: 'Enable Basement Map' }
     ],

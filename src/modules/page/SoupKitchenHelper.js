@@ -1,6 +1,7 @@
 const SoupKitchenHelper = {
     cmds: 'soup_kitchen',
     staff: false,
+    group: 'Hoburbia',
     init: function() {
 
         const contentArea = document.querySelector('.content-area');
@@ -93,5 +94,4 @@ const SoupKitchenHelper = {
         contentArea.appendChild(tableContainer);
     }
 };
-
 

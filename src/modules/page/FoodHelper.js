@@ -1,6 +1,7 @@
 const FoodHelper = {
     cmds: ['food', ''],
     staff: false,
+    group: 'General',
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
         const cmd = urlParams.get('cmd') || '';
@@ -328,4 +329,3 @@ const FoodHelper = {
         this.selectCrap();
     },
 };
-

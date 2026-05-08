@@ -1,6 +1,7 @@
 const GangHitlistHelper = {
     cmds: ['gang', 'gang2'],
     staff: false,
+    group: 'Gang',
     settings: [
         { key: 'GangHitlistHelper_HitlistPageTracker', label: 'Hitlist Page Tracker' },
         { key: 'GangHitlistHelper_HitlistMarkRed', label: 'Hitlist Mark Red' },
@@ -312,4 +313,3 @@ const GangHitlistHelper = {
         }
     }
 };
-

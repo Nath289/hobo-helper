@@ -1,6 +1,7 @@
 const FoodBankHelper = {
     cmds: 'food_bank',
     staff: false,
+    group: 'General',
     settings: [
         {
             key: 'FoodBankHelper_enabled',

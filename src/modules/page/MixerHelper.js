@@ -1,6 +1,7 @@
 const MixerHelper = {
     cmds: 'mixer',
     staff: false,
+    group: 'General',
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('cmd') === 'mixer') {

@@ -1,6 +1,7 @@
 const LiquorStoreHelper = {
     cmds: 'liquor_store',
     staff: false,
+    group: 'City',
     init: function() {
         if (window.location.href.includes('cmd=liquor_store')) {
             try {
@@ -133,4 +134,3 @@ const LiquorStoreHelper = {
         }
     }
 }
-

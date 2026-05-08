@@ -1,6 +1,7 @@
-const CanDepoHelper = {
+ const CanDepoHelper = {
     cmds: 'depo',
     staff: false,
+    group: 'City',
     init: function() {
         const savedSettings = Utils.getSettings();
         if (savedSettings?.CanDepoHelper_EnableFeature === false) return;

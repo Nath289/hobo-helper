@@ -1,6 +1,7 @@
 const HitlistHelper = {
     cmds: 'battle',
     staff: false,
+    group: 'Fighting',
     settings: [
         { key: 'HitlistHelper_HighlightOnline', label: 'Highlight Online Players' },
         { key: 'HitlistHelper_RememberSort', label: 'Enable Client-side Sorting & Remember' },

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      9.23.20260508.0147
+// @version      9.24.20260508.1019
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -614,6 +614,18 @@ const FoodData = {
     "Wonka Quadra Candy Cane": { "img": "Wonka-Quadra-Candy-Cane.gif", "ratExp": 11, "ratLife": 6 },
 };
 
+const OresData = {
+    'Hobalt Chunk': 'data:image/webp;base64,UklGRjQDAABXRUJQVlA4TCgDAAAvGAAGELcGOZIkRVJEZR/z6a8Tv04Q7OlaUgJuJEmOnKqZPWrAg2jwG+5BQkCid/e/O7Aj2VatzOy9r6D/kAcRkwcRuXN1ww4FgIDyzrbvPpkmaIAGaYMm0wB9159t23YPAGpQDaohIAIk1F/gC/hXqREgCITUTzUMhFTAH/CvhnbFDnlkwzBS1ArRFLvq69RcKZIhKthajWKltLBri5oaqnQN2KqIlJquiDMkJHY0ggrgGNgFboBfJCgudPVkInbV59GqBcxWRBFoGO6VsaJ+q6PqD/CiDqpBYGhXbfUT9O53Prf/443C1uZ36Gr9wP/P+dODsIQizccm/fJOGOtx/gKxXY+58zXnR6uZs2n4BW7U/PbYJ4DoTb+vrHsbTMp0Ps1i2c2r61urZf1Unzr3yi43tS3cF/Ox+hsfznaZp7O5ZG7cZ1Q6X2ViOKkIWXc2dGzWWKx72w48v14yoNrFKSGmjYYyZRLRkjJwtiMTENAQIhMqbGlSmBIgEKdQX+93+h62I6RG3mfn/dbfV/G6tB2Y9WsejYF20x23b3/W/LVJO/p3Hw92DyWTBvIwmFFKpjAKA0mK3SOcL6Uo3SEarSRGjoA6i0lMGkSgMoEEIJAAhBBJ+Px88nJ/HIds27ZNO9qxbdu2bdu2bdvmzT4Xse2UXfGK80Pme0T/JwB9uLeW2loOUYZPYRPWjZaMX15MkhPVZH4Ug7pCwtLuj09XVwdbMmG8DzEy6cn/gvNjOAWAs98SZnQPuIhJfTs/v4D7zzcUgx+w964Ym5ic/gMAZwDwX3r1Pn4Lz2IyjUakn58f7p0CnMSa3mfu3l/UPYKp5Svb+/sAcBKXdocuwqeXNj5bOlRHGq6cvwCAzyLWd3iMcgja1PX3mUyMqRlHABcLMex3WIzdRilZ61/P11ooRNk/uLwJ1Ud36XUKMCb6svd3UjpJ9V/+JgZaoXsFnLw6MCYa5n5uuja2JcuqhaD72QzEm0kY4/ba1oGSQiFbBvRIVb9qCr530NckCD2WIzygpqmLIMg9Hiqs6PHcNsqCuflVef4a6BntnB2VUiPZnoOLh5eTD71x',
+    'Hobalt Shard': 'data:image/webp;base64,UklGRpoDAABXRUJQVlA4TI0DAAAvGAAGEK8Hu7bttNG5ek9SMszwhzVMN1P6NMBMAr82YMm227a5ACTI6b3X/S8mf15Fek8oEQ9ybbuJpCfJbmZc9bZTmPwDwAyYmWdMch3Jtmn1Nd77spl/Ki8P2w4A8AcSoAokQACEQA5EQAAEQAxEQAnEQABEQAaEQAhkQBWoAjEQARUgByKgBDIgBGpACIRABgK8BBpACHSAUugeoysD0k1y/Un2kEtLsoWF9pJ1UxvK2zMmLFF0s8yo1sfmn5wwepSN1QA9CoOrR+WisMyQukxdsuC7qtlf7B0GvuUislZdez4yiVI4WJr/f9Rc+2vQp+lq07b0HbkheV/bw3p0ORA2Yj1iNCUG1Lq2vFlbYv7td6XaX/DXPvFpvjGLVGrVT1O+uXRQwdIR06dmZ/6nxLZ/jPy151N1b6hkpI3s52Xi9GJoJyZS3/h7bEIdrQ2N76HxnVCfvrqwjYavbz8RXDSzjqVFY79/zYfEspFU66nRFa3PlshTuHcoYF7Fb88i5aEklRx0JQWUoIRJCCCEiQiYGgLKBnNRzTKAKOSuJBTOqm/8QGX4VBSiZ2aJR9bSoG//swmJPjSmASH+llfFr7m5vCW+jox8oqZSN1rUFmOEkAvMkP/WU/E9JTOezCHIid+455H5eqLWgbLp8pMqex/GSRCrYGO70WFW8l9E9vxSnD/s5DWiHBShrubu2/DqoglQHI7ftt3t0DHswcPy47bv3bwN5jI516k7uxveRtuGez90fX9qq949X89AYgCAhSTN2bZt27Zt27Zt27Zt27b9NhpQTg1E9F9h27YNMzsugV45EP8E3KN/CUhJSclg/gTVY4XBFxTop2sWuR7Bg/4ITLGz08O5+YXZFRmKR2CLhm2vLl3st+060j6CXt3uV4DDzsHintOjtN99SnY2UDGftqV7xBer91MpveOe+pLSHGjAQv2q8fPD5Zuh7LQfHryYQDjiocH2H98O9vd9/6ZMBETjvxUeouUzeXVz92BIDyrYz7/PN6KsdVSTrm/vXYHwRTZP1mai4y3UfCfG3MFkj4/aW/MyY2w0JfSUGOBB5JY7OhtKC3IyEk2l+NlwAJA5XUoqqitryguz0uMsBchBRxIWIa/hnrqq2rKi3PxYbiRQolCyC5ukjnYX1zc2t8gTQ8DAImTiUjBOGBlo6vJmhB4LXFJSZlZBRTejPx4PBEQ8ampqcuh1AgIA',
+    'Green Ore': 'data:image/webp;base64,UklGRooCAABXRUJQVlA4TH0CAAAvGAAGEN8Fq7ZtV82e+9DBvxwEREpGvnoPVYTrSLZto2efi/wDVH5l8OY4jiTJUbJmD+G/gwQvXNAsQbZN/al2sh/BIQif0rKYEDGFmKxnwJSWxWQ5Y0pjPctMDqfDstGyXKNQJlqIqAggiRMGLS1wioI0IpAAiCQAQFEAFIAEAREBQQAScEuRxN2gUO4id5s7j63l9pwCCggyRRABRACk/Mo6TmWBU8mMKX5fRLRABAQoEfGH095Oa/lrLIrGTGb/QfZ22tvvpv+fopcrk1OJ/GHW8j9jiZQEyYy/zWKNlBQNM1J6OoGUh9vd4/3hc518vZ6ef39Pj6e333a83goLGWALAFg2amedzdk727Zt27Zt27Z9Tf/uzPc0ov9q27ZhovRk9BXIDwAgxL/U4djz7RMTw78Q6OPZ0f7uPe1zRx9Oji+J06VSymeOs1emtq9uDtaIZPLHjpPulicujjbHx1aHAingw3CZHG7s2TtqH+hrKCpWR7H3T76r/WPr59flxdU11R011RFabx3THVkgNra6Zrvna8vykhIKy2I1Xx1nNC8Oju6cXxzOtcUHB4THp6VWZHAAAgG3r7eTqG+dma7w9fTxDkiDSVnFhhgCUZu6xqaWquI0GOPlG+wTnZObFp8dTXoxh8ra4sSUpBBHa18/36CEnPTs1MRCCo5g4lRvN1dfd8LWDvoHRSZm5ucmxhfrAQQYyCVSpZ09YWXrHxeVkF5SVpqaFaoNINVEolBZWtnZ2ju7hiVlZqXnw1AjFooDYw+FhZUtobJzcnXzjMgoyLTUoaMAgYBtKhNAvjmPKyS4PJGZvgb6TigAhZDOUWPDtwD4uaCQ/wgEAA==',
+    'White Ore': 'data:image/webp;base64,UklGRkQDAABXRUJQVlA4TDcDAAAvGAAGEI2QSduG2u5cRP/juYmCtA1Y1F0hAWGE6P9CAwQkSf8/h/0PvHtKkKNt27FH9/P+5nHEtqtkzNKd2an1TMty9sAteCquILZtf34VcwOQ20hyJEVkdZ/w38/br7ruhCBJcttmbu8I0Dnb//+joglgHUSSGzZbZh9kkpBJRWZFbts28Uyu7SsAP4D9AkkDAGg4wO1IJO+8jQSLCXZC7z3YeAC9vUj2Qbp3j1dDlPiG+ere/335fP79PyeezHYFkAwzD+cFT8le8M3CRH4fvPRVI3eH1l4N507CkTRJA7JVPluPog7L739Fe5D/BUB6kDxIWQ/u7A9vH38a7sUZZtXpisqS7BasPWH0WPZKxrPYYog7vh4p4a2NF9T0cGR1F8Glc7jbwwEcv7yNR0CSSgrJCaZj/UHeRUpv/n/vIikguCytYwva3OzEelKYR9cJFwqS3UCSOprGl2TmkRyrWnfh3+nP7mrvMDZlLLZ0B2tKFEjEUuaS7JTq3dQJkqxnxMhdmqlYqFPKaubOs+52JQz5/8uXjekxrlid0qYDEkHQxWGJ1o678xu1FiS5aFfZtPDVhLIUfP517y6OVLV0u0wKnoWZgi58gl47sTs2DUWWIhlurtiQFAAAoGrT8CWisFZxB8XnygDTZ6j/EheAQrORd2E36YqcRpt0djSdJ1iwaoCkROoOYsdUzSj+nmFyJ2tBnGnpLCxgQF9DhARPCPxbjOKbTfgMfb36eQ+a+Fb3PFMkNjS21MSdlOZMsMHs2GyRtNAWf0KAgoivFsIUoP+hieXXtUX1rT3YMmGcoE3hYoJpYie2ywyTKPwGOwtLCtBg4K+QyTDNMv1j+M2yrL41AToh78X7JqtmI0MjxlcREd2gC6GQwWcKjITTBEl+wCw25sIBbADg3eyhShnGrBGVFAAMaAIJKMEGEmwlUeno1TgA2ARAF+A6rbkgIBiCARUAzOBH+ISli4HKSMKkAPwBt2k0kbjsGSwwCFRoTJs04Edc0GcaUxYIgNHEARpgCzsoVTtm1ZiBN7jCaJpWuiqeGk3cNp8H0NlEHdMkNkCaBIqwYJDErLdtAFhAAAADsH7ZdwAAAA==',
+    'Yellow Ore': 'data:image/webp;base64,UklGRroCAABXRUJQVlA4TK0CAAAvGAAGEH/mKJJtV5k5LwCKUIL/BQrY5fje+xrcRpIkKVU9s3tgEZbgv4AFaPcfxEaSFElRPcfsv3HnBMP/NIEgRP9PYRmxSUJz4B0AuJKgJKEoym4ZSv0rBYRSm4SEPqMUtVGSQRdKoR8az7Md3lEKpRQQMCR/2ogk9i+U2vRJG5GgKG2QkJBEbfpESULRpqFspKFAG2xoEwWKTuODUKApEEqCom2AJoi2YdnGDnqCklAKRYFImpKQRCmUUiiKDknRP9qSUKAk0+RUFIhSTQedYAEGnbRBgwkabH0ekoABNiAUWIKAgAIBAQOErkCBctte4ObztFJfr+vucbT3PX2eJShJue8/MF3X6fK/OP/a6XutkqCAvS4+D6DK8bOPQYIk2aZt2bZt27Zt27Zt27Zt+/rcN6jL+H8Ca0f0fwI4/lmMjCisYVRE4ZT4k5cTpDJFxnMJKYBm2Mfj2f0vJzMESfPE4dmJ583lqavTQw0KI4Jy4/TuytrEfP/T+d3N+Q83A7JMXs/QHFpYP9ibPLq4Od6XpdCQyMLu7d0DaOz5+uX09vJ5Y2dbmwYTV9G3982tbRvsPXl4++zsX1zd0qPBGftbWlk6h2aVV39fvr++NYzPLBnQkXZxsEd2LgmZ2aWDI19dfWi01oQGcKrWzsjJxTso3DctLhIVN7b0R3LSAE7Jwhkh5OZiGxgCoXGJpR1NAhgNcKuZOTi5IEefiKjEyIDY1PwWUxwdICoYOXt4u8dEx4dEJuaUFLfEctEDAp+Wl59/UhpARkl5SVY94mUAGF7ROTg2LzO/oAxKcuoqmAAgSNoklpWXVFeWoMyKCB5mACdqnlFd2NpcnpdVqYNjCqh8ap7JZTVF6cUpIhhzQMXxi+m6RmVVGVI4WKfgeaXUzYQwNgAARuYCjv8TAA==',
+    'Orange Ore': 'data:image/webp;base64,UklGRtwCAABXRUJQVlA4TNACAAAvGAAGEC8HOZIk10rlvI/w3xz84abhpJ/6RsCOZFu1snptHPL/JiticHc5B3IkSYokj4E90l9Ghh/fdRFk29Sfaid7HQpxhSgCzAQUM8gUgFDCWA6zDEGiKO3duri7+AczyZDcHCdjOQhcjiBKa3d/sdycQJSbY0jGNHPANDfHhClhSoASBinJKEMjBAgCBAhTSiBMCUIIQhBCCSOUyAgETkpRhACJEADCGVxfQWCQEKZcIwmc4ECBhJEIJzpFmYkCZTNdAigzgRJGmCbIKJt21p1lyFgzykJkp6xZxk7S3qzh/2+z/m/WPdbF9LAMGe3DzMi/mVgXBkEOJe0AO9lJStohJeMkKXl6uPf998HBryxr+Hk/PV7x/XLnK0/erpfvj93/7+Hz4c/D5XtrWNdYN8WgaF1AgiTZpm2te59t27Zt27Zt27Zt89u837a19/17JM8YQET/JwCOTjAdjhdxSQr8PQbyh1nG1NWR6Wh0VjktcysjdeqRMI+6nrWdmaGBCP0IiE/T2NbB3Mgg1IPj/2HojPK2LnZ2tpZW3g1tqv8OIkhIx93DycHB2S2wYqCvjpPsRxgUXPw8XZ1sPXwyctuHJ6Yl8D6EQS0xPSHax8bWO668e3J8Z1Z2P6RYWFmclhLtZeKZUd4xNbe+IL4P5ojIzs9JjAkL883uuf7o/ublZWECAITFprS1MivRPyo4oPnB61u0xZlBKgAAUimoqS0pSg6O8g/+8vnTtXtrKyEIALBgbGZ+SUFJRmBkcObHD+/frA5d+oEBgKJdnpZRWFiZExge3zTadOPhnbvb3ykAgKWzy7PSc/NysqJr+rr6r9Ce37z6dQ8g7qSSktz0/NTO5pH5pe0X7549+Y33AOK3r2+sbmkcq+rd2r349tXTl2JkH8DsUrouQRr6FmVzGxdoj29/o8DBGFGoGCMqr9LPX8qibOQQBxOMMSZw7gI=',
+    'Red Ore': 'data:image/webp;base64,UklGRqoCAABXRUJQVlA4TJ4CAAAvGAAGEEcGqZEkSZJ59vRrZpc/puUwRPbqE4TjRpIUKbMWD/7n9tl0/jBjj9tIkiQl635E/DcMGQkf3iHItqk/1U72NzgAeAkJhIQh0yFkCnUhhWox8xBmSCBkyDJncbcNXyXLnHW9IJmSurFMQaYPRx0liWR6CJKQAkEKBSFgCEaEEJKUEJJcExKQDTIkIKSQEQoJQRIhQTiY4FqRACGEXAUmuQEZUsftktTBkKCOEpJkZEgSMlnIuJ3qiXCUEKSW+gQRLYqMMLVCatmKxrF68E9t1QDGsBgWtQVDgliMqwCL4OEusnp6Hx+2Gv/1txUqP7cf+8v3+21bvn2f/p7/u8/NzXv38rV9ttXYGrAE2hqQIABgGUnJ2rZte4u1bdu2bdvGrG3zrnzXWg+I6L/atm0YOz2ZyhXgl0mT8D/7lYjhVvz3/CT0BaGEHnf3Djn3Ep8IS3IrPcwOrZ+eHNzxfjwhoFcyOD+4fXh2vjmjQX2gpELG3Ez/SM/Vxtbi1HQKfK+EWuvC+OjkKufomNM7NjUh+a7NiOf29g0Mr+137dyW1Qz2tRiT77xmVVNHZ/fNwcnl9XJrY1tpndRbx+dZWVtd0VDcsLJ0UV9YXtTe7CP4IgwhjSJugaEZOYmFhSEBwcEhsRkV3rwAcKkbWVha2bmGBAQ5BXr5+wcFJKaUpahQgMcVtbZ1tMecPXAb36CQoKDo1KTESgcISGlzBMEwFEMRNCgoKDA6PS8nsThXBACKV17X/MXhLs4R4WFRSTnpGQkZkXxvFi6srGWCunt4BCXHpKRn52QmZse9AWBoQVFZbczLLz4zs6CiPD0yywp+8Bs0KaZiFZSWn5RXkJqZi5Mfn5zgl1M1NdA3MzbUkaHAJ6QpCEkIIUmBP0UA',
+    'Purple Ore': 'data:image/webp;base64,UklGRsICAABXRUJQVlA4TLYCAAAvGAAGENcGOZIkRZJHLeqv4IEG98VaEgJSJEmOpPDq1fx/i+Z4HBDdDSGSZFlR5Twu/ypQgwk83Ow+gmyb+lPtZBeQJAMCu6GoQwCwaIYZAFP2skAwiIZFa+m69LyAijXMgLmfdDsyo8sCs7d9nhlEbQwg153v15kBhAG6H83thAiwRjCAGaQgAggAERUzCDTDIIggEAiAIERUYKUwPB1PjCAF2fIiAKg8oC/C5KV70oCAaA1r3AXP6Tnb/2VpEKRYtAaYYQhmWKMC4LKESieVHbbAzCgOhdj/nBxPwoAUYuQQ/v9V/q7L2ZhyaJBKUdvEyZgiPn8ftm2+Pnb/+y/J3952//H7Z18Xh8+709fX7+/X18rh4+btfW3P5mxqEAhj/35Bgm3bph2d2LbzY9u2bdu2bdu2bVtl5N78qtudMhoQ0f8JgP83ecHPtBjRYPITVIwRDQOriJSiAkVVTfjz9wgNi4CkrLqWoZGBoampuamtPeM3BDGrhMaEeTo7OVhbmFlamBjqCT0DEMRBcUvMK86IdHWws7SwMjfU1zXkAyC04o4F5XW5WTHx0Q7mFg4OlpZWjtn8VKDRSUrLqinJSg0P8XYxsXeJDAnLb2qU+AI0QUURmdk5eXHeAd7uxu5xeYX1Pe2tclTAoiUJ6blZuTEeoV4eKaV5pX3D/UPDMi8A3EnZSZmF6YGeHs6+7Ru796/HJ5b7OQkA0qjMT05P8/fxi+h42tw/3pucnddGAIB5g+sKc6MiYgsbXr15fFhfHVvpZicAAIjLpqy2oLOqpa2i+vzkbmZ0QAzBdzGzvH1LV/PgSP/20dveiTUKgh8SjARDuiam5udOz7bmP9LAT2N6i4XFpaub6+FDZfxzQGg0p28vLi+OPzCRXwCCpN8d7Fy+ZyPw65iOR+kTG4HfSvBXAv8w',
+    'Black Ore': 'data:image/webp;base64,UklGRtQBAABXRUJQVlA4TMgBAAAvGAAGEDfEoJEkRQNH/iUv3IMChm3bhs1JctuNYdu2YXOS3HYTCKQwszebtg2Z0ypvAAAGDAgwVYs3VCoq3nhDtb+PijeFoUKl0kQB+CcqIa3G9iB3dE+A6jaqea+8lD1vvFGhStj5f1QG2JIkm7a2js/1PbZt3n1s69q2bevD7fc1Ef1XG4AMg/SMrsB+gAQA/qUOJ1VTejaJvhCU+/bq4jTL+lxU+Pry4fHmoJ/5mXD+9urR0/PlDpQZ+Ce73N7mw9XJxvrWcoxJfBi+9ZWxxfOr6aWF0UK1nSLfP9HbixuHd0/1UmsAzUAr1PVWIFg9WD0+md2e2x+qZWJ0vhbufBXOGT9YXju7u7/cHae9bn9fIl5PtREYAv3C/CwamVxHdYfVDp4EiqWKUhJDlHl4DCaaxQQK2xxeezCdidPpEPUCa2OwGI3HvAatwwmeSDqRikXyDBwjdXGHxey0WjRah8sTiKRzmQhdlBEY9CrkCpVWr9MgVzhIJ8u1Sizp7yaAKVQo1SqNFumMJl8sBYlsxi/kUTghsShfO3gJsy2QzIChh0URGAK+WC6VgEiMpCCRySWCDuqdUYBCiMXjc6m3JOBzQ6H/SAQ='
+};
+
 const PrimesData = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,103,107,109,113,127,131,137,139,149,151,157,163,167,173,179,181,191,193,197,199,211,223,227,229,233,239,241,251,257,263,269,271,277,281,283,293,307,311,313,317,331,337,347,349,353,359,367,373,379,383,389,397,401,409,419,421,431,433,439,443,449,457,461,463,467,479,487,491,499,503,509,521,523,541,547,557,563,569,571,577,587,593,599,601,607,613,617,619,631,641,643,647,653,659,661,673,677,683,691,701,709,719,727,733,739,743,751,757,761,769,773,787,797,809,811,821,823,827,829,839,853,857,859,863,877,881,883,887,907,911,919,929,937,941,947,953,967,971,977,983,991,997];
 
 const RatData = {
@@ -662,6 +674,14 @@ const RespectData = [
 
 const ChangelogData = {
     changes: [
+        {
+            version: "9.24",
+            date: "2026-05-08",
+            type: "Changed",
+            notes: [
+                "**Removed:** Abandoned experimental Mine Pattern helper and canvas scaling features."
+            ]
+        },
         {
             version: "9.23",
             date: "2026-05-07",
@@ -742,22 +762,13 @@ const ChangelogData = {
             notes: [
                 "**Changed:** Refined the 'Trading Post' visual layout in `MinesHelper`. Restored the net stat gain total header, split individual stats onto multiple lines for better readability, fixed missing image parsing bugs on non-stat purchases, and condensed card heights."
             ]
-        },
-        {
-            version: "9.13",
-            date: "2026-05-04",
-            type: "Changed",
-            notes: [
-                "**Added:** Added `MinesHelper` functionality. Overhauls the visual display of the active hobo list inside the mines into a neat sortable HTML table.",
-                "**Added:** A light green overlay is now drawn directly onto the Mines map to visualize and highlight standard safe-zone tiles where items drop and combat pauses.",
-                "**Added:** The text-based Mining Stats readout has been completely overhauled into a formatted block data table."
-            ]
         }
     ]
 };
 
 const DisplayHelper = {
     staff: false,
+    group: 'Global',
     localKeys: [
         'hw_last_active_time',
         'hw_rejoin_time',
@@ -1294,6 +1305,7 @@ const SyncHelper = {
         'SyncHelper_Username',
         'SyncHelper_Password'
     ],
+    group: 'Global',
     settings: [
         { key: 'SyncHelper_Enable', label: 'Enable Cloud Sync (CouchDB)', defaultValue: false },
         { key: 'SyncHelper_ServerURL', label: 'Sync Server URL', type: 'text' },
@@ -1616,6 +1628,7 @@ const SyncHelper = {
 const ActiveListHelper = {
     cmds: 'active',
     staff: false,
+    group: 'General',
     settings: [
         { key: 'ActiveListHelper_Filter', label: 'Enable Alive/Dead Filters' }
     ],
@@ -1795,6 +1808,7 @@ const ActiveListHelper = {
 const BackpackHelper = {
     cmds: ['backpack', ''],
     staff: false,
+    group: 'General',
     settings: [
         { key: 'BackpackHelper_Tooltips', label: 'Item Tooltips (Stats/Effects)' },
         { key: 'BackpackHelper_Favourites', label: 'Favourite Drinks UI' },
@@ -2193,8 +2207,9 @@ const BackpackHelper = {
 };
 
 const BankHelper = {
-    cmds: 'bank',
+    cmds: ['bank', 'bank2'],
     staff: false,
+    group: 'City',
     localKeys: ['hw_bank_goals'],
     settings: [
         { key: 'BankHelper_5FightersLunches', label: "5 Fighter's Lunches Goal" },
@@ -2305,6 +2320,7 @@ const BankHelper = {
 
 const BattleHelper = {
     cmds: ['battlel', 'fight'],
+    group: 'Fighting',
     settings: [{ key: 'BattleHelper_EnableGraph', label: 'Enable Fight Graph', default: true }],
     init: function() {
         const settings = Utils.getSettings();
@@ -2551,6 +2567,7 @@ const BattleHelper = {
 const BattleLogHelper = {
     cmds: 'battlel',
     staff: false,
+    group: 'Fighting',
     localKeys: ['BattleLogHelper_FoughtHobos'],
     settings: [],
 
@@ -2638,6 +2655,7 @@ const BattleLogHelper = {
 const BernardsBasementHelper = {
     cmds: 'bernards',
     staff: false,
+    group: 'City',
     settings: [
         { key: 'BernardsBasementHelper_EnableMap', label: 'Enable Basement Map' }
     ],
@@ -2718,9 +2736,10 @@ const BernardsBasementHelper = {
     }
 };
 
-const CanDepoHelper = {
+ const CanDepoHelper = {
     cmds: 'depo',
     staff: false,
+    group: 'City',
     init: function() {
         const savedSettings = Utils.getSettings();
         if (savedSettings?.CanDepoHelper_EnableFeature === false) return;
@@ -2768,6 +2787,7 @@ const CanDepoHelper = {
 const ExploreHelper = {
     cmds: 'explore',
     staff: false,
+    group: 'City',
     settings: [
         { key: 'ExploreHelper_Enable', label: 'Enable Explore Helper', defaultValue: true },
         { key: 'ExploreHelper_Log', label: 'Display Explore Log', defaultValue: true },
@@ -2948,6 +2968,7 @@ const ExploreHelper = {
 const FoodBankHelper = {
     cmds: 'food_bank',
     staff: false,
+    group: 'General',
     settings: [
         {
             key: 'FoodBankHelper_enabled',
@@ -3158,6 +3179,7 @@ const FoodBankHelper = {
 const FoodHelper = {
     cmds: ['food', ''],
     staff: false,
+    group: 'General',
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
         const cmd = urlParams.get('cmd') || '';
@@ -3489,6 +3511,7 @@ const FoodHelper = {
 const FortSlugworthHelper = {
     cmds: 'fort_slugworth',
     staff: false,
+    group: 'Hoburbia',
     init: function() {
         const settings = Utils.getSettings();
         if (settings['FortSlugworthHelper'] === false) return;
@@ -3578,6 +3601,7 @@ const FortSlugworthHelper = {
 const GangArmoryHelper = {
     cmds: 'gang',
     staff: false,
+    group: 'Gang',
     settings: [
         { key: 'GangArmoryHelper_EnableTabs', label: 'Enable Armory Tabs', default: true }
     ],
@@ -4254,6 +4278,7 @@ const GangArmoryHelper = {
 const GangHitlistHelper = {
     cmds: ['gang', 'gang2'],
     staff: false,
+    group: 'Gang',
     settings: [
         { key: 'GangHitlistHelper_HitlistPageTracker', label: 'Hitlist Page Tracker' },
         { key: 'GangHitlistHelper_HitlistMarkRed', label: 'Hitlist Mark Red' },
@@ -4569,6 +4594,7 @@ const GangHitlistHelper = {
 const HitlistHelper = {
     cmds: 'battle',
     staff: false,
+    group: 'Fighting',
     settings: [
         { key: 'HitlistHelper_HighlightOnline', label: 'Highlight Online Players' },
         { key: 'HitlistHelper_RememberSort', label: 'Enable Client-side Sorting & Remember' },
@@ -4922,6 +4948,7 @@ const HitlistHelper = {
 const HospitalHelper = {
     cmds: 'hospital',
     staff: false,
+    group: 'City',
     settings: [
         { key: 'HospitalHelper_TrackHealing', label: 'Track Healing Times', defaultValue: true }
     ],
@@ -4945,6 +4972,7 @@ const HospitalHelper = {
 const KurtzCampHelper = {
     cmds: 'camp_kurtz',
     staff: false,
+    group: 'Canbodia',
     init: function() {
         // Check Settings
         const settings = Utils.getSettings();
@@ -5009,6 +5037,7 @@ const KurtzCampHelper = {
 const LiquorStoreHelper = {
     cmds: 'liquor_store',
     staff: false,
+    group: 'City',
     init: function() {
         if (window.location.href.includes('cmd=liquor_store')) {
             try {
@@ -5145,6 +5174,7 @@ const LiquorStoreHelper = {
 const LivingAreaHelper = {
     cmds: '',
     staff: false,
+    group: 'General',
     settings: [
         { key: 'LivingAreaHelper_StatRatioTracker', label: 'Stat Ratio Tracker' },
         { key: 'LivingAreaHelper_CopyStatsBtn', label: 'Copy Stats Button' },
@@ -5924,6 +5954,7 @@ const LivingAreaHelper = {
 }
 
 const LockoutHelper = {
+    group: 'Global',
     settings: [
         { key: 'LockoutHelper_ShowChangelog', label: 'Show Changelog' }
     ],
@@ -6024,6 +6055,7 @@ const LockoutHelper = {
 const MarketHelper = {
     cmds: 'mart',
     staff: false,
+    group: 'City',
     settings: [
         { key: 'MarketHelper_Enable', label: 'Enable Market Helper' },
         { key: 'MarketHelper_TableWatcher', label: 'Convert Market Watcher to Table' },
@@ -6400,6 +6432,7 @@ const MarketHelper = {
 const MessageBoardHelper = {
     cmds: 'gathering',
     staff: false,
+    group: 'General',
     settings: [
         { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
         { key: 'MessageBoardHelper_RenderTables', label: 'Render Data Tables in Posts' },
@@ -6700,6 +6733,7 @@ const MessageBoardHelper = {
 
 const MinesHelper = {
     cmds: 'mines',
+    group: 'Canbodia',
 
     settings: [
         { key: 'MinesHelper_TopMinersTable', label: 'Format Top Miners Table', type: 'checkbox', default: true },
@@ -7103,19 +7137,7 @@ const MinesHelper = {
             logHtml += '<div style="text-align: center; padding: 10px; color: #666;">No mining history recorded yet.</div>';
         }
 
-        // DO NOT CHANGE THESE BASE64 IMAGES. The current strings are correctly mapped and confirmed working.
-        // Modifying them breaks the ore display UI.
-        const oreImages = {
-            'Hobalt Chunk': 'data:image/webp;base64,UklGRjQDAABXRUJQVlA4TCgDAAAvGAAGELcGOZIkRVJEZR/z6a8Tv04Q7OlaUgJuJEmOnKqZPWrAg2jwG+5BQkCid/e/O7Aj2VatzOy9r6D/kAcRkwcRuXN1ww4FgIDyzrbvPpkmaIAGaYMm0wB9159t23YPAGpQDaohIAIk1F/gC/hXqREgCITUTzUMhFTAH/CvhnbFDnlkwzBS1ArRFLvq69RcKZIhKthajWKltLBri5oaqnQN2KqIlJquiDMkJHY0ggrgGNgFboBfJCgudPVkInbV59GqBcxWRBFoGO6VsaJ+q6PqD/CiDqpBYGhXbfUT9O53Prf/443C1uZ36Gr9wP/P+dODsIQizccm/fJOGOtx/gKxXY+58zXnR6uZs2n4BW7U/PbYJ4DoTb+vrHsbTMp0Ps1i2c2r61urZf1Unzr3yi43tS3cF/Ox+hsfznaZp7O5ZG7cZ1Q6X2ViOKkIWXc2dGzWWKx72w48v14yoNrFKSGmjYYyZRLRkjJwtiMTENAQIhMqbGlSmBIgEKdQX+93+h62I6RG3mfn/dbfV/G6tB2Y9WsejYF20x23b3/W/LVJO/p3Hw92DyWTBvIwmFFKpjAKA0mK3SOcL6Uo3SEarSRGjoA6i0lMGkSgMoEEIJAAhBBJ+Px88nJ/HIds27ZNO9qxbdu2bdu2bdvmzT4Xse2UXfGK80Pme0T/JwB9uLeW2loOUYZPYRPWjZaMX15MkhPVZH4Ug7pCwtLuj09XVwdbMmG8DzEy6cn/gvNjOAWAs98SZnQPuIhJfTs/v4D7zzcUgx+w964Ym5ic/gMAZwDwX3r1Pn4Lz2IyjUakn58f7p0CnMSa3mfu3l/UPYKp5Svb+/sAcBKXdocuwqeXNj5bOlRHGq6cvwCAzyLWd3iMcgja1PX3mUyMqRlHABcLMex3WIzdRilZ61/P11ooRNk/uLwJ1Ud36XUKMCb6svd3UjpJ9V/+JgZaoXsFnLw6MCYa5n5uuja2JcuqhaD72QzEm0kY4/ba1oGSQiFbBvRIVb9qCr530NckCD2WIzygpqmLIMg9Hiqs6PHcNsqCuflVef4a6BntnB2VUiPZnoOLh5eTD71x',
-            'Hobalt Shard': 'data:image/webp;base64,UklGRpoDAABXRUJQVlA4TI0DAAAvGAAGEK8Hu7bttNG5ek9SMszwhzVMN1P6NMBMAr82YMm227a5ACTI6b3X/S8mf15Fek8oEQ9ybbuJpCfJbmZc9bZTmPwDwAyYmWdMch3Jtmn1Nd77spl/Ki8P2w4A8AcSoAokQACEQA5EQAAEQAxEQAnEQABEQAaEQAhkQBWoAjEQARUgByKgBDIgBGpACIRABgK8BBpACHSAUugeoysD0k1y/Un2kEtLsoWF9pJ1UxvK2zMmLFF0s8yo1sfmn5wwepSN1QA9CoOrR+WisMyQukxdsuC7qtlf7B0GvuUislZdez4yiVI4WJr/f9Rc+2vQp+lq07b0HbkheV/bw3p0ORA2Yj1iNCUG1Lq2vFlbYv7td6XaX/DXPvFpvjGLVGrVT1O+uXRQwdIR06dmZ/6nxLZ/jPy151N1b6hkpI3s52Xi9GJoJyZS3/h7bEIdrQ2N76HxnVCfvrqwjYavbz8RXDSzjqVFY79/zYfEspFU66nRFa3PlshTuHcoYF7Fb88i5aEklRx0JQWUoIRJCCCEiQiYGgLKBnNRzTKAKOSuJBTOqm/8QGX4VBSiZ2aJR9bSoG//swmJPjSmASH+llfFr7m5vCW+jox8oqZSN1rUFmOEkAvMkP/WU/E9JTOezCHIid+455H5eqLWgbLp8pMqex/GSRCrYGO70WFW8l9E9vxSnD/s5DWiHBShrubu2/DqoglQHI7ftt3t0DHswcPy47bv3bwN5jI516k7uxveRtuGez90fX9qq949X89AYgCAhSTN2bZt27Zt27Zt27Zt27b9NhpQTg1E9F9h27YNMzsugV45EP8E3KN/CUhJSclg/gTVY4XBFxTop2sWuR7Bg/4ITLGz08O5+YXZFRmKR2CLhm2vLl3st+060j6CXt3uV4DDzsHintOjtN99SnY2UDGftqV7xBer91MpveOe+pLSHGjAQv2q8fPD5Zuh7LQfHryYQDjiocH2H98O9vd9/6ZMBETjvxUeouUzeXVz92BIDyrYz7/PN6KsdVSTrm/vXYHwRTZP1mai4y3UfCfG3MFkj4/aW/MyY2w0JfSUGOBB5JY7OhtKC3IyEk2l+NlwAJA5XUoqqitryguz0uMsBchBRxIWIa/hnrqq2rKi3PxYbiRQolCyC5ukjnYX1zc2t8gTQ8DAImTiUjBOGBlo6vJmhB4LXFJSZlZBRTejPx4PBEQ8ampqcuh1AgIA',
-            'Green Ore': 'data:image/webp;base64,UklGRooCAABXRUJQVlA4TH0CAAAvGAAGEN8Fq7ZtV82e+9DBvxwEREpGvnoPVYTrSLZto2efi/wDVH5l8OY4jiTJUbJmD+G/gwQvXNAsQbZN/al2sh/BIQif0rKYEDGFmKxnwJSWxWQ5Y0pjPctMDqfDstGyXKNQJlqIqAggiRMGLS1wioI0IpAAiCQAQFEAFIAEAREBQQAScEuRxN2gUO4id5s7j63l9pwCCggyRRABRACk/Mo6TmWBU8mMKX5fRLRABAQoEfGH095Oa/lrLIrGTGb/QfZ22tvvpv+fopcrk1OJ/GHW8j9jiZQEyYy/zWKNlBQNM1J6OoGUh9vd4/3hc518vZ6ef39Pj6e333a83goLGWALAFg2amedzdk727Zt27Zt27Z9Tf/uzPc0ov9q27ZhovRk9BXIDwAgxL/U4djz7RMTw78Q6OPZ0f7uPe1zRx9Oji+J06VSymeOs1emtq9uDtaIZPLHjpPulicujjbHx1aHAingw3CZHG7s2TtqH+hrKCpWR7H3T76r/WPr59flxdU11R011RFabx3THVkgNra6Zrvna8vykhIKy2I1Xx1nNC8Oju6cXxzOtcUHB4THp6VWZHAAAgG3r7eTqG+dma7w9fTxDkiDSVnFhhgCUZu6xqaWquI0GOPlG+wTnZObFp8dTXoxh8ra4sSUpBBHa18/36CEnPTs1MRCCo5g4lRvN1dfd8LWDvoHRSZm5ucmxhfrAQQYyCVSpZ09YWXrHxeVkF5SVpqaFaoNINVEolBZWtnZ2ju7hiVlZqXnw1AjFooDYw+FhZUtobJzcnXzjMgoyLTUoaMAgYBtKhNAvjmPKyS4PJGZvgb6TigAhZDOUWPDtwD4uaCQ/wgEAA==',
-            'White Ore': 'data:image/webp;base64,UklGRkQDAABXRUJQVlA4TDcDAAAvGAAGEI2QSduG2u5cRP/juYmCtA1Y1F0hAWGE6P9CAwQkSf8/h/0PvHtKkKNt27FH9/P+5nHEtqtkzNKd2an1TMty9sAteCquILZtf34VcwOQ20hyJEVkdZ/w38/br7ruhCBJcttmbu8I0Dnb//+joglgHUSSGzZbZh9kkpBJRWZFbts28Uyu7SsAP4D9AkkDAGg4wO1IJO+8jQSLCXZC7z3YeAC9vUj2Qbp3j1dDlPiG+ere/335fP79PyeezHYFkAwzD+cFT8le8M3CRH4fvPRVI3eH1l4N507CkTRJA7JVPluPog7L739Fe5D/BUB6kDxIWQ/u7A9vH38a7sUZZtXpisqS7BasPWH0WPZKxrPYYog7vh4p4a2NF9T0cGR1F8Glc7jbwwEcv7yNR0CSSgrJCaZj/UHeRUpv/n/vIikguCytYwva3OzEelKYR9cJFwqS3UCSOprGl2TmkRyrWnfh3+nP7mrvMDZlLLZ0B2tKFEjEUuaS7JTq3dQJkqxnxMhdmqlYqFPKaubOs+52JQz5/8uXjekxrlid0qYDEkHQxWGJ1o678xu1FiS5aFfZtPDVhLIUfP517y6OVLV0u0wKnoWZgi58gl47sTs2DUWWIhlurtiQFAAAoGrT8CWisFZxB8XnygDTZ6j/EheAQrORd2E36YqcRpt0djSdJ1iwaoCkROoOYsdUzSj+nmFyJ2tBnGnpLCxgQF9DhARPCPxbjOKbTfgMfb36eQ+a+Fb3PFMkNjS21MSdlOZMsMHs2GyRtNAWf0KAgoivFsIUoP+hieXXtUX1rT3YMmGcoE3hYoJpYie2ywyTKPwGOwtLCtBg4K+QyTDNMv1j+M2yrL41AToh78X7JqtmI0MjxlcREd2gC6GQwWcKjITTBEl+wCw25sIBbADg3eyhShnGrBGVFAAMaAIJKMEGEmwlUeno1TgA2ARAF+A6rbkgIBiCARUAzOBH+ISli4HKSMKkAPwBt2k0kbjsGSwwCFRoTJs04Edc0GcaUxYIgNHEARpgCzsoVTtm1ZiBN7jCaJpWuiqeGk3cNp8H0NlEHdMkNkCaBIqwYJDErLdtAFhAAAADsH7ZdwAAAA==',
-            'Yellow Ore': 'data:image/webp;base64,UklGRroCAABXRUJQVlA4TK0CAAAvGAAGEH/mKJJtV5k5LwCKUIL/BQrY5fje+xrcRpIkKVU9s3tgEZbgv4AFaPcfxEaSFElRPcfsv3HnBMP/NIEgRP9PYRmxSUJz4B0AuJKgJKEoym4ZSv0rBYRSm4SEPqMUtVGSQRdKoR8az7Md3lEKpRQQMCR/2ogk9i+U2vRJG5GgKG2QkJBEbfpESULRpqFspKFAG2xoEwWKTuODUKApEEqCom2AJoi2YdnGDnqCklAKRYFImpKQRCmUUiiKDknRP9qSUKAk0+RUFIhSTQedYAEGnbRBgwkabH0ekoABNiAUWIKAgAIBAQOErkCBctte4ObztFJfr+vucbT3PX2eJShJue8/MF3X6fK/OP/a6XutkqCAvS4+D6DK8bOPQYIk2aZt2bZt27Zt27Zt27Zt+/rcN6jL+H8Ca0f0fwI4/lmMjCisYVRE4ZT4k5cTpDJFxnMJKYBm2Mfj2f0vJzMESfPE4dmJ583lqavTQw0KI4Jy4/TuytrEfP/T+d3N+Q83A7JMXs/QHFpYP9ibPLq4Od6XpdCQyMLu7d0DaOz5+uX09vJ5Y2dbmwYTV9G3982tbRvsPXl4++zsX1zd0qPBGftbWlk6h2aVV39fvr++NYzPLBnQkXZxsEd2LgmZ2aWDI19dfWi01oQGcKrWzsjJxTso3DctLhIVN7b0R3LSAE7Jwhkh5OZiGxgCoXGJpR1NAhgNcKuZOTi5IEefiKjEyIDY1PwWUxwdICoYOXt4u8dEx4dEJuaUFLfEctEDAp+Wl59/UhpARkl5SVY94mUAGF7ROTg2LzO/oAxKcuoqmAAgSNoklpWXVFeWoMyKCB5mACdqnlFd2NpcnpdVqYNjCqh8ap7JZTVF6cUpIhhzQMXxi+m6RmVVGVI4WKfgeaXUzYQwNgAARuYCjv8TAA==',
-            'Orange Ore': 'data:image/webp;base64,UklGRtwCAABXRUJQVlA4TNACAAAvGAAGEC8HOZIk10rlvI/w3xz84abhpJ/6RsCOZFu1snptHPL/JiticHc5B3IkSYokj4E90l9Ghh/fdRFk29Sfaid7HQpxhSgCzAQUM8gUgFDCWA6zDEGiKO3duri7+AczyZDcHCdjOQhcjiBKa3d/sdycQJSbY0jGNHPANDfHhClhSoASBinJKEMjBAgCBAhTSiBMCUIIQhBCCSOUyAgETkpRhACJEADCGVxfQWCQEKZcIwmc4ECBhJEIJzpFmYkCZTNdAigzgRJGmCbIKJt21p1lyFgzykJkp6xZxk7S3qzh/2+z/m/WPdbF9LAMGe3DzMi/mVgXBkEOJe0AO9lJStohJeMkKXl6uPf998HBryxr+Hk/PV7x/XLnK0/erpfvj93/7+Hz4c/D5XtrWNdYN8WgaF1AgiTZpm2te59t27Zt27Zt27Zt89u837a19/17JM8YQET/JwCOTjAdjhdxSQr8PQbyh1nG1NWR6Wh0VjktcysjdeqRMI+6nrWdmaGBCP0IiE/T2NbB3Mgg1IPj/2HojPK2LnZ2tpZW3g1tqv8OIkhIx93DycHB2S2wYqCvjpPsRxgUXPw8XZ1sPXwyctuHJ6Yl8D6EQS0xPSHax8bWO668e3J8Z1Z2P6RYWFmclhLtZeKZUd4xNbe+IL4P5ojIzs9JjAkL883uuf7o/ublZWECAITFprS1MivRPyo4oPnB61u0xZlBKgAAUimoqS0pSg6O8g/+8vnTtXtrKyEIALBgbGZ+SUFJRmBkcObHD+/frA5d+oEBgKJdnpZRWFiZExge3zTadOPhnbvb3ykAgKWzy7PSc/NysqJr+rr6r9Ce37z6dQ8g7qSSktz0/NTO5pH5pe0X7549+Y33AOK3r2+sbmkcq+rd2r349tXTl2JkH8DsUrouQRr6FmVzGxdoj29/o8DBGFGoGCMqr9LPX8qibOQQBxOMMSZw7gI=',
-            'Red Ore': 'data:image/webp;base64,UklGRqoCAABXRUJQVlA4TJ4CAAAvGAAGEEcGqZEkSZJ59vRrZpc/puUwRPbqE4TjRpIUKbMWD/7n9tl0/jBjj9tIkiQl635E/DcMGQkf3iHItqk/1U72NzgAeAkJhIQh0yFkCnUhhWox8xBmSCBkyDJncbcNXyXLnHW9IJmSurFMQaYPRx0liWR6CJKQAkEKBSFgCEaEEJKUEJJcExKQDTIkIKSQEQoJQRIhQTiY4FqRACGEXAUmuQEZUsftktTBkKCOEpJkZEgSMlnIuJ3qiXCUEKSW+gQRLYqMMLVCatmKxrF68E9t1QDGsBgWtQVDgliMqwCL4OEusnp6Hx+2Gv/1txUqP7cf+8v3+21bvn2f/p7/u8/NzXv38rV9ttXYGrAE2hqQIABgGUnJ2rZte4u1bdu2bdvGrG3zrnzXWg+I6L/atm0YOz2ZyhXgl0mT8D/7lYjhVvz3/CT0BaGEHnf3Djn3Ep8IS3IrPcwOrZ+eHNzxfjwhoFcyOD+4fXh2vjmjQX2gpELG3Ez/SM/Vxtbi1HQKfK+EWuvC+OjkKufomNM7NjUh+a7NiOf29g0Mr+137dyW1Qz2tRiT77xmVVNHZ/fNwcnl9XJrY1tpndRbx+dZWVtd0VDcsLJ0UV9YXtTe7CP4IgwhjSJugaEZOYmFhSEBwcEhsRkV3rwAcKkbWVha2bmGBAQ5BXr5+wcFJKaUpahQgMcVtbZ1tMecPXAb36CQoKDo1KTESgcISGlzBMEwFEMRNCgoKDA6PS8nsThXBACKV17X/MXhLs4R4WFRSTnpGQkZkXxvFi6srGWCunt4BCXHpKRn52QmZse9AWBoQVFZbczLLz4zs6CiPD0yywp+8Bs0KaZiFZSWn5RXkJqZi5Mfn5zgl1M1NdA3MzbUkaHAJ6QpCEkIIUmBP0UA',
-            'Purple Ore': 'data:image/webp;base64,UklGRsICAABXRUJQVlA4TLYCAAAvGAAGENcGOZIkRZJHLeqv4IEG98VaEgJSJEmOpPDq1fx/i+Z4HBDdDSGSZFlR5Twu/ypQgwk83Ow+gmyb+lPtZBeQJAMCu6GoQwCwaIYZAFP2skAwiIZFa+m69LyAijXMgLmfdDsyo8sCs7d9nhlEbQwg153v15kBhAG6H83thAiwRjCAGaQgAggAERUzCDTDIIggEAiAIERUYKUwPB1PjCAF2fIiAKg8oC/C5KV70oCAaA1r3AXP6Tnb/2VpEKRYtAaYYQhmWKMC4LKESieVHbbAzCgOhdj/nBxPwoAUYuQQ/v9V/q7L2ZhyaJBKUdvEyZgiPn8ftm2+Pnb/+y/J3952//H7Z18Xh8+709fX7+/X18rh4+btfW3P5mxqEAhj/35Bgm3bph2d2LbzY9u2bdu2bdu2bVtl5N78qtudMhoQ0f8JgP83ecHPtBjRYPITVIwRDQOriJSiAkVVTfjz9wgNi4CkrLqWoZGBoampuamtPeM3BDGrhMaEeTo7OVhbmFlamBjqCT0DEMRBcUvMK86IdHWws7SwMjfU1zXkAyC04o4F5XW5WTHx0Q7mFg4OlpZWjtn8VKDRSUrLqinJSg0P8XYxsXeJDAnLb2qU+AI0QUURmdk5eXHeAd7uxu5xeYX1Pe2tclTAoiUJ6blZuTEeoV4eKaV5pX3D/UPDMi8A3EnZSZmF6YGeHs6+7Ru796/HJ5b7OQkA0qjMT05P8/fxi+h42tw/3pucnddGAIB5g+sKc6MiYgsbXr15fFhfHVvpZicAAIjLpqy2oLOqpa2i+vzkbmZ0QAzBdzGzvH1LV/PgSP/20dveiTUKgh8SjARDuiam5udOz7bmP9LAT2N6i4XFpaub6+FDZfxzQGg0p28vLi+OPzCRXwCCpN8d7Fy+ZyPw65iOR+kTG4HfSvBXAv8w',
-            'Black Ore': 'data:image/webp;base64,UklGRtQBAABXRUJQVlA4TMgBAAAvGAAGEDfEoJEkRQNH/iUv3IMChm3bhs1JctuNYdu2YXOS3HYTCKQwszebtg2Z0ypvAAAGDAgwVYs3VCoq3nhDtb+PijeFoUKl0kQB+CcqIa3G9iB3dE+A6jaqea+8lD1vvFGhStj5f1QG2JIkm7a2js/1PbZt3n1s69q2bevD7fc1Ef1XG4AMg/SMrsB+gAQA/qUOJ1VTejaJvhCU+/bq4jTL+lxU+Pry4fHmoJ/5mXD+9urR0/PlDpQZ+Ce73N7mw9XJxvrWcoxJfBi+9ZWxxfOr6aWF0UK1nSLfP9HbixuHd0/1UmsAzUAr1PVWIFg9WD0+md2e2x+qZWJ0vhbufBXOGT9YXju7u7/cHae9bn9fIl5PtREYAv3C/CwamVxHdYfVDp4EiqWKUhJDlHl4DCaaxQQK2xxeezCdidPpEPUCa2OwGI3HvAatwwmeSDqRikXyDBwjdXGHxey0WjRah8sTiKRzmQhdlBEY9CrkCpVWr9MgVzhIJ8u1Sizp7yaAKVQo1SqNFumMJl8sBYlsxi/kUTghsShfO3gJsy2QzIChh0URGAK+WC6VgEiMpCCRySWCDuqdUYBCiMXjc6m3JOBzQ6H/SAQ='
-        };
+        const oreImages = OresData;
 
         if (dates.length > 0) {
             for (const date of dates) {
@@ -7846,6 +7868,7 @@ const MinesHelper = {
 const MixerHelper = {
     cmds: 'mixer',
     staff: false,
+    group: 'General',
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('cmd') === 'mixer') {
@@ -8234,6 +8257,7 @@ const MixerHelper = {
 const NorthernFenceHelper = {
     cmds: 'hill3',
     staff: false,
+    group: 'City',
     settings: [
         { key: 'NorthernFenceHelper_PaginationButtons', label: 'Previous/Next Page Buttons (Hall of Fame)' }
     ],
@@ -9139,6 +9163,7 @@ const NorthernFenceHelper = {
 const PlayerHelper = {
     cmds: 'player',
     staff: false,
+    group: 'Global',
     settings: [
         { key: 'PlayerHelper_CopyHoboName', label: 'Show Copy [hoboname] Link' }
     ],
@@ -9230,6 +9255,7 @@ const PlayerHelper = {
 const RatsHelper = {
     cmds: 'rats',
     staff: false,
+    group: 'Fighting',
     settings: [
         { key: 'RatsHelper_NewsFilter', label: 'Rat News Filter' },
         { key: 'RatsHelper_ExpBar', label: 'Show Exp Progress Indicator' },
@@ -10150,6 +10176,7 @@ const RatsHelper = {
 const RecyclingBinHelper = {
     cmds: 'recycling_bin',
     staff: false,
+    group: 'Canbodia',
     settings: [
         { key: 'RecyclingBinHelper_Enable', label: 'Enable Recycling Quick-Add Buttons' },
         { key: 'RecyclingBinHelper_Amounts', label: 'Quick-Add Amounts', type: 'text', defaultValue: '100, 200, 500, 750', description: 'Comma separated list of amounts for quick-add buttons' }
@@ -10540,6 +10567,8 @@ const SettingsHelper = {
                 return modName !== 'SettingsHelper' && typeof Modules[modName].init === 'function';
             });
 
+            const groupWrappers = {};
+
             activeModules.sort().forEach((modName) => {
                 const moduleBlock = document.createElement('div');
                 moduleBlock.style.marginBottom = '12px';
@@ -10622,6 +10651,8 @@ const SettingsHelper = {
                     listContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
                     listContainer.style.borderRadius = '4px';
                     listContainer.style.maxWidth = '100%';
+                    listContainer.style.maxHeight = '150px';
+                    listContainer.style.overflowY = 'auto';
 
                     const crapList = JSON.parse(Utils.getItem('hw_helper_food_crap') || '[]');
                     if (crapList.length === 0) {
@@ -10743,6 +10774,8 @@ const SettingsHelper = {
                     listContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
                     listContainer.style.borderRadius = '4px';
                     listContainer.style.maxWidth = '100%';
+                    listContainer.style.maxHeight = '150px';
+                    listContainer.style.overflowY = 'auto';
 
                     const renderFavList = () => {
                         listContainer.innerHTML = '';
@@ -10804,6 +10837,8 @@ const SettingsHelper = {
                     hiddenListContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
                     hiddenListContainer.style.borderRadius = '4px';
                     hiddenListContainer.style.maxWidth = '100%';
+                    hiddenListContainer.style.maxHeight = '150px';
+                    hiddenListContainer.style.overflowY = 'auto';
 
                     const renderHiddenList = () => {
                         hiddenListContainer.innerHTML = '';
@@ -10858,11 +10893,87 @@ const SettingsHelper = {
 
                 moduleBlock.appendChild(moduleOptionsContainer);
 
-                // Manually balance columns: FoodHelper's large box goes left, the rest goes right.
-                if (modName <= 'FoodHelper') {
-                    col1.appendChild(moduleBlock);
+                const groupName = Modules[modName].group;
+
+                if (groupName) {
+                    if (!groupWrappers[groupName]) {
+                        const accordionWrapper = document.createElement('div');
+                        accordionWrapper.style.marginBottom = '12px';
+                        accordionWrapper.style.border = '1px solid rgba(128, 128, 128, 0.4)';
+                        accordionWrapper.style.borderRadius = '6px';
+                        accordionWrapper.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                        accordionWrapper.style.background = 'rgba(128, 128, 128, 0.02)';
+
+                        const accordionHeader = document.createElement('div');
+                        accordionHeader.style.padding = '10px';
+                        accordionHeader.style.background = '#e6e6e6';
+                        accordionHeader.style.borderBottom = '1px solid rgba(128, 128, 128, 0.2)';
+                        accordionHeader.style.borderRadius = '5px 5px 0 0';
+                        accordionHeader.style.cursor = 'pointer';
+                        accordionHeader.style.fontWeight = 'bold';
+                        accordionHeader.style.display = 'flex';
+                        accordionHeader.style.justifyContent = 'space-between';
+                        accordionHeader.style.userSelect = 'none';
+                        accordionHeader.style.webkitUserSelect = 'none';
+
+                        const titleSpan = document.createElement('span');
+                        titleSpan.textContent = groupName + ' Settings';
+                        
+                        const iconSpan = document.createElement('span');
+                        // default collapsed
+                        iconSpan.textContent = '▼';
+
+                        accordionHeader.appendChild(titleSpan);
+                        accordionHeader.appendChild(iconSpan);
+
+                        const accordionContent = document.createElement('div');
+                        accordionContent.style.padding = '10px';
+                        accordionContent.style.display = 'none'; // collapsed by default
+
+                        accordionHeader.addEventListener('click', () => {
+                            const isHidden = accordionContent.style.display === 'none';
+                            if (isHidden) {
+                                accordionContent.style.display = 'block';
+                                iconSpan.textContent = '▲';
+                                accordionHeader.style.background = '#d0e0ff';
+                                accordionHeader.style.borderBottom = '1px solid #a0c0ff';
+                            } else {
+                                accordionContent.style.display = 'none';
+                                iconSpan.textContent = '▼';
+                                accordionHeader.style.background = '#e6e6e6';
+                                accordionHeader.style.borderBottom = '1px solid rgba(128, 128, 128, 0.2)';
+                            }
+                        });
+
+                        accordionWrapper.appendChild(accordionHeader);
+                        accordionWrapper.appendChild(accordionContent);
+
+                        groupWrappers[groupName] = { wrapper: accordionWrapper, content: accordionContent };
+
+                        // Place group in columns. Gang can go right or left. We will just balance by name length or manually.
+                        if (groupName <= 'FoodHelper') {
+                            col1.appendChild(accordionWrapper);
+                        } else {
+                            col2.appendChild(accordionWrapper);
+                        }
+                    }
+
+                    moduleBlock.style.boxShadow = 'none';
+                    moduleBlock.style.background = 'transparent';
+                    moduleBlock.style.border = 'none';
+                    moduleBlock.style.padding = '4px 0';
+                    moduleBlock.style.marginBottom = '8px';
+                    moduleBlock.style.borderBottom = '1px solid rgba(128, 128, 128, 0.1)';
+                    moduleBlock.style.borderRadius = '0';
+                    
+                    groupWrappers[groupName].content.appendChild(moduleBlock);
                 } else {
-                    col2.appendChild(moduleBlock);
+                    // Manually balance columns: FoodHelper's large box goes left, the rest goes right.
+                    if (modName <= 'FoodHelper') {
+                        col1.appendChild(moduleBlock);
+                    } else {
+                        col2.appendChild(moduleBlock);
+                    }
                 }
             });
         }
@@ -10871,6 +10982,7 @@ const SettingsHelper = {
 
 const SkillsHelper = {
     cmds: 'skills',
+    group: 'Fighting',
     settings: [
         { key: 'SkillsHelper_EnableMaxBuy', label: 'Enable Max Buy button for skill sets' },
         { key: 'SkillsHelper_MoveSkillShop', label: 'Move Skill Shop link to top' }
@@ -11135,6 +11247,7 @@ const SkillsHelper = {
 const SoupKitchenHelper = {
     cmds: 'soup_kitchen',
     staff: false,
+    group: 'Hoburbia',
     init: function() {
 
         const contentArea = document.querySelector('.content-area');
@@ -11231,6 +11344,7 @@ const SoupKitchenHelper = {
 const TattooParlorHelper = {
     cmds: 'tattoo_parlor',
     staff: false,
+    group: 'Canbodia',
     init: function() {
         const links = document.querySelectorAll('a[href*="tattoo_parlor"]');
         links.forEach(link => {
@@ -11260,6 +11374,7 @@ const TattooParlorHelper = {
 const UniversityHelper = {
     cmds: 'uni',
     staff: false,
+    group: 'City',
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
         const doParam = urlParams.get('do');
@@ -11346,6 +11461,7 @@ const UniversityHelper = {
 const WeaponsHelper = {
     cmds: 'wep',
     staff: false,
+    group: 'Fighting',
     settings: [
         { key: 'WeaponsHelper_HighlightEquipped', label: 'Highlight Equipped Items' },
         { key: 'WeaponsHelper_ClickableImages', label: 'Clickable Item Images' }
@@ -11411,6 +11527,7 @@ const WeaponsHelper = {
 const WellnessClinicHelper = {
     cmds: 'wellness_clinic',
     staff: false,
+    group: 'Hoburbia',
     localKeys: ['hw_wellness_goal'],
     init: function() {
         const url = window.location.href;
@@ -11548,6 +11665,7 @@ const WellnessClinicHelper = {
 const GangBoardStaffHelper = {
     cmds: 'gathering',
     staff: true,
+    group: 'Gang',
     settings: [
         { key: 'GangBoardStaffHelper_Enable', label: 'Enable Gang Board Staff Tools' },
         {
@@ -11942,6 +12060,7 @@ const GangBoardStaffHelper = {
 const GangLoansHelper = {
     cmds: 'gang2',
     staff: true,
+    group: 'Gang',
     init: function() {
         const isLoans = window.location.search.includes('cmd=gang2') && window.location.search.includes('do=loans');
         const isLoanAdd = window.location.search.includes('cmd=gang2') && window.location.search.includes('do=loan_add');
@@ -12758,6 +12877,7 @@ const GangLoansHelper = {
 const GangStaffHelper = {
     cmds: ['gang', 'gang2'],
     staff: true,
+    group: 'Gang',
     settings: [
         { key: 'GangStaffHelper_FormatMassMails', label: 'Format Mass Mails' },
         { key: 'GangStaffHelper_MassMailTemplates', label: 'Mass Mail Templates' }
@@ -13752,6 +13872,7 @@ const GangStaffHelper = {
         DrinksData,
         EquipmentData,
         FoodData,
+        OresData,
         PrimesData,
         RatData,
         RespectData,
@@ -13807,7 +13928,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.23.20260508.0147';
+        window.HoboHelperVersion = '9.24.20260508.1019';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

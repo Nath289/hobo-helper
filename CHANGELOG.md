@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.25] - 2026-05-08
+- **Changed:** Optimised helper module categorisation by reassigning ExploreHelper, BankHelper, BernardsBasementHelper, LiquorStoreHelper, and CanDepoHelper to the City group. MessageBoardHelper has been shifted to General, LockoutHelper to Global, and RecyclingBinHelper to the Canbodia group.
+
 ## [9.24] - 2026-05-08
 - **Removed:** Abandoned experimental Mine Pattern helper and canvas scaling features.
 
@@ -804,7 +807,7 @@ m- Included an interactive "View Stats" table modal showing lifetime consumption
 ## [7.57] - 2026-04-03
 ### Added
 - Added custom settings configurations for Message Board features (`MessageBoardHelper_CtrlEnter`).
-- Added a `💾 Save Repliers List` button to `MessageBoardHelper` explicitly for Gang Board posts (`cmd=gathering&do=vpost`), securely extracting and exporting a unique timestamped list of user names and IDs replying to the active topic locally.
+- Added a ` Save Repliers List` button to `MessageBoardHelper` explicitly for Gang Board posts (`cmd=gathering&do=vpost`), securely extracting and exporting a unique timestamped list of user names and IDs replying to the active topic locally.
 - Established foundations for `LockoutHelper`, injecting recent changelog activity directly into the intermittent 12-hour game reset lockout screen.
 - Extensively documented and injected `Supported Layouts` layout warnings noting only `The Future` layout format has been officially tested throughout README, INTRO, FEATURES, and internal AGENT reference files.
 - Appended concrete rule compliance references directly into `AGENTS.md` explicitly banning automated Macros/Refreshers implementation.

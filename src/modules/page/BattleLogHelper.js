@@ -1,6 +1,7 @@
 const BattleLogHelper = {
     cmds: 'battlel',
     staff: false,
+    group: 'Fighting',
     localKeys: ['BattleLogHelper_FoughtHobos'],
     settings: [],
 

@@ -1,6 +1,7 @@
 const LivingAreaHelper = {
     cmds: '',
     staff: false,
+    group: 'General',
     settings: [
         { key: 'LivingAreaHelper_StatRatioTracker', label: 'Stat Ratio Tracker' },
         { key: 'LivingAreaHelper_CopyStatsBtn', label: 'Copy Stats Button' },

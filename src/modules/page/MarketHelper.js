@@ -1,6 +1,7 @@
 const MarketHelper = {
     cmds: 'mart',
     staff: false,
+    group: 'City',
     settings: [
         { key: 'MarketHelper_Enable', label: 'Enable Market Helper' },
         { key: 'MarketHelper_TableWatcher', label: 'Convert Market Watcher to Table' },

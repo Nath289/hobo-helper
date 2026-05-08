@@ -1,6 +1,7 @@
 const TattooParlorHelper = {
     cmds: 'tattoo_parlor',
     staff: false,
+    group: 'Canbodia',
     init: function() {
         const links = document.querySelectorAll('a[href*="tattoo_parlor"]');
         links.forEach(link => {
@@ -26,4 +27,3 @@ const TattooParlorHelper = {
         });
     }
 };
-

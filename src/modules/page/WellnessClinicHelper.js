@@ -1,6 +1,7 @@
 const WellnessClinicHelper = {
     cmds: 'wellness_clinic',
     staff: false,
+    group: 'Hoburbia',
     localKeys: ['hw_wellness_goal'],
     init: function() {
         const url = window.location.href;

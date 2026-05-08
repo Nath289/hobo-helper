@@ -1,6 +1,7 @@
 const RecyclingBinHelper = {
     cmds: 'recycling_bin',
     staff: false,
+    group: 'Canbodia',
     settings: [
         { key: 'RecyclingBinHelper_Enable', label: 'Enable Recycling Quick-Add Buttons' },
         { key: 'RecyclingBinHelper_Amounts', label: 'Quick-Add Amounts', type: 'text', defaultValue: '100, 200, 500, 750', description: 'Comma separated list of amounts for quick-add buttons' }
@@ -127,4 +128,3 @@ const RecyclingBinHelper = {
         }
     }
 };
-

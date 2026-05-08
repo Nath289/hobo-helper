@@ -1,6 +1,7 @@
 const FortSlugworthHelper = {
     cmds: 'fort_slugworth',
     staff: false,
+    group: 'Hoburbia',
     init: function() {
         const settings = Utils.getSettings();
         if (settings['FortSlugworthHelper'] === false) return;
@@ -86,5 +87,3 @@ const FortSlugworthHelper = {
         Utils.log('FortSlugworthHelper: Room 4 (The Ripaparter) loaded tiles.');
     }
 };
-
-

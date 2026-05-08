@@ -1,6 +1,7 @@
 const GangBoardStaffHelper = {
     cmds: 'gathering',
     staff: true,
+    group: 'Gang',
     settings: [
         { key: 'GangBoardStaffHelper_Enable', label: 'Enable Gang Board Staff Tools' },
         {
@@ -391,5 +392,4 @@ const GangBoardStaffHelper = {
         parentDiv.appendChild(btn);
     }
 };
-
 

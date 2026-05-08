@@ -7,7 +7,8 @@ Welcome to the `hobo-helper` project! Since this project uses a custom build pro
   - `src/template.js` - The master template file containing the userscript header, initialization logic, and interpolation markers (`// {{HELPERS}}`, etc.).
   - `src/utils.js` - General helper functions.
   - `src/modules/` - Contains individual module logic and static data objects.
-    - `global/` - Modules that load on every page (e.g., `DisplayHelper.js`, `SettingsHelper.js`, `DrinksData.js`).
+    - `data/` - Static game data definitions (e.g., `DrinksData.js`, `OresData.js`).
+    - `global/` - Modules that load on every page (e.g., `DisplayHelper.js`, `SettingsHelper.js`).
     - `page/` - Modules that only load on specific pages (e.g., `BankHelper.js`, `MixerHelper.js`). These modules must specify a `cmds` property indicating which pages they apply to.
 - `html/` - Contains offline HTML snapshots of game pages. **Crucial for AI agents:** Since you cannot log into the game, always read the relevant `.html` files in this directory to analyze the DOM structure and formulate accurate query selectors before creating or modifying helpers.
 - `tools/` - PowerShell scripts for extracting static game data (e.g., wiki data) into JSON format.

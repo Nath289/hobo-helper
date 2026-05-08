@@ -1,6 +1,7 @@
 const HospitalHelper = {
     cmds: 'hospital',
     staff: false,
+    group: 'City',
     settings: [
         { key: 'HospitalHelper_TrackHealing', label: 'Track Healing Times', defaultValue: true }
     ],
@@ -20,4 +21,3 @@ const HospitalHelper = {
         });
     },
 };
-

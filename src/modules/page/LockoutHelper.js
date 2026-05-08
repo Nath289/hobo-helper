@@ -1,4 +1,5 @@
 const LockoutHelper = {
+    group: 'Global',
     settings: [
         { key: 'LockoutHelper_ShowChangelog', label: 'Show Changelog' }
     ],
@@ -95,6 +96,3 @@ const LockoutHelper = {
         }
     }
 };
-
-
-

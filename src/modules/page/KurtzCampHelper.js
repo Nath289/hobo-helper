@@ -1,6 +1,7 @@
 const KurtzCampHelper = {
     cmds: 'camp_kurtz',
     staff: false,
+    group: 'Canbodia',
     init: function() {
         // Check Settings
         const settings = Utils.getSettings();
@@ -61,5 +62,3 @@ const KurtzCampHelper = {
         });
     }
 };
-
-

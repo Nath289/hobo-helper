@@ -1,6 +1,7 @@
 const NorthernFenceHelper = {
     cmds: 'hill3',
     staff: false,
+    group: 'City',
     settings: [
         { key: 'NorthernFenceHelper_PaginationButtons', label: 'Previous/Next Page Buttons (Hall of Fame)' }
     ],

@@ -1,5 +1,6 @@
 const BattleHelper = {
     cmds: ['battlel', 'fight'],
+    group: 'Fighting',
     settings: [{ key: 'BattleHelper_EnableGraph', label: 'Enable Fight Graph', default: true }],
     init: function() {
         const settings = Utils.getSettings();

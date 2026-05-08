@@ -1,6 +1,7 @@
 const RatsHelper = {
     cmds: 'rats',
     staff: false,
+    group: 'Fighting',
     settings: [
         { key: 'RatsHelper_NewsFilter', label: 'Rat News Filter' },
         { key: 'RatsHelper_ExpBar', label: 'Show Exp Progress Indicator' },

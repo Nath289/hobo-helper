@@ -1,5 +1,6 @@
 const SkillsHelper = {
     cmds: 'skills',
+    group: 'Fighting',
     settings: [
         { key: 'SkillsHelper_EnableMaxBuy', label: 'Enable Max Buy button for skill sets' },
         { key: 'SkillsHelper_MoveSkillShop', label: 'Move Skill Shop link to top' }

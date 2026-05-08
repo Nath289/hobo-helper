@@ -1,6 +1,7 @@
 const BankHelper = {
-    cmds: 'bank',
+    cmds: ['bank', 'bank2'],
     staff: false,
+    group: 'City',
     localKeys: ['hw_bank_goals'],
     settings: [
         { key: 'BankHelper_5FightersLunches', label: "5 Fighter's Lunches Goal" },

@@ -261,6 +261,8 @@ const SettingsHelper = {
                 return modName !== 'SettingsHelper' && typeof Modules[modName].init === 'function';
             });
 
+            const groupWrappers = {};
+
             activeModules.sort().forEach((modName) => {
                 const moduleBlock = document.createElement('div');
                 moduleBlock.style.marginBottom = '12px';
@@ -343,6 +345,8 @@ const SettingsHelper = {
                     listContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
                     listContainer.style.borderRadius = '4px';
                     listContainer.style.maxWidth = '100%';
+                    listContainer.style.maxHeight = '150px';
+                    listContainer.style.overflowY = 'auto';
 
                     const crapList = JSON.parse(Utils.getItem('hw_helper_food_crap') || '[]');
                     if (crapList.length === 0) {
@@ -464,6 +468,8 @@ const SettingsHelper = {
                     listContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
                     listContainer.style.borderRadius = '4px';
                     listContainer.style.maxWidth = '100%';
+                    listContainer.style.maxHeight = '150px';
+                    listContainer.style.overflowY = 'auto';
 
                     const renderFavList = () => {
                         listContainer.innerHTML = '';
@@ -525,6 +531,8 @@ const SettingsHelper = {
                     hiddenListContainer.style.border = '1px solid rgba(128, 128, 128, 0.3)';
                     hiddenListContainer.style.borderRadius = '4px';
                     hiddenListContainer.style.maxWidth = '100%';
+                    hiddenListContainer.style.maxHeight = '150px';
+                    hiddenListContainer.style.overflowY = 'auto';
 
                     const renderHiddenList = () => {
                         hiddenListContainer.innerHTML = '';
@@ -579,15 +587,89 @@ const SettingsHelper = {
 
                 moduleBlock.appendChild(moduleOptionsContainer);
 
-                // Manually balance columns: FoodHelper's large box goes left, the rest goes right.
-                if (modName <= 'FoodHelper') {
-                    col1.appendChild(moduleBlock);
+                const groupName = Modules[modName].group;
+
+                if (groupName) {
+                    if (!groupWrappers[groupName]) {
+                        const accordionWrapper = document.createElement('div');
+                        accordionWrapper.style.marginBottom = '12px';
+                        accordionWrapper.style.border = '1px solid rgba(128, 128, 128, 0.4)';
+                        accordionWrapper.style.borderRadius = '6px';
+                        accordionWrapper.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                        accordionWrapper.style.background = 'rgba(128, 128, 128, 0.02)';
+
+                        const accordionHeader = document.createElement('div');
+                        accordionHeader.style.padding = '10px';
+                        accordionHeader.style.background = '#e6e6e6';
+                        accordionHeader.style.borderBottom = '1px solid rgba(128, 128, 128, 0.2)';
+                        accordionHeader.style.borderRadius = '5px 5px 0 0';
+                        accordionHeader.style.cursor = 'pointer';
+                        accordionHeader.style.fontWeight = 'bold';
+                        accordionHeader.style.display = 'flex';
+                        accordionHeader.style.justifyContent = 'space-between';
+                        accordionHeader.style.userSelect = 'none';
+                        accordionHeader.style.webkitUserSelect = 'none';
+
+                        const titleSpan = document.createElement('span');
+                        titleSpan.textContent = groupName + ' Settings';
+                        
+                        const iconSpan = document.createElement('span');
+                        // default collapsed
+                        iconSpan.textContent = '▼';
+
+                        accordionHeader.appendChild(titleSpan);
+                        accordionHeader.appendChild(iconSpan);
+
+                        const accordionContent = document.createElement('div');
+                        accordionContent.style.padding = '10px';
+                        accordionContent.style.display = 'none'; // collapsed by default
+
+                        accordionHeader.addEventListener('click', () => {
+                            const isHidden = accordionContent.style.display === 'none';
+                            if (isHidden) {
+                                accordionContent.style.display = 'block';
+                                iconSpan.textContent = '▲';
+                                accordionHeader.style.background = '#d0e0ff';
+                                accordionHeader.style.borderBottom = '1px solid #a0c0ff';
+                            } else {
+                                accordionContent.style.display = 'none';
+                                iconSpan.textContent = '▼';
+                                accordionHeader.style.background = '#e6e6e6';
+                                accordionHeader.style.borderBottom = '1px solid rgba(128, 128, 128, 0.2)';
+                            }
+                        });
+
+                        accordionWrapper.appendChild(accordionHeader);
+                        accordionWrapper.appendChild(accordionContent);
+
+                        groupWrappers[groupName] = { wrapper: accordionWrapper, content: accordionContent };
+
+                        // Place group in columns. Gang can go right or left. We will just balance by name length or manually.
+                        if (groupName <= 'FoodHelper') {
+                            col1.appendChild(accordionWrapper);
+                        } else {
+                            col2.appendChild(accordionWrapper);
+                        }
+                    }
+
+                    moduleBlock.style.boxShadow = 'none';
+                    moduleBlock.style.background = 'transparent';
+                    moduleBlock.style.border = 'none';
+                    moduleBlock.style.padding = '4px 0';
+                    moduleBlock.style.marginBottom = '8px';
+                    moduleBlock.style.borderBottom = '1px solid rgba(128, 128, 128, 0.1)';
+                    moduleBlock.style.borderRadius = '0';
+                    
+                    groupWrappers[groupName].content.appendChild(moduleBlock);
                 } else {
-                    col2.appendChild(moduleBlock);
+                    // Manually balance columns: FoodHelper's large box goes left, the rest goes right.
+                    if (modName <= 'FoodHelper') {
+                        col1.appendChild(moduleBlock);
+                    } else {
+                        col2.appendChild(moduleBlock);
+                    }
                 }
             });
         }
     }
 }
-
-
