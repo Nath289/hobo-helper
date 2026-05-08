@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.28] - 2026-05-08
+- **Changed:** Swapped the Active Miners list map outline animation from a flashing color to a continuous expanding blue pulse overlay for 5 seconds using `outline-offset` instead of `box-shadow` (for robust table compatibility).
+
 ## [9.27] - 2026-05-08
 - **Added:** Added an Active Miners list to the left column while exploring the Mines. It lists all players visible on the map and their coordinates. Clicking on a player initiates a 5-second flashing highlight on their map location for easy tracking.
 

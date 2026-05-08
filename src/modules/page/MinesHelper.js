@@ -1182,10 +1182,9 @@ const MinesHelper = {
             const style = document.createElement('style');
             style.id = 'mines-flash-style';
             style.textContent = `
-                @keyframes pulse-outline {
-                    0% { outline: 3px solid #1b9eff; outline-offset: -1.5px; }
-                    50% { outline: 3px solid #ffffff; outline-offset: -1.5px; }
-                    100% { outline: 3px solid #1b9eff; outline-offset: -1.5px; }
+                @keyframes grow-outline {
+                    0% { outline: 2px solid rgba(27, 158, 255, 1); outline-offset: 0px; }
+                    100% { outline: 10px solid rgba(27, 158, 255, 0); outline-offset: 10px; }
                 }
             `;
             document.head.appendChild(style);
@@ -1224,19 +1223,19 @@ const MinesHelper = {
 
                 const targetCell = document.getElementById(player.cellId);
                 if (targetCell) {
-                    targetCell.style.outline = '3px solid #1b9eff';
+                    targetCell.style.outline = '2px solid #1b9eff';
                     targetCell.style.zIndex = '10';
                     targetCell.style.animation = 'none';
                     // Trigger reflow to restart animation
                     void targetCell.offsetWidth;
-                    targetCell.style.animation = 'pulse-outline 1s 5';
+                    targetCell.style.animation = 'grow-outline 1s 5';
                 }
             });
             ul.appendChild(li);
         });
 
         listDiv.appendChild(ul);
-        
+
         const footer = document.createElement('div');
         footer.textContent = 'Click to highlight on mini map';
         footer.style.cssText = 'font-size: 9px; color: #888; text-align: center; margin-top: 4px; font-style: italic;';

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      9.26.20260508.1309
+// @version      9.27.20260508.1915
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -675,6 +675,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.27",
+            date: "2026-05-08",
+            type: "Changed",
+            notes: [
+                "**Added:** Added an Active Miners list to the left column while exploring the Mines. It lists all players visible on the map and their coordinates. Clicking on a player initiates a 5-second flashing highlight on their map location for easy tracking."
+            ]
+        },
+        {
             version: "9.26",
             date: "2026-05-08",
             type: "Changed",
@@ -749,16 +757,6 @@ const ChangelogData = {
             notes: [
                 "**Fixed:** Fixed an issue where the side box mining stats table was parsing formatting HTML tags incorrectly, resulting in \"0's\". ",
                 "**Fixed:** Overhauled data cache integrity iteration for the Mining Log rendering system. Fixed a fatal crash preventing the log from appending correctly at the bottom of the `.content-area` view if historical JSON entries were skewed."
-            ]
-        },
-        {
-            version: "9.17",
-            date: "2026-05-05",
-            type: "Changed",
-            notes: [
-                "**Added:** Added dynamic \"#\" row numbers to the Super-Cart Racing Skill Tracker table to easily identify ranks across pagination.",
-                "**Added:** Added \"Hide 0 Weekly Gains\" and \"Hide 0 Total Gains\" checkboxes to the Super-Cart Racing Skill Tracker filters, allowing users to cleanly exclude stagnant inactive hobos from their tracked readouts natively.## [9.16] - 2026-05-05",
-                "**Added:** Expanded the Super-Cart Racing Skill Tracker to include an independent Weekly Gains metric alongside Total Gains. Metrics automatically checkpoint every Monday at midnight server time without resetting the all-time history."
             ]
         }
     ]
@@ -7913,10 +7911,9 @@ const MinesHelper = {
             const style = document.createElement('style');
             style.id = 'mines-flash-style';
             style.textContent = `
-                @keyframes pulse-outline {
-                    0% { outline: 3px solid #1b9eff; outline-offset: -1.5px; }
-                    50% { outline: 3px solid #ffffff; outline-offset: -1.5px; }
-                    100% { outline: 3px solid #1b9eff; outline-offset: -1.5px; }
+                @keyframes grow-outline {
+                    0% { outline: 2px solid rgba(27, 158, 255, 1); outline-offset: 0px; }
+                    100% { outline: 10px solid rgba(27, 158, 255, 0); outline-offset: 10px; }
                 }
             `;
             document.head.appendChild(style);
@@ -7955,19 +7952,19 @@ const MinesHelper = {
 
                 const targetCell = document.getElementById(player.cellId);
                 if (targetCell) {
-                    targetCell.style.outline = '3px solid #1b9eff';
+                    targetCell.style.outline = '2px solid #1b9eff';
                     targetCell.style.zIndex = '10';
                     targetCell.style.animation = 'none';
                     // Trigger reflow to restart animation
                     void targetCell.offsetWidth;
-                    targetCell.style.animation = 'pulse-outline 1s 5';
+                    targetCell.style.animation = 'grow-outline 1s 5';
                 }
             });
             ul.appendChild(li);
         });
 
         listDiv.appendChild(ul);
-        
+
         const footer = document.createElement('div');
         footer.textContent = 'Click to highlight on mini map';
         footer.style.cssText = 'font-size: 9px; color: #888; text-align: center; margin-top: 4px; font-style: italic;';
@@ -14079,7 +14076,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.26.20260508.1309';
+        window.HoboHelperVersion = '9.27.20260508.1915';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
