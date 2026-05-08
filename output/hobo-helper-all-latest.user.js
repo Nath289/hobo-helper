@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (All)
 // @namespace    http://tampermonkey.net/
-// @version      9.25
+// @version      9.27
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -675,6 +675,22 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.27",
+            date: "2026-05-08",
+            type: "Changed",
+            notes: [
+                "**Added:** Added an Active Miners list to the left column while exploring the Mines. It lists all players visible on the map and their coordinates. Clicking on a player initiates a 5-second flashing highlight on their map location for easy tracking."
+            ]
+        },
+        {
+            version: "9.26",
+            date: "2026-05-08",
+            type: "Changed",
+            notes: [
+                "**Added:** Added a new setting to the Mines helper to highlight players on the mini-map. Other players are outlined in red, and the player character (\"You!\") is outlined in green."
+            ]
+        },
+        {
             version: "9.25",
             date: "2026-05-08",
             type: "Changed",
@@ -741,26 +757,6 @@ const ChangelogData = {
             notes: [
                 "**Fixed:** Fixed an issue where the side box mining stats table was parsing formatting HTML tags incorrectly, resulting in \"0's\". ",
                 "**Fixed:** Overhauled data cache integrity iteration for the Mining Log rendering system. Fixed a fatal crash preventing the log from appending correctly at the bottom of the `.content-area` view if historical JSON entries were skewed."
-            ]
-        },
-        {
-            version: "9.17",
-            date: "2026-05-05",
-            type: "Changed",
-            notes: [
-                "**Added:** Added dynamic \"#\" row numbers to the Super-Cart Racing Skill Tracker table to easily identify ranks across pagination.",
-                "**Added:** Added \"Hide 0 Weekly Gains\" and \"Hide 0 Total Gains\" checkboxes to the Super-Cart Racing Skill Tracker filters, allowing users to cleanly exclude stagnant inactive hobos from their tracked readouts natively.## [9.16] - 2026-05-05",
-                "**Added:** Expanded the Super-Cart Racing Skill Tracker to include an independent Weekly Gains metric alongside Total Gains. Metrics automatically checkpoint every Monday at midnight server time without resetting the all-time history."
-            ]
-        },
-        {
-            version: "9.15",
-            date: "2026-05-05",
-            type: "Changed",
-            notes: [
-                "**Added:** Added a \"Super-Cart Racing Skill Tracker\" element inside `NorthernFenceHelper` for the Hall of Fame interface. It actively records and maps rank changes across Hall of Fame pages and builds a dynamic, sortable, locally paginated table of Top Hobos exhibiting stat progression, while saving layout persistence locally.",
-                "**Added:** Appended a collapsible active/total racers summary chart mapping activity breakdown per racing tier inside the Super-Cart Racing Skill Tracker.",
-                "**Fixed:** Corrected a localized regression in helper scripts causing data object corruption due to improper local storage literal string casting."
             ]
         }
     ]
@@ -6794,6 +6790,14 @@ const MinesHelper = {
             try { this.formatThreeColumnLayout(); } catch (e) { Utils.log(e); }
         }
 
+        if (settings['MinesHelper_HighlightPlayers'] !== false) {
+            try { this.highlightPlayers(); } catch (e) { Utils.log(e); }
+        }
+
+        if (settings['MinesHelper_ThreeColumnLayout'] !== false) {
+            try { this.buildMiniMapActiveList(); } catch (e) { Utils.log(e); }
+        }
+
         // Setup active view layout overrides
         if (window.location.search.includes('view=active')) {
             const contentArea = document.querySelector('.content-area');
@@ -7823,6 +7827,151 @@ const MinesHelper = {
             `;
             document.head.appendChild(style);
         }
+    },
+
+    highlightPlayers: function() {
+        const mapStartCell = document.getElementById('1001');
+        if (!mapStartCell) return;
+
+        const mapTable = mapStartCell.closest('table');
+        if (!mapTable) return;
+
+        const cells = mapTable.querySelectorAll('td[id]');
+        cells.forEach(cell => {
+            const title = cell.getAttribute('title');
+            if (title && title !== 'You!' && title.match(/\(\d+\)/)) {
+                cell.style.outline = '2px solid #f00';
+                cell.style.outlineOffset = '-1.5px';
+            } else if (title === 'You!') {
+                cell.style.outline = '2px solid #0f0';
+                cell.style.outlineOffset = '-1.5px';
+            }
+        });
+    },
+
+    buildMiniMapActiveList: function() {
+        const mapStartCell = document.getElementById('1001');
+        if (!mapStartCell) return;
+
+        const mapTable = mapStartCell.closest('table');
+        if (!mapTable) return;
+
+        const cells = mapTable.querySelectorAll('td[id]');
+        const activePlayers = [];
+        cells.forEach(cell => {
+            const title = cell.getAttribute('title');
+            if (title && title !== 'You!') {
+                const match = title.match(/^(.*?)\s*\((?:#)?(\d+)\)$/);
+                if (match) {
+                    const cellIdNum = parseInt(cell.id, 10);
+                    let x = 0, y = 0;
+                    if (!isNaN(cellIdNum) && cellIdNum > 1000) {
+                        const val = cellIdNum - 1000;
+                        x = val % 20;
+                        if (x === 0) x = 20;
+                        y = Math.ceil(val / 20);
+                    }
+                    activePlayers.push({ name: match[1], id: match[2], cellId: cell.id, x, y });
+                }
+            }
+        });
+
+        if (activePlayers.length === 0) return;
+
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        const mainTables = contentArea.querySelectorAll('table[width="100%"]');
+        let layoutTable = null;
+        for (const t of mainTables) {
+            const layoutCells = t.querySelectorAll('td[width="70%"], td[width="30%"]');
+            if (layoutCells.length >= 2) {
+                layoutTable = t;
+                break;
+            }
+        }
+
+        let container = null;
+        if (layoutTable) {
+            const tbody = layoutTable.querySelector('tbody');
+            if (tbody) {
+                const tr = tbody.querySelector('tr[valign="top"]') || tbody.querySelector('tr');
+                if (tr) {
+                    const layoutTds = Array.from(tr.querySelectorAll(':scope > td'));
+                    if (layoutTds.length > 0) {
+                        container = layoutTds[0];
+                    }
+                }
+            }
+        }
+
+        if (!container) return;
+
+        if (!document.getElementById('mines-flash-style')) {
+            const style = document.createElement('style');
+            style.id = 'mines-flash-style';
+            style.textContent = `
+                @keyframes pulse-outline {
+                    0% { outline: 3px solid #1b9eff; outline-offset: -1.5px; }
+                    50% { outline: 3px solid #ffffff; outline-offset: -1.5px; }
+                    100% { outline: 3px solid #1b9eff; outline-offset: -1.5px; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        const listDiv = document.createElement('div');
+        listDiv.style.cssText = 'width: 185px; margin: 15px auto; border: 2px solid #E8E8E8; outline: 1px solid #CCCCCC; background: #F9F9F9; padding: 4px; max-height: 250px; overflow-y: auto;';
+
+        const header = document.createElement('div');
+        header.textContent = 'Active Miners';
+        header.style.cssText = 'font-weight: bold; text-align: center; border-bottom: 1px solid #ddd; margin-bottom: 4px; padding-bottom: 2px; font-size: 12px; color: #333;';
+        listDiv.appendChild(header);
+
+        const ul = document.createElement('ul');
+        ul.style.cssText = 'list-style: none; margin: 0; padding: 0; font-size: 11px;';
+
+        activePlayers.forEach(player => {
+            const li = document.createElement('li');
+            li.style.cssText = 'padding: 3px 4px; cursor: pointer; border-bottom: 1px solid #eee; transition: background 0.2s; display: flex; justify-content: space-between; align-items: center;';
+            li.innerHTML = `
+                <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 135px;"><span style="font-weight: bold; color: #333;">${player.name}</span></div>
+                <div style="font-size: 10px; font-weight: bold; color: #555;">${player.x},${player.y}</div>
+            `;
+
+            li.addEventListener('mouseenter', () => li.style.background = '#e8f4f8');
+            li.addEventListener('mouseleave', () => li.style.background = 'transparent');
+            li.addEventListener('click', () => {
+                cells.forEach(c => {
+                    const t = c.getAttribute('title');
+                    if (t && t !== 'You!' && t.match(/\(\d+\)/)) {
+                        c.style.outline = '2px solid #f00';
+                        c.style.zIndex = '1';
+                        c.style.animation = '';
+                    }
+                });
+
+                const targetCell = document.getElementById(player.cellId);
+                if (targetCell) {
+                    targetCell.style.outline = '3px solid #1b9eff';
+                    targetCell.style.zIndex = '10';
+                    targetCell.style.animation = 'none';
+                    // Trigger reflow to restart animation
+                    void targetCell.offsetWidth;
+                    targetCell.style.animation = 'pulse-outline 1s 5';
+                }
+            });
+            ul.appendChild(li);
+        });
+
+        listDiv.appendChild(ul);
+        
+        const footer = document.createElement('div');
+        footer.textContent = 'Click to highlight on mini map';
+        footer.style.cssText = 'font-size: 9px; color: #888; text-align: center; margin-top: 4px; font-style: italic;';
+        listDiv.appendChild(footer);
+
+        container.appendChild(listDiv);
     },
 
     formatTopMinersTable: function() {
@@ -13928,7 +14077,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.25';
+        window.HoboHelperVersion = '9.27';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.27] - 2026-05-08
+- **Added:** Added an Active Miners list to the left column while exploring the Mines. It lists all players visible on the map and their coordinates. Clicking on a player initiates a 5-second flashing highlight on their map location for easy tracking.
+
+## [9.26] - 2026-05-08
+- **Added:** Added a new setting to the Mines helper to highlight players on the mini-map. Other players are outlined in red, and the player character ("You!") is outlined in green.
+
 ## [9.25] - 2026-05-08
 - **Changed:** Optimised helper module categorisation by reassigning ExploreHelper, BankHelper, BernardsBasementHelper, LiquorStoreHelper, and CanDepoHelper to the City group. MessageBoardHelper has been shifted to General, LockoutHelper to Global, and RecyclingBinHelper to the Canbodia group.
 
