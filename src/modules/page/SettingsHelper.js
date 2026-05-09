@@ -23,13 +23,31 @@ const SettingsHelper = {
         headerContainer.appendChild(titleDiv);
 
         const versionStr = window.HoboHelperVersion || (typeof GM_info !== 'undefined' ? GM_info.script.version : 'Unknown');
+        const scriptName = typeof GM_info !== 'undefined' ? GM_info.script.name : '';
         const isDev = versionStr !== 'Unknown' && versionStr.split('.').length > 2;
+
+        let buildType = 'Standard';
+        let scriptFilename = 'hobo-helper-latest.user.js';
+
+        if (scriptName.includes('(All Beta)')) {
+            buildType = 'Staff Beta (All)';
+            scriptFilename = 'hobo-helper-all-beta.user.js';
+        } else if (scriptName.includes('(All)')) {
+            buildType = 'Staff (All)';
+            scriptFilename = 'hobo-helper-all-latest.user.js';
+        } else if (scriptName.includes('(Beta)')) {
+            buildType = 'Beta';
+            scriptFilename = 'hobo-helper-beta.user.js';
+        } else if (isDev) {
+            buildType = 'Dev Build';
+            // Dev builds don't get updates, but we can default the scriptFilename anyway
+        }
 
         const versionDiv = document.createElement('div');
         versionDiv.style.fontSize = '12px';
         versionDiv.style.color = '#666';
         versionDiv.style.marginTop = '5px';
-        versionDiv.textContent = `v${versionStr}` + (isDev ? ' (Dev Build)' : '');
+        versionDiv.textContent = `v${versionStr} - ${buildType}`;
         headerContainer.appendChild(versionDiv);
 
         const updateBtn = document.createElement('button');
@@ -51,7 +69,7 @@ const SettingsHelper = {
                 e.preventDefault();
                 updateBtn.textContent = 'Checking...';
                 updateBtn.disabled = true;
-                fetch('https://raw.githubusercontent.com/Nath289/hobo-helper/main/output/hobo-helper-latest.user.js?t=' + Date.now())
+                fetch('https://raw.githubusercontent.com/Nath289/hobo-helper/main/output/' + scriptFilename + '?t=' + Date.now())
                     .then(r => r.text())
                     .then(text => {
                         const match = text.match(/@version\s+([\d\.]+)/);
@@ -62,7 +80,7 @@ const SettingsHelper = {
                                 updateBtn.style.backgroundColor = '#4CAF50';
                                 updateBtn.style.color = 'white';
                                 updateBtn.onclick = () => {
-                                    window.location.href = 'https://github.com/Nath289/hobo-helper/raw/refs/heads/main/output/hobo-helper-latest.user.js';
+                                    window.location.href = 'https://github.com/Nath289/hobo-helper/raw/refs/heads/main/output/' + scriptFilename;
                                 };
                             } else {
                                 updateBtn.textContent = 'Up to date!';

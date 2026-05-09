@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.33] - 2026-05-10
+### Fixed
+- Fixed an issue where the Update Checker inside the Settings page would only point to the standard release script, downgrading installed Staff builds. It now accurately dynamically parses the active script type (Beta, Core, All) to download the correct branch. 
+- Included explicit Build Type indicators alongside the version string on the settings page for easier debug reference.
+
 ## [9.32] - 2026-05-10
 ### Added
 - Added an optional link to the Gang Hitlist at the end of the top bar menu (can be toggled in Preferences).

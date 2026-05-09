@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (All Beta)
 // @namespace    http://tampermonkey.net/
-// @version      9.32
+// @version      9.33
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -675,6 +675,15 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.33",
+            date: "2026-05-10",
+            type: "Fixed",
+            notes: [
+                "Fixed an issue where the Update Checker inside the Settings page would only point to the standard release script, downgrading installed Staff builds. It now accurately dynamically parses the active script type (Beta, Core, All) to download the correct branch. ",
+                "Included explicit Build Type indicators alongside the version string on the settings page for easier debug reference."
+            ]
+        },
+        {
             version: "9.32",
             date: "2026-05-10",
             type: "Added",
@@ -744,15 +753,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "**Removed:** Abandoned experimental Mine Pattern helper and canvas scaling features."
-            ]
-        },
-        {
-            version: "9.23",
-            date: "2026-05-07",
-            type: "Changed",
-            notes: [
-                "**Changed:** Grouped repeated saved hobos in the Mining Log by ID and added count indicators next to their names (e.g., PlayerName (x3)).",
-                "**Fixed:** Reverted fixed base64 strings for Green Ore, Yellow Ore, and Orange Ore that were causing image display issues."
             ]
         }
     ]
@@ -10594,13 +10594,31 @@ const SettingsHelper = {
         headerContainer.appendChild(titleDiv);
 
         const versionStr = window.HoboHelperVersion || (typeof GM_info !== 'undefined' ? GM_info.script.version : 'Unknown');
+        const scriptName = typeof GM_info !== 'undefined' ? GM_info.script.name : '';
         const isDev = versionStr !== 'Unknown' && versionStr.split('.').length > 2;
+
+        let buildType = 'Standard';
+        let scriptFilename = 'hobo-helper-latest.user.js';
+
+        if (scriptName.includes('(All Beta)')) {
+            buildType = 'Staff Beta (All)';
+            scriptFilename = 'hobo-helper-all-beta.user.js';
+        } else if (scriptName.includes('(All)')) {
+            buildType = 'Staff (All)';
+            scriptFilename = 'hobo-helper-all-latest.user.js';
+        } else if (scriptName.includes('(Beta)')) {
+            buildType = 'Beta';
+            scriptFilename = 'hobo-helper-beta.user.js';
+        } else if (isDev) {
+            buildType = 'Dev Build';
+            // Dev builds don't get updates, but we can default the scriptFilename anyway
+        }
 
         const versionDiv = document.createElement('div');
         versionDiv.style.fontSize = '12px';
         versionDiv.style.color = '#666';
         versionDiv.style.marginTop = '5px';
-        versionDiv.textContent = `v${versionStr}` + (isDev ? ' (Dev Build)' : '');
+        versionDiv.textContent = `v${versionStr} - ${buildType}`;
         headerContainer.appendChild(versionDiv);
 
         const updateBtn = document.createElement('button');
@@ -10622,7 +10640,7 @@ const SettingsHelper = {
                 e.preventDefault();
                 updateBtn.textContent = 'Checking...';
                 updateBtn.disabled = true;
-                fetch('https://raw.githubusercontent.com/Nath289/hobo-helper/main/output/hobo-helper-latest.user.js?t=' + Date.now())
+                fetch('https://raw.githubusercontent.com/Nath289/hobo-helper/main/output/' + scriptFilename + '?t=' + Date.now())
                     .then(r => r.text())
                     .then(text => {
                         const match = text.match(/@version\s+([\d\.]+)/);
@@ -10633,7 +10651,7 @@ const SettingsHelper = {
                                 updateBtn.style.backgroundColor = '#4CAF50';
                                 updateBtn.style.color = 'white';
                                 updateBtn.onclick = () => {
-                                    window.location.href = 'https://github.com/Nath289/hobo-helper/raw/refs/heads/main/output/hobo-helper-latest.user.js';
+                                    window.location.href = 'https://github.com/Nath289/hobo-helper/raw/refs/heads/main/output/' + scriptFilename;
                                 };
                             } else {
                                 updateBtn.textContent = 'Up to date!';
@@ -14193,7 +14211,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.32';
+        window.HoboHelperVersion = '9.33';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
