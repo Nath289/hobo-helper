@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      9.27.20260508.1915
+// @version      9.28.20260509.2321
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -675,6 +675,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.28",
+            date: "2026-05-08",
+            type: "Changed",
+            notes: [
+                "**Changed:** Swapped the Active Miners list map outline animation from a flashing color to a continuous expanding blue pulse overlay for 5 seconds using `outline-offset` instead of `box-shadow` (for robust table compatibility)."
+            ]
+        },
+        {
             version: "9.27",
             date: "2026-05-08",
             type: "Changed",
@@ -748,15 +756,6 @@ const ChangelogData = {
             notes: [
                 "**Changed:** Increased height and bottom padding for the Ore icons inside formatted elements to prevent bottom overflow text overlapping.",
                 "**Fixed:** Fixed an issue where the Mining Log was inflating \"T used\" values endlessly by grabbing the total instead of delta. Also added explicit zeroing for URL refreshes containing `move=nowhere`."
-            ]
-        },
-        {
-            version: "9.18",
-            date: "2026-05-05",
-            type: "Changed",
-            notes: [
-                "**Fixed:** Fixed an issue where the side box mining stats table was parsing formatting HTML tags incorrectly, resulting in \"0's\". ",
-                "**Fixed:** Overhauled data cache integrity iteration for the Mining Log rendering system. Fixed a fatal crash preventing the log from appending correctly at the bottom of the `.content-area` view if historical JSON entries were skewed."
             ]
         }
     ]
@@ -6922,6 +6921,12 @@ const MinesHelper = {
 
                     if (count > 1) {
                         name = name.replace(/ Ores$/i, ' Ore').replace(/ Shards$/i, ' Shard');
+                    }
+
+                    // Ignore equipment items or non-ores that mistakenly match the parser
+                    const ignoredItems = ['Spelunking Satchel', 'Spelunking Sachel', 'Pickaxe', 'Lantern', 'Helmet', 'Hard Helmet'];
+                    if (ignoredItems.some(item => name.toLowerCase().includes(item.toLowerCase()))) {
+                        continue;
                     }
 
                     for (let i = 0; i < count; i++) {
@@ -14076,7 +14081,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.27.20260508.1915';
+        window.HoboHelperVersion = '9.28.20260509.2321';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

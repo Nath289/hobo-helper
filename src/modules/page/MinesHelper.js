@@ -195,6 +195,12 @@ const MinesHelper = {
                         name = name.replace(/ Ores$/i, ' Ore').replace(/ Shards$/i, ' Shard');
                     }
 
+                    // Ignore equipment items or non-ores that mistakenly match the parser
+                    const ignoredItems = ['Spelunking Satchel', 'Spelunking Sachel', 'Pickaxe', 'Lantern', 'Helmet', 'Hard Helmet'];
+                    if (ignoredItems.some(item => name.toLowerCase().includes(item.toLowerCase()))) {
+                        continue;
+                    }
+
                     for (let i = 0; i < count; i++) {
                         newOres.push(name);
                     }

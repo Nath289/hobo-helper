@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Beta)
 // @namespace    http://tampermonkey.net/
-// @version      9.28
+// @version      9.29
 // @description  Combines original HoboWars helpers into a single modular script (non-staff modules).
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -675,6 +675,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.29",
+            date: "2026-05-09",
+            type: "Fixed",
+            notes: [
+                "Fixed an issue where breaking a 'Spelunking Satchel' or other equipment in the mines would mistakenly parse and log it as an acquired ore type."
+            ]
+        },
+        {
             version: "9.28",
             date: "2026-05-08",
             type: "Changed",
@@ -747,15 +755,6 @@ const ChangelogData = {
                 "**Added:** Added an HTML table restyling the native list of registered racers on the race registration page (`cmd=hill3&do=list`).",
                 "**Added:** Added an exact historical skill readout per racer dynamically pulled from the Super-Cart Racing Skill Tracker object data.",
                 "**Added:** Automatically highlights the current player's row if they are actively signed up for the given race class."
-            ]
-        },
-        {
-            version: "9.19",
-            date: "2026-05-05",
-            type: "Changed",
-            notes: [
-                "**Changed:** Increased height and bottom padding for the Ore icons inside formatted elements to prevent bottom overflow text overlapping.",
-                "**Fixed:** Fixed an issue where the Mining Log was inflating \"T used\" values endlessly by grabbing the total instead of delta. Also added explicit zeroing for URL refreshes containing `move=nowhere`."
             ]
         }
     ]
@@ -6923,6 +6922,12 @@ const MinesHelper = {
                         name = name.replace(/ Ores$/i, ' Ore').replace(/ Shards$/i, ' Shard');
                     }
 
+                    // Ignore equipment items or non-ores that mistakenly match the parser
+                    const ignoredItems = ['Spelunking Satchel', 'Spelunking Sachel', 'Pickaxe', 'Lantern', 'Helmet', 'Hard Helmet'];
+                    if (ignoredItems.some(item => name.toLowerCase().includes(item.toLowerCase()))) {
+                        continue;
+                    }
+
                     for (let i = 0; i < count; i++) {
                         newOres.push(name);
                     }
@@ -11865,7 +11870,7 @@ const WellnessClinicHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.28';
+        window.HoboHelperVersion = '9.29';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.29] - 2026-05-09
+### Fixed
+- Fixed an issue where breaking a 'Spelunking Satchel' or other equipment in the mines would mistakenly parse and log it as an acquired ore type.
+
 ## [9.28] - 2026-05-08
 - **Changed:** Swapped the Active Miners list map outline animation from a flashing color to a continuous expanding blue pulse overlay for 5 seconds using `outline-offset` instead of `box-shadow` (for robust table compatibility).
 
