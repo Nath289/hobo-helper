@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      9.30.20260510.0852
+// @version      9.31.20260510.0907
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -675,6 +675,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.31",
+            date: "2026-05-10",
+            type: "Changed",
+            notes: [
+                "Food Bank lists (Frozen and In Trolly) now display side-by-side if the page is widened (over 950px layout)."
+            ]
+        },
+        {
             version: "9.30",
             date: "2026-05-10",
             type: "Added",
@@ -746,14 +754,6 @@ const ChangelogData = {
             notes: [
                 "**Added:** Added support for recording saved hobos inside the Mining Log. \"Hobos Saved\" will now render as a bulleted section containing player name links when a trapped player is pulled to safety."
             ]
-        },
-        {
-            version: "9.21",
-            date: "2026-05-07",
-            type: "Changed",
-            notes: [
-                "**Fixed:** Fixed an issue where the trade limits (badges) and formatted Ore quantities were disappearing from the Trading Post because the display formatting was executing out of order and destroying the DOM layout prematurely."
-            ]
         }
     ]
 };
@@ -786,6 +786,7 @@ const DisplayHelper = {
         { key: 'DisplayHelper_InterestingLevel', label: 'Show Next Interesting Level', defaultValue: true },
         { key: 'DisplayHelper_LiveAliveTime', label: 'Show Live Alive Time in Top Menu', defaultValue: true },
         { key: 'DisplayHelper_ShowCans', label: 'Show Cans in Top Menu', defaultValue: true },
+        { key: 'DisplayHelper_ShowGangHitlistLink', label: 'Show Gang Hitlist in Top Menu', defaultValue: true },
         { key: 'DisplayHelper_LastActiveTime', label: 'Display Last Active Time in Panel', defaultValue: true },
         { key: 'DisplayHelper_ShowUpdateChangelog', label: 'Show Update Features on New Version', defaultValue: true }
     ],
@@ -823,6 +824,9 @@ const DisplayHelper = {
         }
         if (settings['DisplayHelper_ShowCans'] !== false) {
             this.initShowCans();
+        }
+        if (settings['DisplayHelper_ShowGangHitlistLink'] !== false) {
+            this.initShowGangHitlistLink();
         }
         if (settings['DisplayHelper_LastActiveTime'] !== false) {
             this.initLastActiveTimeDisplay();
@@ -1019,6 +1023,29 @@ const DisplayHelper = {
                 existingCansLi.remove();
             }
         }
+    },
+    initShowGangHitlistLink: function() {
+        const topbarMenuUl = document.querySelector('.topbar-menu ul');
+        if (!topbarMenuUl) return;
+
+        const existingLinks = Array.from(topbarMenuUl.querySelectorAll('a'));
+        if (existingLinks.some(a => a.href.includes('cmd=gang') && a.href.includes('do=hitlist'))) return;
+
+        const lastLink = topbarMenuUl.querySelector('li:last-child a');
+        let href = 'game.php?cmd=gang&do=hitlist';
+        if (lastLink && lastLink.href) {
+            const urlObj = new URL(lastLink.href, window.location.href);
+            urlObj.searchParams.set('cmd', 'gang');
+            urlObj.searchParams.set('do', 'hitlist');
+            href = urlObj.pathname + urlObj.search;
+        }
+
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = href;
+        a.textContent = 'Gang Hitlist';
+        li.appendChild(a);
+        topbarMenuUl.appendChild(li);
     },
     initLiveAliveTime: function() {
         const topbarUl = document.querySelector('.topbar-menu ul');
@@ -14166,7 +14193,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.30.20260510.0852';
+        window.HoboHelperVersion = '9.31.20260510.0907';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

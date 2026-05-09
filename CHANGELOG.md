@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.32] - 2026-05-10
+### Added
+- Added an optional link to the Gang Hitlist at the end of the top bar menu (can be toggled in Preferences).
+
 ## [9.31] - 2026-05-10
 ### Changed
 - Food Bank lists (Frozen and In Trolly) now display side-by-side if the page is widened (over 950px layout).
