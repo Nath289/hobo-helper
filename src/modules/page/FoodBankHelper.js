@@ -16,6 +16,80 @@ const FoodBankHelper = {
         if (settings?.FoodBankHelper_enabled === false) return;
 
         this.formatTables();
+        this.layoutSideBySide();
+    },
+
+    layoutSideBySide: function() {
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea || contentArea.offsetWidth <= 950) return;
+
+        const unfreezeForm = document.getElementById('unfreeze_food');
+        const freezeForm = document.getElementById('freeze_food');
+
+        if (!unfreezeForm || !freezeForm) return;
+
+        // Find the headers by finding the <b> tags preceding the forms
+        let frozenHeader = unfreezeForm.previousElementSibling;
+        while (frozenHeader && (frozenHeader.tagName !== 'B' || !frozenHeader.textContent.includes('Frozen'))) {
+            frozenHeader = frozenHeader.previousElementSibling;
+        }
+
+        let trolleyHeader = freezeForm.previousElementSibling;
+        while (trolleyHeader && (trolleyHeader.tagName !== 'B' || !trolleyHeader.textContent.includes('In Trolly'))) {
+            trolleyHeader = trolleyHeader.previousElementSibling;
+        }
+
+        if (!frozenHeader || !trolleyHeader) return;
+
+        // Container to hold both sections side-by-side
+        const flexContainer = document.createElement('div');
+        flexContainer.style.display = 'flex';
+        flexContainer.style.justifyContent = 'space-between';
+        flexContainer.style.gap = '20px';
+        flexContainer.style.alignItems = 'flex-start';
+
+        const frozenContainer = document.createElement('div');
+        frozenContainer.style.flex = '1';
+
+        const trolleyContainer = document.createElement('div');
+        trolleyContainer.style.flex = '1';
+
+        // Get the starting BR for frozen section if it exists
+        let startNodeFrozen = frozenHeader;
+        if (frozenHeader.previousSibling && frozenHeader.previousSibling.nodeType === 1 && frozenHeader.previousSibling.tagName === 'BR') {
+            startNodeFrozen = frozenHeader.previousSibling;
+        }
+
+        // Insert flex container
+        startNodeFrozen.parentNode.insertBefore(flexContainer, startNodeFrozen);
+
+        // Move frozen contents
+        let curr = startNodeFrozen;
+        while (curr && curr !== trolleyHeader && curr.nextSibling !== trolleyHeader) {
+            let next = curr.nextSibling;
+            // Stop if we hit the trolley header's leading BR
+            if (next && next.nodeType === 1 && next.tagName === 'BR' && next.nextSibling === trolleyHeader) {
+                frozenContainer.appendChild(curr);
+                break;
+            }
+            frozenContainer.appendChild(curr);
+            curr = next;
+        }
+
+        // Move trolley contents
+        curr = trolleyHeader.previousSibling && trolleyHeader.previousSibling.nodeType === 1 && trolleyHeader.previousSibling.tagName === 'BR'
+            ? trolleyHeader.previousSibling
+            : trolleyHeader;
+
+        const endNode = freezeForm.nextSibling;
+        while (curr && curr !== endNode) {
+            let next = curr.nextSibling;
+            trolleyContainer.appendChild(curr);
+            curr = next;
+        }
+
+        flexContainer.appendChild(frozenContainer);
+        flexContainer.appendChild(trolleyContainer);
     },
 
     formatTables: function() {
@@ -208,4 +282,3 @@ const FoodBankHelper = {
         });
     }
 };
-

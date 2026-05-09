@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      9.29.20260510.0109
+// @version      9.30.20260510.0852
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -675,6 +675,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.30",
+            date: "2026-05-10",
+            type: "Added",
+            notes: [
+                "Added a \"Race Again\" button to the results page when racing an NPC Pikie in the Northern Fence."
+            ]
+        },
+        {
             version: "9.29",
             date: "2026-05-09",
             type: "Fixed",
@@ -745,16 +753,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "**Fixed:** Fixed an issue where the trade limits (badges) and formatted Ore quantities were disappearing from the Trading Post because the display formatting was executing out of order and destroying the DOM layout prematurely."
-            ]
-        },
-        {
-            version: "9.20",
-            date: "2026-05-06",
-            type: "Changed",
-            notes: [
-                "**Added:** Added an HTML table restyling the native list of registered racers on the race registration page (`cmd=hill3&do=list`).",
-                "**Added:** Added an exact historical skill readout per racer dynamically pulled from the Super-Cart Racing Skill Tracker object data.",
-                "**Added:** Automatically highlights the current player's row if they are actively signed up for the given race class."
             ]
         }
     ]
@@ -2977,6 +2975,80 @@ const FoodBankHelper = {
         if (settings?.FoodBankHelper_enabled === false) return;
 
         this.formatTables();
+        this.layoutSideBySide();
+    },
+
+    layoutSideBySide: function() {
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea || contentArea.offsetWidth <= 950) return;
+
+        const unfreezeForm = document.getElementById('unfreeze_food');
+        const freezeForm = document.getElementById('freeze_food');
+
+        if (!unfreezeForm || !freezeForm) return;
+
+        // Find the headers by finding the <b> tags preceding the forms
+        let frozenHeader = unfreezeForm.previousElementSibling;
+        while (frozenHeader && (frozenHeader.tagName !== 'B' || !frozenHeader.textContent.includes('Frozen'))) {
+            frozenHeader = frozenHeader.previousElementSibling;
+        }
+
+        let trolleyHeader = freezeForm.previousElementSibling;
+        while (trolleyHeader && (trolleyHeader.tagName !== 'B' || !trolleyHeader.textContent.includes('In Trolly'))) {
+            trolleyHeader = trolleyHeader.previousElementSibling;
+        }
+
+        if (!frozenHeader || !trolleyHeader) return;
+
+        // Container to hold both sections side-by-side
+        const flexContainer = document.createElement('div');
+        flexContainer.style.display = 'flex';
+        flexContainer.style.justifyContent = 'space-between';
+        flexContainer.style.gap = '20px';
+        flexContainer.style.alignItems = 'flex-start';
+
+        const frozenContainer = document.createElement('div');
+        frozenContainer.style.flex = '1';
+
+        const trolleyContainer = document.createElement('div');
+        trolleyContainer.style.flex = '1';
+
+        // Get the starting BR for frozen section if it exists
+        let startNodeFrozen = frozenHeader;
+        if (frozenHeader.previousSibling && frozenHeader.previousSibling.nodeType === 1 && frozenHeader.previousSibling.tagName === 'BR') {
+            startNodeFrozen = frozenHeader.previousSibling;
+        }
+
+        // Insert flex container
+        startNodeFrozen.parentNode.insertBefore(flexContainer, startNodeFrozen);
+
+        // Move frozen contents
+        let curr = startNodeFrozen;
+        while (curr && curr !== trolleyHeader && curr.nextSibling !== trolleyHeader) {
+            let next = curr.nextSibling;
+            // Stop if we hit the trolley header's leading BR
+            if (next && next.nodeType === 1 && next.tagName === 'BR' && next.nextSibling === trolleyHeader) {
+                frozenContainer.appendChild(curr);
+                break;
+            }
+            frozenContainer.appendChild(curr);
+            curr = next;
+        }
+
+        // Move trolley contents
+        curr = trolleyHeader.previousSibling && trolleyHeader.previousSibling.nodeType === 1 && trolleyHeader.previousSibling.tagName === 'BR'
+            ? trolleyHeader.previousSibling
+            : trolleyHeader;
+
+        const endNode = freezeForm.nextSibling;
+        while (curr && curr !== endNode) {
+            let next = curr.nextSibling;
+            trolleyContainer.appendChild(curr);
+            curr = next;
+        }
+
+        flexContainer.appendChild(frozenContainer);
+        flexContainer.appendChild(trolleyContainer);
     },
 
     formatTables: function() {
@@ -14094,7 +14166,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.29.20260510.0109';
+        window.HoboHelperVersion = '9.30.20260510.0852';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

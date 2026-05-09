@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.31] - 2026-05-10
+### Changed
+- Food Bank lists (Frozen and In Trolly) now display side-by-side if the page is widened (over 950px layout).
+
 ## [9.30] - 2026-05-10
 ### Added
 - Added a "Race Again" button to the results page when racing an NPC Pikie in the Northern Fence.
