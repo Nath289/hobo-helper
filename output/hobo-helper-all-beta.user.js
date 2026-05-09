@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (All Beta)
 // @namespace    http://tampermonkey.net/
-// @version      9.33
+// @version      9.34
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -675,6 +675,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.34",
+            date: "2026-05-10",
+            type: "Changed",
+            notes: [
+                "Dummy version for update testing."
+            ]
+        },
+        {
             version: "9.33",
             date: "2026-05-10",
             type: "Fixed",
@@ -745,14 +753,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "**Changed:** Optimised helper module categorisation by reassigning ExploreHelper, BankHelper, BernardsBasementHelper, LiquorStoreHelper, and CanDepoHelper to the City group. MessageBoardHelper has been shifted to General, LockoutHelper to Global, and RecyclingBinHelper to the Canbodia group."
-            ]
-        },
-        {
-            version: "9.24",
-            date: "2026-05-08",
-            type: "Changed",
-            notes: [
-                "**Removed:** Abandoned experimental Mine Pattern helper and canvas scaling features."
             ]
         }
     ]
@@ -14211,7 +14211,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.33';
+        window.HoboHelperVersion = '9.34';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

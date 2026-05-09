@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.34] - 2026-05-10
+### Changed
+- Dummy version for update testing.
+
 ## [9.33] - 2026-05-10
 ### Fixed
 - Fixed an issue where the Update Checker inside the Settings page would only point to the standard release script, downgrading installed Staff builds. It now accurately dynamically parses the active script type (Beta, Core, All) to download the correct branch. 

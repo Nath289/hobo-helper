@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      9.32.20260510.0920
+// @version      9.34.20260510.0931
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -675,6 +675,23 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.34",
+            date: "2026-05-10",
+            type: "Changed",
+            notes: [
+                "Dummy version for update testing."
+            ]
+        },
+        {
+            version: "9.33",
+            date: "2026-05-10",
+            type: "Fixed",
+            notes: [
+                "Fixed an issue where the Update Checker inside the Settings page would only point to the standard release script, downgrading installed Staff builds. It now accurately dynamically parses the active script type (Beta, Core, All) to download the correct branch. ",
+                "Included explicit Build Type indicators alongside the version string on the settings page for easier debug reference."
+            ]
+        },
+        {
             version: "9.32",
             date: "2026-05-10",
             type: "Added",
@@ -736,23 +753,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "**Changed:** Optimised helper module categorisation by reassigning ExploreHelper, BankHelper, BernardsBasementHelper, LiquorStoreHelper, and CanDepoHelper to the City group. MessageBoardHelper has been shifted to General, LockoutHelper to Global, and RecyclingBinHelper to the Canbodia group."
-            ]
-        },
-        {
-            version: "9.24",
-            date: "2026-05-08",
-            type: "Changed",
-            notes: [
-                "**Removed:** Abandoned experimental Mine Pattern helper and canvas scaling features."
-            ]
-        },
-        {
-            version: "9.23",
-            date: "2026-05-07",
-            type: "Changed",
-            notes: [
-                "**Changed:** Grouped repeated saved hobos in the Mining Log by ID and added count indicators next to their names (e.g., PlayerName (x3)).",
-                "**Fixed:** Reverted fixed base64 strings for Green Ore, Yellow Ore, and Orange Ore that were causing image display issues."
             ]
         }
     ]
@@ -14211,7 +14211,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.32.20260510.0920';
+        window.HoboHelperVersion = '9.34.20260510.0931';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');
