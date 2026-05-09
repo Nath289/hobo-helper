@@ -14,6 +14,8 @@ const NorthernFenceHelper = {
                 this.initHallOfFameHelper();
             } else if (urlParams.get('do') === 'list') {
                 this.initListHelper();
+            } else if (urlParams.get('do') === 'npc_race') {
+                this.initNpcRaceAgainHelper();
             }
         }
     },
@@ -901,5 +903,17 @@ const NorthernFenceHelper = {
             targetNode.insertAdjacentElement('afterend', summaryDiv);
             targetNode.insertAdjacentElement('afterend', pTag);
         }
+    },
+
+    initNpcRaceAgainHelper: function() {
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const npcId = urlParams.get('ID');
+        if (!npcId) return;
+
+        const btnHtml = `<div style="text-align: center; margin-bottom: 15px; margin-top: 10px;"><a href="game.php?sr=${Utils.getSr() || ''}&cmd=hill3&do=npc_race&ID=${npcId}" class="btn" style="-webkit-user-select:none;user-select:none;padding:5px 16px;text-decoration:none;display:inline-block;">Race Again</a></div>`;
+        contentArea.insertAdjacentHTML('afterbegin', btnHtml);
     }
 }

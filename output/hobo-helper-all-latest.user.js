@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (All)
 // @namespace    http://tampermonkey.net/
-// @version      9.29
+// @version      9.30
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -675,6 +675,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.30",
+            date: "2026-05-10",
+            type: "Added",
+            notes: [
+                "Added a \"Race Again\" button to the results page when racing an NPC Pikie in the Northern Fence."
+            ]
+        },
+        {
             version: "9.29",
             date: "2026-05-09",
             type: "Fixed",
@@ -745,16 +753,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "**Fixed:** Fixed an issue where the trade limits (badges) and formatted Ore quantities were disappearing from the Trading Post because the display formatting was executing out of order and destroying the DOM layout prematurely."
-            ]
-        },
-        {
-            version: "9.20",
-            date: "2026-05-06",
-            type: "Changed",
-            notes: [
-                "**Added:** Added an HTML table restyling the native list of registered racers on the race registration page (`cmd=hill3&do=list`).",
-                "**Added:** Added an exact historical skill readout per racer dynamically pulled from the Super-Cart Racing Skill Tracker object data.",
-                "**Added:** Automatically highlights the current player's row if they are actively signed up for the given race class."
             ]
         }
     ]
@@ -8422,6 +8420,8 @@ const NorthernFenceHelper = {
                 this.initHallOfFameHelper();
             } else if (urlParams.get('do') === 'list') {
                 this.initListHelper();
+            } else if (urlParams.get('do') === 'npc_race') {
+                this.initNpcRaceAgainHelper();
             }
         }
     },
@@ -9309,6 +9309,18 @@ const NorthernFenceHelper = {
             targetNode.insertAdjacentElement('afterend', summaryDiv);
             targetNode.insertAdjacentElement('afterend', pTag);
         }
+    },
+
+    initNpcRaceAgainHelper: function() {
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const npcId = urlParams.get('ID');
+        if (!npcId) return;
+
+        const btnHtml = `<div style="text-align: center; margin-bottom: 15px; margin-top: 10px;"><a href="game.php?sr=${Utils.getSr() || ''}&cmd=hill3&do=npc_race&ID=${npcId}" class="btn" style="-webkit-user-select:none;user-select:none;padding:5px 16px;text-decoration:none;display:inline-block;">Race Again</a></div>`;
+        contentArea.insertAdjacentHTML('afterbegin', btnHtml);
     }
 }
 
@@ -14080,7 +14092,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.29';
+        window.HoboHelperVersion = '9.30';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

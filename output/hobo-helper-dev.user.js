@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      9.28.20260509.2321
+// @version      9.29.20260510.0109
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -675,6 +675,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.29",
+            date: "2026-05-09",
+            type: "Fixed",
+            notes: [
+                "Fixed an issue where breaking a 'Spelunking Satchel' or other equipment in the mines would mistakenly parse and log it as an acquired ore type."
+            ]
+        },
+        {
             version: "9.28",
             date: "2026-05-08",
             type: "Changed",
@@ -747,15 +755,6 @@ const ChangelogData = {
                 "**Added:** Added an HTML table restyling the native list of registered racers on the race registration page (`cmd=hill3&do=list`).",
                 "**Added:** Added an exact historical skill readout per racer dynamically pulled from the Super-Cart Racing Skill Tracker object data.",
                 "**Added:** Automatically highlights the current player's row if they are actively signed up for the given race class."
-            ]
-        },
-        {
-            version: "9.19",
-            date: "2026-05-05",
-            type: "Changed",
-            notes: [
-                "**Changed:** Increased height and bottom padding for the Ore icons inside formatted elements to prevent bottom overflow text overlapping.",
-                "**Fixed:** Fixed an issue where the Mining Log was inflating \"T used\" values endlessly by grabbing the total instead of delta. Also added explicit zeroing for URL refreshes containing `move=nowhere`."
             ]
         }
     ]
@@ -8423,6 +8422,8 @@ const NorthernFenceHelper = {
                 this.initHallOfFameHelper();
             } else if (urlParams.get('do') === 'list') {
                 this.initListHelper();
+            } else if (urlParams.get('do') === 'npc_race') {
+                this.initNpcRaceAgainHelper();
             }
         }
     },
@@ -9310,6 +9311,18 @@ const NorthernFenceHelper = {
             targetNode.insertAdjacentElement('afterend', summaryDiv);
             targetNode.insertAdjacentElement('afterend', pTag);
         }
+    },
+
+    initNpcRaceAgainHelper: function() {
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const npcId = urlParams.get('ID');
+        if (!npcId) return;
+
+        const btnHtml = `<div style="text-align: center; margin-bottom: 15px; margin-top: 10px;"><a href="game.php?sr=${Utils.getSr() || ''}&cmd=hill3&do=npc_race&ID=${npcId}" class="btn" style="-webkit-user-select:none;user-select:none;padding:5px 16px;text-decoration:none;display:inline-block;">Race Again</a></div>`;
+        contentArea.insertAdjacentHTML('afterbegin', btnHtml);
     }
 }
 
@@ -14081,7 +14094,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.28.20260509.2321';
+        window.HoboHelperVersion = '9.29.20260510.0109';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

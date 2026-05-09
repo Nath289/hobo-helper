@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.30] - 2026-05-10
+### Added
+- Added a "Race Again" button to the results page when racing an NPC Pikie in the Northern Fence.
+
 ## [9.29] - 2026-05-09
 ### Fixed
 - Fixed an issue where breaking a 'Spelunking Satchel' or other equipment in the mines would mistakenly parse and log it as an acquired ore type.
