@@ -384,6 +384,7 @@ const LivingAreaHelper = {
         const versionHtml = `
             <div style="text-align: center; font-size: 11px; margin-top: 8px; color: #666; font-family: Tahoma, Arial, sans-serif; display: block; width: 100%;">
                 Hobo Helper v${latestVersion}<br>
+                <a href="#" id="hh_show_credits" style="color: #0066cc; text-decoration: none;">Credits</a><br>
                 <a href="#" id="hh_show_changelog" style="color: #0066cc; text-decoration: none;">View Changelog</a>${syncHtml}
             </div>
         `;
@@ -402,6 +403,11 @@ const LivingAreaHelper = {
                 const innerBox = gearInfo.querySelector('div');
                 if (innerBox) innerBox.insertAdjacentHTML('beforeend', versionHtml);
             }
+        }
+
+        const creditsLink = document.getElementById('hh_show_credits');
+        if (creditsLink) {
+            creditsLink.addEventListener('click', (e) => this.showCreditsModal(e));
         }
 
         const link = document.getElementById('hh_show_changelog');
@@ -550,7 +556,7 @@ const LivingAreaHelper = {
             }
 
             panel.innerHTML = `
-                <div style="font-size:13px; margin-bottom:5px;"><b>Effective Goal:</b> ${Math.round(target).toLocaleString()} <span id="cog_toggle" style="float:right; cursor:pointer; opacity:0.5;">⚙️</span></div>
+                <div style="font-size:13px; margin-bottom:5px;"><b>Effective Goal:</b> ${Math.round(target).toLocaleString()} <span id="cog_toggle" style="float:right; cursor:pointer; opacity:0.5;">&#9881;</span></div>
                 <div style="font-size:11px; color:#666;">Est: ~${config.estDays} days (@ ${Math.round(config.dailyGain)}/day)</div>
                 <div id="settings_area" style="margin-top:8px; padding-top:5px; border-top:1px solid #ddd; display:${config.showSettings ? 'block' : 'none'};">
                     <div style="font-size:11px; font-weight:bold; color:#0066cc;">Target Total (0 for Auto)</div>
@@ -634,6 +640,48 @@ const LivingAreaHelper = {
 
         // Run once on page load instead of constantly polling
         updateTracker();
+    },
+
+    showCreditsModal: function(e) {
+        if (e) e.preventDefault();
+
+        let existing = document.getElementById('hw-helper-credits-modal');
+        if (existing) { existing.style.display = 'block'; return; }
+
+        const modal = document.createElement("div");
+        modal.id = 'hw-helper-credits-modal';
+        modal.style.cssText = "position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:9999; max-width:400px; width:90%; background-color:#f9f9f9; border:1px dashed #777; border-radius:8px; text-align:left; font-family:Tahoma, Arial, sans-serif; color:#333; box-shadow:0px 4px 6px rgba(0,0,0,0.5); padding:15px; max-height:80vh; overflow-y:auto;";
+
+        const closeBtn = document.createElement('span');
+        closeBtn.innerHTML = '&#10006;';
+        closeBtn.style.cssText = "float:right; cursor:pointer; font-size:18px; font-weight:bold; color:#d9534f; user-select: none; -webkit-user-select: none;";
+        closeBtn.onclick = () => { modal.style.display = 'none'; };
+        modal.appendChild(closeBtn);
+
+        const title = document.createElement("h2");
+        title.textContent = "Hobo Helper Credits";
+        title.style.margin = "0 0 10px 0";
+        title.style.borderBottom = "1px solid #ccc";
+        title.style.paddingBottom = "5px";
+        title.style.fontSize = "16px";
+        modal.appendChild(title);
+
+        const content = document.createElement("div");
+        content.style.marginTop = "10px";
+        content.style.fontSize = "13px";
+        content.style.lineHeight = "1.5";
+        
+        const srObj = new URLSearchParams(window.location.search).get('sr');
+        const srParam = srObj ? `sr=${srObj}&` : '';
+        
+        content.innerHTML = `
+            <b>Creator:</b> <a href="game.php?${srParam}cmd=player&ID=107380" style="color: #0066cc; text-decoration: none;">Jack Reacher (107380)</a><br><br>
+            <i>Created with the help, guidance and support of †ëh Fucking Nämêless</i><br><br>
+            <i>Donations welcome</i>
+        `;
+        modal.appendChild(content);
+
+        document.body.appendChild(modal);
     },
 
     initWinPercentageCalc: function(settings) {
@@ -779,6 +827,10 @@ const LivingAreaHelper = {
         }
     }
 }
+
+
+
+
 
 
 

@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.37] - 2026-05-11
+### Added
+- Added Developer Credits link functionality and modal to `LivingAreaHelper.js`.
+### Fixed
+- Fixed an encoding bug causing non-ASCII graphical characters to become corrupted during PowerShell builds by explicitly enforcing `UTF-8` encoding pipelines across `build.ps1` and directly enabling the `javascript-obfuscator` `--unicode-escape-sequence true` feature.
+
 ## [9.36] - 2026-05-10
 ### Added
 - Added build artifact obfuscation support directly into the primary compilation pipeline utilizing `javascript-obfuscator` to protect released configurations.

@@ -428,25 +428,38 @@ const MinesHelper = {
                 logHtml += `<div style="margin-bottom: 10px; border: 1px solid #eee; background: #fff; padding: 8px;">`;
                 logHtml += `<div style="font-weight: bold; background: #f0f0f0; padding: 4px; margin: -8px -8px 8px -8px; display: flex; justify-content: space-between; align-items: center;">
                                 <span>${date}</span>
-                                <a href="javascript:void(0);" class="clear-log-btn" data-date="${date}" style="color: #d9534f; text-decoration: none; font-size: 11px; font-weight: normal; padding: 2px 6px; border: 1px solid #d9534f; border-radius: 3px; background: #fff;">Clear</a>
+                                <a href="javascript:void(0);" class="clear-log-btn" data-date="${date}" style="color: #d9534f; text-decoration: none; font-size: 11px; font-weight: normal; padding: 2px 6px; border: 1px solid #d9534f; border-radius: 3px; background: 
+#fff;">Clear</a>
                             </div>`;
                 logHtml += `<div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px;">`;
 
                 const expFixed = (parseFloat(data.exp) || 0).toFixed(2);
-                logHtml += `<span><b>Exp Gained:</b> ${expFixed}</span>`;
 
-                const totalOres = Object.entries(data.ores).reduce((a, [name, count]) => {
+                const totalActualOres = Object.entries(data.ores).reduce((a, [name, count]) => {
                     const c = parseInt(count) || 0;
-                    return a + ((name && name.toLowerCase().includes('shard')) ? c * 3 : c);
+                    return a + c;
+                }, 0);
+
+                const totalImpliedOres = totalActualOres + Object.entries(data.ores).reduce((a, [name, count]) => {
+                    const c = parseInt(count) || 0;
+                    // Adds an extra x2 for shards making them effectively count as x3 total
+                    return a + ((name && name.toLowerCase().includes('shard')) ? c * 2 : 0);
                 }, 0);
 
                 const tUsedSafe = parseInt(data.tUsed) || 0;
-                const oresPerT = tUsedSafe > 0 ? (totalOres / tUsedSafe).toFixed(3) : '0.000';
+                
+                const actualOresPerT = tUsedSafe > 0 ? (totalActualOres / tUsedSafe).toFixed(3) : '0.000';
+                const impliedOresPerT = tUsedSafe > 0 ? (totalImpliedOres / tUsedSafe).toFixed(3) : '0.000';
                 const expPerT = tUsedSafe > 0 ? (parseFloat(data.exp) / tUsedSafe).toFixed(3) : '0.000';
 
-                logHtml += `<div style="text-align: right;">`;
-                logHtml += `<div><b>Ores/T:</b> ${oresPerT} (${totalOres} from ${tUsedSafe}T)</div>`;
+                logHtml += `<div style="text-align: left;">`;
+                logHtml += `<div><b>Exp Gained:</b> ${expFixed}</div>`;
                 logHtml += `<div><b>Exp/T:</b> ${expPerT}</div>`;
+                logHtml += `</div>`;
+
+                logHtml += `<div style="text-align: right;">`;
+                logHtml += `<div><i>(Hobalt Shards count as 1)</i> <b>Actual Ore/T:</b> ${actualOresPerT} (${totalActualOres} from ${tUsedSafe}T)</div>`;
+                logHtml += `<div><i>(Hobalt Shards count as 3)</i> <b>Implied Ore/T:</b> ${impliedOresPerT} (${totalImpliedOres} from ${tUsedSafe}T)</div>`;
                 logHtml += `</div>`;
                 logHtml += `</div>`;
 

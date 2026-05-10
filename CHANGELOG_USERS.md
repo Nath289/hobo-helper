@@ -1,6 +1,10 @@
 # Users Changelog
 All notable user-facing features and bug fixes to this project will be documented in this file.
 
+## [9.37] - 2026-05-11
+### Added
+- Added a Developer Credits link to the Living Area panel above the Changelog.
+
 ## [9.36] - 2026-05-10
 ### Changed
 - Under-the-hood engine optimizations and security improvements.
@@ -43,4 +47,3 @@ All notable user-facing features and bug fixes to this project will be documente
 ## [9.26] - 2026-05-08
 ### Added
 - Added a new setting to the Mines helper to highlight players on the mini-map. Other players are outlined in red, and the player character ("You!") is outlined in green.
-

@@ -1,4 +1,4 @@
-param (
+﻿param (
     [switch]$Release,
     [switch]$Promote,
     [switch]$Obfuscate
@@ -8,7 +8,7 @@ if (-not (Test-Path -Path "output")) {
     New-Item -ItemType Directory -Path "output" | Out-Null
 }
 
-$lines = Get-Content "CHANGELOG_USERS.md"
+$lines = Get-Content "CHANGELOG_USERS.md" -Encoding UTF8
 $changes = @()
 $currentRelease = $null
 
@@ -64,7 +64,7 @@ $changesArrStr
 "@
 
 $baseVersion = "1.0"
-$masterLines = Get-Content "CHANGELOG.md"
+$masterLines = Get-Content "CHANGELOG.md" -Encoding UTF8
 foreach ($line in $masterLines) {
     if ($line -match '^## \[([\d\.]+)\] - (\d{4}-\d{2}-\d{2})') {
         $baseVersion = $matches[1]
@@ -72,7 +72,7 @@ foreach ($line in $masterLines) {
     }
 }
 
-$utilsContent = Get-Content -Path "src/utils.js" -Raw
+$utilsContent = Get-Content -Path "src/utils.js" -Raw -Encoding UTF8
 
 $dataModules = Get-ChildItem -Path "src/modules/data" -Filter "*.js" -Recurse -File -ErrorAction SilentlyContinue
 $globalModules = Get-ChildItem -Path "src/modules/global" -Filter "*.js" -Recurse -File -ErrorAction SilentlyContinue
@@ -84,7 +84,7 @@ $dataModuleExportsContent = ""
 if ($dataModules) {
     foreach ($file in $dataModules) {
         $moduleName = $file.BaseName
-        $dataModulesContent += (Get-Content -Path $file.FullName -Raw).TrimEnd() + "`n`n"
+        $dataModulesContent += (Get-Content -Path $file.FullName -Raw -Encoding UTF8).TrimEnd() + "`n`n"
         $dataModuleExportsContent += "        ${moduleName},`n"
     }
 }
@@ -100,7 +100,7 @@ $staffGlobalExports = ""
 if ($globalModules) {
     foreach ($file in $globalModules) {
         $moduleName = $file.BaseName
-        $fileContent = Get-Content -Path $file.FullName -Raw
+        $fileContent = Get-Content -Path $file.FullName -Raw -Encoding UTF8
         $trimmed = $fileContent.TrimEnd()
         if ($fileContent -match 'staff:\s*true') {
             $staffGlobalContent += $trimmed + "`n`n"
@@ -120,7 +120,7 @@ $staffPageExports = ""
 if ($pageModules) {
     foreach ($file in $pageModules) {
         $moduleName = $file.BaseName
-        $fileContent = Get-Content -Path $file.FullName -Raw
+        $fileContent = Get-Content -Path $file.FullName -Raw -Encoding UTF8
         $trimmed = $fileContent.TrimEnd()
         if ($fileContent -match 'staff:\s*true') {
             $staffPageContent += $trimmed + "`n`n"
@@ -159,14 +159,16 @@ function Build-Output {
             $header = $out.Substring(0, $headerEndIdx)
             $body = $out.Substring($headerEndIdx).TrimStart()
 
+            
+
             $tmpIn = [System.IO.Path]::GetTempFileName() + ".js"
             $tmpOut = [System.IO.Path]::GetTempFileName() + ".js"
 
-            [System.IO.File]::WriteAllText($tmpIn, $body)
+            [System.IO.File]::WriteAllText($tmpIn, $body, [System.Text.Encoding]::UTF8)
             $npmPath = (Get-Command npm -ErrorAction SilentlyContinue).Source
             if ($npmPath) {
                 # Run javascript-obfuscator using npx
-                Start-Process -FilePath "npx.cmd" -ArgumentList "javascript-obfuscator `"$tmpIn`" --output `"$tmpOut`" --compact true --control-flow-flattening true --numbers-to-expressions true --simplify true --split-strings true" -Wait -NoNewWindow
+                Start-Process -FilePath "npx.cmd" -ArgumentList "javascript-obfuscator `"$tmpIn`" --output `"$tmpOut`" --compact true --unicode-escape-sequence true --control-flow-flattening true --numbers-to-expressions true --simplify true --split-strings true" -Wait -NoNewWindow
 
                 if (Test-Path $tmpOut) {
                     $obfuscatedBody = [System.IO.File]::ReadAllText($tmpOut)
@@ -189,8 +191,8 @@ if ($Promote) {
     $version = $baseVersion
     Write-Host "Building LATEST version: $version"
 
-    $templateRegular = Get-Content -Path "src/template.js" -Raw
-    $templateAll     = Get-Content -Path "src/template-all.js" -Raw
+    $templateRegular = Get-Content -Path "src/template.js" -Raw -Encoding UTF8
+    $templateAll     = Get-Content -Path "src/template-all.js" -Raw -Encoding UTF8
 
     # Build 1: non-staff modules only
     $regularContent = Build-Output `
@@ -201,7 +203,7 @@ if ($Promote) {
         -GlobalExports $nonStaffGlobalExports `
         -PageExports $nonStaffPageExports `
         -DoObfuscate:$Obfuscate
-    Set-Content -Path "output/hobo-helper-latest.user.js" -Value $regularContent
+    Set-Content -Encoding UTF8 -Path "output/hobo-helper-latest.user.js" -Value $regularContent
     Write-Host "Build complete: output/hobo-helper-latest.user.js"
 
 
@@ -218,15 +220,15 @@ if ($Promote) {
         -GlobalExports $allGlobalExports `
         -PageExports $allPageExports `
         -DoObfuscate:$Obfuscate
-    Set-Content -Path "output/hobo-helper-all-latest.user.js" -Value $allContent
+    Set-Content -Encoding UTF8 -Path "output/hobo-helper-all-latest.user.js" -Value $allContent
     Write-Host "Build complete: output/hobo-helper-all-latest.user.js"
 
 } elseif ($Release) {
     $version = $baseVersion
     Write-Host "Building BETA version: $version"
 
-    $templateRegular = Get-Content -Path "src/template.js" -Raw
-    $templateAll     = Get-Content -Path "src/template-all.js" -Raw
+    $templateRegular = Get-Content -Path "src/template.js" -Raw -Encoding UTF8
+    $templateAll     = Get-Content -Path "src/template-all.js" -Raw -Encoding UTF8
 
     $betaRegularContent = Build-Output `
         -Template $templateRegular `
@@ -236,7 +238,7 @@ if ($Promote) {
         -GlobalExports $nonStaffGlobalExports `
         -PageExports $nonStaffPageExports `
         -DoObfuscate:$Obfuscate
-    Set-Content -Path "output/hobo-helper-beta.user.js" -Value $betaRegularContent
+    Set-Content -Encoding UTF8 -Path "output/hobo-helper-beta.user.js" -Value $betaRegularContent
     Write-Host "Build complete: output/hobo-helper-beta.user.js"
 
     $allGlobalContent = $nonStaffGlobalContent + $staffGlobalContent
@@ -251,7 +253,7 @@ if ($Promote) {
         -GlobalExports $allGlobalExports `
         -PageExports $allPageExports `
         -DoObfuscate:$Obfuscate
-    Set-Content -Path "output/hobo-helper-all-beta.user.js" -Value $betaAllContent
+    Set-Content -Encoding UTF8 -Path "output/hobo-helper-all-beta.user.js" -Value $betaAllContent
     Write-Host "Build complete: output/hobo-helper-all-beta.user.js"
 
 } else {
@@ -259,7 +261,7 @@ if ($Promote) {
     $version = "$baseVersion.$timestamp"
     Write-Host "Building DEV version: $version"
 
-    $templateContent = Get-Content -Path "src/template-all.js" -Raw
+    $templateContent = Get-Content -Path "src/template-all.js" -Raw -Encoding UTF8
 
     # Dev build includes all modules for testing
     $allGlobalContent = $nonStaffGlobalContent + $staffGlobalContent
@@ -274,6 +276,9 @@ if ($Promote) {
         -GlobalExports $allGlobalExports `
         -PageExports $allPageExports `
         -DoObfuscate:$Obfuscate
-    Set-Content -Path "output/hobo-helper-dev.user.js" -Value $devContent
+    Set-Content -Encoding UTF8 -Path "output/hobo-helper-dev.user.js" -Value $devContent
     Write-Host "Build complete: output/hobo-helper-dev.user.js"
 }
+
+
+
