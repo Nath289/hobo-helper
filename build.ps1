@@ -1,13 +1,14 @@
 param (
     [switch]$Release,
-    [switch]$Promote
+    [switch]$Promote,
+    [switch]$Obfuscate
 )
 
 if (-not (Test-Path -Path "output")) {
     New-Item -ItemType Directory -Path "output" | Out-Null
 }
 
-$lines = Get-Content "CHANGELOG.md"
+$lines = Get-Content "CHANGELOG_USERS.md"
 $changes = @()
 $currentRelease = $null
 
@@ -63,8 +64,12 @@ $changesArrStr
 "@
 
 $baseVersion = "1.0"
-if ($changes.Count -gt 0) {
-    $baseVersion = $changes[0].version
+$masterLines = Get-Content "CHANGELOG.md"
+foreach ($line in $masterLines) {
+    if ($line -match '^## \[([\d\.]+)\] - (\d{4}-\d{2}-\d{2})') {
+        $baseVersion = $matches[1]
+        break
+    }
 }
 
 $utilsContent = Get-Content -Path "src/utils.js" -Raw
@@ -135,7 +140,8 @@ function Build-Output {
         [string]$Version,
         [string]$ModulesContent,
         [string]$GlobalExports,
-        [string]$PageExports
+        [string]$PageExports,
+        [switch]$DoObfuscate
     )
 
     $out = $Template.Replace("// {{UTILS}}", $utilsContent.TrimEnd())
@@ -145,6 +151,37 @@ function Build-Output {
     $out = $out.Replace("// {{PAGE_MODULE_EXPORTS}}", $PageExports.TrimEnd())
     $out = $out.Replace("{{NAME}}", $Name)
     $out = $out.Replace("{{VERSION}}", $Version)
+
+    if ($DoObfuscate) {
+        $headerEndIdx = $out.IndexOf("// ==/UserScript==")
+        if ($headerEndIdx -ge 0) {
+            $headerEndIdx += 18
+            $header = $out.Substring(0, $headerEndIdx)
+            $body = $out.Substring($headerEndIdx).TrimStart()
+
+            $tmpIn = [System.IO.Path]::GetTempFileName() + ".js"
+            $tmpOut = [System.IO.Path]::GetTempFileName() + ".js"
+
+            [System.IO.File]::WriteAllText($tmpIn, $body)
+            $npmPath = (Get-Command npm -ErrorAction SilentlyContinue).Source
+            if ($npmPath) {
+                # Run javascript-obfuscator using npx
+                Start-Process -FilePath "npx.cmd" -ArgumentList "javascript-obfuscator `"$tmpIn`" --output `"$tmpOut`" --compact true --control-flow-flattening true --numbers-to-expressions true --simplify true --split-strings true" -Wait -NoNewWindow
+
+                if (Test-Path $tmpOut) {
+                    $obfuscatedBody = [System.IO.File]::ReadAllText($tmpOut)
+                    $out = $header + "`n`n" + $obfuscatedBody
+                } else {
+                    Write-Warning "Obfuscation failed or output file not found."
+                }
+            } else {
+                Write-Warning "npm not found. Skipping obfuscation."
+            }
+            if (Test-Path $tmpIn) { Remove-Item $tmpIn }
+            if (Test-Path $tmpOut) { Remove-Item $tmpOut }
+        }
+    }
+
     return $out
 }
 
@@ -162,7 +199,8 @@ if ($Promote) {
         -Version $version `
         -ModulesContent ($nonStaffGlobalContent + $nonStaffPageContent) `
         -GlobalExports $nonStaffGlobalExports `
-        -PageExports $nonStaffPageExports
+        -PageExports $nonStaffPageExports `
+        -DoObfuscate:$Obfuscate
     Set-Content -Path "output/hobo-helper-latest.user.js" -Value $regularContent
     Write-Host "Build complete: output/hobo-helper-latest.user.js"
 
@@ -178,7 +216,8 @@ if ($Promote) {
         -Version $version `
         -ModulesContent ($allGlobalContent + $allPageContent) `
         -GlobalExports $allGlobalExports `
-        -PageExports $allPageExports
+        -PageExports $allPageExports `
+        -DoObfuscate:$Obfuscate
     Set-Content -Path "output/hobo-helper-all-latest.user.js" -Value $allContent
     Write-Host "Build complete: output/hobo-helper-all-latest.user.js"
 
@@ -195,7 +234,8 @@ if ($Promote) {
         -Version $version `
         -ModulesContent ($nonStaffGlobalContent + $nonStaffPageContent) `
         -GlobalExports $nonStaffGlobalExports `
-        -PageExports $nonStaffPageExports
+        -PageExports $nonStaffPageExports `
+        -DoObfuscate:$Obfuscate
     Set-Content -Path "output/hobo-helper-beta.user.js" -Value $betaRegularContent
     Write-Host "Build complete: output/hobo-helper-beta.user.js"
 
@@ -209,7 +249,8 @@ if ($Promote) {
         -Version $version `
         -ModulesContent ($allGlobalContent + $allPageContent) `
         -GlobalExports $allGlobalExports `
-        -PageExports $allPageExports
+        -PageExports $allPageExports `
+        -DoObfuscate:$Obfuscate
     Set-Content -Path "output/hobo-helper-all-beta.user.js" -Value $betaAllContent
     Write-Host "Build complete: output/hobo-helper-all-beta.user.js"
 
@@ -231,7 +272,8 @@ if ($Promote) {
         -Version $version `
         -ModulesContent ($allGlobalContent + $allPageContent) `
         -GlobalExports $allGlobalExports `
-        -PageExports $allPageExports
+        -PageExports $allPageExports `
+        -DoObfuscate:$Obfuscate
     Set-Content -Path "output/hobo-helper-dev.user.js" -Value $devContent
     Write-Host "Build complete: output/hobo-helper-dev.user.js"
 }

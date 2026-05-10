@@ -83,7 +83,7 @@ When a user requests a new feature or modification, you must ensure it does not 
 **Action:** If a user requests functionality that falls into these categories (e.g., auto-clicking, auto-refreshing, playing the game for them), **you must explicitly warn the user** that it violates the game rules. Instead of fully automating the action, suggest a compliant alternative, such as adding a UI button that the user must manually click to perform the action.
 
 ## Updating the Version & Building
-**Testing Unfinalized Changes (Local Dev Workflow):** Whenever you make code changes, you must always run `.\build.ps1` (with no flags) so the user can test your unfinalized changes via `output/hobo-helper-dev.user.js`. Do not update the version or changelog at this stage.
+**Testing Unfinalized Changes (Local Dev Workflow):** Whenever you make code changes, you must always run `.\build.ps1 -Obfuscate` so the user can test your unfinalized changes via `output/hobo-helper-dev.user.js`. Do not update the version or changelog at this stage.
 
 **CRITICAL - Proactive Dev Setup:** If the user is beginning development and the file `output/dev-proxy-local.user.js` does not exist, you should proactively generate it for the user. Read the template `output/dev-proxy.template.user.js`, modify the `@require` path on line 7 to point to the exact absolute path of `output/hobo-helper-dev.user.js` on the user's system, and save it as `output/dev-proxy-local.user.js`. After generating it, explicitly direct the user to read `LOCAL_DEV.md` so they can understand how to initialize their fast-iteration local environment.
 **CRITICAL - Userscript Header Changes:** Whenever you make structural modifications to the Userscript header inside `src/template.js` (such as adding `@noframes`, varying `@match` lines, or anything inside the `// ==UserScript==` block), **you must also mirror** these exact updates to BOTH `output/dev-proxy.template.user.js` AND `output/dev-proxy-local.user.js`. This is critical for users testing changes locally without encountering script mismatches or multiple fires.
@@ -95,17 +95,17 @@ UNDER NO CIRCUMSTANCES should you execute `.\build.ps1 -Release`, edit `CHANGELO
 
 When finalizing a change:
 1. **Update Game Knowledge:** Review the current conversation for any new game mechanics, DOM structure details, or constraints discovered. If any new information was learned, you must append it to `GAME_KNOWLEDGE.md` before proceeding.
-2. Add an entry to the top of `CHANGELOG.md` under the newly bumped version, logging what was added, changed, or fixed. Format the version headers like `## [7.43] - YYYY-MM-DD`. Note: The build script automatically parses this file to extract the current version and automatically generates the in-game floating changelog popup UI for you.
+2. Add an entry to the top of `CHANGELOG.md` for ALL internal code and repository updates, logging what was added, changed, or fixed. Additionally, you **must also** add an entry to the top of `CHANGELOG_USERS.md` documenting ONLY exactly what has functionally changed for the end consumer. Both files share the same version numbers. Format the version headers like `## [7.43] - YYYY-MM-DD`. Note: The build script automatically parses `CHANGELOG_USERS.md` to dynamically generate the in-game floating changelog popup UI for the player, keeping confusing behind-the-scenes engine developer chatter out of their view!
 3. **DO NOT** update the file links inside `INSTALL.md` to point to a specific version number. All script links in `INSTALL.md` must ALWAYS point to `output/hobo-helper-latest.user.js` to ensure users continue receiving auto-updates via Tampermonkey.
-4. Run the beta release build script:
+4. Run the beta release build script (ensure it is obfuscated):
 ```powershell
-.\build.ps1 -Release
+.\build.ps1 -Release -Obfuscate
 ```
 This will compile the unified code into `output/hobo-helper-beta.user.js` for beta testers on secondary devices.
 
 **PROMOTING TO LATEST:** When the user is satisfied with the Beta workflow and issues the exact word "promote", you must execute the promotion build. Do NOT update `CHANGELOG.md` when promoting (as it was already updated during finalize). Simply run:
 ```powershell
-.\build.ps1 -Promote
+.\build.ps1 -Promote -Obfuscate
 ```
 This strictly compiles the current code into `output/hobo-helper-latest.user.js` to serve production users making it the default remote deployment.
 

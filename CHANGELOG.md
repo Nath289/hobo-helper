@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.36] - 2026-05-10
+### Added
+- Added build artifact obfuscation support directly into the primary compilation pipeline utilizing `javascript-obfuscator` to protect released configurations.
+- Updated agent instructions to seamlessly incorporate testing against obfuscated byte-code across all development workflows.
+
 ## [9.35] - 2026-05-10
 ### Added
 - Added comprehensive active page image map definitions to natively support highlighting all areas, subpages, and custom layouts without caching issues.
