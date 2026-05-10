@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      9.34.20260510.2136
+// @version      9.35.20260510.2245
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -675,6 +675,16 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.35",
+            date: "2026-05-10",
+            type: "Added",
+            notes: [
+                "Added comprehensive active page image map definitions to natively support highlighting all areas, subpages, and custom layouts without caching issues.",
+                "Refactored native Active Page Image tracking to support robust dynamically decoupled CSS multi-parameter matching (supports 'do', 'tent', 'room', 'place') stopping dual-highlights entirely.",
+                "Added a toggle configuration option `NorthernFenceHelper_RestoreBanner` to conditionally restore or disable the classic custom Suicide Hill UI header graphic cleanly based on user preference."
+            ]
+        },
+        {
             version: "9.34",
             date: "2026-05-10",
             type: "Changed",
@@ -687,7 +697,7 @@ const ChangelogData = {
             date: "2026-05-10",
             type: "Fixed",
             notes: [
-                "Fixed an issue where the Update Checker inside the Settings page would only point to the standard release script, downgrading installed Staff builds. It now accurately dynamically parses the active script type (Beta, Core, All) to download the correct branch. ",
+                "Fixed an issue where the Update Checker inside the Settings page would only point to the standard release script, downgrading installed Staff builds. It now accurately dynamically parses the active script type (Beta, Core, All) to download the correct branch.",
                 "Included explicit Build Type indicators alongside the version string on the settings page for easier debug reference."
             ]
         },
@@ -745,14 +755,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "**Added:** Added a new setting to the Mines helper to highlight players on the mini-map. Other players are outlined in red, and the player character (\"You!\") is outlined in green."
-            ]
-        },
-        {
-            version: "9.25",
-            date: "2026-05-08",
-            type: "Changed",
-            notes: [
-                "**Changed:** Optimised helper module categorisation by reassigning ExploreHelper, BankHelper, BernardsBasementHelper, LiquorStoreHelper, and CanDepoHelper to the City group. MessageBoardHelper has been shifted to General, LockoutHelper to Global, and RecyclingBinHelper to the Canbodia group."
             ]
         }
     ]
@@ -8641,12 +8643,17 @@ const NorthernFenceHelper = {
     staff: false,
     group: 'City',
     settings: [
-        { key: 'NorthernFenceHelper_PaginationButtons', label: 'Previous/Next Page Buttons (Hall of Fame)' }
+        { key: 'NorthernFenceHelper_PaginationButtons', label: 'Previous/Next Page Buttons (Hall of Fame)' },
+        { key: 'NorthernFenceHelper_RestoreBanner', label: 'Restore Missing Banner on Main Page', defaultValue: true }
     ],
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
+        const settings = Utils.getSettings();
+
         if (urlParams.get('cmd') === 'hill3') {
-            this.replaceAreaImage();
+            if (settings['NorthernFenceHelper_RestoreBanner'] !== false) {
+                this.replaceAreaImage();
+            }
             
             if (urlParams.get('do') === 'npc') {
                 this.initNpcRacingHelper();
@@ -14387,7 +14394,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.34.20260510.2136';
+        window.HoboHelperVersion = '9.35.20260510.2245';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

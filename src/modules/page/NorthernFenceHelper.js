@@ -3,12 +3,17 @@ const NorthernFenceHelper = {
     staff: false,
     group: 'City',
     settings: [
-        { key: 'NorthernFenceHelper_PaginationButtons', label: 'Previous/Next Page Buttons (Hall of Fame)' }
+        { key: 'NorthernFenceHelper_PaginationButtons', label: 'Previous/Next Page Buttons (Hall of Fame)' },
+        { key: 'NorthernFenceHelper_RestoreBanner', label: 'Restore Missing Banner on Main Page', defaultValue: true }
     ],
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
+        const settings = Utils.getSettings();
+
         if (urlParams.get('cmd') === 'hill3') {
-            this.replaceAreaImage();
+            if (settings['NorthernFenceHelper_RestoreBanner'] !== false) {
+                this.replaceAreaImage();
+            }
             
             if (urlParams.get('do') === 'npc') {
                 this.initNpcRacingHelper();
