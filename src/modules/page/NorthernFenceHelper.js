@@ -8,6 +8,8 @@ const NorthernFenceHelper = {
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('cmd') === 'hill3') {
+            this.replaceAreaImage();
+            
             if (urlParams.get('do') === 'npc') {
                 this.initNpcRacingHelper();
             } else if (urlParams.get('do') === 'hof') {
@@ -915,5 +917,25 @@ const NorthernFenceHelper = {
 
         const btnHtml = `<div style="text-align: center; margin-bottom: 15px; margin-top: 10px;"><a href="game.php?sr=${Utils.getSr() || ''}&cmd=hill3&do=npc_race&ID=${npcId}" class="btn" style="-webkit-user-select:none;user-select:none;padding:5px 16px;text-decoration:none;display:inline-block;">Race Again</a></div>`;
         contentArea.insertAdjacentHTML('afterbegin', btnHtml);
+    },
+
+    replaceAreaImage: function() {
+        const areaImg = document.querySelector('#area');
+        if (areaImg) {
+            areaImg.src = 'https://www.hobowars.com/images/l/areas/xsuicidehill.jpg.pagespeed.ic.zQ9IM9WAsg.webp';
+        } else {
+            const contentArea = document.querySelector('.content-area');
+            if (contentArea) {
+                const center = document.createElement('center');
+                const img = document.createElement('img');
+                img.src = 'https://www.hobowars.com/images/l/areas/xsuicidehill.jpg.pagespeed.ic.zQ9IM9WAsg.webp';
+                img.width = 580;
+                img.height = 140;
+                img.id = 'area';
+                center.appendChild(img);
+                center.appendChild(document.createElement('br'));
+                contentArea.insertBefore(center, contentArea.firstChild);
+            }
+        }
     }
 }

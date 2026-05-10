@@ -95,6 +95,8 @@ A helper designed to operate on the Soup Kitchen page (`cmd=soup_kitchen`).
 
 ### 22. Rats Helper (`RatsHelper.js`)
 A new helper designed to operate on the Rats page (`cmd=rats`).
+
+- **Area Banner Image**: Injects the rats area poster image to the top of the Rats area.
 - **Life Progress Bar**: Automatically calculates and displays a colorful life remaining progress bar beneath each rat.
 - **Experience Progress Bar**: Shows a small colored background bar over each rats experience td cell.
 - **Action Buttons**: Restyles text action links as stylized UI buttons for improved usability.
@@ -150,6 +152,7 @@ Helper available on Message Board threads exclusively designed for Gang Staff.
 - **Payment Distribution UI**: Adds an "Add Payment" capability to every single board reply allowing staff members to quickly define a scheduled payout for event attendees directly from the thread view. This directly exports to the Gang Loans Dashboard.
 
 ### Display Helpers
+- **Menu Banner Helper**: Extracts the unique banner image of the currently active page and beautifully renders it as a stylized background gradient behind the selected page item in the left-hand navigation menu.
 - **Improved Avatars**: Restyles user avatars to have rounded edges, distinctive borders (special styling for Donators), and custom pulsing online status indicators.
 - **Fake Qwee**: Automatically prepends "The Fake" with a red shadow to any user link pointing to "The Fake Qwee" (ID `2924510`).
 - **Jack Reacher**: Automatically prepends "Major" with a bright green shadow to any user link pointing to "Jack Reacher" (ID `107380`).

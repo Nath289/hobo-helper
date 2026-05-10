@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      9.34.20260510.0931
+// @version      9.34.20260510.2136
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Gemini (Combined)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -788,6 +788,7 @@ const DisplayHelper = {
         { key: 'DisplayHelper_ShowCans', label: 'Show Cans in Top Menu', defaultValue: true },
         { key: 'DisplayHelper_ShowGangHitlistLink', label: 'Show Gang Hitlist in Top Menu', defaultValue: true },
         { key: 'DisplayHelper_LastActiveTime', label: 'Display Last Active Time in Panel', defaultValue: true },
+        { key: 'DisplayHelper_ActivePageImages', label: 'Display Active Page Menu Images', defaultValue: true },
         { key: 'DisplayHelper_ShowUpdateChangelog', label: 'Show Update Features on New Version', defaultValue: true }
     ],
     addedStyles: '',
@@ -830,6 +831,9 @@ const DisplayHelper = {
         }
         if (settings['DisplayHelper_LastActiveTime'] !== false) {
             this.initLastActiveTimeDisplay();
+        }
+        if (settings['DisplayHelper_ActivePageImages'] !== false) {
+            this.initActivePageImages();
         }
 
         if (this.addedStyles) {
@@ -1046,6 +1050,133 @@ const DisplayHelper = {
         a.textContent = 'Gang Hitlist';
         li.appendChild(a);
         topbarMenuUl.appendChild(li);
+    },
+    initActivePageImages: function() {
+        const imageMap = {
+            'mart': '/images/l/areas/sghm.jpg',
+            'hospital': '/images/l/areas/hospital.jpg',
+            'city': '/images/l/areas/city.jpg',
+            'city2': '/images/l/areas/Second-City.jpg',
+            'shopping': '/images/l/areas/walmart.jpg',
+            'hill': '/images/l/areas/suicidehill.jpg',
+            'hill3': '/images/l/areas/suicidehill.jpg',
+            'bank': '/images/l/areas/piggybank.jpg',
+            'depo': '/images/l/areas/candepo.jpg',
+            'uni': '/images/l/areas/uni.jpg',
+            'battle': '/images/l/areas/Battle-1.jpg',
+            'rats': '/images/l/areas/rats.jpg',
+            'hoburbia': '/images/l/areas/Hoburbia.jpg',
+            'canbodia': '/images/l/areas/Canbodia.jpg',
+            'camp_kurtz': '/images/l/areas/Kurtz-Camp.jpg',
+            'mines': '/images/l/areas/Mines.jpg',
+            'wellness_clinic': '/images/l/areas/Wellness-Clinic.jpg',
+            'soup_kitchen': '/images/l/areas/Soup-Kitchen.jpg',
+            'hoburbs': '/images/l/areas/Hoburbs.jpg',
+            'explore': '/images/l/areas/occupy-north-side.jpg',
+            'red_light_dis': '/images/l/areas/Red-Light-District.jpg',
+            '711': '/images/l/areas/711.jpg',
+            'arcade': '/images/l/areas/arcade.jpg',
+            'river': '/images/l/areas/Canbodia.jpg',
+            'war': '/images/l/areas/duncans-house.jpg',
+            'inout': '/images/l/areas/In-N-Out.jpg',
+            'mail': '/images/l/areas/mailbox.jpg',
+            'gathering': '/images/l/areas/messageboard.jpg',
+            'gang': '/images/l/areas/gangsalley.jpg',
+            'gangs': '/images/l/areas/gangsalley.jpg',
+            'food': '/images/l/areas/trollycontents.jpg',
+            'club': '/images/l/areas/Bernards-Mansion2.jpg',
+            'bernards': '/images/l/areas/Bernards-Mansion2.jpg',
+            'parking_garage': '/images/l/areas/Parking-Garage.jpg',
+            'sewer': '/images/l/areas/Sewer.jpg',
+            'arena': '/images/l/areas/Arena.jpg',
+            'hw_arena': '/images/l/areas/Arena.jpg',
+            'army_base': '/images/l/areas/Army-Base.jpg',
+            'backpack': '/images/l/areas/Unusually-large-backpack.jpg',
+            'beach': '/images/l/areas/Beach.jpg',
+            'beeramid': '/images/l/areas/Beeramid.jpg',
+            'bowling_alley': '/images/l/areas/Bowling-Alley.jpg',
+            'boxing': '/images/l/areas/Boxing-Stadium.jpg',
+            'bus': '/images/l/areas/Short-Bus.jpg',
+            'bus_station': '/images/l/areas/Bus-Station.jpg',
+            'candy_store': '/images/l/areas/Candy-Store.jpg',
+            'pvp_flag': '/images/l/areas/Capture-The-Flag.jpg',
+            'carnival': '/images/adventures/Ringmaster.jpg',
+            'cas': '/images/l/areas/casino.jpg',
+            'chocolate_factory': '/images/l/areas/Chocolate-Factory.jpg',
+            'city_hall': '/images/l/areas/City-Hall.jpg',
+            'courthouse': '/images/l/areas/Court-House.jpg',
+            'dive_bar': '/images/l/areas/Dive-Bar.jpg',
+            'docks': '/images/l/areas/Docks.jpg',
+            'fort_slugworth': '/images/l/areas/Fort-Slugworth.jpg',
+            'h_school': '/images/l/areas/highschool.jpg',
+            'hot_topic': '/images/l/areas/Hot-Topic.jpg',
+            'improved_dumpster': '/images/l/areas/Improved-Dumpster.jpg',
+            'jungle': '/images/l/areas/Jungle.jpg',
+            'liquor_store': '/images/l/areas/Liquor-Store.jpg',
+            'night_club': '/images/l/areas/Night-Club.jpg',
+            'nursing_home': '/images/l/areas/Nursing-Home.jpg',
+            'park': '/images/l/areas/Park.jpg',
+            'park|entrance': '/images/l/areas/Park.jpg',
+            'pawn_shop': '/images/l/areas/Pawn-Shop.jpg',
+            'playground': '/images/l/areas/Playground.jpg',
+            'protest_palace': '/images/l/areas/Protest-Palace.jpg',
+            'p_school': '/images/l/areas/primaryschool.jpg',
+            'recycling_bin': '/images/l/areas/Recycling-Bin.jpg',
+            'skate_park': '/images/l/areas/Skate-Park.jpg',
+            'skill_shop': '/images/l/areas/Skill-Shop.jpg',
+            'skills': '/images/l/areas/Skill-Shop.jpg',
+            'tattoo_parlor': '/images/l/areas/Tattoo-Parlor.jpg',
+            'more_jungle': '/images/l/areas/Technicolor-Jungle.jpg',
+            'tincan_alley': '/images/l/areas/Tincan-Alley.jpg',
+            'store': '/images/l/areas/toysrus.jpg',
+            'train_station': '/images/l/areas/Train-Station.jpg',
+            'hill|greg': '/images/l/areas/dirtygregswreckers.jpg',
+            'rats|shop': '/images/l/areas/rats.jpg',
+        };
+
+        const urlParams = new URLSearchParams(window.location.search);
+        let cmd = urlParams.get('cmd');
+
+        // Find which specific sub-parameter is defining the subpage (if any)
+        let subParamName = ['do', 'tent', 'room', 'place'].find(p => urlParams.has(p));
+        let subParamVal = subParamName ? urlParams.get(subParamName) : null;
+
+        let mapKey = (subParamVal && imageMap[`${cmd}|${subParamVal}`]) ? `${cmd}|${subParamVal}` : cmd;
+
+        if (!cmd || !imageMap[mapKey]) return;
+
+        let targetHref = `cmd=${cmd}`;
+        if (subParamName && subParamVal) {
+            targetHref += `&${subParamName}=${subParamVal}`;
+        }
+
+        let excludeDo = '';
+        if (!subParamVal) {
+            // If we are strictly on the base 'cmd', prevent matching submenu links
+            // We explicitly exclude common sub-page parameters
+            excludeDo = `:not([href*="&do="]):not([href*="&tent="]):not([href*="&room="]):not([href*="&place="])`;
+        }
+
+        this.addedStyles += `
+            .left-panel ul a[href$="${targetHref}"]${excludeDo}, .left-panel ul a[href*="${targetHref}&"]${excludeDo} {
+                position: relative;
+                z-index: 1;
+                font-weight: bold;
+            }
+            .left-panel ul a[href$="${targetHref}"]${excludeDo}::before, .left-panel ul a[href*="${targetHref}&"]${excludeDo}::before {
+                content: '';
+                position: absolute;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background-image: url('${imageMap[mapKey]}');
+                background-size: cover;
+                background-position: center center;
+                background-repeat: no-repeat;
+                z-index: -1;
+                -webkit-mask-image: linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+                mask-image: linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+                opacity: 0.75;
+            }
+        `;
     },
     initLiveAliveTime: function() {
         const topbarUl = document.querySelector('.topbar-menu ul');
@@ -8515,6 +8646,8 @@ const NorthernFenceHelper = {
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('cmd') === 'hill3') {
+            this.replaceAreaImage();
+            
             if (urlParams.get('do') === 'npc') {
                 this.initNpcRacingHelper();
             } else if (urlParams.get('do') === 'hof') {
@@ -9422,6 +9555,26 @@ const NorthernFenceHelper = {
 
         const btnHtml = `<div style="text-align: center; margin-bottom: 15px; margin-top: 10px;"><a href="game.php?sr=${Utils.getSr() || ''}&cmd=hill3&do=npc_race&ID=${npcId}" class="btn" style="-webkit-user-select:none;user-select:none;padding:5px 16px;text-decoration:none;display:inline-block;">Race Again</a></div>`;
         contentArea.insertAdjacentHTML('afterbegin', btnHtml);
+    },
+
+    replaceAreaImage: function() {
+        const areaImg = document.querySelector('#area');
+        if (areaImg) {
+            areaImg.src = 'https://www.hobowars.com/images/l/areas/xsuicidehill.jpg.pagespeed.ic.zQ9IM9WAsg.webp';
+        } else {
+            const contentArea = document.querySelector('.content-area');
+            if (contentArea) {
+                const center = document.createElement('center');
+                const img = document.createElement('img');
+                img.src = 'https://www.hobowars.com/images/l/areas/xsuicidehill.jpg.pagespeed.ic.zQ9IM9WAsg.webp';
+                img.width = 580;
+                img.height = 140;
+                img.id = 'area';
+                center.appendChild(img);
+                center.appendChild(document.createElement('br'));
+                contentArea.insertBefore(center, contentArea.firstChild);
+            }
+        }
     }
 }
 
@@ -9522,6 +9675,7 @@ const RatsHelper = {
     staff: false,
     group: 'Fighting',
     settings: [
+        { key: 'RatsHelper_ShowBanner', label: 'Show Area Banner Image' },
         { key: 'RatsHelper_NewsFilter', label: 'Rat News Filter' },
         { key: 'RatsHelper_ExpBar', label: 'Show Exp Progress Indicator' },
         { key: 'RatsHelper_LifeBar', label: 'Show Life Progress Bar' },
@@ -9531,6 +9685,7 @@ const RatsHelper = {
     ],
     init: function() {
         const savedSettings = Utils.getSettings();
+        const enableShowBanner = savedSettings['RatsHelper_ShowBanner'] !== false;
         const enableNewsFilter = savedSettings['RatsHelper_NewsFilter'] !== false;
         const enableExpBar = savedSettings['RatsHelper_ExpBar'] !== false;
         const enableLifeBar = savedSettings['RatsHelper_LifeBar'] !== false;
@@ -9733,6 +9888,10 @@ const RatsHelper = {
             });
         });
 
+        if (enableShowBanner) {
+            this.initAreaBanner(contentArea);
+        }
+
         if (enableNewsFilter) {
             this.initNewsFilter(contentArea);
         }
@@ -9806,6 +9965,23 @@ const RatsHelper = {
         }
 
         return daysLivedInSim;
+    },
+
+    initAreaBanner: function(contentArea) {
+        let areaImg = contentArea.querySelector('#area');
+        if (!areaImg) {
+            const center = document.createElement('center');
+            const img = document.createElement('img');
+            img.src = 'https://www.hobowars.com/images/l/areas/rats.jpg';
+            img.width = 580;
+            img.height = 140;
+            img.id = 'area';
+            img.style.marginBottom = '4px';
+            center.appendChild(img);
+            contentArea.insertBefore(center, contentArea.firstChild);
+        } else {
+            areaImg.src = 'https://www.hobowars.com/images/l/areas/rats.jpg';
+        }
     },
 
     initLifeBars: function(contentArea) {
@@ -14211,7 +14387,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.34.20260510.0931';
+        window.HoboHelperVersion = '9.34.20260510.2136';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

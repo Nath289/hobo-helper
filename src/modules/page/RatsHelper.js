@@ -3,6 +3,7 @@ const RatsHelper = {
     staff: false,
     group: 'Fighting',
     settings: [
+        { key: 'RatsHelper_ShowBanner', label: 'Show Area Banner Image' },
         { key: 'RatsHelper_NewsFilter', label: 'Rat News Filter' },
         { key: 'RatsHelper_ExpBar', label: 'Show Exp Progress Indicator' },
         { key: 'RatsHelper_LifeBar', label: 'Show Life Progress Bar' },
@@ -12,6 +13,7 @@ const RatsHelper = {
     ],
     init: function() {
         const savedSettings = Utils.getSettings();
+        const enableShowBanner = savedSettings['RatsHelper_ShowBanner'] !== false;
         const enableNewsFilter = savedSettings['RatsHelper_NewsFilter'] !== false;
         const enableExpBar = savedSettings['RatsHelper_ExpBar'] !== false;
         const enableLifeBar = savedSettings['RatsHelper_LifeBar'] !== false;
@@ -214,6 +216,10 @@ const RatsHelper = {
             });
         });
 
+        if (enableShowBanner) {
+            this.initAreaBanner(contentArea);
+        }
+
         if (enableNewsFilter) {
             this.initNewsFilter(contentArea);
         }
@@ -287,6 +293,23 @@ const RatsHelper = {
         }
 
         return daysLivedInSim;
+    },
+
+    initAreaBanner: function(contentArea) {
+        let areaImg = contentArea.querySelector('#area');
+        if (!areaImg) {
+            const center = document.createElement('center');
+            const img = document.createElement('img');
+            img.src = 'https://www.hobowars.com/images/l/areas/rats.jpg';
+            img.width = 580;
+            img.height = 140;
+            img.id = 'area';
+            img.style.marginBottom = '4px';
+            center.appendChild(img);
+            contentArea.insertBefore(center, contentArea.firstChild);
+        } else {
+            areaImg.src = 'https://www.hobowars.com/images/l/areas/rats.jpg';
+        }
     },
 
     initLifeBars: function(contentArea) {
