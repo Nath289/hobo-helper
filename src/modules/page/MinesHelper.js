@@ -251,7 +251,8 @@ const MinesHelper = {
             }
         }
 
-        let isRefresh = false;
+        let isBackForward = performance.getEntriesByType("navigation")[0]?.type === "back_forward" || performance.navigation?.type === 2;
+        let isRefresh = isBackForward;
 
         if (tFound && currentTUsed !== null) {
             let lastState = null;
@@ -274,7 +275,11 @@ const MinesHelper = {
                 tUsedVal = currentTUsed;
             }
 
-            Utils.setItem('hw_mines_last_state', JSON.stringify({ section: currentSection, tUsed: currentTUsed }));
+            if (isBackForward) {
+                tUsedVal = 0;
+            } else {
+                Utils.setItem('hw_mines_last_state', JSON.stringify({ section: currentSection, tUsed: currentTUsed }));
+            }
         }
 
         // Canvas/Blast screen parsing
@@ -306,6 +311,11 @@ const MinesHelper = {
                 if (dT < 0) dT = 0;
                 if (dExp < 0) dExp = 0;
 
+                if (isBackForward) {
+                    dT = 0;
+                    dExp = 0;
+                }
+
                 if (dT > 0 || dExp > 0) {
                     if (newExp < dExp) newExp = dExp;
                     if (dT > tUsedVal) tUsedVal = dT;
@@ -314,7 +324,9 @@ const MinesHelper = {
                     isRefresh = false;
                 }
 
-                Utils.setItem('hw_mines_blast_state', JSON.stringify({ t: blastT, exp: blastExp }));
+                if (!isBackForward) {
+                    Utils.setItem('hw_mines_blast_state', JSON.stringify({ t: blastT, exp: blastExp }));
+                }
             }
         }
 

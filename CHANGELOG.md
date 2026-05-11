@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.39] - 2026-05-11
+### Fixed
+- Fixed an issue in `MinesHelper.js` where the mining log would double-count ores and experience if the user navigated via the browser's "Back" or "Forward" buttons. Utilizes the `PerformanceNavigation` API to correctly ignore cached view states.
+
 ## [9.38] - 2026-05-11
 ### Added
 - Added an Explore Log feature to `BernardsBasementHelper.js` out of necessity to track soup findings (Garlic Salmon Bisque, Cream of Okra Soup, Texas Fajita Soup, Beef Mushroom Stew) linked with their XY coordinates. Employs the `ExploreHelper.js` styled display log format grouped by date.

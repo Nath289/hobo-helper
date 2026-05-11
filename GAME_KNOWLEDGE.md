@@ -16,6 +16,7 @@ This document contains a general knowledge base about the mechanics, layout, and
 - The `cmd=mines` area allows players to explore a grid and mine ores.
 - Navigating the grid (using directional arrows) natively consumes 1T (unless you lack Awake).
 - A page refresh that maintains position (e.g. `cmd=mines&move=nowhere`) does NOT consume grid movement T. 
+- History navigation (Back/Forward browser buttons) does not execute a new server action, and the `PerformanceNavigation` API should be used to intercept and zero-out tracked stat deltas/T-used to prevent duplicate log counting.
 - **Sidebox vs. Blasting `T used`:**
   - While navigating the grid (moving), the UI displays a sidebox (often inside a `<center>` tag containing text like `Mine Section 1`) that dynamically tracks the cumulative "T used:" for the entire session. By referencing this exact number directly from the page, you can get perfect synchronization with the game's actual server tracking without manually compiling deltas.
   - While inside the Blast/Canvas view (`cmd=mines&blast=...`), the sidebox is removed. In its place, the actual blast result string returns the cumulative stats explicitly across a single line: `T used: 16, Mine stat: 0.24, Ore found: 7 [2]`.
