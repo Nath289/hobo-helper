@@ -13,6 +13,7 @@ Welcome to the `hobo-helper` project! Since this project uses a custom build pro
 - `html/` - Contains offline HTML snapshots of game pages. **Crucial for AI agents:** Since you cannot log into the game, always read the relevant `.html` files in this directory to analyze the DOM structure and formulate accurate query selectors before creating or modifying helpers.
 - `tools/` - PowerShell scripts for extracting static game data (e.g., wiki data) into JSON format.
 - `output/` - The destination for compiled userscripts. The build script automatically manages this folder by keeping only the 5 most recent versioned files and the latest build.
+- `test/` - Contains test files and sandboxes. Any future sandbox/test scripts created during development must be placed here and they are ignored by version control.
 
 ## Game Knowledge
 Whenever you handle a user request, always review the `GAME_KNOWLEDGE.md` file to understand game mechanics, UI rules, and layout logic. Furthermore, whenever the user provides new facts or you discover new game constraints, you must add them to `GAME_KNOWLEDGE.md` so that future agents have the same information.

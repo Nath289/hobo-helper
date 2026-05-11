@@ -1,7 +1,11 @@
-/.idea/
-/html/
-/tools/
+.idea/
+html/
+tools/
 
-/output/*-local.user.js
+output/*-local.user.js
 
 conf/couchdb-local.json
+
+test/
+
+node_modules/

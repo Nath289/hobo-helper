@@ -137,3 +137,5 @@ When purchasing upgrades for your rat (Vegetarian, Life Boost, Meal Boost), keep
 - While Mining, players can occasionally save other players who are "trapped back there". This yields ores and mining experience, and produces HTML text containing an ID'd link to the saved player's profile.
 
 - On the \cmd=mines&blast=...\ screen, click coordinates are recorded in the hidden input \#pass_coords\ string using the format \x,y,tool_id,x2,y2,tool_id2\ where \x\ and \y\ are the respective click coordinates.
+
+

@@ -1,6 +1,10 @@
 # Users Changelog
 All notable user-facing features and bug fixes to this project will be documented in this file.
 
+## [9.38] - 2026-05-11
+### Added
+- Added an Explore Log feature to Bernard's Basement that tracks the valuable rare soups you discover (Garlic Salmon Bisque, Cream of Okra Soup, Texas Fajita Soup, Beef Mushroom Stew) and logs their XY coordinates so you can track findings across sessions!
+
 ## [9.37] - 2026-05-11
 ### Added
 - Added a Developer Credits link to the Living Area panel above the Changelog.

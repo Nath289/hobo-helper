@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.38] - 2026-05-11
+### Added
+- Added an Explore Log feature to `BernardsBasementHelper.js` out of necessity to track soup findings (Garlic Salmon Bisque, Cream of Okra Soup, Texas Fajita Soup, Beef Mushroom Stew) linked with their XY coordinates. Employs the `ExploreHelper.js` styled display log format grouped by date.
+
 ## [9.37] - 2026-05-11
 ### Added
 - Added Developer Credits link functionality and modal to `LivingAreaHelper.js`.

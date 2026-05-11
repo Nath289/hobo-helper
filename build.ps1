@@ -168,7 +168,7 @@ function Build-Output {
             $npmPath = (Get-Command npm -ErrorAction SilentlyContinue).Source
             if ($npmPath) {
                 # Run javascript-obfuscator using npx
-                Start-Process -FilePath "npx.cmd" -ArgumentList "javascript-obfuscator `"$tmpIn`" --output `"$tmpOut`" --compact true --unicode-escape-sequence true --control-flow-flattening true --numbers-to-expressions true --simplify true --split-strings true" -Wait -NoNewWindow
+                Start-Process -FilePath "npx.cmd" -ArgumentList "javascript-obfuscator `"$tmpIn`" --output `"$tmpOut`" --compact true --control-flow-flattening true --numbers-to-expressions true --simplify true --split-strings true" -Wait -NoNewWindow
 
                 if (Test-Path $tmpOut) {
                     $obfuscatedBody = [System.IO.File]::ReadAllText($tmpOut)
@@ -279,6 +279,8 @@ if ($Promote) {
     Set-Content -Encoding UTF8 -Path "output/hobo-helper-dev.user.js" -Value $devContent
     Write-Host "Build complete: output/hobo-helper-dev.user.js"
 }
+
+
 
 
 
