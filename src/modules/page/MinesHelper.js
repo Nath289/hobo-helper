@@ -417,6 +417,13 @@ const MinesHelper = {
             Utils.setItem('hw_mines_log_data', JSON.stringify(logData));
         }
 
+        if (logData[today]) {
+            const todayStats = Number.parseFloat(logData[today].exp) || 0;
+            const todayOres = Object.values(logData[today].ores || {}).reduce((sum, count) => sum + (Number.parseInt(count) || 0), 0);
+            Utils.setItem('hw_MinesHelper_TodayStats', todayStats.toFixed(2));
+            Utils.setItem('hw_MinesHelper_TodayOres', todayOres.toString());
+        }
+
         const logWrapper = document.createElement('div');
         logWrapper.style.cssText = 'margin: 20px auto; max-width: 800px; padding: 10px; background: #fdfdfd; border: none; border-radius: 4px;';
 

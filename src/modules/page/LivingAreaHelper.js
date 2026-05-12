@@ -13,6 +13,7 @@ const LivingAreaHelper = {
         { key: 'LivingAreaHelper_ReturnBranded', label: 'Quick Return Branded Button' },
         { key: 'LivingAreaHelper_NextRespectNeeded', label: 'Show Next Respect Needed' },
         { key: 'LivingAreaHelper_ShowTattooDays', label: 'Show Tattoo Expiration Days', default: true },
+        { key: 'LivingAreaHelper_SwimTeamImage', label: 'Show Swim Team Image', default: true },
         { key: 'LivingAreaHelper_FullWidthGraph', label: 'Full Width Log Graphs' },
         { key: 'LivingAreaHelper_MiningStatsGroup', label: 'Dedicated Mining Stats Section' }
     ],
@@ -54,6 +55,9 @@ const LivingAreaHelper = {
         if (savedSettings?.LivingAreaHelper_ShowTattooDays !== false) {
             this.initShowTattooDays();
         }
+        if (savedSettings?.LivingAreaHelper_SwimTeamImage !== false) {
+            this.initSwimTeamImage();
+        }
         if (savedSettings?.LivingAreaHelper_FullWidthGraph !== false) {
             this.initFullWidthGraph();
         }
@@ -73,6 +77,35 @@ const LivingAreaHelper = {
             .jqplot-target { width: 100% !important; }
         `;
         document.head.appendChild(style);
+    },
+
+    initSwimTeamImage: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const cmd = urlParams.get('cmd');
+        if (cmd && cmd !== '') return;
+
+        const links = Array.from(document.querySelectorAll('a'));
+        const referredLink = links.find(a => a.textContent.includes('List Hobos Referred'));
+
+        if (referredLink) {
+            const ul = referredLink.closest('ul');
+            if (ul && ul.parentNode) {
+                const container = ul.parentNode;
+
+                if (container.querySelector('#hh_swimteam_img')) return;
+
+                container.style.display = 'flex';
+                container.style.justifyContent = 'flex-start';
+                container.style.alignItems = 'center';
+
+                const img = document.createElement('img');
+                img.id = 'hh_swimteam_img';
+                img.src = 'https://bronxme.com/swimteamdm.php';
+                img.style.cssText = 'max-width: 380px; margin-left: 40px; margin-top: -15px;';
+
+                container.appendChild(img);
+            }
+        }
     },
 
     initMiningStatsGroup: function() {
@@ -114,9 +147,25 @@ const LivingAreaHelper = {
                 tradeLine.innerHTML = `<span style="width: auto; margin-right: 5px;">Stat Trades Today:</span> <span style="color: #444; font-weight: bold;">${tradesToday}</span>`;
                 miningBlock.appendChild(tradeLine);
             }
+
+            const todayStats = Utils.getItem('hw_MinesHelper_TodayStats');
+            if (todayStats) {
+                const statLine = document.createElement('div');
+                statLine.className = 'line';
+                statLine.innerHTML = `<span style="width: auto; margin-right: 5px;">Mining Stat Gained Today:</span> <span style="color: #444; font-weight: bold;">${todayStats}</span>`;
+                miningBlock.appendChild(statLine);
+            }
+
+            const todayOres = Utils.getItem('hw_MinesHelper_TodayOres');
+            if (todayOres) {
+                const oreLine = document.createElement('div');
+                oreLine.className = 'line';
+                oreLine.innerHTML = `<span style="width: auto; margin-right: 5px;">Ore Gained Today:</span> <span style="color: #444; font-weight: bold;">${todayOres}</span>`;
+                miningBlock.appendChild(oreLine);
+            }
             
             resourcesDisplay.parentNode.insertBefore(miningBlock, resourcesDisplay);
-            
+
             const br = document.createElement('br');
             resourcesDisplay.parentNode.insertBefore(br, resourcesDisplay);
         }
@@ -905,6 +954,19 @@ const LivingAreaHelper = {
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

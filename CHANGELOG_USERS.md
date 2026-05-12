@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.47] - 2026-05-12
+- Expanded the new Mining Stats readout in your Living Area to explicitly show the exact absolute number of ores you have found and total mining experience you have gained today, independent of 'T used'.
+
+## [9.46] - 2026-05-12
+- Added a visual Swim Team Image block to the Living Area that floats beside your basic user links, helping keep your active information compact. Includes a fresh user preference toggle for you to enable or disable it freely!
+
 ## [9.45] - 2026-05-12
 - Expanded the internal system architecture to gather your mining trade data continuously in the background, preserving accurate stat updates natively within your Living Area regardless of any interface format preferences.
 

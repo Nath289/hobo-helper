@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.47] - 2026-05-12
+- Extended `MinesHelper` to capture and retain the absolute daily values of ores accumulated and mining experience earned, directly populating those values back into the `LivingAreaHelper` dedicated Mining Stats readout dynamically.
+
+## [9.46] - 2026-05-12
+- Added `SwimTeamImage` feature to `LivingAreaHelper` that dynamically injects the dynamic Swim Team image beside the reference links, aligning correctly with flexbox layouts.
+
 ## [9.45] - 2026-05-12
 - Separated mining trade stat extraction from the visual post formatting in `MinesHelper` so stats continue to populate the Living Area even if Trade Formatting is disabled.
 
@@ -1207,14 +1213,6 @@ All notable changes to this project will be documented in this file.
 ## [8.62] - 2026-04-19
 ### Changed
 - Modified the Rat Life Progress Bar to fill up from the left based on the percentage of the rat's total estimated life that has already been lived, approaching 100% as the rat nears death.
-
-## [9.41] - 2026-05-12
-- Added LivingAreaHelper.initShowTattooDays to extract and display tattoo remaining duration from the image title.
-
-## [9.40] - 2026-05-12
-- Added FightDisplayHelper to highlight active player combat rows.
-- Implemented strict duplicate script running prevention with UI warnings.
-- Updated AGENTS.md with stricter guidelines regarding boolean parsing of settings object cache.
 
 ## [9.41] - 2026-05-12
 - Added LivingAreaHelper.initShowTattooDays to extract and display tattoo remaining duration from the image title.
