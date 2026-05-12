@@ -1,5 +1,10 @@
-# Users Changelog
-All notable user-facing features and bug fixes to this project will be documented in this file.
+# Hobo Helper Feature Changelog
+
+## [9.43] - 2026-05-12
+- Dynamically rescaled the Living Area left stat column when both "Widen Page" and "Always Show More Info" are active to more evenly distribute white space.
+
+## [9.42] - 2026-05-12
+- Reorganized `MinesHelper` trading interface grids. Complementary stat ores are grouped together in a 3-column layout (Green/White/Yellow, Orange/Red/Purple) to reduce vertical space usage.
 
 ## [9.41] - 2026-05-12
 - **Living Area Helper**: Your active tattoo now displays the number of days left directly below its icon! No more hover required.

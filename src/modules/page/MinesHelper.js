@@ -580,16 +580,16 @@ const MinesHelper = {
             }
         });
 
+        const cards = [];
+        let summaryHtml = null;
+
         // Skip the header row
         for (let i = 1; i < rows.length; i++) {
             const cells = rows[i].querySelectorAll('td');
 
             // Some rows are just text (like the Net stat gain summary at the bottom)
             if (cells.length === 1 && cells[0].hasAttribute('colspan')) {
-                const summary = document.createElement('div');
-                summary.style.cssText = 'width: 100%; text-align: center; margin-top: 10px; font-size: 12px; color: #333;';
-                summary.innerHTML = cells[0].innerHTML;
-                container.appendChild(summary);
+                summaryHtml = cells[0].innerHTML;
                 continue;
             }
 
@@ -681,7 +681,48 @@ const MinesHelper = {
                 card.insertAdjacentHTML('beforeend', badgeHtml);
             }
 
-            container.appendChild(card);
+            card.dataset.oreName = reqName;
+            cards.push(card);
+        }
+
+        // Group rows as requested
+        const rowGroups = [
+            ['Green Ore', 'White Ore', 'Yellow Ore'],
+            ['Orange Ore', 'Red Ore', 'Purple Ore'],
+            ['Black Ore']
+        ];
+
+        rowGroups.forEach(group => {
+            const groupCards = [];
+            group.forEach(oreName => {
+                const idx = cards.findIndex(c => c.dataset.oreName === oreName);
+                if (idx !== -1) {
+                    groupCards.push(cards[idx]);
+                    cards.splice(idx, 1);
+                }
+            });
+
+            if (groupCards.length > 0) {
+                const rowContainer = document.createElement('div');
+                rowContainer.style.cssText = 'display: flex; gap: 10px; justify-content: center; width: 100%;';
+                groupCards.forEach(c => rowContainer.appendChild(c));
+                container.appendChild(rowContainer);
+            }
+        });
+
+        // Add remaining items (Hobalt pieces)
+        const leftoverContainer = document.createElement('div');
+        leftoverContainer.style.cssText = 'display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; width: 100%;';
+        cards.forEach(card => leftoverContainer.appendChild(card));
+        if (leftoverContainer.children.length > 0) {
+            container.appendChild(leftoverContainer);
+        }
+
+        if (summaryHtml) {
+            const summary = document.createElement('div');
+            summary.style.cssText = 'width: 100%; text-align: center; margin-top: 10px; font-size: 12px; color: #333;';
+            summary.innerHTML = summaryHtml;
+            container.appendChild(summary);
         }
 
         tradeTable.parentNode.replaceChild(container, tradeTable);

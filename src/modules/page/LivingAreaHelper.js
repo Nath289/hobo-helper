@@ -324,6 +324,11 @@ const LivingAreaHelper = {
                     display: inline-block !important;
                     vertical-align: top !important;
                 }
+                .leftStats {
+                    width: auto !important;
+                    min-width: 40% !important;
+                    max-width: 55% !important;
+                }
             `;
             document.head.appendChild(style);
 
@@ -852,6 +857,10 @@ const LivingAreaHelper = {
         }
     }
 }
+
+
+
+
 
 
 
