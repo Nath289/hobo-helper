@@ -4,6 +4,9 @@ The Hobo Helper script breaks its functionality down into individual modules. Be
 
 > **Layout Warning:** HoboWars can be viewed in various layouts (Simple, Original, Stripped, Darkened, Classic, Modern, Stylish, SFW, and The Future). So far this tool has only been built for **"The Future"** layout. Unexpected behavior may occur if using a different layout.
 
+### Fight Display Helper (FightDisplayHelper.js)
+Enhances the fight display by adding a highlight link to bold the active player's rows, making it easier to read multi-hobo fights.
+
 ### 1. Bank Helper (`BankHelper.js`)
 Helps manage bank savings by allowing you to add and display custom financial goals. Makes withdrawing and depositing the exact amounts you need much easier.
 - **5 Fighter's Lunches Goal**: Adds a button to withdraw the exact cost of 5 Fighter's Lunches based on your current Hobo Level. Can be disabled in Settings.

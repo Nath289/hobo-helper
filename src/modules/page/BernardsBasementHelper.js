@@ -22,6 +22,14 @@ const BernardsBasementHelper = {
         }
     },
 
+    getLocationDescription: function(x, y) {
+        if (x === 1 && y === 20) return '- Top Left';
+        if (x === 20 && y === 20) return '- Top Right';
+        if (x === 1 && y === 1) return '- Bottom Left';
+        if (x === 20 && y === 1) return '- Bottom Right';
+        return '';
+    },
+
     processAndRenderLog: function() {
         const contentArea = document.querySelector('.content-area');
         if (!contentArea) return;
@@ -108,11 +116,12 @@ const BernardsBasementHelper = {
                 }
 
                 const gameTimeStr = L.time ? L.time : `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
+                const locDesc = this.getLocationDescription(L.x, L.y);
 
                 html += `
                     <li style="color: #333; font-weight: normal; list-style-type: square;">
                         <span style="color: #999; font-size: 10px; font-weight: normal;">[${gameTimeStr}]</span> 
-                        <strong style="color: #555;">(${L.x}, ${L.y})</strong> - Found ${L.soup}
+                        <strong style="color: #555;">(${L.x}, ${L.y})</strong> <span style="font-size: 11px; color: #777;">${locDesc}</span> - Found ${L.soup}
                     </li>`;
             });
             if (currentDateStr !== '') {

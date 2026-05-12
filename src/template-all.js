@@ -14,6 +14,29 @@
 
 (function() {
     'use strict';
+
+    // Prevent multiple instances from running
+    if (document.getElementById('hh-instance-marker')) {
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!document.getElementById('hh-multiple-warning')) {
+                const warningDiv = document.createElement('div');
+                warningDiv.id = 'hh-multiple-warning';
+                warningDiv.style.cssText = 'background: red; color: white; text-align: center; padding: 10px; font-weight: bold; position: fixed; top: 0; left: 0; width: 100%; z-index: 999999; border-bottom: 2px solid darkred;';
+                warningDiv.innerHTML = '⚠️ WARNING: Multiple versions of Hobo Helper are currently running! Please open your Tampermonkey dashboard and disable duplicate or old versions to prevent game-breaking conflicts. ⚠️';
+                if (document.body) document.body.appendChild(warningDiv);
+            }
+        });
+        return;
+    }
+
+    // Set the instance marker
+    const marker = document.createElement('div');
+    marker.id = 'hh-instance-marker';
+    marker.style.display = 'none';
+    if (document.documentElement) {
+        document.documentElement.appendChild(marker);
+    }
+
 // {{UTILS}}
 // {{MODULES}}
     const DataModules = {

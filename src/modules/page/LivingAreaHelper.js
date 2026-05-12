@@ -382,7 +382,7 @@ const LivingAreaHelper = {
         }
 
         const versionHtml = `
-            <div style="text-align: center; font-size: 11px; margin-top: 8px; color: #666; font-family: Tahoma, Arial, sans-serif; display: block; width: 100%;">
+            <div style="text-align: center; font-size: 11px; margin-top: 8px; font-family: Tahoma, Arial, sans-serif; display: block; width: 100%;">
                 Hobo Helper v${latestVersion}<br>
                 <a href="#" id="hh_show_credits" style="color: #0066cc; text-decoration: none;">Credits</a><br>
                 <a href="#" id="hh_show_changelog" style="color: #0066cc; text-decoration: none;">View Changelog</a>${syncHtml}
