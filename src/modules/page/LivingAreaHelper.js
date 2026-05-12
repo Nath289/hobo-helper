@@ -13,7 +13,8 @@ const LivingAreaHelper = {
         { key: 'LivingAreaHelper_ReturnBranded', label: 'Quick Return Branded Button' },
         { key: 'LivingAreaHelper_NextRespectNeeded', label: 'Show Next Respect Needed' },
         { key: 'LivingAreaHelper_ShowTattooDays', label: 'Show Tattoo Expiration Days', default: true },
-        { key: 'LivingAreaHelper_FullWidthGraph', label: 'Full Width Log Graphs' }
+        { key: 'LivingAreaHelper_FullWidthGraph', label: 'Full Width Log Graphs' },
+        { key: 'LivingAreaHelper_MiningStatsGroup', label: 'Dedicated Mining Stats Section' }
     ],
     init: function() {
         const savedSettings = Utils.getSettings();
@@ -56,6 +57,9 @@ const LivingAreaHelper = {
         if (savedSettings?.LivingAreaHelper_FullWidthGraph !== false) {
             this.initFullWidthGraph();
         }
+        if (savedSettings?.LivingAreaHelper_MiningStatsGroup !== false) {
+            this.initMiningStatsGroup();
+        }
 
         this.initInactiveSpecialItemBg();
         this.saveTattoo();
@@ -65,13 +69,57 @@ const LivingAreaHelper = {
     initFullWidthGraph: function() {
         const style = document.createElement('style');
         style.innerHTML = `
-            #graph_area, #chartdiv {
-                width: 100% !important;
-                margin: 0 auto !important;
-                text-align: center !important;
-            }
+            #jqplot_container { width: 100% !important; margin: 0 auto; box-sizing: border-box; }
+            .jqplot-target { width: 100% !important; }
         `;
         document.head.appendChild(style);
+    },
+
+    initMiningStatsGroup: function() {
+        const generalDisplay = document.getElementById('generalDisplay');
+        const resourcesDisplay = document.getElementById('resourcesDisplay');
+
+        if (!generalDisplay || !resourcesDisplay) return;
+
+        const lines = Array.from(generalDisplay.querySelectorAll('.line'));
+        const miningLine = lines.find(line => line.textContent.includes('Mining:'));
+
+        if (miningLine) {
+            const miningBlock = document.createElement('div');
+            miningBlock.className = 'statBlock line more_info';
+            miningBlock.style.display = 'block';
+            miningBlock.id = 'hh_miningStats';
+            
+            const titleLine = document.createElement('div');
+            titleLine.className = 'line';
+            titleLine.innerHTML = '<span><u>Mining Stats</u></span>';
+            miningBlock.appendChild(titleLine);
+            
+            miningLine.className = 'line';
+            miningLine.style.display = '';
+            miningBlock.appendChild(miningLine);
+
+            const statGain = Utils.getItem('hw_MiningHelper_StatGain');
+            if (statGain) {
+                const statLine = document.createElement('div');
+                statLine.className = 'line';
+                statLine.innerHTML = `<span style="width: auto; margin-right: 5px;">Net Stat Gain:</span> <span style="color: #444; font-weight: bold;">${statGain}</span>`;
+                miningBlock.appendChild(statLine);
+            }
+
+            const tradesToday = Utils.getItem('hw_MiningHelper_TradesToday');
+            if (tradesToday) {
+                const tradeLine = document.createElement('div');
+                tradeLine.className = 'line';
+                tradeLine.innerHTML = `<span style="width: auto; margin-right: 5px;">Stat Trades Today:</span> <span style="color: #444; font-weight: bold;">${tradesToday}</span>`;
+                miningBlock.appendChild(tradeLine);
+            }
+            
+            resourcesDisplay.parentNode.insertBefore(miningBlock, resourcesDisplay);
+            
+            const br = document.createElement('br');
+            resourcesDisplay.parentNode.insertBefore(br, resourcesDisplay);
+        }
     },
 
     saveTattoo: function() {
@@ -857,6 +905,10 @@ const LivingAreaHelper = {
         }
     }
 }
+
+
+
+
 
 
 

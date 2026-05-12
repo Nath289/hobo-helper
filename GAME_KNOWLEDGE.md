@@ -139,3 +139,9 @@ When purchasing upgrades for your rat (Vegetarian, Life Boost, Meal Boost), keep
 
 - On the \cmd=mines&blast=...\ screen, click coordinates are recorded in the hidden input \#pass_coords\ string using the format \x,y,tool_id,x2,y2,tool_id2\ where \x\ and \y\ are the respective click coordinates.
 
+- **Item Expiration:** Specific game elements have variable timers (like limited tattoo durations) visible in tooltips formatted strictly as `"(X days left)"` or `"(1 day left)"`.
+- **Mine Trading Stats:** The trading post implicitly confirms total daily stats under a summary row reading `"Net stat gain for trade:"` and `"Stat Trades today:"`. These values can be extracted for display on other pages.
+
+## Layout Specifics
+- The game layout uses a grid system for positioning elements, with specific classes indicating row and column spans (e.g., `class="rowspan-2 colspan-3"`).
+- Certain layout elements like the top navigation bar or side panels may not have explicit closing tags in the HTML. Use caution when parsing or manipulating these sections to avoid leaving orphaned elements.

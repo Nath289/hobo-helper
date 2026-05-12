@@ -719,6 +719,19 @@ const MinesHelper = {
         }
 
         if (summaryHtml) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = summaryHtml;
+            const textContent = tempDiv.textContent || tempDiv.innerText || '';
+            const statMatch = textContent.match(/Net stat gain for trade:\s*([\d.]+)/i);
+            const tradesMatch = textContent.match(/Stat Trades today:\s*(\d+)/i);
+            
+            if (statMatch) {
+                Utils.setItem('hw_MiningHelper_StatGain', statMatch[1]);
+            }
+            if (tradesMatch) {
+                Utils.setItem('hw_MiningHelper_TradesToday', tradesMatch[1]);
+            }
+
             const summary = document.createElement('div');
             summary.style.cssText = 'width: 100%; text-align: center; margin-top: 10px; font-size: 12px; color: #333;';
             summary.innerHTML = summaryHtml;

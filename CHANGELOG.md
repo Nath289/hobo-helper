@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.44] - 2026-05-12
+- Extended LivingAreaHelper to extract and display 'Net Stat Gain' and 'Stat Trades Today' locally from MinesHelper caching mechanisms, populating dynamically within the injected Dedicated Mining Stats Section.
+- Added regex matching and DOM extraction into MinesHelper to natively capture daily trading values implicitly presented within the `do=trade` and `what=trade` views, storing them in local storage to act as cross-helper data bridges.
+
 ## [9.43] - 2026-05-12
 - Dynamically rescaled the `leftStats` container (min 40%, max 55%) inside the Living Area when both "Widen Page" and "Always Show More Info" are active to more evenly distribute white space.
 
@@ -1597,7 +1601,7 @@ All notable changes to this project will be documented in this file.
 ## [9.41] - 2026-05-12
 - Added LivingAreaHelper.initShowTattooDays to extract and display tattoo remaining duration from the image title.
 
-## [8.37] - 2026-04-16
+## [9.37] - 2026-04-16
 ### Changed
 - Modified the `GangArmoryHelper` to ensure that any items currently loaned to the active user are always visible out-of-the-box, bypassing the "Hide All" group consolidation logic so users no longer have to hunt through collapsed groups for their own gear.
 
@@ -1772,5 +1776,4 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added multi-column interactive client-side sorting for the Hitlist table (`HitlistHelper`), replacing the slow native server-refresh sorting links. Sorting configurations securely persist via browser local storage.
 - Implemented a combat window highlighter within the `HitlistHelper` that automatically shades rows an alerting light red if an opponent's level drastically falls outside the player's immediate attack limits (±200 combat levels).
-
 
