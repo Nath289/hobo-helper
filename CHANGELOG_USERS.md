@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.45] - 2026-05-12
+- Expanded the internal system architecture to gather your mining trade data continuously in the background, preserving accurate stat updates natively within your Living Area regardless of any interface format preferences.
+
 ## [9.44] - 2026-05-12
 - Expanded the 'Mine Stats' readout on your Living Area page to natively pull and display your "Net Stat Gain" and "Stat Trades Today" data natively from caching layers within the Mining Interface. Data will automatically begin tracking once you interact with the Mine Trades window.
 

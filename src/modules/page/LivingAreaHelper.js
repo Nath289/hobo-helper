@@ -755,7 +755,7 @@ const LivingAreaHelper = {
         content.innerHTML = `
             <b>Creator:</b> <a href="game.php?${srParam}cmd=player&ID=107380" style="color: #0066cc; text-decoration: none;">Jack Reacher (107380)</a><br><br>
             <i>Created with the help, guidance and support of †ëh Fucking Nämêless</i><br><br>
-            <i>Donations welcome</i>
+            <i>Donations and suggestions welcome</i>
         `;
         modal.appendChild(content);
 

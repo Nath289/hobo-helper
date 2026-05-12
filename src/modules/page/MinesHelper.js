@@ -40,6 +40,8 @@ const MinesHelper = {
             try { this.formatStats(); } catch (e) { Utils.log(e); }
         }
 
+        try { this.extractTradeStats(); } catch (e) { Utils.log(e); }
+
         // Run formatTrades before formatOres so that oreStockMap can safely read the untouched DOM
         if (settings['MinesHelper_FormatTrades'] !== false) {
             try { this.formatTrades(); } catch (e) { Utils.log(e); }
@@ -719,18 +721,6 @@ const MinesHelper = {
         }
 
         if (summaryHtml) {
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = summaryHtml;
-            const textContent = tempDiv.textContent || tempDiv.innerText || '';
-            const statMatch = textContent.match(/Net stat gain for trade:\s*([\d.]+)/i);
-            const tradesMatch = textContent.match(/Stat Trades today:\s*(\d+)/i);
-            
-            if (statMatch) {
-                Utils.setItem('hw_MiningHelper_StatGain', statMatch[1]);
-            }
-            if (tradesMatch) {
-                Utils.setItem('hw_MiningHelper_TradesToday', tradesMatch[1]);
-            }
 
             const summary = document.createElement('div');
             summary.style.cssText = 'width: 100%; text-align: center; margin-top: 10px; font-size: 12px; color: #333;';
@@ -1084,6 +1074,19 @@ const MinesHelper = {
                  tableHtml += '</table>';
                  activeHeader.insertAdjacentHTML('afterend', tableHtml);
             }
+        }
+    },
+
+    extractTradeStats: function() {
+        if (!window.location.search.includes('do=trade')) return;
+        const pageText = document.body.textContent || document.body.innerText || '';
+        const statMatch = pageText.match(/Net stat gain for trade:\s*([\d.]+)/i);
+        const tradesMatch = pageText.match(/Stat Trades today:\s*(\d+)/i);
+        if (statMatch) {
+            Utils.setItem('hw_MiningHelper_StatGain', statMatch[1]);
+        }
+        if (tradesMatch) {
+            Utils.setItem('hw_MiningHelper_TradesToday', tradesMatch[1]);
         }
     },
 

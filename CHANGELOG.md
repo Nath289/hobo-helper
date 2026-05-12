@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.45] - 2026-05-12
+- Separated mining trade stat extraction from the visual post formatting in `MinesHelper` so stats continue to populate the Living Area even if Trade Formatting is disabled.
+
 ## [9.44] - 2026-05-12
 - Extended LivingAreaHelper to extract and display 'Net Stat Gain' and 'Stat Trades Today' locally from MinesHelper caching mechanisms, populating dynamically within the injected Dedicated Mining Stats Section.
 - Added regex matching and DOM extraction into MinesHelper to natively capture daily trading values implicitly presented within the `do=trade` and `what=trade` views, storing them in local storage to act as cross-helper data bridges.
