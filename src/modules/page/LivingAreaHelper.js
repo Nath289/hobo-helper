@@ -12,6 +12,7 @@ const LivingAreaHelper = {
         { key: 'LivingAreaHelper_WideShowAll', label: 'Always Show More Info<br><span style="font-size: 11px; color: #555;">(Requires Display Helper Page Width >= 850px)</span>' },
         { key: 'LivingAreaHelper_ReturnBranded', label: 'Quick Return Branded Button' },
         { key: 'LivingAreaHelper_NextRespectNeeded', label: 'Show Next Respect Needed' },
+        { key: 'LivingAreaHelper_ShowTattooDays', label: 'Show Tattoo Expiration Days', default: true },
         { key: 'LivingAreaHelper_FullWidthGraph', label: 'Full Width Log Graphs' }
     ],
     init: function() {
@@ -49,7 +50,10 @@ const LivingAreaHelper = {
         if (savedSettings['LivingAreaHelper_NextRespectNeeded'] !== false) {
             this.initNextRespectNeeded();
         }
-        if (savedSettings['LivingAreaHelper_FullWidthGraph'] !== false) {
+        if (savedSettings?.LivingAreaHelper_ShowTattooDays !== false) {
+            this.initShowTattooDays();
+        }
+        if (savedSettings?.LivingAreaHelper_FullWidthGraph !== false) {
             this.initFullWidthGraph();
         }
 
@@ -83,6 +87,27 @@ const LivingAreaHelper = {
                 localStorage.setItem('hw_helper_tattoo', tattooName);
             } else {
                 localStorage.removeItem('hw_helper_tattoo');
+            }
+        }
+    },
+
+    initShowTattooDays: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const cmd = urlParams.get('cmd');
+        if (cmd && cmd !== '') return;
+
+        const myHobo = document.getElementById('myhobo');
+        if (myHobo) {
+            const tattooLink = myHobo.querySelector('a[href*="cmd=tattoo_parlor"] img');
+            if (tattooLink && tattooLink.title) {
+                const match = tattooLink.title.match(/\(([^)]+days?\s+left)\)/i);
+                if (match) {
+                    const daysLeftStr = match[1];
+                    const div = document.createElement('div');
+                    div.style.cssText = 'text-align: center; font-size: 11px; margin-top: 2px; margin-bottom: 6px; font-weight: bold; color: #555;';
+                    div.innerHTML = daysLeftStr;
+                    tattooLink.parentNode.insertAdjacentElement('afterend', div);
+                }
             }
         }
     },
@@ -827,6 +852,8 @@ const LivingAreaHelper = {
         }
     }
 }
+
+
 
 
 
