@@ -80,30 +80,24 @@ const LivingAreaHelper = {
     },
 
     initSwimTeamImage: function() {
-        const urlParams = new URLSearchParams(window.location.search);
+        const urlParams = new URLSearchParams(globalThis.location.search);
         const cmd = urlParams.get('cmd');
         if (cmd && cmd !== '') return;
+
+        if (document.getElementById('hh_swimteam_img')) return;
 
         const links = Array.from(document.querySelectorAll('a'));
         const referredLink = links.find(a => a.textContent.includes('List Hobos Referred'));
 
         if (referredLink) {
             const ul = referredLink.closest('ul');
-            if (ul && ul.parentNode) {
-                const container = ul.parentNode;
-
-                if (container.querySelector('#hh_swimteam_img')) return;
-
-                container.style.display = 'flex';
-                container.style.justifyContent = 'flex-start';
-                container.style.alignItems = 'center';
-
+            if (ul) {
                 const img = document.createElement('img');
                 img.id = 'hh_swimteam_img';
                 img.src = 'https://bronxme.com/swimteamdm.php';
-                img.style.cssText = 'max-width: 380px; margin-left: 40px; margin-top: -15px;';
+                img.style.cssText = 'float: right; margin-top: -30px; margin-right: 25px;';
 
-                container.appendChild(img);
+                ul.insertAdjacentElement('beforebegin', img);
             }
         }
     },
@@ -483,9 +477,6 @@ const LivingAreaHelper = {
         const cmd = urlParams.get('cmd');
         if (cmd) return;
 
-        const gearInfo = document.getElementById('gearInfo');
-        if (!gearInfo) return;
-
         let latestVersion = "Unknown";
         if (typeof Modules !== 'undefined' && Modules.ChangelogData && Modules.ChangelogData.changes && Modules.ChangelogData.changes.length > 0) {
             latestVersion = Modules.ChangelogData.changes[0].version;
@@ -521,19 +512,27 @@ const LivingAreaHelper = {
             </div>
         `;
 
-        const mixerLink = gearInfo.querySelector('img[title="Mixer"]');
-        if (mixerLink) {
-            let container = mixerLink.parentElement;
-            if (container.tagName !== 'A') container = mixerLink;
-            container.insertAdjacentHTML('afterend', versionHtml);
+        const myHoboCenter = document.querySelector('#myhobo center');
+        if (myHoboCenter) {
+            myHoboCenter.insertAdjacentHTML('beforeend', versionHtml);
         } else {
-            const icons = gearInfo.querySelectorAll('img[title="Hobo Grail"], img[title="Kings Kiddie Cup"], img[title="Golden Trolly"]');
-            if (icons.length > 0) {
-                let target = icons[icons.length - 1].parentElement;
-                target.insertAdjacentHTML('afterend', versionHtml);
-            } else {
-                const innerBox = gearInfo.querySelector('div');
-                if (innerBox) innerBox.insertAdjacentHTML('beforeend', versionHtml);
+            const gearInfo = document.getElementById('gearInfo');
+            if (gearInfo) {
+                const mixerLink = gearInfo.querySelector('img[title="Mixer"]');
+                if (mixerLink) {
+                    let container = mixerLink.parentElement;
+                    if (container.tagName !== 'A') container = mixerLink;
+                    container.insertAdjacentHTML('afterend', versionHtml);
+                } else {
+                    const icons = gearInfo.querySelectorAll('img[title="Hobo Grail"], img[title="Kings Kiddie Cup"], img[title="Golden Trolly"]');
+                    if (icons.length > 0) {
+                        let target = icons[icons.length - 1].parentElement;
+                        target.insertAdjacentHTML('afterend', versionHtml);
+                    } else {
+                        const innerBox = gearInfo.querySelector('div');
+                        if (innerBox) innerBox.insertAdjacentHTML('beforeend', versionHtml);
+                    }
+                }
             }
         }
 
@@ -959,6 +958,18 @@ const LivingAreaHelper = {
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

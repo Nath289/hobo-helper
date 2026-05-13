@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.53] - 2026-05-14
+- Relocated the injected Hobo Helper version and sync metadata component inside the Living Area UI to correctly position beneath the primary `#myhobo center` tattoo and remaining-days displays.
+- Floating the visual `swimteamdm.php` image inject properly aligned to the right of the "List Hobos Referred" DOM elements via injected inline CSS margin anchoring.
+
 ## [9.52] - 2026-05-13
 - **Fixed:** Corrected the Mining Log logic to ensure today's log remains persistently visible even when empty, while retaining the cleanup mechanism that drops strictly blank entries of prior days at midnight.
 
@@ -731,8 +735,9 @@ All notable changes to this project will be documented in this file.
 - Added LivingAreaHelper.initShowTattooDays to extract and display tattoo remaining duration from the image title.
 
 ## [8.94] - 2026-04-28
-- **Added:** Display Helper's Live Alive Time string will now dynamically render hour increments for significantly extended sessions.
-- **Fixed:** The Living Area Helper offline healing timer array parser correctly hooks into durations exceeding an hour with non-standard formatting gaps syntax (`Alive: 01 hr 12 min 05 sec`).
+### Added
+- Added display restyling to the `ExploreHelper` logs, including adaptive row highlighting, improved date grouping, and unified action button formats.
+- Added a "Clear Log" button to the Explore Log page to quickly remove all entries and reset the view.
 
 ## [9.41] - 2026-05-12
 - Added LivingAreaHelper.initShowTattooDays to extract and display tattoo remaining duration from the image title.

@@ -148,3 +148,5 @@ When purchasing upgrades for your rat (Vegetarian, Life Boost, Meal Boost), keep
 ## Layout Specifics
 - The game layout uses a grid system for positioning elements, with specific classes indicating row and column spans (e.g., `class="rowspan-2 colspan-3"`).
 - Certain layout elements like the top navigation bar or side panels may not have explicit closing tags in the HTML. Use caution when parsing or manipulating these sections to avoid leaving orphaned elements.
+- In the Living Area, the player's avatar/tattoo is located within `#myhobo center`.
+- Also in the Living Area, the "List Hobos Referred" link is contained within a `<ul>` list, which can be useful as an anchor for injecting UI horizontally aligned with the layout.
