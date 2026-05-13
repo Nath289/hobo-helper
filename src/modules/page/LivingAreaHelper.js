@@ -141,7 +141,7 @@ const LivingAreaHelper = {
             if (statGain) {
                 const statLine = document.createElement('div');
                 statLine.className = 'line';
-                statLine.innerHTML = `<span style="width: auto; margin-right: 5px;">Net Stat Gain:</span> <span style="color: #444; font-weight: bold;">${statGain}</span>`;
+                statLine.innerHTML = `<span>Net Stat Gain:</span> ${statGain}`;
                 miningBlock.appendChild(statLine);
             }
 
@@ -149,7 +149,7 @@ const LivingAreaHelper = {
             if (tradesToday) {
                 const tradeLine = document.createElement('div');
                 tradeLine.className = 'line';
-                tradeLine.innerHTML = `<span style="width: auto; margin-right: 5px;">Stat Trades Today:</span> <span style="color: #444; font-weight: bold;">${tradesToday}</span>`;
+                tradeLine.innerHTML = `<span>Stat Trades Today:</span> ${tradesToday}`;
                 miningBlock.appendChild(tradeLine);
             }
 
@@ -157,7 +157,7 @@ const LivingAreaHelper = {
             if (todayStats) {
                 const statLine = document.createElement('div');
                 statLine.className = 'line';
-                statLine.innerHTML = `<span style="width: auto; margin-right: 5px;">Mining Stat Gained Today:</span> <span style="color: #444; font-weight: bold;">${todayStats}</span>`;
+                statLine.innerHTML = `<span>Mining Stat Gained Today:</span> ${todayStats}`;
                 miningBlock.appendChild(statLine);
             }
 
@@ -165,7 +165,7 @@ const LivingAreaHelper = {
             if (todayOres) {
                 const oreLine = document.createElement('div');
                 oreLine.className = 'line';
-                oreLine.innerHTML = `<span style="width: auto; margin-right: 5px;">Ore Gained Today:</span> <span style="color: #444; font-weight: bold;">${todayOres}</span>`;
+                oreLine.innerHTML = `<span>Ore Gained Today:</span> ${todayOres}`;
                 miningBlock.appendChild(oreLine);
             }
             

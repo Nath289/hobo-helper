@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      {{VERSION}}
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
-// @author       Gemini (Combined)
+// @author       Jack Reacher (107380)
 // @match        *://www.hobowars.com/game/game.php?*
 // @match        *://hobowars.com/game/game.php?*
 // @grant        GM_notification

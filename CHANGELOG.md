@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.51] - 2026-05-13
+- Simplified CSS styling dynamically injected into the Living Area's Mining Stats display lines, deferring uniformly standardizing output via native span usage instead of hardcoded inline styles.
+
 ## [9.50] - 2026-05-13
 - Added `addLatestPageLinks` to `MessageBoardHelper.js` to inject a "[latest]" link into topic pagination arrays alongside existing topic pages, reducing navigation clicks for large topics natively.
 - Added `MessageBoardHelper_LatestLink` configuration property natively routed into the Settings menu for toggleable user control over the pagination UI injection.

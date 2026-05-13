@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.51] - 2026-05-13
+- Simplified the look of the Mining Stats panel inside the Living Area, making it cleaner and more consistent with standard text.
+
 ## [9.50] - 2026-05-13
 - Added a `[latest]` link directly on the Message Board topic list for multi-page threads, letting you jump straight to the end of massive topics with a single click.
 
