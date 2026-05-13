@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.50] - 2026-05-13
+- Added a `[latest]` link directly on the Message Board topic list for multi-page threads, letting you jump straight to the end of massive topics with a single click.
+
+## [9.49] - 2026-05-13
+- Fixed a bug where Mining Stats in your Living Area did not correctly respect the "Show More" visibility tracking toggle.
+
+## [9.48] - 2026-05-13
+- The extrapolated Rat Life progress bar in your Rats page is now clickable! Clicking it dynamically reveals a beautifully animated drop-down charting your rat's combat stats (`Speed`, `Attack`, `Defense`), `Level`, and complete `Life` decay cleanly tracked over time.
+
 ## [9.47] - 2026-05-12
 - Expanded the new Mining Stats readout in your Living Area to explicitly show the exact absolute number of ores you have found and total mining experience you have gained today, independent of 'T used'.
 

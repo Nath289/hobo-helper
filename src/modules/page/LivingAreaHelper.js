@@ -120,7 +120,12 @@ const LivingAreaHelper = {
         if (miningLine) {
             const miningBlock = document.createElement('div');
             miningBlock.className = 'statBlock line more_info';
-            miningBlock.style.display = 'block';
+            if (resourcesDisplay.style.display === 'none') {
+                miningBlock.style.display = 'none';
+                miningBlock.style.overflow = 'hidden';
+            } else {
+                miningBlock.style.display = 'block';
+            }
             miningBlock.id = 'hh_miningStats';
             
             const titleLine = document.createElement('div');

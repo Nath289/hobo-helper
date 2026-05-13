@@ -1,6 +1,20 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.50] - 2026-05-13
+- Added `addLatestPageLinks` to `MessageBoardHelper.js` to inject a "[latest]" link into topic pagination arrays alongside existing topic pages, reducing navigation clicks for large topics natively.
+- Added `MessageBoardHelper_LatestLink` configuration property natively routed into the Settings menu for toggleable user control over the pagination UI injection.
+
+## [9.49] - 2026-05-13
+- Fixed `LivingAreaHelper.js` bug where the injected Mining Stats group did not inherit the 'Show More' visibility state dynamically, appearing over components when it should have been initially hidden.
+
+## [9.48] - 2026-05-13
+- Extended `RatsHelper.js` with a clickable visual layout on the Rats view, allowing users to click their extrapolated rat lifetime bar to pop open a detailed historical graph container.
+- Added comprehensive history caching logic natively mapping all incoming Combat Stats (`Speed`, `Attack`, `Defense`, `Level`) into local storage conceptually keyed via `hw_RatsHelper_ratsHistory_{ratId}`.
+- Integrated dynamic graphing initialization functions linking up with the established internal `/js/jqplot/` stack to securely graph Combat Stats and Lifetime decay progress simultaneously.
+- Re-architected graph axes linking Age, Level, and Life Days onto a unified shared primary Y-axis block while cleanly placing the other graph right beside it exclusively for combat metrics.
+- Applied subtle CSS transitions and floating arrow tooltips to clearly communicate click actions upon the injected graphical UI components.
+
 ## [9.47] - 2026-05-12
 - Extended `MinesHelper` to capture and retain the absolute daily values of ores accumulated and mining experience earned, directly populating those values back into the `LivingAreaHelper` dedicated Mining Stats readout dynamically.
 

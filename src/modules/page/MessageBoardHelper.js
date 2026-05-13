@@ -6,7 +6,8 @@ const MessageBoardHelper = {
         { key: 'MessageBoardHelper_CtrlEnter', label: 'Ctrl+Enter to Post' },
         { key: 'MessageBoardHelper_RenderTables', label: 'Render Data Tables in Posts' },
         { key: 'MessageBoardHelper_VoteButtons', label: 'Larger Vote Buttons' },
-        { key: 'MessageBoardHelper_CopyHoboName', label: 'Show Copy [hoboname] Link' }
+        { key: 'MessageBoardHelper_CopyHoboName', label: 'Show Copy [hoboname] Link' },
+        { key: 'MessageBoardHelper_LatestLink', label: 'Show Latest Page Link' }
     ],
     init: function() {
 
@@ -31,6 +32,37 @@ const MessageBoardHelper = {
         if (settings?.MessageBoardHelper_CopyHoboName !== false) {
             this.addCopyHoboNameLinks();
         }
+
+        if (settings?.MessageBoardHelper_LatestLink !== false) {
+            this.addLatestPageLinks();
+        }
+    },
+
+    addLatestPageLinks: function() {
+        const threadList = document.getElementById('threadList');
+        if (!threadList) return;
+
+        const topicCells = threadList.querySelectorAll('td:nth-child(2)');
+        topicCells.forEach(td => {
+            const pageLinks = td.querySelectorAll('a[href*="limit1="]');
+            if (pageLinks.length === 0) return;
+
+            const lastLink = pageLinks[pageLinks.length - 1];
+            
+            const nextNode = lastLink.nextSibling;
+            if (nextNode && nextNode.nodeType === 3 && nextNode.nodeValue.includes(']')) {
+                nextNode.nodeValue = nextNode.nodeValue.replace(']', '][');
+                
+                const newLink = document.createElement('a');
+                newLink.href = lastLink.href + '#bottom';
+                newLink.textContent = 'latest';
+                
+                const closingBracket = document.createTextNode(']');
+                
+                td.insertBefore(newLink, nextNode.nextSibling);
+                td.insertBefore(closingBracket, newLink.nextSibling);
+            }
+        });
     },
 
     addCopyHoboNameLinks: function() {
@@ -299,4 +331,3 @@ const MessageBoardHelper = {
         ddButton.parentNode.insertBefore(document.createTextNode(' '), ddButton);
     }
 };
-

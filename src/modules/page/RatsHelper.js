@@ -391,8 +391,33 @@ const RatsHelper = {
 
             const percentLived = (age / totalLifeExtrapolated) * 100;
 
+            const ratNameSpan = tr.querySelector('span[id^="rName"]');
+            const ratId = ratNameSpan ? ratNameSpan.id.replace('rName', '') : null;
+            if (ratId) {
+                const spdText = tds[6] ? tds[6].textContent.replace(/,/g, '').trim() : "0";
+                const atkText = tds[7] ? tds[7].textContent.replace(/,/g, '').trim() : "0";
+                const defText = tds[8] ? tds[8].textContent.replace(/,/g, '').trim() : "0";
+
+                const speed = parseInt(spdText, 10);
+                const attack = parseInt(atkText, 10);
+                const defense = parseInt(defText, 10);
+
+                if (!isNaN(speed) && !isNaN(attack) && !isNaN(defense)) {
+                    let history = JSON.parse(Utils.getItem(`hw_RatsHelper_ratsHistory_${ratId}`) || '{}');
+                    history[age] = {
+                        life: currentLife,
+                        level: currentLevel,
+                        speed: speed,
+                        attack: attack,
+                        defense: defense
+                    };
+                    Utils.setItem(`hw_RatsHelper_ratsHistory_${ratId}`, JSON.stringify(history));
+                }
+            }
+
             const newTr = document.createElement('tr');
             newTr.style.backgroundColor = '#EAEAEA';
+            newTr.className = 'rat-life-extrapolated-row';
 
             const newTd = document.createElement('td');
             newTd.colSpan = tds.length;
@@ -433,12 +458,178 @@ const RatsHelper = {
             textLabel.style.fontWeight = 'bold';
             textLabel.style.color = '#333';
             textLabel.style.textShadow = '0px 0px 2px #fff';
-            textLabel.textContent = `${extrapolatedDays.toLocaleString()} Days Left (@ +${defaultLifePerMeal} L/Meal)`;
+
+            const textSpan = document.createElement('span');
+            textSpan.textContent = `${extrapolatedDays.toLocaleString()} Days Left (@ +${defaultLifePerMeal} L/Meal)`;
+
+            const dropIcon = document.createElement('span');
+            dropIcon.innerHTML = '&#9660;';
+            dropIcon.style.fontSize = '9px';
+            dropIcon.style.color = '#333';
+            dropIcon.style.opacity = '0';
+            dropIcon.style.transition = 'opacity 0.2s ease-in-out';
+            dropIcon.style.marginLeft = '4px';
+
+            textLabel.appendChild(textSpan);
+            textLabel.appendChild(dropIcon);
 
             bgContainer.appendChild(bar);
             bgContainer.appendChild(textLabel);
             newTd.appendChild(bgContainer);
             newTr.appendChild(newTd);
+
+            newTr.style.cursor = 'pointer';
+            newTr.title += "\nClick to toggle historical graphs";
+
+            newTr.addEventListener('mouseenter', () => dropIcon.style.opacity = '1');
+            newTr.addEventListener('mouseleave', () => dropIcon.style.opacity = '0');
+
+            const chartRow = document.createElement('tr');
+            chartRow.style.display = 'none';
+            const chartTd = document.createElement('td');
+            chartTd.colSpan = tds.length;
+            chartTd.style.backgroundColor = '#f8f9fc';
+            chartTd.style.padding = '0px'; // Moving padding inside transition wrapper
+            chartTd.style.border = 'none';
+
+            const transitionWrapper = document.createElement('div');
+            transitionWrapper.style.overflow = 'hidden';
+            transitionWrapper.style.transition = 'max-height 0.3s ease-out';
+            transitionWrapper.style.maxHeight = '0px';
+            transitionWrapper.style.boxSizing = 'border-box';
+
+            const graphsContainer = document.createElement('div');
+            graphsContainer.style.display = 'flex';
+            graphsContainer.style.flexDirection = 'row';
+            graphsContainer.style.gap = '10px';
+            graphsContainer.style.width = '100%';
+            graphsContainer.style.minHeight = '250px';
+            graphsContainer.style.padding = '10px';
+            graphsContainer.style.border = '1px solid #d3e0f0';
+            graphsContainer.style.borderTop = 'none';
+
+            const graph1Div = document.createElement('div');
+            graph1Div.id = `ratGraph1_${ratId || age}`;
+            graph1Div.style.flex = '1';
+
+            const graph2Div = document.createElement('div');
+            graph2Div.id = `ratGraph2_${ratId || age}`;
+            graph2Div.style.flex = '1';
+
+            graphsContainer.appendChild(graph1Div);
+            graphsContainer.appendChild(graph2Div);
+            transitionWrapper.appendChild(graphsContainer);
+            chartTd.appendChild(transitionWrapper);
+            chartRow.appendChild(chartTd);
+
+            newTr.addEventListener('click', () => {
+                if (chartRow.style.display === 'none') {
+                    chartRow.style.display = 'table-row';
+                    // Force layout reflow before transition
+                    chartRow.offsetHeight;
+                }
+
+                if (transitionWrapper.style.maxHeight === '0px') {
+                    dropIcon.innerHTML = '&#9650;';
+                    transitionWrapper.style.maxHeight = '400px';
+
+                    const loadJqPlot = (callback) => {
+                        if (typeof $ !== 'undefined' && $.jqplot && $.jqplot.Cursor) {
+                            callback();
+                        } else {
+                            if (!document.querySelector('link[href*="jquery.jqplot"]')) {
+                                let jqPlotCss = document.createElement('link');
+                                jqPlotCss.rel = 'stylesheet';
+                                jqPlotCss.href = '/js/jqplot/jquery.jqplot.min.css';
+                                document.head.appendChild(jqPlotCss);
+                            }
+
+                            const loadScript = (src, cb) => {
+                                let script = document.createElement('script');
+                                script.src = src;
+                                script.onload = cb;
+                                document.head.appendChild(script);
+                            };
+
+                            if (typeof $ !== 'undefined' && $.jqplot) {
+                                loadScript('/js/jqplot/plugins/jqplot.cursor.min.js', callback);
+                            } else {
+                                loadScript('/js/jqplot/jquery.jqplot.min.js', () => {
+                                    loadScript('/js/jqplot/plugins/jqplot.cursor.min.js', callback);
+                                });
+                            }
+                        }
+                    };
+
+                    loadJqPlot(() => {
+                        if (graph1Div.classList.contains('jqplot-target')) return;
+
+                        let history = {};
+                        if (ratId) {
+                            history = JSON.parse(Utils.getItem(`hw_RatsHelper_ratsHistory_${ratId}`) || '{}');
+                        } else {
+                            // Fallback if ID parsing failed
+                            history[age] = { life: currentLife, level: currentLevel, speed: parseInt(tds[6] ? tds[6].textContent.replace(/,/g, '').trim() : "0"), attack: parseInt(tds[7] ? tds[7].textContent.replace(/,/g, '').trim() : "0"), defense: parseInt(tds[8] ? tds[8].textContent.replace(/,/g, '').trim() : "0") };
+                        }
+
+                        const ages = Object.keys(history).map(a => parseInt(a)).sort((a,b) => a-b);
+
+                        let lifeData = [];
+                        let ageData = [];
+                        let lvlData = [];
+                        let spdData = [];
+                        let atkData = [];
+                        let defData = [];
+
+                        ages.forEach(a => {
+                            lifeData.push([a, history[a].life]);
+                            ageData.push([a, a]); // Age is linear
+                            lvlData.push([a, history[a].level || 1]);
+                            spdData.push([a, history[a].speed]);
+                            atkData.push([a, history[a].attack]);
+                            defData.push([a, history[a].defense]);
+                        });
+
+                        $.jqplot(graph1Div.id, [ageData, lvlData, lifeData], {
+                            title: 'Age, Life and Level History',
+                            seriesDefaults: { showMarker: true, pointLabels: { show: false } },
+                            series: [
+                                { label: 'Age', color: '#333' },
+                                { label: 'Level', color: '#00cc00' },
+                                { label: 'Life in Days', color: '#ff4444' }
+                            ],
+                            axes: {
+                                xaxis: { label: 'Age' }
+                            },
+                            legend: { show: true, location: 'nw' },
+                            cursor: { show: true, zoom: true }
+                        });
+
+                        $.jqplot(graph2Div.id, [spdData, atkData, defData], {
+                            title: 'Combat Stats History',
+                            seriesDefaults: { showMarker: true },
+                            series: [
+                                { label: 'Speed', color: '#00cc00' },
+                                { label: 'Attack', color: '#cc0000' },
+                                { label: 'Defense', color: '#0000cc' }
+                            ],
+                            axes: {
+                                xaxis: { label: 'Age' }
+                            },
+                            legend: { show: true, location: 'nw' },
+                            cursor: { show: true, zoom: true }
+                        });
+                    });
+                } else {
+                    dropIcon.innerHTML = '&#9660;';
+                    transitionWrapper.style.maxHeight = '0px';
+                    setTimeout(() => {
+                        if (transitionWrapper.style.maxHeight === '0px') {
+                            chartRow.style.display = 'none';
+                        }
+                    }, 300);
+                }
+            });
 
             let insertAfterTr = tr;
             // The details (image, text, options) are in the row immediately following the stats row
@@ -446,6 +637,7 @@ const RatsHelper = {
                 insertAfterTr = tr.nextElementSibling;
             }
             insertAfterTr.parentNode.insertBefore(newTr, insertAfterTr.nextElementSibling);
+            insertAfterTr.parentNode.insertBefore(chartRow, newTr.nextElementSibling);
         });
     },
 
@@ -941,5 +1133,18 @@ const RatsHelper = {
         form.parentNode.insertBefore(filterContainer, form);
     }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

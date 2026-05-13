@@ -49,7 +49,8 @@ Provides functionality and quality-of-life improvements specifically on the Mess
 - **Add Paid Message**: Adds a button to the post editor that appends your current hobo name and a paid message statement. 
 - **Gang Board Tools**: Allows Gang Staff to save topic replier lists and record manual payments per-post.
 - **Larger Vote Buttons**: Converts the tiny Up/Down vote links into larger, easy-to-click buttons while perfectly preserving the native vote info tooltips.
-
+- **Latest Page Link**: Injects a handy `[latest]` link directly into the topic list for paginated threads, letting you jump straight to the end of massive topics with a single click.
+  
 ### 11. Kurtz Camp Helper (`KurtzCampHelper.js`)
 Assists at Kurtz's Camp by keeping a running tally of Fire and Empty Bottles collected while lighting sticks. Retains this count across sessions using local storage, and includes a toggle to reset the counts at any time. Features dynamic display that only exhibits the empty bottle tally if any have been collected.
 

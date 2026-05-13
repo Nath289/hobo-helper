@@ -12,6 +12,9 @@ This document contains a general knowledge base about the mechanics, layout, and
 - When dynamically injecting standard `.img` icons into the topbar `.bmenu`, inline styles must apply `!important` keywords (e.g., `background-image: ... !important; background-size: contain !important;`) to resist override by native HoboWars responsive caching logic.
 - On the message boards, `do=vpost` is the URL parameter for viewing a topic and its replies, while `do=edit` is the URL parameter for editing a specific post. Some staff or helper functionalities must distinguish between these to inject UI elements in the correct location (such as on the textarea when editing, or on the topic replies table when viewing).
 
+## Rats
+- Rat Life values usually tend to reach around 3000 days (though this is not an absolute mechanical maximum). Rat Age maxes out much lower (usually around 200). Graphs representing rat life vs age should be appropriately scaled together. When graphing history, stats should be keyed by `ratId` and `age`.
+
 ## Mines
 - The `cmd=mines` area allows players to explore a grid and mine ores.
 - Navigating the grid (using directional arrows) natively consumes 1T (unless you lack Awake).
