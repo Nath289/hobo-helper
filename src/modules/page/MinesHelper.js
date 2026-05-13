@@ -413,6 +413,17 @@ const MinesHelper = {
                 }
             }
 
+            for (const d of Object.keys(logData)) {
+                if (d === today) continue;
+                const data = logData[d];
+                if (!data) continue;
+                const dailyExp = Number.parseFloat(data.exp) || 0;
+                const dailyOresCount = Object.values(data.ores || {}).reduce((sum, count) => sum + (Number.parseInt(count) || 0), 0);
+                const dailySavesCount = Array.isArray(data.saves) ? data.saves.length : 0;
+                if (dailyExp === 0 && dailyOresCount === 0 && dailySavesCount === 0) {
+                    delete logData[d];
+                }
+            }
 
             Utils.setItem('hw_mines_log_data', JSON.stringify(logData));
         }
@@ -445,6 +456,11 @@ const MinesHelper = {
             for (const date of dates) {
                 const data = logData[date];
                 if (!data || typeof data !== 'object' || !data.ores || typeof data.ores !== 'object') continue;
+
+                const dailyExpCheck = Number.parseFloat(data.exp) || 0;
+                const dailyOresCheck = Object.values(data.ores || {}).reduce((sum, count) => sum + (Number.parseInt(count) || 0), 0);
+                const dailySavesCheck = Array.isArray(data.saves) ? data.saves.length : 0;
+                if (date !== today && dailyExpCheck === 0 && dailyOresCheck === 0 && dailySavesCheck === 0) continue;
 
                 logHtml += `<div style="margin-bottom: 10px; border: 1px solid #eee; background: #fff; padding: 8px;">`;
                 logHtml += `<div style="font-weight: bold; background: #f0f0f0; padding: 4px; margin: -8px -8px 8px -8px; display: flex; justify-content: space-between; align-items: center;">

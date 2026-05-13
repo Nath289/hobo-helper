@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.52] - 2026-05-13
+- Fixed an issue where today's Mining Log header would temporarily disappear if you had not completed any stat-altering actions yet. It now properly stays visible, and only empty older days are secretly swept away at midnight.
+
 ## [9.51] - 2026-05-13
 - Simplified the look of the Mining Stats panel inside the Living Area, making it cleaner and more consistent with standard text.
 

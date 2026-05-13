@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.52] - 2026-05-13
+- **Fixed:** Corrected the Mining Log logic to ensure today's log remains persistently visible even when empty, while retaining the cleanup mechanism that drops strictly blank entries of prior days at midnight.
+
 ## [9.51] - 2026-05-13
 - Simplified CSS styling dynamically injected into the Living Area's Mining Stats display lines, deferring uniformly standardizing output via native span usage instead of hardcoded inline styles.
 
