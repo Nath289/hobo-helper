@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.54] - 2026-05-14
+- **Fixed:** Corrected RatsHelper stats parsing loop where the raw Life value was mistakenly grabbed instead of the "days to live" value from the Life column title attribute, severely skewing the historical jqplot graphs.
+- **Added:** Implemented an auto-correction pass in RatsHelper to purge corrupted historical data points where the `life` property was inexplicably parsed as >500, self-repairing broken plot scales for affected users.
+
 ## [9.53] - 2026-05-14
 - Relocated the injected Hobo Helper version and sync metadata component inside the Living Area UI to correctly position beneath the primary `#myhobo center` tattoo and remaining-days displays.
 - Floating the visual `swimteamdm.php` image inject properly aligned to the right of the "List Hobos Referred" DOM elements via injected inline CSS margin anchoring.

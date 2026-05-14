@@ -404,14 +404,25 @@ const RatsHelper = {
 
                 if (!isNaN(speed) && !isNaN(attack) && !isNaN(defense)) {
                     let history = JSON.parse(Utils.getItem(`hw_RatsHelper_ratsHistory_${ratId}`) || '{}');
-                    history[age] = {
-                        life: currentLife,
-                        level: currentLevel,
-                        speed: speed,
-                        attack: attack,
-                        defense: defense
-                    };
-                    Utils.setItem(`hw_RatsHelper_ratsHistory_${ratId}`, JSON.stringify(history));
+                    
+                    let historyModified = false;
+                    for (let hAge in history) {
+                        if (history[hAge].life > 500) {
+                            delete history[hAge];
+                            historyModified = true;
+                        }
+                    }
+
+                    if (historyModified || !history[age] || history[age].life !== daysToLive || history[age].level !== currentLevel || history[age].speed !== speed || history[age].attack !== attack || history[age].defense !== defense) {
+                        history[age] = {
+                            life: daysToLive,
+                            level: currentLevel,
+                            speed: speed,
+                            attack: attack,
+                            defense: defense
+                        };
+                        Utils.setItem(`hw_RatsHelper_ratsHistory_${ratId}`, JSON.stringify(history));
+                    }
                 }
             }
 
@@ -569,7 +580,7 @@ const RatsHelper = {
                             history = JSON.parse(Utils.getItem(`hw_RatsHelper_ratsHistory_${ratId}`) || '{}');
                         } else {
                             // Fallback if ID parsing failed
-                            history[age] = { life: currentLife, level: currentLevel, speed: parseInt(tds[6] ? tds[6].textContent.replace(/,/g, '').trim() : "0"), attack: parseInt(tds[7] ? tds[7].textContent.replace(/,/g, '').trim() : "0"), defense: parseInt(tds[8] ? tds[8].textContent.replace(/,/g, '').trim() : "0") };
+                            history[age] = { life: daysToLive, level: currentLevel, speed: parseInt(tds[6] ? tds[6].textContent.replace(/,/g, '').trim() : "0"), attack: parseInt(tds[7] ? tds[7].textContent.replace(/,/g, '').trim() : "0"), defense: parseInt(tds[8] ? tds[8].textContent.replace(/,/g, '').trim() : "0") };
                         }
 
                         const ages = Object.keys(history).map(a => parseInt(a)).sort((a,b) => a-b);
@@ -1133,6 +1144,8 @@ const RatsHelper = {
         form.parentNode.insertBefore(filterContainer, form);
     }
 };
+
+
 
 
 

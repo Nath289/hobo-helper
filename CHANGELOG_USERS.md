@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.54] - 2026-05-14
+- Fixed an issue where the Rats 'Days to Live' graph would skew vastly out of mathematical proportion because it incorrectly interpreted raw rat life-points instead of 'days to live'. Your graph scale will automatically self-repair upon visiting the page!
+
+## [9.53] - 2026-05-14
+- Relocated the injected Hobo Helper version and sync metadata component inside the Living Area UI to properly align beneath tattoos and respect the new layout structure.
+
 ## [9.52] - 2026-05-13
 - Fixed an issue where today's Mining Log header would temporarily disappear if you had not completed any stat-altering actions yet. It now properly stays visible, and only empty older days are secretly swept away at midnight.
 
