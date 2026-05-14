@@ -179,14 +179,14 @@ const MinesHelper = {
         let hasActionText = false;
         const html = contentArea.innerHTML || '';
 
-        // Exclude trade pages from action parsing
-        if (!globalThis.location.href.includes('do=trade') && !globalThis.location.href.includes('what=trade')) {
-            if (html.includes('You gain') || html.includes('You get the') || html.includes('Suddenly the wall crumbles') || html.includes('hit a sweet spot') || html.includes('narrowly avoid') || html.includes('ROCKSLIDE') || html.includes('trapped back there')) {
+        // Exclude trade and store pages from action parsing
+        if (!globalThis.location.href.includes('do=trade') && !globalThis.location.href.includes('what=trade') && !globalThis.location.href.includes('do=store')) {
+            if (html.includes('You gain') || html.includes('You get') || html.includes('Suddenly the wall crumbles') || html.includes('hit a sweet spot') || html.includes('narrowly avoid') || html.includes('ROCKSLIDE') || html.includes('trapped back there')) {
                 const expMatchText = html.replaceAll(/<[^>]+>/g, '');
                 const expMatch = /You gain(?:ed)?\s*([\d.]+)\s*mining/i.exec(expMatchText);
                 if (expMatch) newExp += Number.parseFloat(expMatch[1]);
 
-                const oreRegex = /You get (?:the )?(?:\((?:<b>)?(\d+)(?:<\/b>)?\)\s+)?(?:<b>)?([A-Za-z]+ ?[A-Za-z]+?)(?:<\/b>)?(?=\s*(?:<a|<br>|<\/span>|<img)|$)/gi;
+                const oreRegex = /You get (?:the )?(?:<b>)?(?:\(?(?:<b>)?(\d+)(?:<\/b>)?\)?\s+)?(?:<b>)?([A-Za-z]+ ?[A-Za-z]+?)(?:<\/b>)?(?=\s*(?:<a|<br>|<\/span>|<img)|$)/gi;
                 let match;
                 while ((match = oreRegex.exec(html)) !== null) {
                     let count = Number.parseInt(match[1]) || 1;
@@ -198,7 +198,7 @@ const MinesHelper = {
                     }
 
                     // Ignore equipment items or non-ores that mistakenly match the parser
-                    const ignoredItems = ['Spelunking Satchel', 'Spelunking Sachel', 'Pickaxe', 'Lantern', 'Helmet', 'Hard Helmet'];
+                    const ignoredItems = ['Pickaxe', "Miner's Cap", 'Pockets', 'Spelunking Satchel', 'Spelunking Sachel', 'Dynamite Pouch', 'Blast Jacket', 'Dynamite Stick', 'Bundle of Dynamite', 'Bomb', 'Plastic Explosives', 'TNT'];
                     if (ignoredItems.some(item => name.toLowerCase().includes(item.toLowerCase()))) {
                         continue;
                     }
@@ -357,6 +357,25 @@ const MinesHelper = {
         let logData = {};
         try {
             logData = JSON.parse(Utils.getItem('hw_mines_log_data') || '{}');
+
+            // Retroactively clean up any previously logged non-ore items across all history
+            const ignoredItemsClean = ['Pickaxe', "Miner's Cap", 'Pockets', 'Spelunking Satchel', 'Spelunking Sachel', 'Dynamite Pouch', 'Blast Jacket', 'Dynamite Stick', 'Bundle of Dynamite', 'Bomb', 'Plastic Explosives', 'TNT'];
+            let cleanedSomething = false;
+            if (logData && typeof logData === 'object' && !Array.isArray(logData)) {
+                for (const date in logData) {
+                    if (logData[date] && typeof logData[date] === 'object' && logData[date].ores) {
+                        for (const oreName in logData[date].ores) {
+                            if (ignoredItemsClean.some(item => oreName.toLowerCase().includes(item.toLowerCase()))) {
+                                delete logData[date].ores[oreName];
+                                cleanedSomething = true;
+                            }
+                        }
+                    }
+                }
+                if (cleanedSomething) {
+                    Utils.setItem('hw_mines_log_data', JSON.stringify(logData));
+                }
+            }
         } catch (e) {
             Utils.log(e);
             logData = {};
