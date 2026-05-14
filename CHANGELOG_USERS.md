@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.55] - 2026-05-14
+- Under-the-hood engine optimizations and security improvements.
+
 ## [9.54] - 2026-05-14
 - Fixed an issue where the Rats 'Days to Live' graph would skew vastly out of mathematical proportion because it incorrectly interpreted raw rat life-points instead of 'days to live'. Your graph scale will automatically self-repair upon visiting the page!
 

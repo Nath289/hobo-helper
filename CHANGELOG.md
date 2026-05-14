@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.55] - 2026-05-14
+- **Added:** Automated `jsdom` build compilation tests implicitly hooked into `build.ps1` via `run_build_test.js` to rigidly evaluate output bundles and trap script/reference errors prior to deployment.
+
 ## [9.54] - 2026-05-14
 - **Fixed:** Corrected RatsHelper stats parsing loop where the raw Life value was mistakenly grabbed instead of the "days to live" value from the Life column title attribute, severely skewing the historical jqplot graphs.
 - **Added:** Implemented an auto-correction pass in RatsHelper to purge corrupted historical data points where the `life` property was inexplicably parsed as >500, self-repairing broken plot scales for affected users.

@@ -37,6 +37,9 @@
         document.documentElement.appendChild(marker);
     }
 
+// {{UTILS}}
+// {{MODULES}}
+
     const DataModules = {
 // {{DATA_MODULE_EXPORTS}}
     };

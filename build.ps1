@@ -187,6 +187,21 @@ function Build-Output {
     return $out
 }
 
+function Test-Build {
+    param([string]$FilePath)
+    Write-Host "Running automated build test on: $FilePath..." -ForegroundColor Cyan
+    $process = Start-Process node -ArgumentList "run_build_test.js", $FilePath -NoNewWindow -Wait -PassThru
+    if ($process.ExitCode -ne 0) {
+        Write-Host "=========================================" -ForegroundColor Red
+        Write-Host "FATAL BUILD ERROR: The script failed to execute properly." -ForegroundColor Red
+        Write-Host "Check the console output above for ReferenceError or SyntaxError." -ForegroundColor Red
+        Write-Host "=========================================" -ForegroundColor Red
+        exit 1
+    } else {
+        Write-Host "Automated build test passed without errors." -ForegroundColor Green
+    }
+}
+
 if ($Promote) {
     $version = $baseVersion
     Write-Host "Building LATEST version: $version"
@@ -205,6 +220,7 @@ if ($Promote) {
         -DoObfuscate:$Obfuscate
     Set-Content -Encoding UTF8 -Path "output/hobo-helper-latest.user.js" -Value $regularContent
     Write-Host "Build complete: output/hobo-helper-latest.user.js"
+    Test-Build "output/hobo-helper-latest.user.js"
 
 
     # Build 3: all modules
@@ -222,6 +238,7 @@ if ($Promote) {
         -DoObfuscate:$Obfuscate
     Set-Content -Encoding UTF8 -Path "output/hobo-helper-all-latest.user.js" -Value $allContent
     Write-Host "Build complete: output/hobo-helper-all-latest.user.js"
+    Test-Build "output/hobo-helper-all-latest.user.js"
 
 } elseif ($Release) {
     $version = $baseVersion
@@ -240,6 +257,7 @@ if ($Promote) {
         -DoObfuscate:$Obfuscate
     Set-Content -Encoding UTF8 -Path "output/hobo-helper-beta.user.js" -Value $betaRegularContent
     Write-Host "Build complete: output/hobo-helper-beta.user.js"
+    Test-Build "output/hobo-helper-beta.user.js"
 
     $allGlobalContent = $nonStaffGlobalContent + $staffGlobalContent
     $allGlobalExports = $nonStaffGlobalExports + $staffGlobalExports
@@ -255,6 +273,7 @@ if ($Promote) {
         -DoObfuscate:$Obfuscate
     Set-Content -Encoding UTF8 -Path "output/hobo-helper-all-beta.user.js" -Value $betaAllContent
     Write-Host "Build complete: output/hobo-helper-all-beta.user.js"
+    Test-Build "output/hobo-helper-all-beta.user.js"
 
 } else {
     $timestamp = (Get-Date).ToString("yyyyMMdd.HHmm")
@@ -278,6 +297,7 @@ if ($Promote) {
         -DoObfuscate:$Obfuscate
     Set-Content -Encoding UTF8 -Path "output/hobo-helper-dev.user.js" -Value $devContent
     Write-Host "Build complete: output/hobo-helper-dev.user.js"
+    Test-Build "output/hobo-helper-dev.user.js"
 }
 
 
