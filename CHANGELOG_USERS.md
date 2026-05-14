@@ -1,5 +1,8 @@
 # Hobo Helper Updates
 
+## [9.57] - 2026-05-14
+- Internal engine layout updates and AI framework tweaks for consistency.
+
 ## [9.56] - 2026-05-14
 - Fixed formatting issues where mining multiple ores or hitting ores while at the mining exp cap wouldn't properly update the Mining Log.
 - Fixed a bug where purchasing Dynamite Pouches or other equipment at the Mine Store would mistakenly appear in your Mining Log, and automatically cleaned up any incorrectly logged items.

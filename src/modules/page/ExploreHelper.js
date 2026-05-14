@@ -52,7 +52,7 @@ const ExploreHelper = {
     addToLog: function(message, type, coords) {
         let logs = JSON.parse(Utils.getItem('hw_explore_log') || '[]');
 
-        const now = Date.now();
+        const now = (Utils.getHoboDateTime() || new Date()).getTime();
         // Prevent duplicate logging (caused by browser reload within 5 seconds of event)
         if (logs.length > 0) {
             const lastLog = logs[0];

@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.57] - 2026-05-14
+- **Internal:** Updated AI Agent instructions to standardize the use of HoboTime instead of native JavaScript dates.
+
 ## [9.56] - 2026-05-14
 - **Fixed:** Updated `MinesHelper` parser regex to correctly detect multiple ore acquisitions missing standard parentheses (e.g. `You get 2 Purple Ores`), as well as fixing a bug where high-level players >1000 mining exp were missing ore logging due to not gaining exp.
 - **Fixed:** Excluded `"do=store"` from `MinesHelper` action checks and added explicit non-ore equipment names to the `ignoredItems` array to prevent shop purchases logging fake mining stats. Added a retroactive routine to scrub and clean previously recorded artifacts.
