@@ -110,13 +110,21 @@ const LivingAreaHelper = {
                     }
                 }
 
-                containerDiv.style.display = 'flex';
-                containerDiv.style.flexWrap = 'wrap';
-                containerDiv.style.justifyContent = 'space-between';
-                containerDiv.style.alignItems = 'flex-start';
+                const flexWrapper = document.createElement('div');
+                flexWrapper.style.display = 'flex';
+                flexWrapper.style.flexWrap = 'wrap';
+                flexWrapper.style.justifyContent = 'space-between';
+                flexWrapper.style.alignItems = 'flex-start';
 
-                ul.style.flex = '1 1 auto';
-                ul.style.minWidth = '200px';
+                const leftCol = document.createElement('div');
+                leftCol.style.flex = '1 1 auto';
+                leftCol.style.minWidth = '100px';
+
+                while (containerDiv.firstChild) {
+                    leftCol.appendChild(containerDiv.firstChild);
+                }
+
+                flexWrapper.appendChild(leftCol);
 
                 const rightDiv = document.createElement('div');
                 rightDiv.style.flex = '0 0 auto';
@@ -125,10 +133,12 @@ const LivingAreaHelper = {
                 const img = document.createElement('img');
                 img.id = 'hh_swimteam_img';
                 img.src = 'https://bronxme.com/swimteamdm.php';
-                img.style.cssText = 'width: 380px; max-width: 100%; aspect-ratio: 380 / 160; height: auto; display: block;'; // Responsive space reservation
+                img.style.cssText = 'width: 380px; max-width: 100%; aspect-ratio: 380 / 160; height: auto; display: block; margin-left: auto;'; // Responsive space reservation
 
                 rightDiv.appendChild(img);
-                containerDiv.appendChild(rightDiv);
+                flexWrapper.appendChild(rightDiv);
+
+                containerDiv.appendChild(flexWrapper);
             }
         }
     },

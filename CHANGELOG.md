@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.60] - 2026-05-16
+- Fixed vertical gap issue in the Living Area swim team layout by grouping all sibling elements in the original container into the left flex column.
+
 ## [9.59] - 2026-05-15
 - **Fixed:** Resolved a critical regression on mobile devices where the new Living Area flexbox layout caused the "List Hobos Referred" and lower standard list links to become entirely squished out of view.
 

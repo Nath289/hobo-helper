@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         HoboWars Helper Toolkit (Dev)
 // @namespace    http://tampermonkey.net/
-// @version      9.58.20260515.1357
+// @version      9.59.20260516.0036
 // @description  Combines all HoboWars helpers including staff modules into a single modular script.
 // @author       Jack Reacher (107380)
 // @match        *://www.hobowars.com/game/game.php?*
@@ -698,6 +698,14 @@ const RespectData = [
 const ChangelogData = {
     changes: [
         {
+            version: "9.59",
+            date: "2026-05-15",
+            type: "Changed",
+            notes: [
+                "Fixed a critical layout bug affecting mobile phones where the Living Area layout restructure inadvertently squished your basic profile links (List Hobos Referred, Settings, Purchases Log, Chat) to the point of vanishing completely!"
+            ]
+        },
+        {
             version: "9.58",
             date: "2026-05-15",
             type: "Changed",
@@ -769,14 +777,6 @@ const ChangelogData = {
             type: "Changed",
             notes: [
                 "Added a `[latest]` link directly on the Message Board topic list for multi-page threads, letting you jump straight to the end of massive topics with a single click."
-            ]
-        },
-        {
-            version: "9.49",
-            date: "2026-05-13",
-            type: "Changed",
-            notes: [
-                "Fixed a bug where Mining Stats in your Living Area did not correctly respect the \"Show More\" visibility tracking toggle."
             ]
         }
     ]
@@ -5774,13 +5774,21 @@ const LivingAreaHelper = {
                     }
                 }
 
-                containerDiv.style.display = 'flex';
-                containerDiv.style.flexWrap = 'wrap';
-                containerDiv.style.justifyContent = 'space-between';
-                containerDiv.style.alignItems = 'flex-start';
+                const flexWrapper = document.createElement('div');
+                flexWrapper.style.display = 'flex';
+                flexWrapper.style.flexWrap = 'wrap';
+                flexWrapper.style.justifyContent = 'space-between';
+                flexWrapper.style.alignItems = 'flex-start';
 
-                ul.style.flex = '1 1 auto';
-                ul.style.minWidth = '200px';
+                const leftCol = document.createElement('div');
+                leftCol.style.flex = '1 1 auto';
+                leftCol.style.minWidth = '150px';
+
+                while (containerDiv.firstChild) {
+                    leftCol.appendChild(containerDiv.firstChild);
+                }
+
+                flexWrapper.appendChild(leftCol);
 
                 const rightDiv = document.createElement('div');
                 rightDiv.style.flex = '0 0 auto';
@@ -5789,10 +5797,12 @@ const LivingAreaHelper = {
                 const img = document.createElement('img');
                 img.id = 'hh_swimteam_img';
                 img.src = 'https://bronxme.com/swimteamdm.php';
-                img.style.cssText = 'width: 380px; max-width: 100%; aspect-ratio: 380 / 160; height: auto; display: block;'; // Responsive space reservation
+                img.style.cssText = 'width: 380px; max-width: 100%; aspect-ratio: 380 / 160; height: auto; display: block; margin-left: auto;'; // Responsive space reservation
 
                 rightDiv.appendChild(img);
-                containerDiv.appendChild(rightDiv);
+                flexWrapper.appendChild(rightDiv);
+
+                containerDiv.appendChild(flexWrapper);
             }
         }
     },
@@ -15303,7 +15313,7 @@ const GangStaffHelper = {
     const Modules = Object.assign({}, DataModules, GlobalModules, PageModules);
     if (typeof window !== 'undefined') {
         window.HoboHelperModules = Modules;
-        window.HoboHelperVersion = '9.58.20260515.1357';
+        window.HoboHelperVersion = '9.59.20260516.0036';
     }
 
     const globalSettings = JSON.parse(Utils.getItem('hw_helper_settings') || '{}');

@@ -1,5 +1,8 @@
 # Hobo Helper Updates
 
+## [9.60] - 2026-05-16
+- **Fixed:** Resolved a large vertical gap appearing under the Swim Team image on computer screens by properly grouping the meals and refill lists together.
+
 ## [9.59] - 2026-05-15
 - Fixed a critical layout bug affecting mobile phones where the Living Area layout restructure inadvertently squished your basic profile links (List Hobos Referred, Settings, Purchases Log, Chat) to the point of vanishing completely!
 
