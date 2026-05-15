@@ -1,5 +1,8 @@
 # Hobo Helper Updates
 
+## [9.59] - 2026-05-15
+- Fixed a critical layout bug affecting mobile phones where the Living Area layout restructure inadvertently squished your basic profile links (List Hobos Referred, Settings, Purchases Log, Chat) to the point of vanishing completely!
+
 ## [9.58] - 2026-05-15
 - Added a new option to the preferences page to completely hide the "Invite Friends" text box from your Living Area.
 - Fixed a long-standing janky visual bug where your Swim Team image could overlap the News section, and squish your referral links entirely out of existence on mobile devices.

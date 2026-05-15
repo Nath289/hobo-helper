@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.59] - 2026-05-15
+- **Fixed:** Resolved a critical regression on mobile devices where the new Living Area flexbox layout caused the "List Hobos Referred" and lower standard list links to become entirely squished out of view.
+
 ## [9.58] - 2026-05-15
 - **Added:** New toggle in `LivingAreaHelper.js` to hide the "Invite Friends + NEW BONUS" box.
 - **Fixed:** Refactored Living Area UI layout, shifting the Swim Team image and stats list into a responsive flexbox container (replacing the previous HTML table) to resolve mobile view squishing. Assigned `aspect-ratio` bounds to neatly prevent CLS shift while remaining fluid across smaller screens.
