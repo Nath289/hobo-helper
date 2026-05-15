@@ -110,36 +110,25 @@ const LivingAreaHelper = {
                     }
                 }
 
-                const table = document.createElement('table');
-                table.style.width = '100%';
-                table.style.borderCollapse = 'collapse';
-                const tb = document.createElement('tbody');
-                const tr = document.createElement('tr');
+                containerDiv.style.display = 'flex';
+                containerDiv.style.flexWrap = 'wrap';
+                containerDiv.style.justifyContent = 'space-between';
+                containerDiv.style.alignItems = 'flex-start';
 
-                const tdLeft = document.createElement('td');
-                tdLeft.style.verticalAlign = 'top';
+                ul.style.flex = '1 1 auto';
+                ul.style.minWidth = '200px';
 
-                const tdRight = document.createElement('td');
-                tdRight.style.verticalAlign = 'top';
-                tdRight.style.textAlign = 'right';
-                tdRight.style.width = '120px';
-
-                tr.appendChild(tdLeft);
-                tr.appendChild(tdRight);
-                tb.appendChild(tr);
-                table.appendChild(tb);
-
-                while (containerDiv.firstChild) {
-                    tdLeft.appendChild(containerDiv.firstChild);
-                }
+                const rightDiv = document.createElement('div');
+                rightDiv.style.flex = '0 0 auto';
+                rightDiv.style.textAlign = 'right';
 
                 const img = document.createElement('img');
                 img.id = 'hh_swimteam_img';
                 img.src = 'https://bronxme.com/swimteamdm.php';
-                img.style.cssText = 'margin-right: 25px; min-width: 380px; min-height: 160px; width: auto; height: auto; display: block;'; // Use min-width/height to reserve space without squishing
+                img.style.cssText = 'width: 380px; max-width: 100%; aspect-ratio: 380 / 160; height: auto; display: block;'; // Responsive space reservation
 
-                tdRight.appendChild(img);
-                containerDiv.appendChild(table);
+                rightDiv.appendChild(img);
+                containerDiv.appendChild(rightDiv);
             }
         }
     },

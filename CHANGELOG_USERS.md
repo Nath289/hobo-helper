@@ -2,7 +2,7 @@
 
 ## [9.58] - 2026-05-15
 - Added a new option to the preferences page to completely hide the "Invite Friends" text box from your Living Area.
-- Fixed a long-standing janky visual bug where your Swim Team image could overlap the News section, and prevented the main page from "jumping" downward after the image finally loaded.
+- Fixed a long-standing janky visual bug where your Swim Team image could overlap the News section, and squish your referral links entirely out of existence on mobile devices.
 
 ## [9.57] - 2026-05-14
 - Internal engine layout updates and AI framework tweaks for consistency.
