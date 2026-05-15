@@ -8,6 +8,8 @@ const RatsHelper = {
         { key: 'RatsHelper_ExpBar', label: 'Show Exp Progress Indicator' },
         { key: 'RatsHelper_LifeBar', label: 'Show Life Progress Bar' },
         { key: 'RatsHelper_AssumeRattoo', label: 'Extrapolate: Assume Rattoo (Vegetarianism +2)' },
+        { key: 'RatsHelper_AssumedExpPerMeal', label: 'Extrapolate: Assumed Base Exp/Meal', type: 'number', defaultValue: 7, default: 7 },
+        { key: 'RatsHelper_AssumedLifePerMeal', label: 'Extrapolate: Assumed Base Life/Meal', type: 'number', defaultValue: 8, default: 8 },
         { key: 'RatsHelper_ActionButtons', label: 'Convert Action Links to Buttons' },
         { key: 'RatsHelper_UpgradeUI', label: 'Custom Upgrade Buttons UI' }
     ],
@@ -18,6 +20,13 @@ const RatsHelper = {
         const enableExpBar = savedSettings['RatsHelper_ExpBar'] !== false;
         const enableLifeBar = savedSettings['RatsHelper_LifeBar'] !== false;
         const assumeRattoo = savedSettings['RatsHelper_AssumeRattoo'] === true; // Default to false
+        
+        const assumedExpStr = savedSettings['RatsHelper_AssumedExpPerMeal'];
+        this.assumedExpPerMeal = assumedExpStr !== undefined && assumedExpStr !== "" ? parseInt(assumedExpStr, 10) : 7;
+        
+        const assumedLifeStr = savedSettings['RatsHelper_AssumedLifePerMeal'];
+        this.assumedLifePerMeal = assumedLifeStr !== undefined && assumedLifeStr !== "" ? parseInt(assumedLifeStr, 10) : 8;
+
         const enableActionButtons = savedSettings['RatsHelper_ActionButtons'] !== false;
         const enableUpgradeUI = savedSettings['RatsHelper_UpgradeUI'] !== false;
 
@@ -376,8 +385,8 @@ const RatsHelper = {
                 }
             }
 
-            let defaultLifePerMeal = 8; // Assumes baseline of Trough style food
-            let defaultExpPerMeal = 7;
+            let defaultLifePerMeal = this.assumedLifePerMeal !== undefined ? this.assumedLifePerMeal : 8;
+            let defaultExpPerMeal = this.assumedExpPerMeal !== undefined ? this.assumedExpPerMeal : 7;
             if (hasVegetarianism) {
                 const bonus = this.assumeRattoo ? 2 : 1;
                 defaultLifePerMeal += bonus;
@@ -1144,6 +1153,8 @@ const RatsHelper = {
         form.parentNode.insertBefore(filterContainer, form);
     }
 };
+
+
 
 
 

@@ -1,4 +1,8 @@
-# Hobo Helper Updates
+# User Changelog
+This file tracks player-facing feature updates and bug fixes. The build script automatically parses this to generate the floating changelog UI in the game whenever the version number increments.
+
+## [9.61] - 2026-05-16
+- Added settings to the Preferences page allowing you to configure the Assumed EXP and Assumed Life per meal for your Rats. This gives you more accurate life span estimates based on your feeding habits!
 
 ## [9.60] - 2026-05-16
 - **Fixed:** Resolved a large vertical gap appearing under the Swim Team image on computer screens by properly grouping the meals and refill lists together.

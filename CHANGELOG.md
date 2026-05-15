@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.61] - 2026-05-16
+- Added settings to configure assumed EXP and Life per meal in RatsHelper for more accurate life span estimates.
+
 ## [9.60] - 2026-05-16
 - Fixed vertical gap issue in the Living Area swim team layout by grouping all sibling elements in the original container into the left flex column.
 
