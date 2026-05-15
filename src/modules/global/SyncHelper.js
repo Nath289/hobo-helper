@@ -145,7 +145,15 @@ const SyncHelper = {
     },
 
     syncAllNow: function() {
-        return this.performSync();
+        return this.performSync(false);
+    },
+
+    forcePull: function() {
+        return this.performSync(false, 'pull');
+    },
+
+    forcePush: function() {
+        return this.performSync(false, 'push');
     },
 
     getLocalStorageData: function() {
@@ -163,7 +171,7 @@ const SyncHelper = {
         return data;
     },
 
-    performSync: async function(assumeStale = false) {
+    performSync: async function(assumeStale = false, forceAction = null) {
         if (this.isSyncing) return;
         const dbUrl = this.getBaseDbUrl();
         if (!dbUrl) return;
@@ -234,9 +242,14 @@ const SyncHelper = {
                     if (nonSyncKeys.includes(key)) continue;
 
                     const remoteTime = remoteDoc.timestamps[key] || 0;
-                    const localTime = assumeStale ? 0 : (localTimestamps[key] || 0);
+                    const localTime = (assumeStale || forceAction === 'pull') ? 0 : (localTimestamps[key] || 0);
 
-                    if (remoteTime > localTime || (assumeStale && remoteVal !== undefined)) {
+                    if (forceAction === 'push') {
+                        // Skip updating local from remote if we are force pushing
+                        continue;
+                    }
+
+                    if (remoteTime > localTime || (assumeStale && remoteVal !== undefined) || forceAction === 'pull') {
                         // Remote is newer, update local storage
                         const currentLocalVal = Utils.getItem(key);
                         if (currentLocalVal !== remoteVal) {
@@ -268,11 +281,16 @@ const SyncHelper = {
 
             // 2. Process local keys
             for (const [key, localVal] of Object.entries(localData)) {
-                const localTime = assumeStale ? 0 : (localTimestamps[key] || 0);
-                const remoteTime = payload.timestamps[key] || 0;
+                const localTime = (assumeStale || forceAction === 'push') ? Number.MAX_SAFE_INTEGER : (localTimestamps[key] || 0);
+                const remoteTime = (forceAction === 'push') ? 0 : (payload.timestamps[key] || 0);
+
+                if (forceAction === 'pull') {
+                    // Do not push anything if force pulling
+                    continue;
+                }
 
                 // Push new or modified local keys
-                if (localTime > remoteTime || (!remoteDoc && localVal)) {
+                if (localTime > remoteTime || (!remoteDoc && localVal) || forceAction === 'push') {
                     let valToPush = localVal;
 
                     // If pushing settings, strip the local non-sync keys
@@ -300,7 +318,7 @@ const SyncHelper = {
             }
 
             // Push to remote if any local overrides were stronger or doc is brand new
-            if (needsPush || !remoteDoc) {
+            if ((needsPush || !remoteDoc) && forceAction !== 'pull') {
                 if (rev) payload._rev = rev;
 
                 await this.fetchGM(`${dbUrl}/${docId}`, {

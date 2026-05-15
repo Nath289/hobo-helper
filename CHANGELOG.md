@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.58] - 2026-05-15
+- **Added:** New toggle in `LivingAreaHelper.js` to hide the "Invite Friends + NEW BONUS" box.
+- **Fixed:** Refactored Living Area UI layout, shifting the Swim Team image and stats list into a responsive HTML table to prevent overlap dynamically when elements are hidden. Assigned `min-height`/`min-width` rendering blocks to prevent CLS shift when the external Swim Team image loads.
+
 ## [9.57] - 2026-05-14
 - **Internal:** Updated AI Agent instructions to standardize the use of HoboTime instead of native JavaScript dates.
 

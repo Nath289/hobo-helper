@@ -3,6 +3,7 @@ const LivingAreaHelper = {
     staff: false,
     group: 'General',
     settings: [
+        { key: 'LivingAreaHelper_ShowInviteFriends', label: 'Show Invite Friends Box', default: true },
         { key: 'LivingAreaHelper_StatRatioTracker', label: 'Stat Ratio Tracker' },
         { key: 'LivingAreaHelper_CopyStatsBtn', label: 'Copy Stats Button' },
         { key: 'LivingAreaHelper_AlwaysShowSpecialItem', label: 'Always Show Special Item' },
@@ -64,9 +65,11 @@ const LivingAreaHelper = {
         if (savedSettings?.LivingAreaHelper_MiningStatsGroup !== false) {
             this.initMiningStatsGroup();
         }
+        if (savedSettings?.LivingAreaHelper_ShowInviteFriends === false) {
+            this.initHideInviteFriends();
+        }
 
         this.initInactiveSpecialItemBg();
-        this.saveTattoo();
         this.syncHealingTracker();
     },
 
@@ -91,13 +94,52 @@ const LivingAreaHelper = {
 
         if (referredLink) {
             const ul = referredLink.closest('ul');
-            if (ul) {
+            if (ul && ul.parentElement) {
+                const containerDiv = ul.parentElement;
+
+                // Hide the explicit `<br>`s immediately prior to the container div to pull the table up tighter
+                let prevNode = containerDiv.previousSibling;
+                while (prevNode) {
+                    if (prevNode.nodeName === 'BR') {
+                        prevNode.style ? prevNode.style.display = 'none' : null;
+                        prevNode = prevNode.previousSibling;
+                    } else if (prevNode.nodeType === Node.TEXT_NODE && prevNode.textContent.trim() === '') {
+                        prevNode = prevNode.previousSibling;
+                    } else {
+                        break;
+                    }
+                }
+
+                const table = document.createElement('table');
+                table.style.width = '100%';
+                table.style.borderCollapse = 'collapse';
+                const tb = document.createElement('tbody');
+                const tr = document.createElement('tr');
+
+                const tdLeft = document.createElement('td');
+                tdLeft.style.verticalAlign = 'top';
+
+                const tdRight = document.createElement('td');
+                tdRight.style.verticalAlign = 'top';
+                tdRight.style.textAlign = 'right';
+                tdRight.style.width = '120px';
+
+                tr.appendChild(tdLeft);
+                tr.appendChild(tdRight);
+                tb.appendChild(tr);
+                table.appendChild(tb);
+
+                while (containerDiv.firstChild) {
+                    tdLeft.appendChild(containerDiv.firstChild);
+                }
+
                 const img = document.createElement('img');
                 img.id = 'hh_swimteam_img';
                 img.src = 'https://bronxme.com/swimteamdm.php';
-                img.style.cssText = 'float: right; margin-top: -30px; margin-right: 25px;';
+                img.style.cssText = 'margin-right: 25px; min-width: 380px; min-height: 160px; width: auto; height: auto; display: block;'; // Use min-width/height to reserve space without squishing
 
-                ul.insertAdjacentElement('beforebegin', img);
+                tdRight.appendChild(img);
+                containerDiv.appendChild(table);
             }
         }
     },
@@ -501,7 +543,10 @@ const LivingAreaHelper = {
                     syncTimeStr = `${diffDays}d ago`;
                 }
             }
-            syncHtml = `<br><span style="font-size: 10px; color: #999;">Last Sync: ${syncTimeStr}</span><br><a href="#" id="hh_force_sync" style="color: #009933; text-decoration: none;">Force Sync</a> <span id="hh_force_sync_status" style="color: #4CAF50; display: none;">(&#10003;)</span>`;
+            syncHtml = `<br><span style="font-size: 10px; color: #999;">Last Sync: ${syncTimeStr}</span><br>
+                <a href="#" id="hh_force_sync_pull" style="color: #009933; text-decoration: none;">Force Pull</a> | 
+                <a href="#" id="hh_force_sync_push" style="color: #cc6600; text-decoration: none;">Force Push</a> 
+                <span id="hh_force_sync_status" style="color: #4CAF50; display: none;">(&#10003;)</span>`;
         }
 
         const versionHtml = `
@@ -546,15 +591,39 @@ const LivingAreaHelper = {
             link.addEventListener('click', (e) => Utils.showChangelogModal(e));
         }
 
-        const syncLink = document.getElementById('hh_force_sync');
-        if (syncLink && typeof SyncHelper !== 'undefined') {
-            syncLink.addEventListener('click', async (e) => {
-                e.preventDefault();
-                syncLink.textContent = 'Syncing...';
-                syncLink.style.opacity = '0.5';
-                syncLink.style.pointerEvents = 'none';
+        const syncPullLink = document.getElementById('hh_force_sync_pull');
+        const syncPushLink = document.getElementById('hh_force_sync_push');
 
-                await SyncHelper.syncAllNow();
+        if (syncPullLink && typeof SyncHelper !== 'undefined') {
+            syncPullLink.addEventListener('click', async (e) => {
+                e.preventDefault();
+                syncPullLink.textContent = 'Pulling...';
+                syncPullLink.style.opacity = '0.5';
+                syncPullLink.style.pointerEvents = 'none';
+                if (syncPushLink) syncPushLink.style.pointerEvents = 'none';
+
+                await SyncHelper.forcePull();
+
+                const status = document.getElementById('hh_force_sync_status');
+                if (status) {
+                    status.style.display = 'inline';
+                }
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            });
+        }
+
+        if (syncPushLink && typeof SyncHelper !== 'undefined') {
+            syncPushLink.addEventListener('click', async (e) => {
+                e.preventDefault();
+                syncPushLink.textContent = 'Pushing...';
+                syncPushLink.style.opacity = '0.5';
+                syncPushLink.style.pointerEvents = 'none';
+                if (syncPullLink) syncPullLink.style.pointerEvents = 'none';
+
+                await SyncHelper.forcePush();
 
                 const status = document.getElementById('hh_force_sync_status');
                 if (status) {
@@ -956,51 +1025,52 @@ const LivingAreaHelper = {
 
             headerLine.appendChild(copyBtn);
         }
+    },
+
+    initHideInviteFriends: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const cmd = urlParams.get('cmd');
+        if (cmd) return;
+
+        const friendLink = document.querySelector('a[href*="cmd=rfriend"]');
+        if (friendLink) {
+            let curr = friendLink;
+            let nodesToHide = [curr];
+
+            while (curr.previousSibling) {
+                curr = curr.previousSibling;
+                nodesToHide.push(curr);
+
+                if (curr.nodeType === Node.ELEMENT_NODE && curr.tagName === 'DIV' && curr.querySelector('img')) {
+                    if (curr.previousSibling && curr.previousSibling.nodeName === 'BR') {
+                        nodesToHide.push(curr.previousSibling);
+                    }
+                    break;
+                }
+            }
+
+            let afterLink1 = friendLink.nextSibling;
+            if (afterLink1 && afterLink1.nodeName === 'BR') {
+                nodesToHide.push(afterLink1);
+                let afterLink2 = afterLink1.nextSibling;
+                if (afterLink2 && afterLink2.nodeType === Node.TEXT_NODE && afterLink2.textContent.trim() === '') {
+                    nodesToHide.push(afterLink2);
+                    let afterLink3 = afterLink2.nextSibling;
+                    if (afterLink3 && afterLink3.nodeName === 'BR') {
+                        nodesToHide.push(afterLink3);
+                    }
+                } else if (afterLink2 && afterLink2.nodeName === 'BR') {
+                    nodesToHide.push(afterLink2);
+                }
+            }
+
+            nodesToHide.forEach(n => {
+                if (n.nodeType === Node.ELEMENT_NODE) {
+                    n.style.display = 'none';
+                } else if (n.nodeType === Node.TEXT_NODE) {
+                    n.textContent = '';
+                }
+            });
+        }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
