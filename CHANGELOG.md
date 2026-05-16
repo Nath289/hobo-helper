@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.64] - 2026-05-17
+- Fixed a timezone parsing bug in LivingAreaHelper and MinesHelper where mining log data could be wiped on page load due to an empty or mismatched daily key triggering a day-reset loop.
+- Verified that the CouchDB sync logic properly handles rapidly mutable local tracking variables natively via hw_sync_timestamps.
+
 ## [9.63] - 2026-05-16
 - Updated Northern Fence Helper to add a side-by-side list format to view signed up racers on the signup page. This requires manually clicking a "Load Registered Racers" button to prevent rule violation.
 - Solved an encoding issue displaying names with special characters like `ë` in the registered racers list.
@@ -1839,6 +1843,4 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added multi-column interactive client-side sorting for the Hitlist table (`HitlistHelper`), replacing the slow native server-refresh sorting links. Sorting configurations securely persist via browser local storage.
 - Implemented a combat window highlighter within the `HitlistHelper` that automatically shades rows an alerting light red if an opponent's level drastically falls outside the player's immediate attack limits (±200 combat levels).
-
-
 

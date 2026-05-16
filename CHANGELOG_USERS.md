@@ -1,6 +1,9 @@
 # User Changelog
 This file tracks player-facing feature updates and bug fixes. The build script automatically parses this to generate the floating changelog UI in the game whenever the version number increments.
 
+## [9.64] - 2026-05-17
+- Fixed an issue where the Mines daily log was intermittently clearing its captured stats across page navigation.
+
 ## [9.63] - 2026-05-16
 - Updated Northern Fence Helper to add a side-by-side list format to view signed up racers on the signup page natively by clicking a "Load Registered Racers" button, preventing game rule violation.
 

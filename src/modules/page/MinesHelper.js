@@ -2,6 +2,7 @@ const MinesHelper = {
     cmds: 'mines',
     group: 'Canbodia',
 
+
     settings: [
         { key: 'MinesHelper_TopMinersTable', label: 'Format Top Miners Table', type: 'checkbox', default: true },
         { key: 'MinesHelper_ThreeColumnLayout', label: 'Use Three Column Layout', type: 'checkbox', default: true },
@@ -343,15 +344,12 @@ const MinesHelper = {
 
         let today = 'Unknown';
         try {
-            const hoboDate = Utils.getHoboDateTime();
-            if (hoboDate) {
-                today = `${hoboDate.getFullYear()}-${String(hoboDate.getMonth() + 1).padStart(2, '0')}-${String(hoboDate.getDate()).padStart(2, '0')}`;
-            } else {
-                today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
-            }
+            const hoboDate = Utils.getHoboDateTime() || new Date();
+            today = `${hoboDate.getFullYear()}-${String(hoboDate.getMonth() + 1).padStart(2, '0')}-${String(hoboDate.getDate()).padStart(2, '0')}`;
         } catch (err) {
             Utils.log(err);
-            today = new Date().toISOString().split('T')[0];
+            const dLocal = new Date();
+            today = `${dLocal.getFullYear()}-${String(dLocal.getMonth() + 1).padStart(2, '0')}-${String(dLocal.getDate()).padStart(2, '0')}`;
         }
 
         let logData = {};
@@ -392,6 +390,11 @@ const MinesHelper = {
                 logData[today].tUsed = currentTUsed;
             }
             initializedNewDay = true;
+
+            Utils.setItem('hw_MiningHelper_StatGain', '-');
+            Utils.setItem('hw_MiningHelper_TradesToday', '0');
+            Utils.setItem('hw_MinesHelper_TodayStats', '0.00');
+            Utils.setItem('hw_MinesHelper_TodayOres', '0');
         }
 
         if (shouldLog || initializedNewDay) {
@@ -1126,9 +1129,13 @@ const MinesHelper = {
         const tradesMatch = pageText.match(/Stat Trades today:\s*(\d+)/i);
         if (statMatch) {
             Utils.setItem('hw_MiningHelper_StatGain', statMatch[1]);
+        } else {
+            Utils.setItem('hw_MiningHelper_StatGain', '-');
         }
         if (tradesMatch) {
             Utils.setItem('hw_MiningHelper_TradesToday', tradesMatch[1]);
+        } else {
+            Utils.setItem('hw_MiningHelper_TradesToday', '0');
         }
     },
 

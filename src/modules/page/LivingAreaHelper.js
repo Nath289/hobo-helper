@@ -192,7 +192,28 @@ const LivingAreaHelper = {
                 miningBlock.appendChild(tradeLine);
             }
 
-            const todayStats = Utils.getItem('hw_MinesHelper_TodayStats');
+            let today = '';
+            try {
+                const hoboDate = Utils.getHoboDateTime() || new Date();
+                today = `${hoboDate.getFullYear()}-${String(hoboDate.getMonth() + 1).padStart(2, '0')}-${String(hoboDate.getDate()).padStart(2, '0')}`;
+            } catch (err) {
+                const fallbackD = new Date();
+                today = `${fallbackD.getFullYear()}-${String(fallbackD.getMonth() + 1).padStart(2, '0')}-${String(fallbackD.getDate()).padStart(2, '0')}`;
+            }
+
+            let logData = {};
+            try { logData = JSON.parse(Utils.getItem('hw_mines_log_data') || '{}'); } catch(e) {}
+
+            let todayStats = "0.00";
+            let todayOres = "0";
+
+            if (logData && typeof logData === 'object' && logData[today]) {
+                const tStats = Number.parseFloat(logData[today].exp) || 0;
+                const tOres = Object.values(logData[today].ores || {}).reduce((sum, count) => sum + (Number.parseInt(count) || 0), 0);
+                todayStats = tStats.toFixed(2);
+                todayOres = tOres.toString();
+            }
+
             if (todayStats) {
                 const statLine = document.createElement('div');
                 statLine.className = 'line';
@@ -200,7 +221,6 @@ const LivingAreaHelper = {
                 miningBlock.appendChild(statLine);
             }
 
-            const todayOres = Utils.getItem('hw_MinesHelper_TodayOres');
             if (todayOres) {
                 const oreLine = document.createElement('div');
                 oreLine.className = 'line';
