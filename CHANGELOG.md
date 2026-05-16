@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.62] - 2026-05-16
+- Created new `NewsHelper.js` module.
+- Added visual client-side Filter to the News Archive page.
+- Converted the native "View by Type" dropdown into interactive styled buttons.
+- Formatted and aligned the native "Search News" form on the News Archive page.
+
 ## [9.61] - 2026-05-16
 - Added settings to configure assumed EXP and Life per meal in RatsHelper for more accurate life span estimates.
 

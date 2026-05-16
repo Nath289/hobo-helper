@@ -14,6 +14,7 @@ const LivingAreaHelper = {
         { key: 'LivingAreaHelper_ReturnBranded', label: 'Quick Return Branded Button' },
         { key: 'LivingAreaHelper_NextRespectNeeded', label: 'Show Next Respect Needed' },
         { key: 'LivingAreaHelper_ShowTattooDays', label: 'Show Tattoo Expiration Days', default: true },
+        { key: 'LivingAreaHelper_NewsFilter', label: 'News Filter', default: true },
         { key: 'LivingAreaHelper_SwimTeamImage', label: 'Show Swim Team Image', default: true },
         { key: 'LivingAreaHelper_FullWidthGraph', label: 'Full Width Log Graphs' },
         { key: 'LivingAreaHelper_MiningStatsGroup', label: 'Dedicated Mining Stats Section' }
@@ -55,6 +56,9 @@ const LivingAreaHelper = {
         }
         if (savedSettings?.LivingAreaHelper_ShowTattooDays !== false) {
             this.initShowTattooDays();
+        }
+        if (savedSettings?.LivingAreaHelper_NewsFilter !== false) {
+            this.initNewsFilter();
         }
         if (savedSettings?.LivingAreaHelper_SwimTeamImage !== false) {
             this.initSwimTeamImage();
@@ -247,6 +251,62 @@ const LivingAreaHelper = {
                 }
             }
         }
+    },
+
+    initNewsFilter: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const cmd = urlParams.get('cmd');
+        if (cmd && cmd !== '') return;
+
+        const newsForm = document.querySelector('form[action*="cmd=news&do=delsel"]');
+        if (!newsForm) return;
+
+        const table = newsForm.querySelector('table');
+        if (!table) return;
+
+        const rows = Array.from(table.querySelectorAll('tr[bgcolor="#F3F3F3"]')).filter(r => r.getAttribute('height') === '24');
+        if (rows.length === 0) return;
+
+        const filterContainer = document.createElement('div');
+        filterContainer.style.cssText = 'margin: 10px 0; padding: 10px; background: #eef5ff; border: 1px solid #b3d4fc; border-radius: 4px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px;';
+        
+        const label = document.createElement('span');
+        label.style.fontWeight = 'bold';
+        label.textContent = 'Filter News:';
+        filterContainer.appendChild(label);
+
+        const textInput = document.createElement('input');
+        textInput.type = 'text';
+        textInput.placeholder = 'Type to filter news...';
+        textInput.style.cssText = 'padding: 3px 6px; font-size: 13px; border: 1px solid #ccc; border-radius: 3px; flex-grow: 1; max-width: 300px;';
+
+        const updateFilters = () => {
+            const query = textInput.value.trim().toLowerCase();
+            rows.forEach(row => {
+                const text = row.cells[1] ? row.cells[1].textContent.toLowerCase() : row.textContent.toLowerCase();
+                if (query === '' || text.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        };
+
+        textInput.addEventListener('input', updateFilters);
+        filterContainer.appendChild(textInput);
+
+        const clearBtn = document.createElement('button');
+        clearBtn.textContent = 'Clear';
+        clearBtn.className = 'btn';
+        clearBtn.style.margin = '0';
+        clearBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            textInput.value = '';
+            updateFilters();
+        });
+        filterContainer.appendChild(clearBtn);
+
+        newsForm.parentNode.insertBefore(filterContainer, newsForm);
     },
 
     syncHealingTracker: function() {

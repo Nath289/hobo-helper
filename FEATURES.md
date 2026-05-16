@@ -20,30 +20,36 @@ A suite of tools centered around drinking and stat enhancement:
 ### 3. Living Area Helper (`LivingAreaHelper.js`)
 Provides quality-of-life additions to your Living Area. May include highlighting, timers, or fast-action buttons depending on your specific living area upgrades.
 - **Mixer Link**: Adds a convenient link to the Mixer directly next to the Hobo Grail, Kings Kiddie Cup, and Golden Trolley icons. Can be disabled in Settings.
+- **News Filter**: Provides an easy text filter row for hiding or showing string matching news updates.
 
 ### 4. Northern Fence Helper (`NorthernFenceHelper.js`)
 Assists in navigating the Northern Fence. Enhances the interface by displaying relevant stats and chances to help streamline exploration or related activities. It also restyles the list of registered racers into a table displaying their historical skill values and highlights your own row so you can quickly gauge your competition.
 
-### 5. Fort Slugworth Helper (`FortSlugworthHelper.js`)
+### 5. News Helper (`NewsHelper.js`)
+Adds functionality to the News Archive page (`cmd=news&do=archive`).
+- **News Archive Filter**: Provides an easy text filter row for finding specific news archive entries.
+- **Type Buttons**: Converts the clunky "View by Type" dropdown select menu into a row of stylish, quick-click buttons.
+
+### 6. Fort Slugworth Helper (`FortSlugworthHelper.js`)
 Assists in navigating Fort Slugworth (`cmd=fort_slugworth`).
 - **The Ripaparter Feature**: Provides functionality inside The Ripaparter (The Deinventing Room) (`room=4`).
 
-### 6. Settings Helper (`SettingsHelper.js`)
+### 7. Settings Helper (`SettingsHelper.js`)
 Integrates directly into your HoboWars in-game "Preferences" page (`cmd=preferences`). It provides a centralized hub to customize how Hobo Helper behaves across the game, allowing you to globally disable the script or granularly toggle individual modules and sub-features (like toggling specific Living Area Helper functionalities) to tailor your experience.
 
-### 7. Cloud Sync Helper (`SyncHelper.js`)
+### 8. Cloud Sync Helper (`SyncHelper.js`)
 Synchronizes your script's settings, custom tracked stats (like ratios, crap food, hitlists), and history seamlessly across multiple devices/browsers! By pointing it at a custom CouchDB or PouchDB instance, you can effortlessly pull and push a continuous state using its built-in bidirectional merging logic, completely bypassing manual exports. Can be fully configured via the Settings Helper (Preferences page), providing a secure backend connection over HTTPS via native `GM_xmlhttpRequest`.
 
-### 7. Tattoo Parlor Helper (`TattooParlorHelper.js`)
+### 9. Tattoo Parlor Helper (`TattooParlorHelper.js`)
 Helps optimize your time at the Tattoo Parlor. Displays relevant stat impacts of different tattoos so you can plan your character build efficiently.
 
-### 8. University Helper (`UniversityHelper.js`)
+### 10. University Helper (`UniversityHelper.js`)
 A tool designed to make stat training smoother at the University. It can help track your stat ratios and highlight optimal training options.
 
-### 9. Wellness Clinic Helper (`WellnessClinicHelper.js`)
+### 11. Wellness Clinic Helper (`WellnessClinicHelper.js`)
 Enhances the Wellness Clinic by displaying real-time data on your health, hospitalizations, or relevant cooldown timers directly into the UI.
 
-### 10. Message Board Helper (`MessageBoardHelper.js`)
+### 12. Message Board Helper (`MessageBoardHelper.js`)
 Provides functionality and quality-of-life improvements specifically on the Message Board gathering pages (`cmd=gathering`). 
 - **Ctrl+Enter to Post**: Rapidly submit replies using the keyboard shortcut.
 - **Add Paid Message**: Adds a button to the post editor that appends your current hobo name and a paid message statement. 
@@ -51,53 +57,53 @@ Provides functionality and quality-of-life improvements specifically on the Mess
 - **Larger Vote Buttons**: Converts the tiny Up/Down vote links into larger, easy-to-click buttons while perfectly preserving the native vote info tooltips.
 - **Latest Page Link**: Injects a handy `[latest]` link directly into the topic list for paginated threads, letting you jump straight to the end of massive topics with a single click.
   
-### 11. Kurtz Camp Helper (`KurtzCampHelper.js`)
+### 13. Kurtz Camp Helper (`KurtzCampHelper.js`)
 Assists at Kurtz's Camp by keeping a running tally of Fire and Empty Bottles collected while lighting sticks. Retains this count across sessions using local storage, and includes a toggle to reset the counts at any time. Features dynamic display that only exhibits the empty bottle tally if any have been collected.
 
-### 12. Bernards Basement Helper (`BernardsBasementHelper.js`)
+### 14. Bernards Basement Helper (`BernardsBasementHelper.js`)
 Provides tools and helpers when exploring Bernard's Basement (`cmd=bernards&room=basement`). 
 - **Basement Map**: Displays a minimap of the coordinates you are currently standing on while inside the basement.
 
-### 13. Can Depo Helper (`CanDepoHelper.js`)
+### 15. Can Depo Helper (`CanDepoHelper.js`)
 Assists when selling cans at the Can Depo (`cmd=depo`). 
 - **Total Value**: Displays the total monetary value of all your collected cans based on the current per-can price.
 
-### 14. Recycling Bin Helper (`RecyclingBinHelper.js`)
+### 16. Recycling Bin Helper (`RecyclingBinHelper.js`)
 Helper functionality for the Recycling Bin screen.
 - **Quick Recycle Buttons**: Adds customizable quick-add amount buttons next to the native recycle input. Values can be added, removed, or changed dynamically via an inline configuration panel.
 
-### 15. Backpack Helper (`BackpackHelper.js`)
+### 17. Backpack Helper (`BackpackHelper.js`)
 Assists with inventory management when viewing the Backpack.
 - **Drink Tooltips**: Hovering over alcoholic or mixed drinks will display their base stat gains and effects right in the tooltip.
 
-### 16. Lockout Helper (`LockoutHelper.js`)
+### 18. Lockout Helper (`LockoutHelper.js`)
 Helper functionality activated during the game's 12-hour resets (lockout periods).
 - **Changelog Display**: While the game is locked for resetting, this feature prominently displays the most recent Hobo Helper changelog notes via an overlaid UI directly on the reset screen, providing reading material during the wait.
 
-### 17. Display Helper (`DisplayHelper.js`)
+### 19. Display Helper (`DisplayHelper.js`)
 A core helper that runs display improvement related functions.
 - **Enable Improved Avatars**: Custom styled shapes and online indicators for avatars.
 - **Enable the Fake Qwee**: Places a "The Fake" prefix label in front of all player links referencing ID 2924510.
 - **Show Next Interesting Level**: Automatically displays the next prime level next to your current level on the UI.
 
-### 18. Gang Loans Helper (`GangLoansHelper.js`)
+### 20. Gang Loans Helper (`GangLoansHelper.js`)
 A gang management tool that creates a specialized dashboard within the Gang Loans page (`cmd=gang2&do=loans`).
 - **Saved Posts & Payments Panel**: Aggregates and displays all saved gang post repliers and recorded payments from the Message Board Helper into a single convenient panel, making it easy to action bulk loans or payments and track who has replied to recruitment or event threads.
 
-### 19. Hitlist Helper (`HitlistHelper.js`)
+### 21. Hitlist Helper (`HitlistHelper.js`)
 A helper designed to operate on the main game Hitlist page (`cmd=battle&do=phlist`).
 - **Highlight Online Players**: Scans your hitlist for opponents currently online and highlights their entire row green, avoiding the need to search for the small online icon.
 
-### 20. Gang Hitlist Helper (`GangHitlistHelper.js`)
+### 22. Gang Hitlist Helper (`GangHitlistHelper.js`)
 A helper designed to operate on the Gang Hitlist page (`cmd=gang&do=hitlist`).
 - **Hitlist Page Tracker**: Remembers the currently selected paginated hitlist page number and highlights the selected page number in a larger, bold font with a yellow background.
 - **Hitlist Mark Red**: Adds an interactive link to the "Options" column to manually mark individual hobos, turning their row red persistently across page reloads.
 
-### 21. Soup Kitchen Helper (`SoupKitchenHelper.js`)
+### 23. Soup Kitchen Helper (`SoupKitchenHelper.js`)
 A helper designed to operate on the Soup Kitchen page (`cmd=soup_kitchen`).
 - **Soup Line Predictor**: Displays your Hobo's exact age in days right alongside a handy wiki reference table to help you determine exactly which soup rewards correlate to which age ranges when waiting in the soup line.
 
-### 22. Rats Helper (`RatsHelper.js`)
+### 24. Rats Helper (`RatsHelper.js`)
 A new helper designed to operate on the Rats page (`cmd=rats`).
 
 - **Area Banner Image**: Injects the rats area poster image to the top of the Rats area.
@@ -108,12 +114,12 @@ A new helper designed to operate on the Rats page (`cmd=rats`).
 - **Rat News Filter**: Provides an easy filter row for hiding or showing news related to specific rats.
 - **Cheese Visuals**: Adds a small cheese emoji to cheese number cells.
 
-### 23. Weapons Helper (`WeaponsHelper.js`)
+### 25. Weapons Helper (`WeaponsHelper.js`)
 A new helper designed to operate on the Weapons page (`cmd=wep`).
 - **Highlight Equipped Items**: Automatically highlights weapons, armor, and rings that you currently have equipped in your inventory list.
 - **Quick Equip/Unequip**: Converts item images into clickable links that will instantly equip or unequip the item based on its current state.
 
-### 24. Gang Staff Helper (`GangStaffHelper.js`)
+### 26. Gang Staff Helper (`GangStaffHelper.js`)
 Helper designed to function on Gang-related pages (`cmd=gang`).
 - **Gang Event Data Save**: Injects an admin-only dashboard specifically within the event stats for events like "Gangsters Sunday = Funday", dynamically tracking and storing custom event payments.
 - **Member List Columns**: Exposes a completely configurable column selection UI right above the "list members" table so users aren't locked into the rigid pre-set columns. Fully integrated with LocalStorage and safely adapts between User and Staff column restrictions.
@@ -121,31 +127,31 @@ Helper designed to function on Gang-related pages (`cmd=gang`).
 - **Mass Mail Templates**: Adds a comprehensive templating system to the Gang Send Mass Mail page. Allows saving, updating, loading, deleting, exporting, and importing templates that store the 'Send To' grouping, Subject, and Body content. Includes support for dynamic `{date}` and `{fullDate}` insertion in the subject line.
 - **Gang Armory Dashboard (`GangArmoryHelper.js`)**: Overhauls the Gang Armory interface (`cmd=gang&do=armory`) by grouping identical items by name and sorting dynamically by power stats. Includes a favorite items dashboard pinning priority gear to the top, and interactive buttons to hide selected clutter items permanently. Adds an Unbrand action next to Claim Back for players with permissions, and includes global Expand/Collapse/Toggle All capabilities.
 
-### 25. Market Helper (`MarketHelper`)
+### 27. Market Helper (`MarketHelper`)
 - Converts plain-text inline "Buy" links and Market navigation headers into large, interactive button elements for an improved desktop/mobile marketplace experience.
 - Cross-references the HoboWars wiki to dynamically inject highly-visible 40x40 item thumbnails natively into the Market listings for Weapons, Armor, and Cart Parts.
 - Transforms the SGHM Market Watcher text feed into a structured, readable HTML table, with alternating rows, styled headers, and extracted values.
 
-### 26. Drink Helpers
+### 28. Drink Helpers
 - [x] Automatically inject stat and effect data as tooltips to all drinks when hovering your mouse over them inside of your backpack and living area page.
 
-### 27. Food Helpers
+### 29. Food Helpers
 - [x] Food Menu Management: Add a "Mark as Crap" button to mark selected foods as "crap". Unchecked foods will be removed from the list.
 - [x] Add a "Select Crap" button to automatically select all foods you have marked as crap, making it easy to throw them away.
 - [x] Works both in the main Food page and within the Living Area Food tab.
 
-### 28. Active List Helper (`ActiveListHelper.js`)
+### 30. Active List Helper (`ActiveListHelper.js`)
 Helper functionality for the Active List page (`cmd=active`).
 - **Interactive Alive/Dead Filter**: Adds pill-styled buttons allowing users to dynamically hide dead players or show everyone.
 - **Attack Range Filter**: Automatically restricts the opponent list to players within your immediate attackable level range (± 200 levels).
 
 ---
 *Note: We are constantly updating and tweaking these modules. If you encounter any bugs, please report them!*
-### 29. Player Helper (\PlayerHelper.js\)
+### 31. Player Helper (\PlayerHelper.js\)
 Provides enhanced functionality and specific shortcuts when viewing the \cmd=player\ profiles.
 - **Copy Hoboname**: Embeds a clickable icon under the "Citizen Information" box that allows for quickly copying the player's formatted \[hoboname=ID]\ tag. Can be disabled in Settings.
 
-### 30. Gang Board Staff Helper (`GangBoardStaffHelper.js`)
+### 32. Gang Board Staff Helper (`GangBoardStaffHelper.js`)
 Helper available on Message Board threads exclusively designed for Gang Staff.
 - **Save Repliers List**: Collects the names and IDs of everyone who has replied to a staff topic and saves it locally for future events, roll-calls, or loan administration.
 - **Payment Distribution UI**: Adds an "Add Payment" capability to every single board reply allowing staff members to quickly define a scheduled payout for event attendees directly from the thread view. This directly exports to the Gang Loans Dashboard.
@@ -164,10 +170,10 @@ Helper available on Message Board threads exclusively designed for Gang Staff.
 - **Swipeable Topbar Menu**: Converts the crowded top navigation bar (Dirt Road, Recycling Bin, etc.) into a horizontally scrollable container, preventing off-screen clipping on mobile devices.
 - **Battle Helper:** Adds a button to view a line graph of the fight inside a floating panel on the results page.
 
-### 31. Explore Helper (ExploreHelper.js)
+### 33. Explore Helper (ExploreHelper.js)
 Provides quality of life improvements and functionality to the Explore Lobby and Movement pages.
 
-### 32. Mines Helper (`MinesHelper.js`)
+### 34. Mines Helper (`MinesHelper.js`)
 Helper designed to function on the Canbodian Mines page (`cmd=mines`).
 - **Widen View:** Optional setting to widen the game content area inside the mines for better visibility.
 - **Style Links:** Styles the critical navigation links (e.g. "Head inside the mines", "Leave the Mines") into larger buttons.
@@ -179,7 +185,7 @@ Helper designed to function on the Canbodian Mines page (`cmd=mines`).
 ---
 *Note: We are constantly updating and tweaking these modules. If you encounter any bugs, please report them!*
 
-### 33. Mine Pattern Helper (\MinePatternHelper.js\)
+### 35. Mine Pattern Helper (\MinePatternHelper.js\)
 Helper designed to display ghost overlays on the blast screen (\cmd=mines&blast=...\).
 - **Save Pattern:** Saves the sequence of the specific coordinates currently targeted for blasting.
 - **Visual Overlays:** Displays the saved pattern visually as ghost targets superimposed over the blast site layout window to ensure perfect repetitive explosive efficiency.
