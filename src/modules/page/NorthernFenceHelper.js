@@ -4,7 +4,8 @@ const NorthernFenceHelper = {
     group: 'City',
     settings: [
         { key: 'NorthernFenceHelper_PaginationButtons', label: 'Previous/Next Page Buttons (Hall of Fame)' },
-        { key: 'NorthernFenceHelper_RestoreBanner', label: 'Restore Missing Banner on Main Page', defaultValue: true }
+        { key: 'NorthernFenceHelper_RestoreBanner', label: 'Restore Missing Banner on Main Page', defaultValue: true },
+        { key: 'NorthernFenceHelper_SignupList', label: 'Show Signed Up List on Signup Page', defaultValue: true }
     ],
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -23,6 +24,10 @@ const NorthernFenceHelper = {
                 this.initListHelper();
             } else if (urlParams.get('do') === 'npc_race') {
                 this.initNpcRaceAgainHelper();
+            } else if (urlParams.get('do') === 'road') {
+                if (settings['NorthernFenceHelper_SignupList'] !== false) {
+                    this.initSignupListHelper();
+                }
             }
         }
     },
@@ -922,6 +927,143 @@ const NorthernFenceHelper = {
 
         const btnHtml = `<div style="text-align: center; margin-bottom: 15px; margin-top: 10px;"><a href="game.php?sr=${Utils.getSr() || ''}&cmd=hill3&do=npc_race&ID=${npcId}" class="btn" style="-webkit-user-select:none;user-select:none;padding:5px 16px;text-decoration:none;display:inline-block;">Race Again</a></div>`;
         contentArea.insertAdjacentHTML('afterbegin', btnHtml);
+    },
+
+    initSignupListHelper: function() {
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+
+        // Wrap the content area to allow side-by-side flexbox layout
+        const wrapper = document.createElement('div');
+        wrapper.style.display = 'flex';
+        wrapper.style.flexDirection = 'row';
+        wrapper.style.gap = '20px';
+        wrapper.style.alignItems = 'flex-start';
+
+        // Move all contentArea children into a left column
+        const leftCol = document.createElement('div');
+        leftCol.style.flex = '1';
+        while (contentArea.firstChild) {
+            leftCol.appendChild(contentArea.firstChild);
+        }
+
+        const rightCol = document.createElement('div');
+        rightCol.style.flex = '1';
+        rightCol.style.minWidth = '300px';
+        rightCol.style.textAlign = 'center';
+
+        const loadBtn = document.createElement('button');
+        loadBtn.className = 'btn';
+        loadBtn.textContent = 'Load Registered Racers';
+        loadBtn.style.padding = '8px 16px';
+        loadBtn.style.marginTop = '20px';
+
+        loadBtn.onclick = (e) => {
+            e.preventDefault();
+            loadBtn.disabled = true;
+            loadBtn.textContent = 'Loading...';
+
+            const listUrl = `game.php?sr=${Utils.getSr() || ''}&cmd=hill3&do=list`;
+
+            fetch(listUrl)
+                .then(res => res.arrayBuffer())
+                .then(buffer => {
+                    const decoder = new TextDecoder('iso-8859-1');
+                    const html = decoder.decode(buffer);
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    const remoteContent = doc.querySelector('.content-area');
+                    if (remoteContent) {
+                        const originalHtml = remoteContent.innerHTML;
+                        const lines = originalHtml.split(/<br\s*\/?>/i);
+                        const playerId = Utils.getHoboId();
+                        let trackerData = {};
+                        try {
+                            const rawData = Utils.getItem('hw_cart_tracker');
+                            if (rawData) trackerData = JSON.parse(rawData);
+                        } catch (e) {}
+
+                        let introText = '';
+                        const racers = [];
+                        for (let i = 0; i < lines.length; i++) {
+                            let line = lines[i].trim();
+                            if (!line) continue;
+
+                            const match = line.match(/^(\d+)\.\s*(<a.*?href=".*?ID=(\d+)".*?>.*?<\/a>)\s*using the\s*(<strong>.*?<\/strong>)/i);
+                            if (match) {
+                                racers.push({
+                                    pos: match[1],
+                                    link: match[2],
+                                    id: match[3],
+                                    cart: match[4]
+                                });
+                            } else if (line.includes('These hobos are in the same class')) {
+                                introText = line;
+                            }
+                        }
+
+                        if (racers.length === 0) {
+                            rightCol.innerHTML = '<div style="text-align: center; padding: 20px;">No one in your class is signed up yet.</div>';
+                            return;
+                        }
+
+                        let tableHtml = `
+                            <p style="margin-top: 0; margin-bottom: 10px;text-align:center;">${introText}</p>
+                            <table align="center" width="100%" cellspacing="2" cellpadding="4">
+                                <tbody>
+                                    <tr>
+                                        <td bgcolor="#dddddd" colspan="4" align="center"><strong>Registered Racers</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td bgcolor="#eeeeee" align="center" width="30"><strong>#</strong></td>
+                                        <td bgcolor="#eeeeee"><strong>Hobo</strong></td>
+                                        <td bgcolor="#eeeeee"><strong>Cart</strong></td>
+                                        <td bgcolor="#eeeeee" align="center" width="100"><strong>Skill</strong></td>
+                                    </tr>
+                        `;
+
+                        racers.forEach(r => {
+                            const skill = (trackerData[r.id] && typeof trackerData[r.id].ls !== 'undefined') 
+                                ? parseFloat(trackerData[r.id].ls).toFixed(3) 
+                                : 'Unknown';
+                                
+                            let bgColor = '#f0f0f0';
+                            let rowStyle = '';
+                            
+                            if (r.id === playerId) {
+                                bgColor = '#fffec8';
+                                rowStyle = 'font-weight: bold;';
+                            }
+
+                            tableHtml += `
+                                <tr style="${rowStyle}">
+                                    <td bgcolor="${bgColor}" align="center">${r.pos}</td>
+                                    <td bgcolor="${bgColor}">${r.link}</td>
+                                    <td bgcolor="${bgColor}">${r.cart}</td>
+                                    <td bgcolor="${bgColor}" align="center">${skill}</td>
+                                </tr>
+                            `;
+                        });
+
+                        tableHtml += `
+                                </tbody>
+                            </table>
+                        `;
+
+                        rightCol.innerHTML = tableHtml;
+                    } else {
+                        rightCol.innerHTML = '<div style="text-align: center; padding: 20px;">Error loading list.</div>';
+                    }
+                })
+                .catch(e => {
+                    rightCol.innerHTML = '<div style="text-align: center; padding: 20px;">Failed to load list.</div>';
+                });
+        };
+
+        rightCol.appendChild(loadBtn);
+
+        wrapper.appendChild(leftCol);
+        wrapper.appendChild(rightCol);
+        contentArea.appendChild(wrapper);
     },
 
     replaceAreaImage: function() {

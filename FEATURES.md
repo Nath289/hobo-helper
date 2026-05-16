@@ -25,6 +25,15 @@ Provides quality-of-life additions to your Living Area. May include highlighting
 ### 4. Northern Fence Helper (`NorthernFenceHelper.js`)
 Assists in navigating the Northern Fence. Enhances the interface by displaying relevant stats and chances to help streamline exploration or related activities. It also restyles the list of registered racers into a table displaying their historical skill values and highlights your own row so you can quickly gauge your competition.
 
+### Northern Fence
+- Adds Previous/Next pagination buttons to the Hall of Fame screen.
+- Tracks player Super-Cart Racing skill gains over time (weekly/total) when viewing the Hall of Fame, displaying a summary table.
+- Tracks your own rank and highlights the page where you are visible.
+- Replaces broken banner.
+- Converts the "Race" NPC buttons into Bank Buttons that safely calculate your total race cost from the Piggy Bank.
+- Injects a "Race Again" button after an NPC race for quick repeating.
+- Displays the list of signed-up racers side-by-side with the race signup form.
+
 ### 5. News Helper (`NewsHelper.js`)
 Adds functionality to the News Archive page (`cmd=news&do=archive`).
 - **News Archive Filter**: Provides an easy text filter row for finding specific news archive entries.

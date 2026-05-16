@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.63] - 2026-05-16
+- Updated Northern Fence Helper to add a side-by-side list format to view signed up racers on the signup page. This requires manually clicking a "Load Registered Racers" button to prevent rule violation.
+- Solved an encoding issue displaying names with special characters like `ë` in the registered racers list.
+
 ## [9.62] - 2026-05-16
 - Created new `NewsHelper.js` module.
 - Added visual client-side Filter to the News Archive page.
@@ -1835,4 +1839,6 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added multi-column interactive client-side sorting for the Hitlist table (`HitlistHelper`), replacing the slow native server-refresh sorting links. Sorting configurations securely persist via browser local storage.
 - Implemented a combat window highlighter within the `HitlistHelper` that automatically shades rows an alerting light red if an opponent's level drastically falls outside the player's immediate attack limits (±200 combat levels).
+
+
 
