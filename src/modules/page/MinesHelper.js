@@ -1,7 +1,7 @@
 const MinesHelper = {
     cmds: 'mines',
     group: 'Canbodia',
-
+    localKeys: ['hw_mines_log_data', 'hw_mines_last_state', 'hw_mines_blast_state', 'hw_MinesHelper_TodayStats', 'hw_MinesHelper_TodayOres'],
 
     settings: [
         { key: 'MinesHelper_TopMinersTable', label: 'Format Top Miners Table', type: 'checkbox', default: true },
@@ -41,6 +41,10 @@ const MinesHelper = {
             try { this.formatStats(); } catch (e) { Utils.log(e); }
         }
 
+        if (settings['MinesHelper_Log'] !== false) {
+            try { this.processMiningLog(); } catch (e) { Utils.log(e); }
+        }
+
         try { this.extractTradeStats(); } catch (e) { Utils.log(e); }
 
         // Run formatTrades before formatOres so that oreStockMap can safely read the untouched DOM
@@ -54,10 +58,6 @@ const MinesHelper = {
 
         if (settings['MinesHelper_TopMinersTable'] !== false) {
             try { this.formatTopMinersTable(); } catch (e) { Utils.log(e); }
-        }
-
-        if (settings['MinesHelper_Log'] !== false) {
-            try { this.processMiningLog(); } catch (e) { Utils.log(e); }
         }
 
         if (settings['MinesHelper_ThreeColumnLayout'] !== false) {
@@ -384,68 +384,62 @@ const MinesHelper = {
         }
 
         let initializedNewDay = false;
-        if (!logData[today] || typeof logData[today] !== 'object' || !logData[today].ores) {
-            logData[today] = { exp: 0, tUsed: 0, ores: {}, saves: [] };
-            if (currentTUsed !== null && currentTUsed > 0 && currentSection !== -1) {
-                logData[today].tUsed = currentTUsed;
-            }
-            initializedNewDay = true;
+        let dayNeedsInit = (!logData[today] || typeof logData[today] !== 'object' || !logData[today].ores);
 
-            Utils.setItem('hw_MiningHelper_StatGain', '-');
-            Utils.setItem('hw_MiningHelper_TradesToday', '0');
-            Utils.setItem('hw_MinesHelper_TodayStats', '0.00');
-            Utils.setItem('hw_MinesHelper_TodayOres', '0');
+        if (dayNeedsInit) {
+            const lastReset = Utils.getItem('hw_MinesHelper_LastResetDate');
+            if (lastReset !== today) {
+                Utils.setItem('hw_MinesHelper_LastResetDate', today);
+                Utils.setItem('hw_MinesHelper_TodayStats', '0.00');
+                Utils.setItem('hw_MinesHelper_TodayOres', '0');
+            }
         }
 
-        if (shouldLog || initializedNewDay) {
-            if (shouldLog) {
-                logData[today].exp = (Number.parseFloat(logData[today].exp) || 0) + newExp;
-
-                let bestT = null;
-                if (serverTUsed !== null && serverTUsed >= 0) {
-                    bestT = serverTUsed;
-                } else if (currentTUsed !== null && currentTUsed >= 0) {
-                    bestT = currentTUsed;
+        if (shouldLog) {
+            if (dayNeedsInit) {
+                logData[today] = { exp: 0, tUsed: 0, ores: {}, saves: [] };
+                if (currentTUsed !== null && currentTUsed > 0 && currentSection !== -1) {
+                    logData[today].tUsed = currentTUsed;
                 }
-
-                if (bestT !== null) {
-                    logData[today].tUsed = bestT;
-                } else if (!initializedNewDay || logData[today].tUsed === 0) {
-                    logData[today].tUsed = (Number.parseInt(logData[today].tUsed) || 0) + tUsedVal;
-                }
-
-                if (serverExp !== null && serverExp >= 0) {
-                    logData[today].exp = serverExp;
-                }
-
-                if (typeof logData[today].ores !== 'object') {
-                    logData[today].ores = {};
-                }
-
-                if (!Array.isArray(logData[today].saves)) {
-                    logData[today].saves = [];
-                }
-
-                for (const ore of newOres) {
-                    logData[today].ores[ore] = (logData[today].ores[ore] || 0) + 1;
-                }
-
-                if (newSaves.length > 0) {
-                    logData[today].saves.push(...newSaves);
-                }
+                initializedNewDay = true;
             }
 
-            for (const d of Object.keys(logData)) {
-                if (d === today) continue;
-                const data = logData[d];
-                if (!data) continue;
-                const dailyExp = Number.parseFloat(data.exp) || 0;
-                const dailyOresCount = Object.values(data.ores || {}).reduce((sum, count) => sum + (Number.parseInt(count) || 0), 0);
-                const dailySavesCount = Array.isArray(data.saves) ? data.saves.length : 0;
-                if (dailyExp === 0 && dailyOresCount === 0 && dailySavesCount === 0) {
-                    delete logData[d];
-                }
+            logData[today].exp = (Number.parseFloat(logData[today].exp) || 0) + newExp;
+
+            let bestT = null;
+            if (serverTUsed !== null && serverTUsed >= 0) {
+                bestT = serverTUsed;
+            } else if (currentTUsed !== null && currentTUsed >= 0) {
+                bestT = currentTUsed;
             }
+
+            if (bestT !== null) {
+                logData[today].tUsed = bestT;
+            } else if (!initializedNewDay || logData[today].tUsed === 0) {
+                logData[today].tUsed = (Number.parseInt(logData[today].tUsed) || 0) + tUsedVal;
+            }
+
+            if (serverExp !== null && serverExp >= 0) {
+                logData[today].exp = serverExp;
+            }
+
+            if (typeof logData[today].ores !== 'object') {
+                logData[today].ores = {};
+            }
+
+            if (!Array.isArray(logData[today].saves)) {
+                logData[today].saves = [];
+            }
+
+            for (const ore of newOres) {
+                logData[today].ores[ore] = (logData[today].ores[ore] || 0) + 1;
+            }
+
+            if (newSaves.length > 0) {
+                logData[today].saves.push(...newSaves);
+            }
+
+            // Removed auto-clear of empty log days
 
             Utils.setItem('hw_mines_log_data', JSON.stringify(logData));
         }
@@ -1123,19 +1117,30 @@ const MinesHelper = {
     },
 
     extractTradeStats: function() {
-        if (!window.location.search.includes('do=trade')) return;
+        if (!globalThis.location.href.includes('do=trade') && !globalThis.location.href.includes('what=trade')) return;
         const pageText = document.body.textContent || document.body.innerText || '';
-        const statMatch = pageText.match(/Net stat gain for trade:\s*([\d.]+)/i);
-        const tradesMatch = pageText.match(/Stat Trades today:\s*(\d+)/i);
-        if (statMatch) {
+        const statMatch = pageText.match(/Net stat gain for trade:?\s*([-\d.]+)/i);
+        const tradesMatch = pageText.match(/Stat Trades today:?\s*(\d+)/i);
+        
+        let shouldUpdateDate = false;
+        if (statMatch && statMatch[1] && statMatch[1] !== '-') {
             Utils.setItem('hw_MiningHelper_StatGain', statMatch[1]);
-        } else {
-            Utils.setItem('hw_MiningHelper_StatGain', '-');
+            shouldUpdateDate = true;
         }
-        if (tradesMatch) {
+        if (tradesMatch && tradesMatch[1]) {
             Utils.setItem('hw_MiningHelper_TradesToday', tradesMatch[1]);
-        } else {
-            Utils.setItem('hw_MiningHelper_TradesToday', '0');
+            shouldUpdateDate = true;
+        }
+        if (shouldUpdateDate) {
+            let today = '';
+            try {
+                const hoboDate = Utils.getHoboDateTime() || new Date();
+                today = `${hoboDate.getFullYear()}-${String(hoboDate.getMonth() + 1).padStart(2, '0')}-${String(hoboDate.getDate()).padStart(2, '0')}`;
+            } catch (err) {
+                const fallbackD = new Date();
+                today = `${fallbackD.getFullYear()}-${String(fallbackD.getMonth() + 1).padStart(2, '0')}-${String(fallbackD.getDate()).padStart(2, '0')}`;
+            }
+            Utils.setItem('hw_MiningHelper_TradesDate', today);
         }
     },
 

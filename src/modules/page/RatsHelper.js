@@ -422,7 +422,7 @@ const RatsHelper = {
                         }
                     }
 
-                    if (historyModified || !history[age] || history[age].life !== daysToLive || history[age].level !== currentLevel || history[age].speed !== speed || history[age].attack !== attack || history[age].defense !== defense) {
+                    if (!history[age]) {
                         history[age] = {
                             life: daysToLive,
                             level: currentLevel,
@@ -430,6 +430,10 @@ const RatsHelper = {
                             attack: attack,
                             defense: defense
                         };
+                        historyModified = true;
+                    }
+
+                    if (historyModified) {
                         Utils.setItem(`hw_RatsHelper_ratsHistory_${ratId}`, JSON.stringify(history));
                     }
                 }
@@ -587,10 +591,9 @@ const RatsHelper = {
                         let history = {};
                         if (ratId) {
                             history = JSON.parse(Utils.getItem(`hw_RatsHelper_ratsHistory_${ratId}`) || '{}');
-                        } else {
-                            // Fallback if ID parsing failed
-                            history[age] = { life: daysToLive, level: currentLevel, speed: parseInt(tds[6] ? tds[6].textContent.replace(/,/g, '').trim() : "0"), attack: parseInt(tds[7] ? tds[7].textContent.replace(/,/g, '').trim() : "0"), defense: parseInt(tds[8] ? tds[8].textContent.replace(/,/g, '').trim() : "0") };
                         }
+                        // Always inject current real-time stats to ensure latest plot visibility
+                        history[age] = { life: daysToLive, level: currentLevel, speed: parseInt(tds[6] ? tds[6].textContent.replace(/,/g, '').trim() : "0"), attack: parseInt(tds[7] ? tds[7].textContent.replace(/,/g, '').trim() : "0"), defense: parseInt(tds[8] ? tds[8].textContent.replace(/,/g, '').trim() : "0") };
 
                         const ages = Object.keys(history).map(a => parseInt(a)).sort((a,b) => a-b);
 
@@ -1153,6 +1156,8 @@ const RatsHelper = {
         form.parentNode.insertBefore(filterContainer, form);
     }
 };
+
+
 
 
 

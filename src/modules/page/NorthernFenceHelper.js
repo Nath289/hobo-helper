@@ -141,6 +141,9 @@ const NorthernFenceHelper = {
                             const name = cells[0].textContent.trim();
 
                             const actionCell = cells[5];
+                            actionCell.style.width = '240px';
+                            actionCell.style.whiteSpace = 'nowrap';
+                            actionCell.style.textAlign = 'left';
 
                             // Parse original race link
                             const raceLink = actionCell.querySelector('a');
@@ -149,13 +152,10 @@ const NorthernFenceHelper = {
                                 raceHref = raceLink.getAttribute('href');
                             }
 
-                            // Replace inner text with clear flex layout for buttons
+                            // Replace inner text
                             actionCell.innerHTML = '';
-                            actionCell.style.display = 'flex';
-                            actionCell.style.alignItems = 'center';
-                            actionCell.style.justifyContent = 'center';
 
-                            const commonBtnStyle = '-webkit-font-smoothing: antialiased; color: #636363; background: #ddd; font-weight: bold; text-decoration: none; padding: 0; width: 80px; height: 26px; line-height: 26px; text-align: center; border-radius: 3px; border: none; cursor: pointer; margin: 3px 2px; -webkit-appearance: none; display: inline-block; user-select: none; -webkit-user-select: none; font-family: inherit; font-size: 13px; box-sizing: border-box; vertical-align: middle;';
+                            const commonBtnStyle = '-webkit-font-smoothing: antialiased; color: #636363; background: #ddd; font-weight: bold; text-decoration: none; padding: 0; min-width: 80px; height: 26px; line-height: 26px; text-align: center; border-radius: 3px; border: none; cursor: pointer; margin: 3px 2px; -webkit-appearance: none; display: inline-block; user-select: none; -webkit-user-select: none; font-family: inherit; font-size: 13px; box-sizing: border-box; vertical-align: middle;';
 
                             if (raceHref) {
                                 const raceBtn = document.createElement('a');
@@ -171,19 +171,72 @@ const NorthernFenceHelper = {
                                 actionCell.appendChild(raceBtn);
                             }
 
-                            const btn = Utils.createBankButton(`Pikies (${name})`, totalCost);
-                            btn.className = 'btn';
-                            btn.style.cssText = commonBtnStyle;
+                            // Instead of standard + Bank button, create a persistent Set Bank Goal tracker
+                            const bankGoalName = `Pikies (${name})`;
+                            const currentGoals = JSON.parse(Utils.getItem('hw_bank_goals') || '{}');
+                            const isThisGoalActive = !!currentGoals[bankGoalName];
 
-                            btn.addEventListener('mouseover', () => { if (!btn.disabled) btn.style.background = '#ccc'; });
-                            btn.addEventListener('mouseout', () => { if (!btn.disabled) btn.style.background = '#ddd'; });
-                            // Make sure disabled state looks reasonable when clicked
-                            const originalOnclick = btn.onclick;
-                            btn.onclick = function(e) {
-                                if (originalOnclick) originalOnclick.call(this, e);
-                                this.style.background = '#eee';
-                                this.style.color = '#aaa';
-                                this.style.cursor = 'not-allowed';
+                            // Check if ANY Pikies goal is active
+                            const activePikiesGoal = Object.keys(currentGoals).find(k => k.startsWith('Pikies ('));
+
+                            const btn = document.createElement('button');
+                            btn.className = 'btn pikies-bank-btn';
+                            btn.style.cssText = commonBtnStyle;
+                            btn.style.width = '140px'; // Increased width to fit text
+
+                            // Set initial state
+                            if (activePikiesGoal && !isThisGoalActive) {
+                                btn.style.display = 'none'; // hide others
+                            } else {
+                                btn.textContent = isThisGoalActive ? 'Cancel Bank Goal' : 'Set Bank Goal';
+                                btn.style.background = isThisGoalActive ? '#ffdada' : '#ddd';
+                                btn.style.color = isThisGoalActive ? '#aa3333' : '#636363';
+                            }
+
+                            btn.addEventListener('mouseover', () => {
+                                btn.style.background = (btn.textContent === 'Cancel Bank Goal') ? '#ffbcbc' : '#ccc';
+                            });
+                            btn.addEventListener('mouseout', () => {
+                                btn.style.background = (btn.textContent === 'Cancel Bank Goal') ? '#ffdada' : '#ddd';
+                            });
+
+                            btn.onclick = (e) => {
+                                e.preventDefault();
+                                const goals = JSON.parse(Utils.getItem('hw_bank_goals') || '{}');
+
+                                if (goals[bankGoalName]) {
+                                    // Cancel it
+                                    delete goals[bankGoalName];
+                                    if (Object.keys(goals).length === 0) {
+                                        Utils.removeItem('hw_bank_goals');
+                                    } else {
+                                        Utils.setItem('hw_bank_goals', JSON.stringify(goals));
+                                    }
+
+                                    // Reset visuals for all buttons in this table
+                                    const allBtns = table.querySelectorAll('.pikies-bank-btn');
+                                    allBtns.forEach(b => {
+                                        b.style.display = 'inline-block';
+                                        b.textContent = 'Set Bank Goal';
+                                        b.style.background = '#ddd';
+                                        b.style.color = '#636363';
+                                    });
+                                } else {
+                                    // Set it
+                                    goals[bankGoalName] = totalCost;
+                                    Utils.setItem('hw_bank_goals', JSON.stringify(goals));
+
+                                    // Update visuals: hide others, mark this as Cancel
+                                    const allBtns = table.querySelectorAll('.pikies-bank-btn');
+                                    allBtns.forEach(b => {
+                                        if (b !== btn) {
+                                            b.style.display = 'none';
+                                        }
+                                    });
+                                    btn.textContent = 'Cancel Bank Goal';
+                                    btn.style.background = '#ffdada';
+                                    btn.style.color = '#aa3333';
+                                }
                             };
 
                             actionCell.appendChild(btn);

@@ -176,19 +176,29 @@ const LivingAreaHelper = {
             miningLine.style.display = '';
             miningBlock.appendChild(miningLine);
 
-            const statGain = Utils.getItem('hw_MiningHelper_StatGain');
-            if (statGain) {
+            const hoboDate = Utils.getHoboDateTime() || new Date();
+            const todayStr = `${hoboDate.getFullYear()}-${String(hoboDate.getMonth() + 1).padStart(2, '0')}-${String(hoboDate.getDate()).padStart(2, '0')}`;
+            const transDate = Utils.getItem('hw_MiningHelper_TradesDate');
+
+            let statGainToDisplay = '-';
+            if (transDate === todayStr) {
+                statGainToDisplay = Utils.getItem('hw_MiningHelper_StatGain') || '-';
+            }
+            if (statGainToDisplay) {
                 const statLine = document.createElement('div');
                 statLine.className = 'line';
-                statLine.innerHTML = `<span>Net Stat Gain:</span> ${statGain}`;
+                statLine.innerHTML = `<span>Net Stat Gain:</span> ${statGainToDisplay}`;
                 miningBlock.appendChild(statLine);
             }
 
-            const tradesToday = Utils.getItem('hw_MiningHelper_TradesToday');
-            if (tradesToday) {
+            let tradesToDisplay = '0';
+            if (transDate === todayStr) {
+                tradesToDisplay = Utils.getItem('hw_MiningHelper_TradesToday') || '0';
+            }
+            if (tradesToDisplay) {
                 const tradeLine = document.createElement('div');
                 tradeLine.className = 'line';
-                tradeLine.innerHTML = `<span>Stat Trades Today:</span> ${tradesToday}`;
+                tradeLine.innerHTML = `<span>Stat Trades Today:</span> ${tradesToDisplay}`;
                 miningBlock.appendChild(tradeLine);
             }
 

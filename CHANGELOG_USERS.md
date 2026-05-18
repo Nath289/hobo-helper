@@ -1,6 +1,13 @@
 # User Changelog
 This file tracks player-facing feature updates and bug fixes. The build script automatically parses this to generate the floating changelog UI in the game whenever the version number increments.
 
+## [9.66] - 2026-05-18
+- Fixed an issue where the mining log would unnecessarily auto-clear/create entries for today before any stats were earned.
+- Added a much easier tracking setup for saving up to race specific Pikies at the Northern Fence! Just click "Set Bank Goal" next to a Pikie.
+
+## [9.65] - 2026-05-17
+- Minor bug fix preventing unnecessary syncing and data thrashing for Rat's status graphs.
+
 ## [9.64] - 2026-05-17
 - Fixed an issue where the Mines daily log was intermittently clearing its captured stats across page navigation.
 

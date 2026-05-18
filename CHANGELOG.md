@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.66] - 2026-05-18
+- Refactored `MinesHelper` to stop auto-initializing today's mining log entry until a loggable action actually occurs.
+- Redesigned `NorthernFenceHelper` Pikie NPC race tables to use a persistent exclusive toggle button ("Set Bank Goal" / "Cancel Bank Goal") rather than stacking normal bank buttons.
+- Touched up UI alignments in `NorthernFenceHelper` for consistency inside non-flexible table columns.
+
+## [9.65] - 2026-05-17
+- Fixed RatsHelper history tracking to strictly save only the first data point for a given age, preventing unnecessary sync writes and potential data thrashing.
+
 ## [9.64] - 2026-05-17
 - Fixed a timezone parsing bug in LivingAreaHelper and MinesHelper where mining log data could be wiped on page load due to an empty or mismatched daily key triggering a day-reset loop.
 - Verified that the CouchDB sync logic properly handles rapidly mutable local tracking variables natively via hw_sync_timestamps.
