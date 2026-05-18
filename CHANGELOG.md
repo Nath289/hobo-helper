@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.68] - 2026-05-19
+- Centralized `hw_bank_goals` modification logic into `BankHelper`'s exposed `addBankGoal` function to prevent sync conflicts.
+- Updated `AGENTS.md` instructions requiring structural centralization for shared local storage keys.
+
 ## [9.67] - 2026-05-18
 - Extracted 'Net stat gain for trade' natively via MinesHelper to route into `hw_mines_log_data`, entirely replacing the older disconnected global variables.
 - Handled UI rendering out from LivingAreaHelper via the new mining log data tree instead of individual localStorage fragments, removing the redundant text duplicate.

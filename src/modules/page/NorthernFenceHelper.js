@@ -173,7 +173,7 @@ const NorthernFenceHelper = {
 
                             // Instead of standard + Bank button, create a persistent Set Bank Goal tracker
                             const bankGoalName = `Pikies (${name})`;
-                            const currentGoals = JSON.parse(Utils.getItem('hw_bank_goals') || '{}');
+                            const currentGoals = (typeof Modules !== 'undefined' && Modules.BankHelper) ? Modules.BankHelper.getBankGoals() : {};
                             const isThisGoalActive = !!currentGoals[bankGoalName];
 
                             // Check if ANY Pikies goal is active
@@ -202,15 +202,12 @@ const NorthernFenceHelper = {
 
                             btn.onclick = (e) => {
                                 e.preventDefault();
-                                const goals = JSON.parse(Utils.getItem('hw_bank_goals') || '{}');
+                                const currentGoals = (typeof Modules !== 'undefined' && Modules.BankHelper) ? Modules.BankHelper.getBankGoals() : {};
 
-                                if (goals[bankGoalName]) {
-                                    // Cancel it
-                                    delete goals[bankGoalName];
-                                    if (Object.keys(goals).length === 0) {
-                                        Utils.removeItem('hw_bank_goals');
-                                    } else {
-                                        Utils.setItem('hw_bank_goals', JSON.stringify(goals));
+                                if (currentGoals[bankGoalName]) {
+                                    // Cancel it via helper logic (0 cost deletes it)
+                                    if (typeof Modules !== 'undefined' && Modules.BankHelper) {
+                                        Modules.BankHelper.addBankGoal(bankGoalName, 0);
                                     }
 
                                     // Reset visuals for all buttons in this table
@@ -222,9 +219,10 @@ const NorthernFenceHelper = {
                                         b.style.color = '#636363';
                                     });
                                 } else {
-                                    // Set it
-                                    goals[bankGoalName] = totalCost;
-                                    Utils.setItem('hw_bank_goals', JSON.stringify(goals));
+                                    // Set it via helper logic (permanent flag true)
+                                    if (typeof Modules !== 'undefined' && Modules.BankHelper) {
+                                        Modules.BankHelper.addBankGoal(bankGoalName, totalCost, true);
+                                    }
 
                                     // Update visuals: hide others, mark this as Cancel
                                     const allBtns = table.querySelectorAll('.pikies-bank-btn');

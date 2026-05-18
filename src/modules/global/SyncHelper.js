@@ -243,16 +243,25 @@ const SyncHelper = {
                     if (nonSyncKeys.includes(key)) continue;
 
                     const remoteTime = remoteDoc.timestamps[key] || 0;
-                    const actualLocalTime = localTimestamps[key] || 0;
+                    let actualLocalTime = localTimestamps[key] || 0;
                     const isFreshlyScraped = actualLocalTime >= this.appLoadTime;
-                    const localTime = ((assumeStale && !isFreshlyScraped) || forceAction === 'pull') ? 0 : actualLocalTime;
+
+                    if (isFreshlyScraped && remoteTime >= actualLocalTime) {
+                        // Clock skew detected: local action just happened, but remote time is mathematically higher.
+                        // Force local time to be newer than remote so it correctly wins the causal conflict.
+                        actualLocalTime = remoteTime + 1000;
+                        localTimestamps[key] = actualLocalTime;
+                        localChanged = true;
+                    }
+
+                    const localTime = (forceAction === 'pull') ? 0 : actualLocalTime;
 
                     if (forceAction === 'push') {
                         // Skip updating local from remote if we are force pushing
                         continue;
                     }
 
-                    if (remoteTime > localTime || (assumeStale && remoteVal !== undefined && !isFreshlyScraped) || forceAction === 'pull') {
+                    if (remoteTime > localTime || forceAction === 'pull') {
                         // Remote is newer, update local storage
                         const currentLocalVal = Utils.getItem(key);
                         if (currentLocalVal !== remoteVal) {
@@ -285,10 +294,8 @@ const SyncHelper = {
             // 2. Process local keys
             for (const [key, localVal] of Object.entries(localData)) {
                 const actualLocalTime = localTimestamps[key] || 0;
-                const isFreshlyScraped = actualLocalTime >= this.appLoadTime;
 
-                // If it is freshly scraped, don't let assumeStale downgrade it to 0
-                const localTime = ((assumeStale && !isFreshlyScraped) || forceAction === 'push') ? Number.MAX_SAFE_INTEGER : actualLocalTime;
+                const localTime = (forceAction === 'push') ? Number.MAX_SAFE_INTEGER : actualLocalTime;
                 const remoteTime = (forceAction === 'push') ? 0 : (payload.timestamps[key] || 0);
 
                 if (forceAction === 'pull') {

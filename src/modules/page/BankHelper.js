@@ -14,12 +14,12 @@ const BankHelper = {
             return {};
         }
     },
-    addBankGoal: function(actionName, cost) {
+    addBankGoal: function(actionName, cost, permanent = false) {
         const goals = this.getBankGoals();
         if (cost === 0 || cost === null) {
             delete goals[actionName];
         } else {
-            goals[actionName] = cost;
+            goals[actionName] = { cost: cost, permanent: permanent };
         }
         if (Object.keys(goals).length === 0) {
             Utils.removeItem('hw_bank_goals');
@@ -82,7 +82,16 @@ const BankHelper = {
         if (Object.keys(goals).length === 0) return;
 
         Object.keys(goals).forEach(goalName => {
-            const goalVal = parseInt(goals[goalName]);
+            let goalVal = 0;
+            let isPermanent = false;
+
+            if (typeof goals[goalName] === 'object' && goals[goalName] !== null) {
+                goalVal = parseInt(goals[goalName].cost);
+                isPermanent = goals[goalName].permanent === true;
+            } else {
+                goalVal = parseInt(goals[goalName]);
+            }
+
             if (isNaN(goalVal) || goalVal <= 0) return;
 
             const btn = document.createElement('input');
@@ -97,12 +106,13 @@ const BankHelper = {
                 let currentVal = parseInt(withdrawInput.value.replace(/,/g, '')) || 0;
                 withdrawInput.value = (currentVal + goalVal).toString();
 
-                Modules.BankHelper.addBankGoal(goalName, 0);
-
-                this.value = "Added!";
-                this.disabled = true;
-                this.style.backgroundColor = '#f5f5f5';
-                this.style.border = '1px solid #d9d9d9';
+                if (!isPermanent) {
+                    Modules.BankHelper.addBankGoal(goalName, 0);
+                    this.value = "Added!";
+                    this.disabled = true;
+                    this.style.backgroundColor = '#f5f5f5';
+                    this.style.border = '1px solid #d9d9d9';
+                }
             };
 
             nativeWithdrawBtn.parentNode.insertBefore(btn, nativeWithdrawBtn.nextSibling);
