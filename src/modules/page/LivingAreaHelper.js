@@ -177,31 +177,6 @@ const LivingAreaHelper = {
             miningBlock.appendChild(miningLine);
 
             const hoboDate = Utils.getHoboDateTime() || new Date();
-            const todayStr = `${hoboDate.getFullYear()}-${String(hoboDate.getMonth() + 1).padStart(2, '0')}-${String(hoboDate.getDate()).padStart(2, '0')}`;
-            const transDate = Utils.getItem('hw_MiningHelper_TradesDate');
-
-            let statGainToDisplay = '-';
-            if (transDate === todayStr) {
-                statGainToDisplay = Utils.getItem('hw_MiningHelper_StatGain') || '-';
-            }
-            if (statGainToDisplay) {
-                const statLine = document.createElement('div');
-                statLine.className = 'line';
-                statLine.innerHTML = `<span>Net Stat Gain:</span> ${statGainToDisplay}`;
-                miningBlock.appendChild(statLine);
-            }
-
-            let tradesToDisplay = '0';
-            if (transDate === todayStr) {
-                tradesToDisplay = Utils.getItem('hw_MiningHelper_TradesToday') || '0';
-            }
-            if (tradesToDisplay) {
-                const tradeLine = document.createElement('div');
-                tradeLine.className = 'line';
-                tradeLine.innerHTML = `<span>Stat Trades Today:</span> ${tradesToDisplay}`;
-                miningBlock.appendChild(tradeLine);
-            }
-
             let today = '';
             try {
                 const hoboDate = Utils.getHoboDateTime() || new Date();
@@ -214,14 +189,30 @@ const LivingAreaHelper = {
             let logData = {};
             try { logData = JSON.parse(Utils.getItem('hw_mines_log_data') || '{}'); } catch(e) {}
 
+            let statGainToDisplay = '-';
+            if (logData && typeof logData === 'object' && logData[today] && logData[today].statGain !== undefined) {
+                statGainToDisplay = logData[today].statGain.toString();
+            }
+
+            if (statGainToDisplay) {
+                const statLine = document.createElement('div');
+                statLine.className = 'line';
+                statLine.innerHTML = `<span>Net Stat Gain:</span> ${statGainToDisplay}`;
+                miningBlock.appendChild(statLine);
+            }
+
             let todayStats = "0.00";
             let todayOres = "0";
+            let todayTraded = "0";
 
             if (logData && typeof logData === 'object' && logData[today]) {
                 const tStats = Number.parseFloat(logData[today].exp) || 0;
                 const tOres = Object.values(logData[today].ores || {}).reduce((sum, count) => sum + (Number.parseInt(count) || 0), 0);
                 todayStats = tStats.toFixed(2);
                 todayOres = tOres.toString();
+                if (logData[today].traded !== undefined) {
+                    todayTraded = logData[today].traded.toString();
+                }
             }
 
             if (todayStats) {
@@ -237,7 +228,14 @@ const LivingAreaHelper = {
                 oreLine.innerHTML = `<span>Ore Gained Today:</span> ${todayOres}`;
                 miningBlock.appendChild(oreLine);
             }
-            
+
+            if (todayTraded !== "0") {
+                const tradedLine = document.createElement('div');
+                tradedLine.className = 'line';
+                tradedLine.innerHTML = `<span>Ore Traded Today:</span> ${todayTraded}`;
+                miningBlock.appendChild(tradedLine);
+            }
+
             resourcesDisplay.parentNode.insertBefore(miningBlock, resourcesDisplay);
 
             const br = document.createElement('br');

@@ -1,6 +1,9 @@
 # User Changelog
 This file tracks player-facing feature updates and bug fixes. The build script automatically parses this to generate the floating changelog UI in the game whenever the version number increments.
 
+## [9.67] - 2026-05-18
+- The internal 'Trade Stat Gain' metric provided at the Trading Post is now recorded directly into the Mining Log JSON structure and correctly overlays onto the daily visual log layout alignment.
+
 ## [9.66] - 2026-05-18
 - Fixed an issue where the mining log would unnecessarily auto-clear/create entries for today before any stats were earned.
 - Added a much easier tracking setup for saving up to race specific Pikies at the Northern Fence! Just click "Set Bank Goal" next to a Pikie.

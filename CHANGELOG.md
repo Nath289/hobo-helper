@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.67] - 2026-05-18
+- Extracted 'Net stat gain for trade' natively via MinesHelper to route into `hw_mines_log_data`, entirely replacing the older disconnected global variables.
+- Handled UI rendering out from LivingAreaHelper via the new mining log data tree instead of individual localStorage fragments, removing the redundant text duplicate.
+- Added visual formatting loops routing 'Trade Stat Gain' dynamically onto the same visual row column alignment chunk out in the main Mining Log bottom view component.
+- Reduced the visual text labels of both actual and implied Ore/T shard rules for a much cleaner layout.
+
 ## [9.66] - 2026-05-18
 - Refactored `MinesHelper` to stop auto-initializing today's mining log entry until a loggable action actually occurs.
 - Redesigned `NorthernFenceHelper` Pikie NPC race tables to use a persistent exclusive toggle button ("Set Bank Goal" / "Cancel Bank Goal") rather than stacking normal bank buttons.
@@ -1061,9 +1067,9 @@ All notable changes to this project will be documented in this file.
 ## [9.41] - 2026-05-12
 - Added LivingAreaHelper.initShowTattooDays to extract and display tattoo remaining duration from the image title.
 
-## [8.76] - 2026-04-21
+## [8.76] - 2026-04-22
 ### Changed
-- Replaced the direct DOM `visibility: hidden` script blocker approach with a custom injected `<style>` tag that properly mimics the native HoboWars "#222" dark gray background instead of glaring white, vastly improving visual comfort via reduced flash artifacting during module compilation.
+- Reverted the default build script output naming conventions to protect existing users. The standard non-staff features script is now correctly output to `hobo-helper-latest.user.js` again, while the all-inclusive bundle has been shifted to `hobo-helper-all-latest.user.js`.
 
 ## [9.41] - 2026-05-12
 - Added LivingAreaHelper.initShowTattooDays to extract and display tattoo remaining duration from the image title.
@@ -1162,7 +1168,8 @@ All notable changes to this project will be documented in this file.
 
 ## [8.70] - 2026-04-21
 ### Added
-- Added Top Pagination links above the Gang Hitlist table (Previous Page, Last Viewed Page, Next Page).
+- Added an option to wrap long pagination lists on the Gang Hitlist into multiple lines to prevent horizontal scrolling.
+- Added an option to automatically highlight players outside your attack range (level discrepancy > 200) on the Gang Hitlist.
 
 ## [9.41] - 2026-05-12
 - Added LivingAreaHelper.initShowTattooDays to extract and display tattoo remaining duration from the image title.
@@ -1191,7 +1198,7 @@ All notable changes to this project will be documented in this file.
 ## [9.41] - 2026-05-12
 - Added LivingAreaHelper.initShowTattooDays to extract and display tattoo remaining duration from the image title.
 
-## [8.68] - 2026-04-20
+## [8.68] - 2026-04-21
 ### Changed
 - Increased maximum height of the Saved Gang Posts & Payments panel in GangHelper for better visibility.
 - The Saved Gang Posts & Payments panel now automatically scrolls to the next pending replier or payment action smoothly so you don't lose your place.
@@ -1207,11 +1214,9 @@ All notable changes to this project will be documented in this file.
 ## [9.41] - 2026-05-12
 - Added LivingAreaHelper.initShowTattooDays to extract and display tattoo remaining duration from the image title.
 
-## [8.67] - 2026-04-20
+## [8.67] - 2026-04-21
 ### Added
-- Added Cans directly to the top navigation bar alongside Points and Tokens.
-- The Cans icon uses CSS injection that correctly mimics native icon hover animations.
-- Added a global number abbreviation function \Utils.abbreviateNumber()\ that formats large numbers into \k\ and \m\ suffixes for cleaner UI display.
+- Added a structured table view for the Market Watcher section on the SGHM page, including alternate row coloring and precise dollar value extraction.
 
 ## [9.41] - 2026-05-12
 - Added LivingAreaHelper.initShowTattooDays to extract and display tattoo remaining duration from the image title.
@@ -1224,7 +1229,7 @@ All notable changes to this project will be documented in this file.
 ## [9.41] - 2026-05-12
 - Added LivingAreaHelper.initShowTattooDays to extract and display tattoo remaining duration from the image title.
 
-## [8.66] - 2026-04-20
+## [8.66] - 2026-04-21
 ### Added
 - Added an "Export All" and "Import" functionality to the Gang Mass Mail templates (`GangHelper.js`), empowering users to easily backup, transfer, or share template data using clipboard JSON string arrays.
 
@@ -1476,14 +1481,6 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Improved the styling of maxed permanent Rat upgrades to include a green tick in the top-left corner and a distinct light green background for better visibility.
 - Adjusted the alignment of text and icons inside permanent Rat upgrade buttons to perfectly center them vertically.
-
-## [9.41] - 2026-05-12
-- Added LivingAreaHelper.initShowTattooDays to extract and display tattoo remaining duration from the image title.
-
-## [9.40] - 2026-05-12
-- Added FightDisplayHelper to highlight active player combat rows.
-- Implemented strict duplicate script running prevention with UI warnings.
-- Updated AGENTS.md with stricter guidelines regarding boolean parsing of settings object cache.
 
 ## [9.41] - 2026-05-12
 - Added LivingAreaHelper.initShowTattooDays to extract and display tattoo remaining duration from the image title.

@@ -221,6 +221,7 @@ const MinesHelper = {
 
         let currentSection = null;
         let currentTUsed = null;
+        let currentOreTraded = null;
         let tFound = false;
 
         const centers = contentArea.querySelectorAll('center');
@@ -229,10 +230,14 @@ const MinesHelper = {
                 const text = c.textContent;
                 const sectionMatch = /Section\s*(\d+)/i.exec(text);
                 const tMatch = /T used:\s*([\d,]+)/i.exec(text);
+                const oreTradedMatch = /Ore traded:\s*([\d,]+)/i.exec(text);
 
                 if (sectionMatch && tMatch) {
                     currentSection = Number.parseInt(sectionMatch[1], 10);
                     currentTUsed = Number.parseInt(tMatch[1].replaceAll(/,/g, ''), 10);
+                    if (oreTradedMatch) {
+                        currentOreTraded = Number.parseInt(oreTradedMatch[1].replaceAll(/,/g, ''), 10) || 0;
+                    }
                     tFound = true;
                 }
                 break;
@@ -395,6 +400,18 @@ const MinesHelper = {
             }
         }
 
+        if (currentOreTraded !== null) {
+            if (dayNeedsInit) {
+                logData[today] = { exp: 0, tUsed: 0, ores: {}, saves: [], traded: currentOreTraded };
+                initializedNewDay = true;
+                dayNeedsInit = false;
+                shouldLog = true;
+            } else if (logData[today].traded !== currentOreTraded) {
+                logData[today].traded = currentOreTraded;
+                shouldLog = true;
+            }
+        }
+
         if (shouldLog) {
             if (dayNeedsInit) {
                 logData[today] = { exp: 0, tUsed: 0, ores: {}, saves: [] };
@@ -504,15 +521,38 @@ const MinesHelper = {
                 const actualOresPerT = tUsedSafe > 0 ? (totalActualOres / tUsedSafe).toFixed(3) : '0.000';
                 const impliedOresPerT = tUsedSafe > 0 ? (totalImpliedOres / tUsedSafe).toFixed(3) : '0.000';
                 const expPerT = tUsedSafe > 0 ? (parseFloat(data.exp) / tUsedSafe).toFixed(3) : '0.000';
+                const oreTradedDisplay = data.traded ? data.traded : '0';
+                const statGainDisplay = data.statGain ? data.statGain : '-';
+
+                let expHtml = '';
+                let tradedHtml = '';
+                if (oreTradedDisplay !== '0') {
+                    const formattedTraded = (() => {
+                        const shardMatch = /\[\s*(\d+)\s*\]/.exec(oreTradedDisplay);
+                        if (shardMatch) {
+                            const ores = oreTradedDisplay.split('[')[0].trim();
+                            return `${ores} [<span style="cursor: help;" title="shards found today"><span style="color: blue;">${shardMatch[1]}</span></span>]`;
+                        }
+                        return oreTradedDisplay;
+                    })();
+                    tradedHtml = `<b>Ores Traded:</b> <span style="font-weight: bold; color: green;">${formattedTraded}</span>`;
+                }
+
+                let statHtml = '';
+                if (statGainDisplay !== '-') {
+                    statHtml = `<b>Trade Stat Gain:</b> <span style="font-weight: bold; color: green;">${statGainDisplay}</span>`;
+                }
 
                 logHtml += `<div style="text-align: left;">`;
-                logHtml += `<div><b>Exp Gained:</b> ${expFixed}</div>`;
-                logHtml += `<div><b>Exp/T:</b> ${expPerT}</div>`;
+                logHtml += `<div style="display: inline-block; width: 140px;"><b>Exp Gained:</b> ${expFixed}</div>`;
+                logHtml += `<div style="display: inline-block;">${tradedHtml}</div><br>`;
+                logHtml += `<div style="display: inline-block; width: 140px;"><b>Exp/T:</b> ${expPerT}</div>`;
+                logHtml += `<div style="display: inline-block;">${statHtml}</div>`;
                 logHtml += `</div>`;
 
                 logHtml += `<div style="text-align: right;">`;
-                logHtml += `<div><i>(Hobalt Shards count as 1)</i> <b>Actual Ore/T:</b> ${actualOresPerT} (${totalActualOres} from ${tUsedSafe}T)</div>`;
-                logHtml += `<div><i>(Hobalt Shards count as 3)</i> <b>Implied Ore/T:</b> ${impliedOresPerT} (${totalImpliedOres} from ${tUsedSafe}T)</div>`;
+                logHtml += `<div><i>(Shards count as 1)</i> <b>Actual Ore/T:</b> ${actualOresPerT} (${totalActualOres} from ${tUsedSafe}T)</div>`;
+                logHtml += `<div><i>(Shards count as 3)</i> <b>Implied Ore/T:</b> ${impliedOresPerT} (${totalImpliedOres} from ${tUsedSafe}T)</div>`;
                 logHtml += `</div>`;
                 logHtml += `</div>`;
 
@@ -1123,24 +1163,34 @@ const MinesHelper = {
         const tradesMatch = pageText.match(/Stat Trades today:?\s*(\d+)/i);
         
         let shouldUpdateDate = false;
+
+        let today = '';
+        try {
+            const hoboDate = Utils.getHoboDateTime() || new Date();
+            today = `${hoboDate.getFullYear()}-${String(hoboDate.getMonth() + 1).padStart(2, '0')}-${String(hoboDate.getDate()).padStart(2, '0')}`;
+        } catch (err) {
+            const fallbackD = new Date();
+            today = `${fallbackD.getFullYear()}-${String(fallbackD.getMonth() + 1).padStart(2, '0')}-${String(fallbackD.getDate()).padStart(2, '0')}`;
+        }
+
+        let logData = {};
+        try { logData = JSON.parse(Utils.getItem('hw_mines_log_data') || '{}'); } catch(e) {}
+        if (!logData[today]) {
+            logData[today] = { exp: 0, tUsed: 0, ores: {}, saves: [], traded: 0 };
+        }
+
         if (statMatch && statMatch[1] && statMatch[1] !== '-') {
-            Utils.setItem('hw_MiningHelper_StatGain', statMatch[1]);
+            logData[today].statGain = statMatch[1];
             shouldUpdateDate = true;
         }
+
         if (tradesMatch && tradesMatch[1]) {
-            Utils.setItem('hw_MiningHelper_TradesToday', tradesMatch[1]);
+            logData[today].traded = Number.parseInt(tradesMatch[1], 10);
             shouldUpdateDate = true;
         }
+
         if (shouldUpdateDate) {
-            let today = '';
-            try {
-                const hoboDate = Utils.getHoboDateTime() || new Date();
-                today = `${hoboDate.getFullYear()}-${String(hoboDate.getMonth() + 1).padStart(2, '0')}-${String(hoboDate.getDate()).padStart(2, '0')}`;
-            } catch (err) {
-                const fallbackD = new Date();
-                today = `${fallbackD.getFullYear()}-${String(fallbackD.getMonth() + 1).padStart(2, '0')}-${String(fallbackD.getDate()).padStart(2, '0')}`;
-            }
-            Utils.setItem('hw_MiningHelper_TradesDate', today);
+            Utils.setItem('hw_mines_log_data', JSON.stringify(logData));
         }
     },
 
