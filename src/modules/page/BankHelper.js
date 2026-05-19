@@ -2,32 +2,80 @@ const BankHelper = {
     cmds: ['bank', 'bank2'],
     staff: false,
     group: 'City',
-    localKeys: ['hw_bank_goals'],
+    localKeys: ['hw_bank_goals_local'],
     settings: [
         { key: 'BankHelper_5FightersLunches', label: "5 Fighter's Lunches Goal" },
         { key: 'BankHelper_FixedGoals', label: "Fixed Bank Goals (+5k, +10k, +50k)" }
     ],
     getBankGoals: function() {
+        let synced = {};
+        let local = {};
         try {
-            return JSON.parse(Utils.getItem('hw_bank_goals') || '{}');
-        } catch(e) {
-            return {};
-        }
+            synced = JSON.parse(Utils.getItem('hw_bank_goals') || '{}');
+        } catch(e) {}
+        try {
+            local = JSON.parse(Utils.getItem('hw_bank_goals_local') || '{}');
+        } catch(e) {}
+        return {...synced, ...local};
     },
     addBankGoal: function(actionName, cost, permanent = false) {
-        const goals = this.getBankGoals();
+        let synced = {};
+        let local = {};
+        try { synced = JSON.parse(Utils.getItem('hw_bank_goals') || '{}'); } catch(e) {}
+        try { local = JSON.parse(Utils.getItem('hw_bank_goals_local') || '{}'); } catch(e) {}
+
         if (cost === 0 || cost === null) {
-            delete goals[actionName];
+            delete synced[actionName];
+            delete local[actionName];
         } else {
-            goals[actionName] = { cost: cost, permanent: permanent };
+            if (permanent) {
+                synced[actionName] = { cost: cost, permanent: permanent };
+                delete local[actionName];
+            } else {
+                local[actionName] = { cost: cost, permanent: permanent };
+                delete synced[actionName];
+            }
         }
-        if (Object.keys(goals).length === 0) {
+
+        if (Object.keys(synced).length === 0) {
             Utils.removeItem('hw_bank_goals');
         } else {
-            Utils.setItem('hw_bank_goals', JSON.stringify(goals));
+            Utils.setItem('hw_bank_goals', JSON.stringify(synced));
+        }
+        
+        if (Object.keys(local).length === 0) {
+            Utils.removeItem('hw_bank_goals_local');
+        } else {
+            Utils.setItem('hw_bank_goals_local', JSON.stringify(local));
         }
     },
     init: function() {
+        // Migrate non-permanent goals from synced to local storage
+        let synced = {};
+        let local = {};
+        let needsMigration = false;
+        
+        try { synced = JSON.parse(Utils.getItem('hw_bank_goals') || '{}'); } catch(e) {}
+        try { local = JSON.parse(Utils.getItem('hw_bank_goals_local') || '{}'); } catch(e) {}
+        
+        Object.keys(synced).forEach(key => {
+            let val = synced[key];
+            let isPerm = (typeof val === 'object' && val !== null) ? val.permanent === true : false;
+            if (!isPerm) {
+                local[key] = val;
+                delete synced[key];
+                needsMigration = true;
+            }
+        });
+        
+        if (needsMigration) {
+            if (Object.keys(synced).length === 0) Utils.removeItem('hw_bank_goals');
+            else Utils.setItem('hw_bank_goals', JSON.stringify(synced));
+            
+            if (Object.keys(local).length === 0) Utils.removeItem('hw_bank_goals_local');
+            else Utils.setItem('hw_bank_goals_local', JSON.stringify(local));
+        }
+
         const settings = Utils.getSettings();
         const withdrawInput = document.getElementById('w_money');
         const withdrawForm = document.querySelector('form[name="with"]');

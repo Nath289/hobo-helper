@@ -1,8 +1,13 @@
 # User Changelog
 This file tracks player-facing feature updates and bug fixes. The build script automatically parses this to generate the floating changelog UI in the game whenever the version number increments.
 
+## [9.73] - 2026-05-19
+- **Bank Goals:** Separated temporary bank goals from the Pikies (Permanent) bank goals to resolve an issue where session-specific goals were constantly overwriting and wiping cloud-synced device instances.
+- **Message Board:** Fixed a bug in the new Signature Character Tracker where backslashes (`\`) and quotation marks (`'` or `"`) were under-calculated against the strict 1,500 limit.
+
 ## [9.72] - 2026-05-19
 - **Added:** Added a real-time character counter to the Message Board Signature editor! Easily see exactly how many characters you have left, including accurate predictions of how special characters and formatting symbols eat into your cap limit.
+- **Message Board:** Added a real-time character limit tracker underneath the Message Board Signature editor that perfectly mimics the game's exact underlying character restrictions, including emojis and line-break encoding bloat.
 
 ## [9.71] - 2026-05-19
 - **Removed:** Removed the "max payout per hobo" feature from the GangStaff helper for the Sunday Funday tier settings.

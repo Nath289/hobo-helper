@@ -38,11 +38,15 @@ const MessageBoardSettingsHelper = {
 
             for (let i = 0; i < normalizedText.length; i++) {
                 const charCode = normalizedText.charCodeAt(i);
+                const charStr = normalizedText.charAt(i);
 
                 // Characters > 255 cannot exist in ISO-8859-1 natively, so they submit as &#NUM;
                 if (charCode > 255) {
                     // Length of "&#" (2) + length of number string + ";" (1) = 3 + length.
                     count += 3 + charCode.toString().length;
+                } else if (charStr === '\\' || charStr === "'" || charStr === '"') {
+                    // The server assesses length after addslashes() which escapes \ ' "
+                    count += 2;
                 } else {
                     count += 1;
                 }
@@ -68,5 +72,3 @@ const MessageBoardSettingsHelper = {
         updateCharCount(); // Initialize on page load
     }
 };
-
-

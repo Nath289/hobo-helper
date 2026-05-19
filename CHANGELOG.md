@@ -1,7 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.73] - 2026-05-19
+- Extracted permanent (Pikies) and temporary bank goals into separate synced and local storage keys (`hw_bank_goals` vs `hw_bank_goals_local`) to ensure cross-device consistency for durable tracker flags while leaving session-specific trackers isolated. Provided auto-migration routine on boot.
+- Updated `MessageBoardSettingsHelper.js` character counter to account for PHP's `addslashes()` server-side escaping logic internally implemented by the game, resolving a bug where backslashes, single quotes, and double quotes were undervalued against the hardcoded 1,500 form length limit.
+
 ## [9.72] - 2026-05-19
+- Relocated inline Pikies-inspired Bank Goal modification tracking off the static `.addBankGoal()` helper to cleanly interface with the newly unified local/synched bank configurations.
 - **Added:** Created new `MessageBoardSettingsHelper.js` module.
 - **Added:** Implemented a real-time character tracker for the MB Signature editor that accurately mimics HoboWars' ISO-8859-1 form parsing payload footprint structure (HTML decimal character conversion and `\r\n` handling).
 
