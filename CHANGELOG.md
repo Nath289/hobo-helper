@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.70] - 2026-05-19
+- **Removed:** Removed the custom title configuration for SeventhHeaven.
+
 ## [9.69] - 2026-05-19
 - **Fixed:** Corrected a bug where the `DisplayHelper_ScrollableTopbar` injected `white-space: nowrap;` globally on `.topbar`, breaking the flex layout of "The Future" theme and causing "Tokens" and "Cans" stats to overflow horizontally on narrow displays. Re-targeted to `.topbar-menu`.
 - **Fixed:** Updated `RatsHelper` feed UI to utilize `img.title` or `img.alt` as fallback grouping names to prevent feed boxes from failing to render when anchor links strip out the text element (such as with "Pack of Candy Cigarettes").

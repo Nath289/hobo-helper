@@ -532,8 +532,7 @@ const DisplayHelper = {
                 if (!link.innerHTML.includes('1337')) {
                     link.innerHTML = `<span style="color: #36ba01;">${link.innerHTML}</span> <span style="color: #0561CB; font-weight: bold; text-shadow: 1px 1px 2px black;">1337</span>`;
                 }
-            }}],
-            "2924238": [{ plain: "Нeaveп", styled: `<span style="color: #40e0d0; font-weight: bold; text-shadow: 1px 1px 2px black;">Нeaveп</span>`, position: 'suffix' }]
+            }}]
         };
 
         const allLinks = document.querySelectorAll('a[href*="cmd=player&ID="]');
