@@ -1,6 +1,10 @@
 # User Changelog
 This file tracks player-facing feature updates and bug fixes. The build script automatically parses this to generate the floating changelog UI in the game whenever the version number increments.
 
+## [9.74] - 2026-05-20
+- **Northern Fence:** Updated the Super-Cart Racing Skill Tracker so the "Active" racers count in the Racers Summary is now based on weekly gains instead of total gains.
+- **Northern Fence:** Added a new configuration setting in your Preferences to customize the minimum weekly skill gain required for a racer to be considered "Active".
+
 ## [9.73] - 2026-05-19
 - **Bank Goals:** Separated temporary bank goals from the Pikies (Permanent) bank goals to resolve an issue where session-specific goals were constantly overwriting and wiping cloud-synced device instances.
 - **Message Board:** Fixed a bug in the new Signature Character Tracker where backslashes (`\`) and quotation marks (`'` or `"`) were under-calculated against the strict 1,500 limit.

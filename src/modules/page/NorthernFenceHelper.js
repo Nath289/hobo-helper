@@ -5,7 +5,8 @@ const NorthernFenceHelper = {
     settings: [
         { key: 'NorthernFenceHelper_PaginationButtons', label: 'Previous/Next Page Buttons (Hall of Fame)' },
         { key: 'NorthernFenceHelper_RestoreBanner', label: 'Restore Missing Banner on Main Page', defaultValue: true },
-        { key: 'NorthernFenceHelper_SignupList', label: 'Show Signed Up List on Signup Page', defaultValue: true }
+        { key: 'NorthernFenceHelper_SignupList', label: 'Show Signed Up List on Signup Page', defaultValue: true },
+        { key: 'NorthernFenceHelper_MinActiveWeeklyGain', label: 'Minimum Weekly Skill Gain to be considered Active (Skill Tracker)', type: 'number', defaultValue: 1 }
     ],
     init: function() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -619,6 +620,10 @@ const NorthernFenceHelper = {
     },
 
     renderTrackingTable: function(table, trackerData) {
+        const savedSettings = Utils.getSettings();
+        const minActiveGainRaw = savedSettings['NorthernFenceHelper_MinActiveWeeklyGain'];
+        const minActiveGain = minActiveGainRaw !== undefined && minActiveGainRaw !== '' ? parseFloat(minActiveGainRaw) : 1;
+
         const pTag = document.createElement('p');
         pTag.innerHTML = `<strong>Super-Cart Racing Skill Tracker</strong><br>
         <span style="font-size:11px; color:#555;">View pages on the Hall of Fame periodically to update tracked Hobos and calculate their skill gains over time.</span>
@@ -708,7 +713,7 @@ const NorthernFenceHelper = {
                     globalTotal++;
                 }
 
-                if (d.gained > 0) {
+                if (d.wgained >= minActiveGain) {
                     if (activeCounts[clsNum] !== undefined) {
                         activeCounts[clsNum]++;
                         totalActive++;

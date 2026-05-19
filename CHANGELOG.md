@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.74] - 2026-05-20
+- Updated `NorthernFenceHelper.js` so the "Active" racers count in the Racers Summary is based on weekly gains rather than total gains.
+- Added a new configuration setting `NorthernFenceHelper_MinActiveWeeklyGain` to allow users to customize the minimum weekly gain threshold to be considered active.
+
 ## [9.73] - 2026-05-19
 - Extracted permanent (Pikies) and temporary bank goals into separate synced and local storage keys (`hw_bank_goals` vs `hw_bank_goals_local`) to ensure cross-device consistency for durable tracker flags while leaving session-specific trackers isolated. Provided auto-migration routine on boot.
 - Updated `MessageBoardSettingsHelper.js` character counter to account for PHP's `addslashes()` server-side escaping logic internally implemented by the game, resolving a bug where backslashes, single quotes, and double quotes were undervalued against the hardcoded 1,500 form length limit.
