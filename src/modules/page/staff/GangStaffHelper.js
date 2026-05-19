@@ -693,7 +693,6 @@ const GangStaffHelper = {
                 { min: 200, max: 300, rate: 100000 }
             ];
         }
-        let maxPayout = parseInt(Utils.getItem('hw_helper_sf_max') || '5000000', 10);
 
         let panelHtml = `
             <div style="font-weight: bold; margin-bottom: 10px; font-size: 14px;">Gangsters Sunday = Funday Payouts ${isCurrent ? '(Projected)' : ''}</div>
@@ -702,10 +701,6 @@ const GangStaffHelper = {
             <div style="margin-bottom: 10px;">
                 <button type="button" class="hh_sf_add_tier_btn" style="padding: 2px 6px; cursor: pointer; font-size: 11px;">+ Add Tier</button>
             </div>
-            <label style="font-size: 11px; margin-right: 10px; font-weight: bold;">
-                Max Payout per Hobo ($): 
-                <input type="text" class="hh_sf_max" value="${maxPayout.toLocaleString()}" style="width: 100px; padding: 2px;">
-            </label>
             <div style="margin-top: 15px;" class="hh_sf_action_area">
                 <button type="button" class="hh_sf_save_tiers_btn" style="padding: 4px 10px; cursor: pointer; font-weight: bold; background: #ddd; border: 1px solid #999; border-radius: 3px;">
                     💾 Save Tier Settings
@@ -730,8 +725,6 @@ const GangStaffHelper = {
         const tiersContainer = panel.querySelector('.hh_sf_tiers_container');
 
         const calculateTotalPayout = () => {
-            const currentMaxPayoutStr = panel.querySelector('.hh_sf_max').value;
-            const currentMaxPayout = parseInt(currentMaxPayoutStr.replace(/,/g, ''), 10) || 0;
             let total = 0;
 
             const payments = [];
@@ -790,7 +783,6 @@ const GangStaffHelper = {
                             }
                         }
                     });
-                    if (payout > currentMaxPayout) payout = currentMaxPayout;
                     if (payout > 0) {
                         total += payout;
                         payments.push({
@@ -888,22 +880,12 @@ const GangStaffHelper = {
             saveAndRenderTiers();
         });
 
-        panel.querySelector('.hh_sf_max').addEventListener('change', (e) => {
-            const val = parseInt(e.target.value.replace(/,/g, ''), 10) || 0;
-            Utils.setItem('hw_helper_sf_max', val.toString());
-            e.target.value = val.toLocaleString();
-            updateProjectedTotal();
-        });
-
         renderTiers();
 
         panel.querySelector('.hh_sf_save_tiers_btn').addEventListener('click', () => {
             updateTiersFromDOM();
             Utils.setItem('hw_helper_sf_tiers', JSON.stringify(savedTiers));
-            const currentMaxPayoutStr = panel.querySelector('.hh_sf_max').value;
-            const currentMaxPayout = parseInt(currentMaxPayoutStr.replace(/,/g, ''), 10) || 0;
-            Utils.setItem('hw_helper_sf_max', currentMaxPayout.toString());
-            
+
             const statusEl = panel.querySelector('.hh_sf_tiers_status');
             statusEl.textContent = `✅ Saved settings!`;
             setTimeout(() => { statusEl.textContent = ''; }, 3000);
@@ -915,9 +897,6 @@ const GangStaffHelper = {
             panel.querySelector('.hh_sf_save_btn').addEventListener('click', () => {
                 updateTiersFromDOM();
                 Utils.setItem('hw_helper_sf_tiers', JSON.stringify(savedTiers));
-                const currentMaxPayoutStr = panel.querySelector('.hh_sf_max').value;
-                const currentMaxPayout = parseInt(currentMaxPayoutStr.replace(/,/g, ''), 10) || 0;
-                Utils.setItem('hw_helper_sf_max', currentMaxPayout.toString());
 
                 const { payments } = calculateTotalPayout();
 
@@ -992,8 +971,6 @@ const GangStaffHelper = {
         this.renderTierSettingsPanel(scoresTable, true);
     }
 };
-
-
 
 
 

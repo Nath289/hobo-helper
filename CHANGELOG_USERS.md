@@ -1,6 +1,9 @@
 # User Changelog
 This file tracks player-facing feature updates and bug fixes. The build script automatically parses this to generate the floating changelog UI in the game whenever the version number increments.
 
+## [9.71] - 2026-05-19
+- **Removed:** Removed the "max payout per hobo" feature from the GangStaff helper for the Sunday Funday tier settings.
+
 ## [9.70] - 2026-05-19
 - Removed the custom title configuration for SeventhHeaven.
 

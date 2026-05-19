@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.71] - 2026-05-19
+- **Removed:** Removed the "max payout per hobo" feature from the GangStaff helper for the Sunday Funday tier settings.
+
 ## [9.70] - 2026-05-19
 - **Removed:** Removed the custom title configuration for SeventhHeaven.
 
