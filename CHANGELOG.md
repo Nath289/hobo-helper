@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.72] - 2026-05-19
+- **Added:** Created new `MessageBoardSettingsHelper.js` module.
+- **Added:** Implemented a real-time character tracker for the MB Signature editor that accurately mimics HoboWars' ISO-8859-1 form parsing payload footprint structure (HTML decimal character conversion and `\r\n` handling).
+
 ## [9.71] - 2026-05-19
 - **Removed:** Removed the "max payout per hobo" feature from the GangStaff helper for the Sunday Funday tier settings.
 

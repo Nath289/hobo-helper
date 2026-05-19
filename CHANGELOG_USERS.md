@@ -1,6 +1,9 @@
 # User Changelog
 This file tracks player-facing feature updates and bug fixes. The build script automatically parses this to generate the floating changelog UI in the game whenever the version number increments.
 
+## [9.72] - 2026-05-19
+- **Added:** Added a real-time character counter to the Message Board Signature editor! Easily see exactly how many characters you have left, including accurate predictions of how special characters and formatting symbols eat into your cap limit.
+
 ## [9.71] - 2026-05-19
 - **Removed:** Removed the "max payout per hobo" feature from the GangStaff helper for the Sunday Funday tier settings.
 
