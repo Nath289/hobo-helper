@@ -189,7 +189,7 @@ const RatsHelper = {
         Utils.log('[Hobo Helper] Initializing RatsHelper');
 
         // Reposition upgrade images below the main rat images safely
-        const ratCells = document.querySelectorAll('.ratcell');
+        const ratCells = contentArea.querySelectorAll('.ratcell');
         ratCells.forEach(cell => {
             const upg = cell.querySelector('.upg-imgs');
             if (upg) {
@@ -199,7 +199,7 @@ const RatsHelper = {
         });
 
         // Convert Rat Options links (Upgrade, Rename, Abandon) to Buttons
-        const ratOptsLists = document.querySelectorAll('.rat-opts');
+        const ratOptsLists = contentArea.querySelectorAll('.rat-opts');
         ratOptsLists.forEach(ul => {
             const lists = ul.querySelectorAll('li');
             lists.forEach(li => {
@@ -250,7 +250,7 @@ const RatsHelper = {
         }
 
         if (window.location.search.includes('do=feed')) {
-            this.initFeedUI();
+            this.initFeedUI(contentArea);
         }
 
         this.initCheeseIcons(contentArea);
@@ -969,13 +969,13 @@ const RatsHelper = {
         });
     },
 
-    initFeedUI: function() {
+    initFeedUI: function(contentArea) {
         let ul = null;
-        const feedLink = document.querySelector('a[href*="&foodID="]');
+        const feedLink = contentArea.querySelector('a[href*="&foodID="]');
         if (feedLink) {
             ul = feedLink.closest('ul');
         } else {
-            const meatLi = Array.from(document.querySelectorAll('li')).find(li => li.title === 'Eww, meat!' || li.textContent.includes('Eww, meat!'));
+            const meatLi = Array.from(contentArea.querySelectorAll('li')).find(li => li.title === 'Eww, meat!' || li.textContent.includes('Eww, meat!'));
             if (meatLi) ul = meatLi.closest('ul');
         }
 
@@ -1000,6 +1000,10 @@ const RatsHelper = {
                 name = (font ? font.textContent : li.textContent).trim();
             } else {
                 name = link.textContent.trim();
+                // Ensure name isn't empty if the link text was stripped out
+                if (!name && img) {
+                    name = img.title || img.alt || 'Unknown Food';
+                }
                 const textContent = li.textContent;
                 const expMatch = textContent.match(/([+-]?\d+)\s+exp/i);
                 const lifeMatch = textContent.match(/([+-]?\d+)\s+life/i);
@@ -1156,6 +1160,8 @@ const RatsHelper = {
         form.parentNode.insertBefore(filterContainer, form);
     }
 };
+
+
 
 
 

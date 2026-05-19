@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [9.69] - 2026-05-19
+- **Fixed:** Corrected a bug where the `DisplayHelper_ScrollableTopbar` injected `white-space: nowrap;` globally on `.topbar`, breaking the flex layout of "The Future" theme and causing "Tokens" and "Cans" stats to overflow horizontally on narrow displays. Re-targeted to `.topbar-menu`.
+- **Fixed:** Updated `RatsHelper` feed UI to utilize `img.title` or `img.alt` as fallback grouping names to prevent feed boxes from failing to render when anchor links strip out the text element (such as with "Pack of Candy Cigarettes").
+
 ## [9.68] - 2026-05-19
 - Centralized `hw_bank_goals` modification logic into `BankHelper`'s exposed `addBankGoal` function to prevent sync conflicts.
 - Updated `AGENTS.md` instructions requiring structural centralization for shared local storage keys.
@@ -1156,8 +1160,8 @@ All notable changes to this project will be documented in this file.
 
 ## [8.71] - 2026-04-21
 ### Added
-- Added a 3-build release system with per-build templates and build-time module filtering.
-- Implemented script segregation so distinct production scripts are built independently for Standard Users and Staff members based on module configuration flags.
+- Added an option to wrap long pagination lists on the Gang Hitlist into multiple lines to prevent horizontal scrolling.
+- Added an option to automatically highlight players outside your attack range (level discrepancy > 200) on the Gang Hitlist.
 
 ## [9.41] - 2026-05-12
 - Added LivingAreaHelper.initShowTattooDays to extract and display tattoo remaining duration from the image title.

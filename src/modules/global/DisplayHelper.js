@@ -479,15 +479,15 @@ const DisplayHelper = {
     },
     initScrollableTopbar: function() {
         this.addedStyles += `
-            .topbar-menu, .topbar {
+            .topbar-menu {
                 overflow-x: auto;
                 white-space: nowrap;
                 -webkit-overflow-scrolling: touch;
             }
-            .topbar-menu::-webkit-scrollbar, .topbar::-webkit-scrollbar {
+            .topbar-menu::-webkit-scrollbar {
                 display: none;
             }
-            .topbar-menu, .topbar {
+            .topbar-menu {
                 scrollbar-width: none;
                 -ms-overflow-style: none;
             }
@@ -497,7 +497,7 @@ const DisplayHelper = {
         `;
 
         // Optional mouse drag-to-scroll support for desktop testing
-        const topbar = document.querySelector('.topbar-menu') || document.querySelector('.topbar');
+        const topbar = document.querySelector('.topbar-menu');
         if (topbar) {
             let isDown = false;
             let startX;
